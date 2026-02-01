@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Alunos</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>👤 Admin • Alunos</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="assuntos.html">Assuntos</a>
+      <a class="btn" href="aulas.html">Aulas</a>
+      <a class="btn" href="pagamentos.html">Pagamentos</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Criar aluno novo e (opcional) buscar alunos.</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>1) Criar novo aluno/usuário</h2>
+
+      <form id="formCriarAluno" class="list" style="margin-top:15px;">
+        <div class="assunto">
+          <label><b>Nome</b></label><br/>
+          <input id="alunoNome" type="text" placeholder="Ex.: João da Silva"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+        </div>
+
+        <div class="assunto">
+          <label><b>Email</b></label><br/>
+          <input id="alunoEmail" type="email" placeholder="aluno@email.com"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+        </div>
+
+        <div class="assunto">
+          <label><b>Senha</b></label><br/>
+          <input id="alunoSenha" type="text" placeholder="Senha inicial"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="opacity:.85; margin-top:6px;">Dica: depois o aluno pode trocar a senha.</div>
+        </div>
+        <div class="assunto">
+            <label style="display:flex; gap:10px; align-items:center;">
+                <input id="alunoIsAdmin" type="checkbox" />
+                <b>Criar como administrador</b>
+            </label>
+            <div style="opacity:.85; margin-top:6px;">
+                Só marque se for realmente necessário.
+            </div>
+        </div>
+        <button class="btn" type="submit">Criar aluno/usuário</button>
+        <div id="msgCriarAluno" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>2) Buscar alunos (opcional)</h2>
+
+      <div class="list">
+        <div class="assunto">
+          <label><b>Filtro (nome/email)</b></label><br/>
+          <input id="qAluno" type="text" placeholder="ex: aluno@email.com"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" id="btnBuscarAlunos">Buscar</button>
+          </div>
+          <div id="msgBuscarAlunos" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div id="listaAlunos" style="margin-top:12px;">Use a busca.</div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminAlunos.init();
+  </script>
+</body>
+</html>
+

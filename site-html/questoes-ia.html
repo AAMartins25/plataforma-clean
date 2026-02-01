@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuestõesIA</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header>
+    <h1>🧠 QuestõesIA</h1>
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+    <a href="#" class="btn" onclick="logout()">Sair</a>
+    <div id="subtitulo" style="margin-top:10px;"></div>
+    <p>10 questões no estilo bateria (sem gabarito explícito).</p>
+  </header>
+
+  <main class="container" id="conteudo">
+    <div class="card">
+      <h2>Lista de QuestõesIA</h2>
+      <div id="lista"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    function qs(name){ return new URLSearchParams(window.location.search).get(name); }
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+    async function apiGet(path){
+      const url = `${API_BASE}${path}`;
+      const res = await fetch(url);
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${url}\n${txt}`);
+      }
+      return res.json();
+    }
+
+    const pastaId = qs("pasta_id");
+    const assuntoId = qs("assunto_id");
+
+    document.getElementById("subtitulo").innerHTML = pastaId
+      ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
+      : `Faltou pasta_id na URL`;
+
+    const lista = document.getElementById("lista");
+
+    function renderError(msg){
+      return `<div class="card" style="border-top-color:#6B4F3F"><h2>Erro</h2><pre style="white-space:pre-wrap">${esc(msg)}</pre></div>`;
+    }
+
+    if(!pastaId){
+      lista.innerHTML = "<p>Erro: faltou pasta_id na URL.</p>";
+    } else {
+      carregar();
+    }
+
+    async function carregar(){
+      try{
+        const itens = await apiGet(`/pastas/${pastaId}/questoes-ia`);
+
+        if(!itens || itens.length === 0){
+          lista.innerHTML = "<p>Nenhuma QuestãoIA encontrada para esta pasta.</p>";
+          return;
+        }
+
+        lista.innerHTML = itens.map((q, i) => {
+          const enunciado = q.enunciado || q.pergunta || q.titulo || `Questão ${i+1}`;
+          const alternativas = q.alternativas || q.opcoes || null;
+          const comentario = q.comentario || q.explicacao || null;
+
+          let altHtml = "";
+          if(alternativas && typeof alternativas === "object"){
+            const letras = ["A","B","C","D","E"];
+            altHtml = `
+              <div class="list">
+                ${letras.map(L => alternativas[L] ? `
+                  <div class="assunto"><b>${L})</b> ${esc(alternativas[L])}</div>
+                ` : "").join("")}
+              </div>
+            `;
+          }
+
+          return `
+            <div class="card" style="margin-top:12px">
+              <h2>${i+1}. ${esc(enunciado)}</h2>
+              ${altHtml}
+              ${comentario ? `<p><b>Comentário:</b> ${esc(comentario)}</p>` : ""}
+            </div>
+          `;
+        }).join("");
+
+      } catch(err){
+        lista.innerHTML = renderError(err.message);
+      }
+    }
+  </script>
+</body>
+</html>

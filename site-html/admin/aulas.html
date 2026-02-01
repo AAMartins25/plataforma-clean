@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Aulas</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎓 Admin • Aulas</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="cursos.html">Cursos</a>
+      <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
+      <a class="btn" href="assuntos.html">Assuntos</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Crie e liste aulas na pasta TEORIA (Teoria e Questões).</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>1) Selecionar disciplina e assunto</h2>
+
+      <div class="list">
+        <div class="assunto">
+          <label><b>Disciplina</b></label><br/>
+          <select id="disciplinaSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+        </div>
+
+        <div class="assunto">
+          <label><b>Assunto</b></label><br/>
+          <select id="assuntoSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+          <div style="margin-top:10px;">
+            <button class="btn" id="btnCarregarPastas">Carregar pastas do assunto</button>
+          </div>
+          <div id="msgSelecao" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2) Pasta TEORIA (automática)</h2>
+      <p style="opacity:.85">A aula só pode ser criada na pasta TEORIA.</p>
+      <div id="pastaTeoriaBox">Selecione um assunto e clique em “Carregar pastas”.</div>
+    </div>
+
+    <div class="card">
+      <h2>3) Criar aula</h2>
+
+      <form id="formCriarAula" class="list">
+        <div class="assunto">
+          <label><b>Título</b></label><br/>
+          <input id="aulaTitulo" type="text" placeholder="Ex.: Aula 1 — Introdução" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <div class="assunto">
+          <label><b>Descrição (opcional)</b></label><br/>
+          <textarea id="aulaDescricao" rows="4" placeholder="Resumo curto..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+        </div>
+
+        <div class="assunto">
+          <label><b>Ordem</b></label><br/>
+          <input id="aulaOrdem" type="number" min="1" value="1" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="opacity:.85; margin-top:6px;">Sugestão: 1, 2, 3…</div>
+        </div>
+
+        <div class="assunto">
+          <label><b>Ativo</b></label><br/>
+          <select id="aulaAtivo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">
+            <option value="true" selected>Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+
+        <button class="btn" type="submit">Salvar aula (na TEORIA)</button>
+        <div id="msgCriarAula" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>4) Aulas cadastradas na TEORIA</h2>
+      <div id="listaAulas">Carregue as pastas do assunto para listar as aulas.</div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script> 
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminAulas.init();
+  </script>
+</body>
+</html>

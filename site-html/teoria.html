@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teoria e Questões</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+  <header>
+    <h1>📘 Teoria e Questões</h1>
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+    <a href="#" class="btn" onclick="logout()">Sair</a> 
+    <div id="subtitulo" style="margin-top:10px;"></div>
+  </header>
+
+  <main class="container" id="conteudo">
+
+    <div class="card">
+      <h2>📚 Aulas</h2>
+      <p style="opacity:.85">
+        Clique em uma aula para ver vídeos, materiais e sprints.
+      </p>
+      <div id="lista_aulas" class="list"></div>
+    </div>
+
+    <div id="detalhes_aula"></div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    async function apiGet(path) {
+      const url = `${API_BASE}${path}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${url}\n${txt}`);
+      }
+      return res.json();
+    }
+
+    async function tryMany(endpoints) {
+      let lastErr = null;
+      for (const ep of endpoints) {
+        try {
+          return await apiGet(ep);
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      throw new Error(
+        `Falhou em todos os endpoints:\n${endpoints.join("\n")}\n\nÚltimo erro:\n${lastErr?.message || ""}`
+      );
+    }
+
+    function renderError(title, msg) {
+      return `
+        <div class="card" style="border-top-color:#6B4F3F">
+          <h2>${esc(title)}</h2>
+          <pre style="white-space:pre-wrap">${esc(msg)}</pre>
+        </div>
+      `;
+    }
+
+    async function carregarAulas() {
+      const pastaId = qs("pasta_id");
+      const assuntoId = qs("assunto_id");
+
+      const subt = document.getElementById("subtitulo");
+      subt.innerHTML = pastaId
+        ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
+        : `Faltou pasta_id na URL`;
+
+      if (!pastaId) {
+        document.getElementById("lista_aulas").innerHTML =
+          "<p>Erro: faltou pasta_id na URL.</p>";
+        return;
+      }
+
+      const endpointsAulas = [
+        `/pastas/${pastaId}/aulas`,
+        `/aulas?pasta_id=${pastaId}`
+      ];
+
+      let aulas;
+      try {
+        aulas = await tryMany(endpointsAulas);
+      } catch (err) {
+        document.getElementById("lista_aulas").innerHTML = renderError(
+          "Não consegui listar aulas",
+          err.message
+        );
+        return;
+      }
+
+      if (!aulas || aulas.length === 0) {
+        document.getElementById("lista_aulas").innerHTML =
+          "<p>Nenhuma aula encontrada nesta pasta.</p>";
+        return;
+      }
+
+      aulas.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+      const lista = document.getElementById("lista_aulas");
+      lista.innerHTML = aulas.map((a) => `
+        <div class="disciplina">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+            <div>
+              <div style="font-weight:bold">${esc(a.titulo)}</div>
+              <div style="opacity:.85">
+                aula_id=${esc(a.id)} • ordem=${esc(a.ordem ?? "-")} • ativo=${esc(a.ativo ?? true)}
+              </div>
+            </div>
+            <button class="btn" onclick="abrirAula(${a.id})">Abrir aula</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function abrirAula(aulaId) {
+      const box = document.getElementById("detalhes_aula");
+      box.innerHTML = `
+        <div class="card">
+          <h2>Carregando aula ${esc(aulaId)}...</h2>
+        </div>
+      `;
+
+      try {
+        const endpointsVideos = [
+          `/aulas/${aulaId}/videos`,
+          `/videos?aula_id=${aulaId}`
+        ];
+
+        const endpointsMateriais = [
+          `/aulas/${aulaId}/materiais`,
+          `/materiais?aula_id=${aulaId}`
+        ];
+
+        const endpointsBaterias = [
+          `/aulas/${aulaId}/baterias`,
+          `/baterias?aula_id=${aulaId}`
+        ];
+
+        const [videos, materiais, baterias] = await Promise.all([
+          tryMany(endpointsVideos),
+          tryMany(endpointsMateriais),
+          tryMany(endpointsBaterias)
+        ]);
+
+        let html = `
+          <div class="card">
+            <h2>📌 Aula ${esc(aulaId)}</h2>
+            <p style="opacity:.85">Abaixo: vídeos, materiais e sprints.</p>
+          </div>
+        `;
+
+        const vids = Array.isArray(videos) ? videos : [];
+        vids.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+        html += `
+          <div class="card">
+            <h2>🎥 Vídeos</h2>
+            ${vids.length === 0 ? "<p>Nenhum vídeo cadastrado.</p>" : `
+              <div class="list">
+                ${vids.map(v => `
+                  <div class="assunto">
+                    <b>Ordem ${esc(v.ordem ?? "-")}</b><br/>
+                    <span>${esc(v.titulo || "Vídeo")}</span><br/>
+                    <a href="${esc(v.url || "#")}" target="_blank">Abrir link do vídeo</a>
+                  </div>
+                `).join("")}
+              </div>
+            `}
+          </div>
+        `;
+
+        const mats = Array.isArray(materiais) ? materiais : [];
+        html += `
+          <div class="card">
+            <h2>📄 Materiais</h2>
+            ${mats.length === 0 ? "<p>Nenhum material cadastrado.</p>" : `
+              <div class="list">
+                ${mats.map(m => `
+                  <div class="assunto">
+                    <b>${esc(m.tipo || "Material")}</b><br/>
+                    ${m.url ? `<a href="${esc(m.url)}" target="_blank">Abrir</a>` : ""}
+                    ${m.texto ? `
+                      <div style="margin-top:10px;">
+                        <pre style="white-space:pre-wrap">${esc(m.texto)}</pre>
+                      </div>` : ""
+                    }
+                    ${m.descricao ? `<div style="margin-top:8px;opacity:.85">${esc(m.descricao)}</div>` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            `}
+          </div>
+        `;
+
+        const bats = Array.isArray(baterias) ? baterias : [];
+        bats.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+        html += `
+          <div class="card">
+            <h2>🏁 Sprints (Baterias)</h2>
+            ${bats.length === 0 ? "<p>Nenhuma bateria cadastrada.</p>" : `
+              <div class="list">
+                ${bats.map(b => `
+                  <div class="assunto">
+                    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+                      <div>
+                        <b>${esc(b.titulo || "Bateria")}</b><br/>
+                        <span style="opacity:.85">bateria_id=${esc(b.id)} • ordem=${esc(b.ordem ?? "-")}</span>
+                      </div>
+                      <button class="btn" onclick="carregarQuestoes(${b.id})">Ver questões</button>
+                    </div>
+                    <div id="questoes_${b.id}" style="margin-top:12px"></div>
+                  </div>
+                `).join("")}
+              </div>
+            `}
+          </div>
+        `;
+
+        box.innerHTML = html;
+
+      } catch (err) {
+        box.innerHTML = renderError("Erro ao carregar aula", err.message);
+      }
+    }
+
+    async function carregarQuestoes(bateriaId) {
+      const alvo = document.getElementById(`questoes_${bateriaId}`);
+      alvo.innerHTML = "<p>Carregando questões...</p>";
+
+      const endpointsQuestoes = [
+        `/baterias/${bateriaId}/questoes`,
+        `/questoes?bateria_id=${bateriaId}`
+      ];
+
+      try {
+        const questoes = await tryMany(endpointsQuestoes);
+
+        if (!questoes || questoes.length === 0) {
+          alvo.innerHTML = "<p>Nenhuma questão cadastrada para esta bateria.</p>";
+          return;
+        }
+
+        questoes.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+        alvo.innerHTML = questoes.map((q, idx) => `
+          <div class="card" style="margin-top:12px">
+            <h2>${idx + 1}. ${esc(q.enunciado || q.pergunta || "Questão")}</h2>
+
+            ${q.alternativas ? `
+              <div class="list">
+                ${["A", "B", "C", "D", "E"].map(L => `
+                  <div class="assunto">
+                    <b>${L})</b> ${esc(q.alternativas?.[L] || "")}
+                    ${q.comentario?.[L] ? `<div style="opacity:.9;margin-top:6px"><b>Coment:</b> ${esc(q.comentario[L])}</div>` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+
+            ${q.comentario?.geral ? `<p><b>Comentário:</b> ${esc(q.comentario.geral)}</p>` : ""}
+          </div>
+        `).join("");
+
+      } catch (err) {
+        alvo.innerHTML = renderError("Erro ao carregar questões", err.message);
+      }
+    }
+
+    window.abrirAula = abrirAula;
+    window.carregarQuestoes = carregarQuestoes;
+
+    carregarAulas();
+  </script>
+</body>
+</html>

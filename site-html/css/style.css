@@ -1,0 +1,160 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* CORES BASE */
+:root {
+  --amarelo: #fdee8a;
+  --amarelo-escuro: #fef08a;
+  --azul: #1F4E79;
+  --marrom: #6B4F3F;
+  --fundo: #F9FAFB;
+}
+
+/* BODY */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--fundo);
+  color: var(--azul);
+  line-height: 1.6;
+}
+
+/* HEADER */
+header {
+  background-color: var(--amarelo);
+  color: var(--azul);
+  padding: 25px;
+  text-align: center;
+}
+
+/* TÍTULOS */
+h1, h2 {
+  margin-bottom: 15px;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 15px;
+}
+
+/* CARD */
+.card {
+  background-color: #ffffff;
+  border-top: 6px solid var(--amarelo);
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+/* LISTAS */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ITENS */
+.disciplina,
+.assunto {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #ffffff;
+}
+
+/* LINKS PADRÃO */
+a {
+  color: var(--azul);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  color: var(--amarelo-escuro);
+  text-decoration: underline;
+}
+
+/* LINKS COM CARA DE BOTÃO */
+.btn {
+  display: inline-block;
+  margin-top: 15px;
+  background-color: var(--amarelo);
+  color: var(--azul);
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.btn:hover {
+  background-color: var(--amarelo-escuro);
+  text-decoration: none;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 15px;
+  font-size: 0.9em;
+  color: var(--marrom);
+}
+
+/* BLOCO DE VÍDEO */
+.video-box {
+  background-color: #000;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 1.1em;
+}
+
+/* SEÇÃO DA AULA */
+.aula-info p {
+  margin-bottom: 10px;
+}
+
+/* LISTA DA SPRINT */
+.sprint-list {
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
+.sprint-list li {
+  margin-bottom: 8px;
+}
+
+/* ===== Cursos públicos - layout em linha ===== */
+
+.curso-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 16px;
+  margin-bottom: 10px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.curso-nome {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Garante que TODOS os botões fiquem alinhados */
+.curso-linha .btn {
+  min-width: 110px;
+  text-align: center;
+}

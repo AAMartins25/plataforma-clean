@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Plataforma de Estudos para Concursos</title>
+  <!-- Ligação com o CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>CleanConcursos</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a href="#" class="btn" onclick="entrarEEstudar(); return false;">Área do Aluno</a>
+      <a id="btnSairHome" href="#" class="btn" onclick="logout(); return false;">Sair</a>
+    </nav>
+    <p>Concursos • Redações • Vestibulares</p>
+  </header>
+
+  <main>
+
+    <div class="card">
+      <h2>📚 Disponível:</h2>
+      <p>Estudo de alta performance</p>
+      <div id="lista-cursos-publicos" class="list"></div>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+      // Esconde o botão "Sair" se não estiver logado
+      (function () {
+        const btn = document.getElementById("btnSairHome");
+        if (!btn) return;
+        const token = localStorage.getItem("access_token");
+        btn.style.display = token ? "inline-block" : "none";
+      })();
+    </script>
+    <script>
+      pageHomeCursosPublico(); 
+    </script>
+    
+    <div class="card">
+      <h2>📝 Contato:</h2>
+      <p> Zap / E-mail / Fone</p>
+      <a href="#" class="btn">Acesse</a>
+    </div>
+
+    <div class="card">
+      <h2>📊 [Colocar alguma coisa]:</h2>
+      <p>[descricao].</p>
+      <a href="#" class="btn">Saiba mais e Acesse</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma de Estudos High Quality</p>
+  </footer>
+
+</body>
+</html>

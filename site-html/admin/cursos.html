@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Cursos</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>📚 Admin • Cursos</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Criar e listar cursos (recarrega após salvar).</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>➕ Criar curso</h2>
+
+      <form id="formCriarCurso" class="list">
+        <div class="assunto">
+          <label><b>Nome do curso</b></label><br/>
+          <input id="cursoNome" type="text" placeholder="Ex.: Curso Guarda Municipal" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <div class="assunto">
+          <label><b>Ativo</b></label><br/>
+          <select id="cursoAtivo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">
+            <option value="true" selected>Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+
+        <button class="btn" type="submit">Salvar</button>
+        <div id="msgCriar" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📄 Cursos cadastrados</h2>
+      <div id="listaCursos">Carregando...</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminCursos.init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Pagamento</h1>
+    <nav>
+      <a class="btn" href="index.html">Início</a>
+      <a class="btn" href="cursos.html">Meus cursos</a>
+    </nav>
+    <p>Iniciando o checkout...</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>🧾 Checkout</h2>
+      <p id="msg">Preparando pagamento…</p>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    (async function () {
+      const msg = (t) => document.getElementById("msg").textContent = t;
+
+      const cursoId = Number(localStorage.getItem("ultimo_curso_id_compra") || "0");
+      if (!cursoId) {
+        msg("Não encontrei o curso para compra. Volte para a página inicial e clique em Comprar novamente.");
+        return;
+      }
+
+      // precisa estar logado aqui
+      const token = getToken();
+      if (!token) {
+        msg("Você não está logado. Redirecionando para login...");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        // se já tem o curso, pede confirmação
+        const meus = await apiGetAuth("/me/cursos");
+        const meusIds = new Set((meus || []).map(m => Number(m.curso_id)));
+
+        if (meusIds.has(cursoId)) {
+          const ok = confirm("Você já possui este preparatório! Deseja continuar mesmo assim?\n\n[OK] Sim • [Cancelar] Não");
+          if (!ok) {
+            msg("Ok — compra cancelada. Indo para seus cursos...");
+            setTimeout(() => window.location.href = "cursos.html", 600);
+            return;
+          }
+        }
+
+        msg("Abrindo checkout do Mercado Pago...");
+        await comprarCurso(cursoId); // sua função já abre sandbox_init_point/init_point
+
+        msg("Checkout aberto. Após pagar, volte para a plataforma (Meus cursos).");
+
+      } catch (e) {
+        console.error(e);
+        msg("Erro ao iniciar checkout. Veja o console.");
+      }
+    })();
+  </script>
+</body>
+</html>

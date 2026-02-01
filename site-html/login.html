@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Login</h1>
+    <nav>
+      <a href="index.html" class="btn">Início</a>
+    </nav>
+    <p>Entre para acessar seus cursos</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>🔐 Acessar minha conta</h2>
+
+      <div id="msg" style="margin: 10px 0;"></div>
+
+      <form id="formLogin">
+        <div class="list">
+          <label>
+            Email:
+            <input id="email" type="email" required placeholder="seuemail@exemplo.com" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
+          </label>
+
+          <label>
+            Senha:
+            <input id="senha" type="password" required placeholder="********" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
+          </label>
+
+          <button type="submit" class="btn">Entrar</button>
+          <a class="btn" href="register.html">Não tenho conta (cadastrar)</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
+

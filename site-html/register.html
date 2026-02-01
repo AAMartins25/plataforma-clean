@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar conta</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>📝 Criar conta</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Início</a>
+      <a class="btn" href="login.html">Já tenho conta</a>
+    </nav>
+    <p>Crie seu cadastro para acessar os cursos.</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Cadastro</h2>
+
+      <form id="formRegister" class="list">
+        <div class="assunto">
+          <label><b>Nome</b></label><br/>
+          <input id="nome" type="text" placeholder="Seu nome"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <div class="assunto">
+          <label><b>Email</b></label><br/>
+          <input id="email" type="email" placeholder="seuemail@email.com"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <div class="assunto">
+          <label><b>Senha</b></label><br/>
+          <input id="senha" type="password" placeholder="Crie uma senha"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <button class="btn" type="submit">Criar conta</button>
+        <div id="msg" style="margin-top:10px;"></div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>

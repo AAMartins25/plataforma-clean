@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cartões IA</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header>
+    <h1>🃏 Cartões IA</h1>
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+    <a href="#" class="btn" onclick="logout()">Sair</a> 
+    <div id="subtitulo" style="margin-top:10px;"></div>
+    <p>Clique no cartão para ver o verso.</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Cartões</h2>
+      <div id="lista" class="list"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    function qs(name){ return new URLSearchParams(window.location.search).get(name); }
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+    async function apiGet(path){
+      const url = `${API_BASE}${path}`;
+      const res = await fetch(url);
+      if(!res.ok){
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${url}\n${txt}`);
+      }
+      return res.json();
+    }
+
+    const pastaId = qs("pasta_id");
+    const assuntoId = qs("assunto_id");
+
+    document.getElementById("subtitulo").innerHTML = pastaId
+      ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
+      : `Faltou pasta_id na URL`;
+
+    const lista = document.getElementById("lista");
+
+    function renderError(msg){
+      return `<div class="assunto" style="border-left:4px solid #6B4F3F;padding-left:10px"><b>Erro</b><pre style="white-space:pre-wrap">${esc(msg)}</pre></div>`;
+    }
+
+    if(!pastaId){
+      lista.innerHTML = "<p>Erro: faltou pasta_id na URL.</p>";
+    } else {
+      carregar();
+    }
+
+    async function carregar(){
+      try{
+        const cards = await apiGet(`/pastas/${pastaId}/cartoes-ia`);
+
+        if(!cards || cards.length === 0){
+          lista.innerHTML = "<p>Nenhum cartão encontrado para esta pasta.</p>";
+          return;
+        }
+
+        lista.innerHTML = cards.map((c, i) => {
+          const frente = c.frente || c.pergunta || c.q || `Cartão ${i+1}`;
+          const verso  = c.verso  || c.resposta || c.a || "—";
+
+          return `
+            <div class="assunto" style="cursor:pointer" onclick="virar(${i})" id="card_${i}">
+              <b>Frente:</b> ${esc(frente)}
+              <div style="margin-top:10px;display:none" id="back_${i}">
+                <b>Verso:</b> ${esc(verso)}
+              </div>
+              <div style="margin-top:12px;">
+                <span class="btn" id="hint_${i}">Clique para ver o verso</span>
+              </div>
+
+            </div>
+          `;
+        }).join("");
+
+      } catch(err){
+        lista.innerHTML = renderError(err.message);
+      }
+    }
+
+    window.virar = function(i){
+      const back = document.getElementById(`back_${i}`);
+      const hint = document.getElementById(`hint_${i}`);
+      const isHidden = back.style.display === "none" || back.style.display === "";
+      back.style.display = isHidden ? "block" : "none";
+      hint.textContent = isHidden ? "Clique para esconder o verso" : "Clique para ver o verso";
+    }
+  </script>
+</body>
+</html>

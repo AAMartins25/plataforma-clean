@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Conteúdo da Aula</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>📦 Admin • Conteúdo da Aula</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="assuntos.html">Assuntos</a>
+      <a class="btn" href="aulas.html">Aulas</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Selecione uma aula (na TEORIA) e cadastre 1 vídeo, 1 material e 1 sprint.</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>1) Selecionar aula (Disciplina → Assunto → TEORIA → Aula)</h2>
+
+      <div class="list">
+        <div class="assunto">
+          <label><b>Disciplina</b></label><br/>
+          <select id="disciplinaSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+        </div>
+
+        <div class="assunto">
+          <label><b>Assunto</b></label><br/>
+          <select id="assuntoSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+        </div>
+
+        <div class="assunto">
+          <label><b>Aula (na TEORIA)</b></label><br/>
+          <select id="aulaSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+          <div style="margin-top:10px;">
+            <button class="btn" id="btnCarregarTudo">Carregar conteúdo</button>
+          </div>
+          <div id="msgSelecao" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2) Vídeo (1)</h2>
+      <div id="videosBox">Clique em “Carregar conteúdo”.</div>
+
+      <form id="formVideo" class="list" style="margin-top:15px;">
+        <div class="assunto">
+          <label><b>URL do vídeo</b></label><br/>
+          <input id="videoUrl" type="text" placeholder="https://..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="opacity:.85; margin-top:6px;">Ordem padrão: 1</div>
+        </div>
+        <button class="btn" type="submit">Salvar vídeo (ordem 1)</button>
+        <div id="msgVideo" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>3) Material (1)</h2>
+      <div id="materiaisBox">Clique em “Carregar conteúdo”.</div>
+
+      <form id="formMaterial" class="list" style="margin-top:15px;">
+        <div class="assunto">
+          <label><b>Tipo</b></label><br/>
+          <select id="materialTipo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">
+            <option value="TEXTO" selected>TEXTO</option>
+            <option value="PDF">PDF</option>
+          </select>
+        </div>
+
+        <div class="assunto">
+          <label><b>Título</b></label><br/>
+          <input id="materialTitulo" type="text" placeholder="Ex.: Resumo bem direto" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+        </div>
+
+        <div class="assunto" id="materialBoxTexto">
+          <label><b>Conteúdo (para TEXTO)</b></label><br/>
+          <textarea id="materialConteudo" rows="7" placeholder="Digite o texto..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+        </div>
+
+        <div class="assunto" id="materialBoxPdf" style="display:none;">
+          <label><b>URL do PDF (para PDF)</b></label><br/>
+          <input id="materialUrl" type="text" placeholder="https://..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+        </div>
+
+        <button class="btn" type="submit">Salvar material</button>
+        <div id="msgMaterial" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>4) Sprint (Bateria) (1) + Questões</h2>
+      <div id="bateriasBox">Clique em “Carregar conteúdo”.</div>
+
+      <form id="formBateria" class="list" style="margin-top:15px;">
+        <div class="assunto">
+          <label><b>Nome da sprint</b></label><br/>
+          <input id="bateriaNome" type="text" placeholder="Sprint 1 — Fixação" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="opacity:.85; margin-top:6px;">Ordem padrão: 1</div>
+        </div>
+
+        <button class="btn" type="submit">Salvar sprint (ordem 1)</button>
+        <div id="msgBateria" style="margin-top:10px;"></div>
+      </form>
+
+      <div style="margin-top:15px;">
+        <button class="btn" id="btnGerar10Questoes">Gerar 10 questões (MULTIPLA)</button>
+        <div id="msgGerar10" style="margin-top:10px;"></div>
+      </div>
+
+      <div style="margin-top:15px;">
+        <button class="btn" id="btnVerQuestoes">Ver questões da sprint</button>
+        <div id="questoesBox" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminAulaConteudo.init();
+  </script>
+
+</body>
+</html>

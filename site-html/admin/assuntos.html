@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Assuntos</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🧠 Admin • Assuntos</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="cursos.html">Cursos</a>
+      <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Selecione uma disciplina e crie/lista os assuntos.</p>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <h2>1) Selecionar disciplina</h2>
+      <div class="assunto">
+        <label><b>Disciplina</b></label><br/>
+        <select id="disciplinaSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+
+        <div style="margin-top:10px;">
+          <button class="btn" id="btnCarregarAssuntos">Carregar assuntos</button>
+        </div>
+
+        <div id="msgDisciplina" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2) Criar assunto</h2>
+
+      <form id="formCriarAssunto" class="list">
+        <div class="assunto">
+          <label><b>Nome do assunto</b></label><br/>
+          <input id="assuntoNome" type="text" placeholder="Ex.: Atos Administrativos" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <div class="assunto">
+          <label><b>Descrição (opcional)</b></label><br/>
+          <textarea id="assuntoDescricao" rows="4" placeholder="Resumo curto do que cai em prova..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+        </div>
+
+        <div class="assunto">
+          <label><b>Ativo</b></label><br/>
+          <select id="assuntoAtivo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">
+            <option value="true" selected>Sim</option>
+            <option value="false">Não</option>
+          </select>
+        </div>
+
+        <button class="btn" type="submit">Salvar assunto</button>
+        <div id="msgCriarAssunto" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>3) Assuntos cadastrados na disciplina</h2>
+      <div id="listaAssuntos">Selecione uma disciplina e clique em “Carregar assuntos”.</div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminAssuntos.init();
+  </script>
+</body>
+</html>

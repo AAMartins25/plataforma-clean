@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Disciplinas</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>📚 Admin • Disciplinas</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="cursos.html">Cursos</a>
+      <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
+      <a class="btn" href="assuntos.html">Assuntos</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Cadastre disciplinas e liste as existentes.</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>1) Criar disciplina</h2>
+
+      <form id="formCriarDisciplina" class="list" style="margin-top:15px;">
+        <div class="assunto">
+          <label><b>Nome</b></label><br/>
+          <input id="disciplinaNome" type="text" placeholder="Ex.: Língua Portuguesa"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+        </div>
+
+        <div class="assunto" style="display:flex; align-items:center; gap:10px;">
+          <input id="disciplinaAtivo" type="checkbox" checked />
+          <label for="disciplinaAtivo"><b>Ativo</b></label>
+        </div>
+
+        <button class="btn" type="submit">Salvar disciplina</button>
+        <div id="msgCriarDisciplina" style="margin-top:10px;"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>2) Listar / buscar disciplinas</h2>
+
+      <div class="list">
+        <div class="assunto">
+          <label><b>Filtro (nome)</b></label><br/>
+          <input id="qDisciplina" type="text" placeholder="Ex.: direito"
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" id="btnBuscarDisciplinas">Buscar</button>
+            <button class="btn" id="btnListarTudo">Listar tudo</button>
+          </div>
+          <div id="msgBuscarDisciplinas" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div id="listaDisciplinas" style="margin-top:12px;">Use a busca.</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminDisciplinas.init();
+  </script>
+</body>
+</html>

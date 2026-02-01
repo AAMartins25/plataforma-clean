@@ -1,0 +1,56 @@
+    <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin • Curso × Disciplinas</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🔗 Admin • Curso × Disciplinas</h1>
+    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Painel</a>
+      <a class="btn" href="cursos.html">Cursos</a>
+      <a class="btn" href="../index.html">Início</a>
+    </nav>
+    <p>Selecione um curso e vincule disciplinas.</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>1) Selecionar curso</h2>
+      <div class="assunto">
+        <label><b>Curso</b></label><br/>
+        <select id="cursoSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+        <div style="margin-top:10px;">
+          <button class="btn" id="btnCarregar">Carregar disciplinas do curso</button>
+        </div>
+        <div id="msgCurso" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2) Disciplinas disponíveis</h2>
+      <p style="opacity:.85">Clique para vincular ao curso selecionado.</p>
+      <div id="listaDisciplinas">Carregando...</div>
+      <div id="msgVinculo" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>3) Disciplinas já vinculadas ao curso</h2>
+      <div id="listaVinculadas">Selecione um curso e clique em “Carregar”.</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="../js/app.js"></script> 
+  <script src="../js/admin.js"></script>
+  <script>
+    AdminCursoDisciplinas.init();
+  </script>
+</body>
+</html>

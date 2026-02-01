@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interatividade</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <header>
+    <h1>🧩 Interatividade</h1>
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+    <a href="#" class="btn" onclick="logout()">Sair</a> 
+    <div id="subtitulo" style="margin-top:10px;"></div>
+    <p>Quizzes, Cartões e QuestõesIA</p>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Escolha uma atividade</h2>
+      <div class="list" id="acoes"></div>
+      <div id="erro"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    const pastaId = qs("pasta_id");
+    const assuntoId = qs("assunto_id");
+
+    const subt = document.getElementById("subtitulo");
+    subt.innerHTML = pastaId
+      ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
+      : `Faltou pasta_id na URL`;
+
+    const acoes = document.getElementById("acoes");
+    const erro = document.getElementById("erro");
+
+    if (!pastaId) {
+      acoes.innerHTML = "<p>Erro: faltou pasta_id na URL.</p>";
+    } else {
+      acoes.innerHTML = `
+        <div class="assunto">
+          <b>📝 QuizIA</b>
+          <p style="opacity:.85">5 questões (objetivo e direto).</p>
+          <a class="btn" href="quiz.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+        </div>
+
+        <div class="assunto">
+          <b>🃏 Cartões IA</b>
+          <p style="opacity:.85">Pergunta (frente) → Resposta (verso).</p>
+          <a class="btn" href="cartoes.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+        </div>
+
+        <div class="assunto">
+          <b>🧠 QuestõesIA</b>
+          <p style="opacity:.85">10 questões no estilo bateria (sem gabarito explícito).</p>
+          <a class="btn" href="questoes-ia.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
