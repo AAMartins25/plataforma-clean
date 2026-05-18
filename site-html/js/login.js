@@ -13,6 +13,11 @@
 
   async function redirectDepoisDoLogin() {
     // 1) prioridade: redirect explícito (ex: veio do botão Comprar)
+    const nextUrl = new URLSearchParams(window.location.search).get("next");
+    if (nextUrl) {
+      window.location.href = nextUrl;
+      return;
+    }
     const next = localStorage.getItem("pos_login_redirect") || "";
     localStorage.removeItem("pos_login_redirect");
     if (next) {

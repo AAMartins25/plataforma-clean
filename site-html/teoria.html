@@ -8,20 +8,25 @@
 </head>
 
 <body>
-  <header>
-    <h1>📘 Teoria e Questões</h1>
-    <a class="btn" href="javascript:history.back()">Voltar</a>
-    <a href="#" class="btn" onclick="logout()">Sair</a> 
-    <div id="subtitulo" style="margin-top:10px;"></div>
+  <header style="padding-top:12px; padding-bottom:10px;">
+
+    <div style="margin-top:20px;">
+      <h1 id="titulo_disciplina" style="margin-bottom:8px;"></h1>
+      <h2 id="titulo_assunto" style="margin-top:-6px; margin-bottom:1px;"></h2>
+    </div>
+
+    <div style="margin-top:4px;">
+      <a class="btn" href="javascript:history.back()">Voltar</a>
+      <a href="#" class="btn" onclick="logout()">Sair</a>
+    </div>
+
   </header>
 
   <main class="container" id="conteudo">
 
     <div class="card">
-      <h2>📚 Aulas</h2>
-      <p style="opacity:.85">
-        Clique em uma aula para ver vídeos, materiais e sprints.
-      </p>
+      <!-- removido -->
+      
       <div id="lista_aulas" class="list"></div>
     </div>
 
@@ -34,7 +39,13 @@
   </footer>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8000";
+    const API_BASE = "http://127.0.0.1:8002";
+    
+    // 🔥 variável global (controle da aula selecionada)
+    let aulaAtualId = null;
+    let pastaAtualId = null;
+    let filtroAulas = "todas";
+    let aulasCache = []; 
 
     function qs(name) {
       return new URLSearchParams(window.location.search).get(name);
@@ -47,13 +58,44 @@
         .replaceAll(">", "&gt;");
     }
 
+    function getToken() {
+      return localStorage.getItem("access_token");
+    }
+
     async function apiGet(path) {
-      const url = `${API_BASE}${path}`;
-      const res = await fetch(url);
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: token ? {
+          "Authorization": `Bearer ${token}`
+        } : {}
+      });
+
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(`Erro ${res.status} em ${url}\n${txt}`);
+        throw new Error(`Erro ${res.status} em ${path}\n${txt}`);
       }
+
+      return res.json();
+    }
+
+    async function apiPost(path, body = {}) {
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${path}\n${txt}`);
+      }
+
       return res.json();
     }
 
@@ -80,14 +122,140 @@
       `;
     }
 
+    async function getProgressoBackend(pastaId) {
+      try {
+        const dados = await apiGet(`/me/progresso?pasta_id=${pastaId}`);
+        return dados.map(p => p.aula_id);
+      } catch (err) {
+        console.warn("Falha ao buscar progresso no backend:", err);
+        return [];
+      }
+    }
+
+    function salvarProgresso(pastaId, lista) {
+      localStorage.setItem(`progresso_${pastaId}`, JSON.stringify(lista));
+    }
+
+    function getRevisoes(pastaId) {
+      try {
+        const dados = localStorage.getItem(`revisoes_${pastaId}`);
+        return dados ? JSON.parse(dados) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function salvarRevisoes(pastaId, lista) {
+      localStorage.setItem(`revisoes_${pastaId}`, JSON.stringify(lista));
+    }
+
+    function adicionarDias(data, dias) {
+      const novaData = new Date(data);
+      novaData.setDate(novaData.getDate() + dias);
+      return novaData.toISOString().slice(0, 10);
+    }
+
+    function hojeISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function calcularDiasAtraso(dataISO) {
+      const hoje = new Date(hojeISO());
+      const data = new Date(dataISO);
+      const diff = hoje - data;
+      return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
+
+    function criarRevisaoInicial(aulaId) {
+      if (!pastaAtualId) return;
+
+      const revisoes = getRevisoes(pastaAtualId);
+      const jaExiste = revisoes.some(r => r.aulaId === aulaId);
+
+      if (jaExiste) return;
+
+      revisoes.push({
+        aulaId: aulaId,
+        etapa: 1,
+        proximaRevisao: adicionarDias(new Date(), 7)
+      });
+
+      salvarRevisoes(pastaAtualId, revisoes);
+    }
+
+    function marcarRevisaoFeita(aulaId) {
+      if (!pastaAtualId) return;
+
+      const intervalos = {
+        1: 7,
+        2: 15,
+        3: 21
+      };
+
+      const revisoes = getRevisoes(pastaAtualId);
+
+      const novasRevisoes = revisoes.map(r => {
+        if (r.aulaId !== aulaId) return r;
+
+        const novaEtapa = r.etapa + 1;
+        const dias = intervalos[r.etapa] || 28;
+
+        return {
+          ...r,
+          etapa: novaEtapa,
+          proximaRevisao: adicionarDias(new Date(), dias)
+        };
+      });
+
+      salvarRevisoes(pastaAtualId, novasRevisoes);
+      carregarAulas();
+    }
+
+    async function marcarConcluida(aulaId) {
+      if (!pastaAtualId) return;
+
+      try {
+        await apiPost(`/me/progresso/aulas/${aulaId}/concluir`);
+        criarRevisaoInicial(aulaId);
+
+        await carregarAulas();
+
+        aulaAtualId = null;
+        abrirAula(aulaId);
+
+      } catch (err) {
+        alert("Erro ao salvar progresso no servidor.");
+        console.error(err);
+      }
+    }
+
+    function filtrarAulas(tipo) {
+      filtroAulas = tipo;
+      carregarAulas();
+    }
+
     async function carregarAulas() {
       const pastaId = qs("pasta_id");
       const assuntoId = qs("assunto_id");
+      const disciplinaNome = qs("disciplina_nome") || "";
+      const assuntoNome = qs("assunto_nome") || "";
 
-      const subt = document.getElementById("subtitulo");
-      subt.innerHTML = pastaId
-        ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
-        : `Faltou pasta_id na URL`;
+      const tituloDisciplina = document.getElementById("titulo_disciplina");
+      const tituloAssunto = document.getElementById("titulo_assunto");
+
+      if (tituloDisciplina) {
+        tituloDisciplina.innerText = disciplinaNome
+          ? `📘 ${disciplinaNome}`
+          : "📘 Disciplina";
+      }
+
+      if (tituloAssunto) {
+        tituloAssunto.innerText = assuntoNome;
+      }
+
+      pastaAtualId = pastaId; 
+
+      // subtítulo removido do cabeçalho
 
       if (!pastaId) {
         document.getElementById("lista_aulas").innerHTML =
@@ -118,25 +286,173 @@
       }
 
       aulas.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+      aulasCache = aulas;
 
       const lista = document.getElementById("lista_aulas");
-      lista.innerHTML = aulas.map((a) => `
-        <div class="disciplina">
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-            <div>
-              <div style="font-weight:bold">${esc(a.titulo)}</div>
-              <div style="opacity:.85">
-                aula_id=${esc(a.id)} • ordem=${esc(a.ordem ?? "-")} • ativo=${esc(a.ativo ?? true)}
+
+      const progresso = await getProgressoBackend(pastaAtualId);
+      const progressoSet = new Set(progresso);
+
+      const totalAulas = aulas.length;
+      const aulasConcluidas = aulas.filter(a => progressoSet.has(a.id)).length;
+      const percentualProgresso = totalAulas > 0
+        ? Math.round((aulasConcluidas / totalAulas) * 100)
+        : 0;
+
+      const ultimaAulaId = localStorage.getItem(`ultima_aula_${pastaAtualId}`);
+      const ultimaAulaIdNum = Number(ultimaAulaId);
+
+      // 🔥 valida se a aula ainda existe na lista
+      const aulaExiste = aulas.some(a => a.id === ultimaAulaIdNum);
+      
+      if (!aulaExiste) {
+        localStorage.removeItem(`ultima_aula_${pastaAtualId}`);
+      }
+
+      let html = "";
+
+      const revisoes = getRevisoes(pastaAtualId);
+      const hoje = hojeISO();
+
+      const revisoesPendentes = revisoes.filter(r => {
+        return r.proximaRevisao <= hoje;
+      });
+
+      const revisoesAtrasadas = revisoesPendentes.filter(r => r.proximaRevisao < hoje);
+
+      if (revisoesPendentes.length > 0) {
+        if (revisoesAtrasadas.length > 0) {
+          html += `
+            <div class="card alerta-revisoes">
+              <h3>⚠️ Atenção: ${revisoesAtrasadas.length} revisão(ões) atrasada(s)</h3>
+              <p>Priorize essas revisões.</p>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="card" style="padding-left:0;">
+            <h3>🔁 Revisões pendentes: ${revisoesPendentes.length}</h3>
+
+            <div class="list">
+              ${revisoesPendentes.map(r => {
+                const aula = aulas.find(a => a.id === r.aulaId);
+
+                const atrasada = r.proximaRevisao < hoje;
+
+                return `
+                  <div class="assunto ${atrasada ? 'revisao-atrasada' : 'revisao-hoje'}">
+                    <b>${esc(aula?.titulo || "Aula")}</b><br/>
+
+                    <span style="opacity:.85">
+                      Revisão etapa ${esc(r.etapa)} • prevista para ${esc(r.proximaRevisao)}
+                    </span><br/>
+
+                    <span class="status-revisao">
+                      ${
+                        atrasada
+                          ? `⚠️ Atrasada há ${calcularDiasAtraso(r.proximaRevisao)} dia(s)`
+                          : "📌 Revisão para hoje"
+                      }
+                    </span><br/>
+
+                    <button class="btn" onclick="marcarRevisaoFeita(${r.aulaId})">
+                      Marcar revisão feita
+                    </button>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // 🔽 lista normal de aulas (SEMPRE EXECUTA)
+      const aulasFiltradas = aulas.filter(a => {
+        const concluida = progressoSet.has(a.id);
+
+        if (filtroAulas === "concluidas") return concluida;
+        if (filtroAulas === "nao_concluidas") return !concluida;
+        return true;
+      });
+
+      html += aulasFiltradas.map((a) => `
+        <div class="disciplina ${progressoSet.has(a.id) ? 'concluida' : ''}" id="aula_${a.id}">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+
+            <div style="flex:1; min-width:240px;">
+              <div style="font-weight:bold">
+                ${esc(a.titulo)}
+                ${progressoSet.has(a.id) ? '<span style="color:#16a34a; margin-left:6px;">✓</span>' : ''}
               </div>
             </div>
-            <button class="btn" onclick="abrirAula(${a.id})">Abrir aula</button>
+
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:220px;margin-top:6px;">
+              <button class="btn" style="margin-top:-6px;" onclick="abrirAula(${a.id})">Abrir</button>
+            </div>
           </div>
         </div>
       `).join("");
-    }
 
+      lista.innerHTML = html;  
+    }
+    
+    function renderVideo(url) {
+      if (!url || typeof url !== "string") return "";
+
+      if (url.includes("youtube.com") || url.includes("youtu.be")) {
+        let videoId = "";
+
+        if (url.includes("youtu.be")) {
+          videoId = url.split("/").pop().split("?")[0];
+        } else {
+          try {
+            const params = new URL(url).searchParams;
+            videoId = params.get("v");
+          } catch (e) {
+            return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Abrir vídeo</a>`;
+          }
+        }
+
+        if (videoId) {
+          return `
+            <iframe 
+              width="100%" 
+              height="315" 
+              src="https://www.youtube.com/embed/${videoId}" 
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          `;
+        }
+      }
+
+      return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Abrir vídeo</a>`;
+    }
+    
     async function abrirAula(aulaId) {
+      if (aulaAtualId === aulaId) return;
+      aulaAtualId = aulaId; 
+
+      // 🔥 salvar progresso
+      if (pastaAtualId) {
+        localStorage.setItem(`ultima_aula_${pastaAtualId}`, aulaId);
+      }
+
+      // 🔥 remove destaque anterior
+      const anterior = document.querySelector(".disciplina.ativa");
+      if (anterior) anterior.classList.remove("ativa");
+
+      // 🔥 adiciona destaque na atual
+      const elAula = document.getElementById(`aula_${aulaId}`);
+      if (elAula) elAula.classList.add("ativa");
+
       const box = document.getElementById("detalhes_aula");
+
+      // 🔽 scroll suave até o conteúdo (corrigido)
+      box.scrollIntoView({ behavior: "smooth" });
+
       box.innerHTML = `
         <div class="card">
           <h2>Carregando aula ${esc(aulaId)}...</h2>
@@ -159,49 +475,59 @@
           `/baterias?aula_id=${aulaId}`
         ];
 
-        const [videos, materiais, baterias] = await Promise.all([
+        const [videosRes, materiaisRes, bateriasRes] = await Promise.allSettled([
           tryMany(endpointsVideos),
           tryMany(endpointsMateriais),
           tryMany(endpointsBaterias)
         ]);
 
+        const videos = videosRes.status === "fulfilled" ? videosRes.value : [];
+        const materiais = materiaisRes.status === "fulfilled" ? materiaisRes.value : [];
+        const baterias = bateriasRes.status === "fulfilled" ? bateriasRes.value : [];
+
+        let avisos = "";
+
+        if (videosRes.status === "rejected") {
+          avisos += `<p style="color:orange">⚠️ Vídeos ainda não disponíveis. Por favor, aguarde!</p>`;
+        }
+
+        if (materiaisRes.status === "rejected") {
+          avisos += `<p style="color:orange">⚠️ Material ainda não disponível. Por favor, aguarde!</p>`;
+        }
+
+        if (bateriasRes.status === "rejected") {
+          avisos += `<p style="color:orange">⚠️ Sprints ainda não disponíveis. Favor aguardar!</p>`;
+        }
+             
+        const progresso = await getProgressoBackend(pastaAtualId);
+        const aulaConcluida = progresso.includes(aulaId);
+
+        const aulaSelecionada = aulasCache.find(a => a.id === aulaId);
+        const tituloAula = aulaSelecionada?.titulo || `Aula ${aulaId}`;
+        const disciplinaNome = qs("disciplina_nome") || "Disciplina";
+
         let html = `
           <div class="card">
-            <h2>📌 Aula ${esc(aulaId)}</h2>
-            <p style="opacity:.85">Abaixo: vídeos, materiais e sprints.</p>
-          </div>
-        `;
+            <div style="font-weight:bold; opacity:.85; margin-bottom:6px;">
+              ${esc(disciplinaNome)}
+            </div>
+            <h2>📌 ${esc(tituloAula)}</h2>
 
-        const vids = Array.isArray(videos) ? videos : [];
-        vids.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+            ${avisos}
 
-        html += `
-          <div class="card">
-            <h2>🎥 Vídeos</h2>
-            ${vids.length === 0 ? "<p>Nenhum vídeo cadastrado.</p>" : `
-              <div class="list">
-                ${vids.map(v => `
-                  <div class="assunto">
-                    <b>Ordem ${esc(v.ordem ?? "-")}</b><br/>
-                    <span>${esc(v.titulo || "Vídeo")}</span><br/>
-                    <a href="${esc(v.url || "#")}" target="_blank">Abrir link do vídeo</a>
-                  </div>
-                `).join("")}
-              </div>
-            `}
           </div>
         `;
 
         const mats = Array.isArray(materiais) ? materiais : [];
         html += `
           <div class="card">
-            <h2>📄 Materiais</h2>
+            <h2>📄 Teoria em Texto</h2>
             ${mats.length === 0 ? "<p>Nenhum material cadastrado.</p>" : `
               <div class="list">
                 ${mats.map(m => `
                   <div class="assunto">
                     <b>${esc(m.tipo || "Material")}</b><br/>
-                    ${m.url ? `<a href="${esc(m.url)}" target="_blank">Abrir</a>` : ""}
+                    ${m.url ? `<a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>` : ""}
                     ${m.texto ? `
                       <div style="margin-top:10px;">
                         <pre style="white-space:pre-wrap">${esc(m.texto)}</pre>
@@ -215,12 +541,34 @@
           </div>
         `;
 
+        const vids = Array.isArray(videos) ? videos : [];
+        vids.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+        html += `
+          <div class="card">
+            <h2>🎥 Resumo em Vídeo</h2>
+            ${vids.length === 0 ? "<p>Nenhum vídeo cadastrado.</p>" : `
+              <div class="list">
+                ${vids.map(v => `
+                  <div class="assunto">
+                    <b>Ordem ${esc(v.ordem ?? "-")}</b><br/>
+                    <span>${esc(v.titulo || "Vídeo")}</span><br/>
+                    ${renderVideo(v.url)}
+                  </div>
+                `).join("")}
+              </div>
+            `}
+          </div>
+        `;
+
+        
+
         const bats = Array.isArray(baterias) ? baterias : [];
         bats.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
 
         html += `
           <div class="card">
-            <h2>🏁 Sprints (Baterias)</h2>
+            <h2>🏁 Questões</h2>
             ${bats.length === 0 ? "<p>Nenhuma bateria cadastrada.</p>" : `
               <div class="list">
                 ${bats.map(b => `
@@ -249,6 +597,11 @@
 
     async function carregarQuestoes(bateriaId) {
       const alvo = document.getElementById(`questoes_${bateriaId}`);
+      if (!alvo) return;
+      
+      // 🔥 EVITA RECARREGAR
+      if (alvo.dataset.loaded === "true") return;
+
       alvo.innerHTML = "<p>Carregando questões...</p>";
 
       const endpointsQuestoes = [
@@ -285,6 +638,13 @@
           </div>
         `).join("");
 
+        alvo.dataset.loaded = "true";
+
+        // 🔥 marcar aula como concluída automaticamente
+        if (pastaAtualId && aulaAtualId) {
+          marcarConcluida(aulaAtualId);
+        }
+
       } catch (err) {
         alvo.innerHTML = renderError("Erro ao carregar questões", err.message);
       }
@@ -292,7 +652,9 @@
 
     window.abrirAula = abrirAula;
     window.carregarQuestoes = carregarQuestoes;
-
+    window.filtrarAulas = filtrarAulas;
+    window.marcarRevisaoFeita = marcarRevisaoFeita;
+    window.marcarConcluida = marcarConcluida;
     carregarAulas();
   </script>
 </body>

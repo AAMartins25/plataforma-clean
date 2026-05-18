@@ -26,7 +26,7 @@ body {
 header {
   background-color: var(--amarelo);
   color: var(--azul);
-  padding: 25px;
+  padding: 20px 20px;
   text-align: center;
 }
 
@@ -47,7 +47,7 @@ h1, h2 {
   background-color: #ffffff;
   border-top: 6px solid var(--amarelo);
   border-radius: 8px;
-  padding: 25px;
+  padding: 18px 25px 25px 25px;
   margin-bottom: 25px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.06);
 }
@@ -93,8 +93,9 @@ a:hover {
 }
 
 .btn:hover {
-  background-color: var(--amarelo-escuro);
-  text-decoration: none;
+  background-color: oklab(59.889% -0.00662 -0.16095 / 0.973); /* azul suave */
+  color: var(--azul);
+  cursor: pointer;
 }
 
 /* FOOTER */
@@ -157,4 +158,140 @@ footer {
 .curso-linha .btn {
   min-width: 110px;
   text-align: center;
+}
+
+/* Estilo de aula ativa */ 
+.disciplina.ativa {
+  border: 2px solid #6B4F3F;
+  background-color: #f9f5f2;
+}
+
+.barra-progresso {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.barra-progresso-preenchida {
+  height: 100%;
+  background: #66bb6a;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* Aula concluída */
+.disciplina.concluida {
+  border-left: 6px solid #2e7d32;
+  background-color: #f0fff4;
+}
+
+.btn-ativo {
+  background-color: #2e7d32;
+  color: #fff;
+}
+
+.status-aula {
+  margin-top: 10px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  opacity: 0.85;
+  width: 100%; /* 🔥 GARANTE alinhamento */
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-box {
+  width: 14px;   /* 🔽 menor */
+  height: 14px;  /* 🔽 menor */
+  border: 1px solid #ccc; /* 🔽 contorno discreto (padrão) */
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px; /* 🔽 check menor */
+  font-weight: bold;
+}
+
+/* ✅ Aula concluída */
+.status-concluida {
+  background-color: #43a047;
+  border-color: #43a047;
+  color: #fff;
+}
+
+/* 🟩 Aula não concluída (ativa) */
+.status-nao-concluida {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+}
+
+/* Botão seguir alinhado à direita */
+.continuar-card {
+  text-align: right;
+}
+
+/* Filtros alinhados à direita */
+.filtros-aulas {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Status da aula alinhado à direita */
+.status-aula-direita {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.revisao-atrasada {
+  border-left: 6px solid #c62828;
+  background-color: #fff5f5;
+}
+
+.revisao-hoje {
+  border-left: 6px solid #f9a825;
+  background-color: #fffde7;
+}
+
+.status-revisao {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.alerta-revisoes {
+  border-top-color: #c62828;
+  background-color: #fff5f5;
+  color: #7f1d1d;
+}
+
+.alerta-revisoes h3 {
+  margin-bottom: 6px;
+}
+
+.btn-area{
+  background:#3a7849;
+  color:white;
+  border:none;
+  padding:2px 11px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:0.1s;
+}
+
+.btn-area:hover{
+  background:#6C9D78;
 }

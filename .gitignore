@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Segredos
+.env
+
+# Vídeos e arquivos pesados
+*.mp4
+
+# Configurações de IDE
+.vscode/

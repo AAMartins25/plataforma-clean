@@ -1,4 +1,5 @@
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria   
+from datetime import datetime, timedelta
 from app.schemas import CursoCreate, CursoResponse, DisciplinaCreate, DisciplinaResponse, AssuntoCreate, AssuntoResponse
 from app.models import Questao, Alternativa, Comentario
 from app.schemas import QuestaoCreate, AlternativaCreate, ComentarioGeralCreate
@@ -23,8 +24,10 @@ from app.schemas import (
 from fastapi import HTTPException
 import requests
 from sqlalchemy.exc import IntegrityError
-from app.models import AcessoCurso
+from app.models import AcessoCurso, ProgressoAula
 from app.schemas import AcessoCursoCreate, AcessoCursoResponse
+from app.schemas import RecuperarSenhaRequest
+from app.models import Pagamento
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -37,6 +40,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.auth import hash_senha, verificar_senha, criar_token, decodificar_token
 from app.models import Usuario
 from app.schemas import UsuarioCreate, UsuarioResponse, TokenResponse
+from sqlalchemy import or_
+from app.schemas import UsuarioUpdateMe
 
 app.add_middleware(
     CORSMiddleware,
@@ -104,6 +109,59 @@ def admin_criar_acesso(payload: AcessoCursoCreate, db: Session = Depends(get_db)
     db.refresh(novo)
     return {"ok": True, "acesso_id": novo.id}
 
+@app.get("/me/compras/reembolso")
+def listar_compras_reembolso(
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    limite_7_dias = datetime.utcnow() - timedelta(days=7)
+
+    compras_elegiveis = db.query(Pagamento).filter(
+        Pagamento.usuario_id == usuario.id,
+        Pagamento.status.in_(["APPROVED", "approved", "PAGO"]),
+        Pagamento.criado_em >= limite_7_dias
+    ).order_by(Pagamento.criado_em.desc()).all()
+
+    if compras_elegiveis:
+        return {
+            "tipo": "elegiveis",
+            "compras": [
+                {
+                    "pagamento_id": p.id,
+                    "curso_id": p.curso_id,
+                    "nome_curso": p.curso.nome if p.curso else "Curso",
+                    "data_compra": p.criado_em,
+                    "valor_cents": p.valor_cents,
+                    "status": p.status
+                }
+                for p in compras_elegiveis
+            ]
+        }
+
+    compra_recente = db.query(Pagamento).filter(
+        Pagamento.usuario_id == usuario.id
+    ).order_by(Pagamento.criado_em.desc()).first()
+
+    if compra_recente:
+        return {
+            "tipo": "mais_recente",
+            "mensagem": "Sua compra mais recente foi:",
+            "compras": [
+                {
+                    "pagamento_id": compra_recente.id,
+                    "curso_id": compra_recente.curso_id,
+                    "nome_curso": compra_recente.curso.nome if compra_recente.curso else "Curso",
+                    "data_compra": compra_recente.criado_em,
+                    "valor_cents": compra_recente.valor_cents,
+                    "status": compra_recente.status
+                }
+            ]
+        }
+
+    return {
+        "tipo": "nenhuma",
+        "compras": []
+    }
 
 @app.get("/me/cursos", response_model=list[AcessoCursoResponse], tags=["Acessos"])
 def meus_cursos(db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
@@ -125,6 +183,33 @@ def meus_cursos(db: Session = Depends(get_db), usuario: Usuario = Depends(get_us
         for a in acessos
     ]
 
+@app.get("/me/cursos/historico", tags=["Acessos"])
+def meus_cursos_historico(
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    acessos = (
+        db.query(AcessoCurso)
+        .join(Curso, Curso.id == AcessoCurso.curso_id)
+        .filter(
+            AcessoCurso.usuario_id == usuario.id,
+            AcessoCurso.ativo == False
+        )
+        .order_by(AcessoCurso.data_inicio.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": a.id,
+            "curso_id": a.curso_id,
+            "nome_curso": a.curso.nome,
+            "ativo": a.ativo,
+            "data_inicio": a.data_inicio,
+            "data_fim": a.data_fim
+        }
+        for a in acessos
+    ]
 
 @app.get("/debug/dbinfo")
 def debug_db(db: Session = Depends(get_db)):
@@ -333,6 +418,75 @@ def listar_aulas_por_pasta(pasta_id: int, db: Session = Depends(get_db)):
         }
         for a in aulas
     ]
+
+@app.get("/me/progresso")
+def listar_meu_progresso(
+    pasta_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    progresso = (
+        db.query(ProgressoAula)
+        .filter(
+            ProgressoAula.usuario_id == usuario.id,
+            ProgressoAula.pasta_id == pasta_id,
+            ProgressoAula.concluida == True
+        )
+        .all()
+    )
+
+    return [
+        {
+            "id": p.id,
+            "usuario_id": p.usuario_id,
+            "pasta_id": p.pasta_id,
+            "aula_id": p.aula_id,
+            "concluida": p.concluida,
+            "data_conclusao": p.data_conclusao
+        }
+        for p in progresso
+    ]
+
+
+@app.post("/me/progresso/aulas/{aula_id}/concluir")
+def concluir_aula(
+    aula_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    aula = db.query(Aula).filter(Aula.id == aula_id).first()
+
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+
+    existente = (
+        db.query(ProgressoAula)
+        .filter(
+            ProgressoAula.usuario_id == usuario.id,
+            ProgressoAula.aula_id == aula_id
+        )
+        .first()
+    )
+
+    if existente:
+        existente.concluida = True
+        existente.data_conclusao = datetime.utcnow()
+        db.commit()
+        db.refresh(existente)
+        return existente
+
+    novo = ProgressoAula(
+        usuario_id=usuario.id,
+        pasta_id=aula.pasta_id,
+        aula_id=aula.id,
+        concluida=True
+    )
+
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
+
+    return novo
 
 @app.post("/videos")
 def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
@@ -922,33 +1076,48 @@ def listar_questoes_ia(pasta_id: int, db: Session = Depends(get_db)):
         })
     return retorno
 
-from sqlalchemy.exc import IntegrityError
-
 @app.post("/register", response_model=UsuarioResponse)
 def register(dados: UsuarioCreate, db: Session = Depends(get_db)):
-    existe = db.query(Usuario).filter(Usuario.email == dados.email).first()
-    if existe:
+    existe_email = db.query(Usuario).filter(Usuario.email == dados.email).first()
+    if existe_email:
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
+    existe_cpf = db.query(Usuario).filter(Usuario.cpf == dados.cpf).first()
+    if existe_cpf:
+        raise HTTPException(status_code=400, detail="CPF já cadastrado")
 
     novo = Usuario(
         nome=dados.nome,
         email=dados.email,
+        cpf=dados.cpf,
+        telefone=dados.telefone,
         senha_hash=hash_senha(dados.senha),
         ativo=True,
         is_admin=False
     )
+
     db.add(novo)
+
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+        raise HTTPException(status_code=400, detail="E-mail ou CPF já cadastrado")
+
     db.refresh(novo)
     return novo
 
 @app.post("/login", response_model=TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.email == form_data.username).first()
+    login_digitado = form_data.username.strip()
+
+    usuario = db.query(Usuario).filter(
+        or_(
+            Usuario.email == login_digitado,
+            Usuario.cpf == login_digitado
+        )
+    ).first()
+
     if not usuario or not verificar_senha(form_data.password, usuario.senha_hash):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
@@ -959,10 +1128,47 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def me(usuario: Usuario = Depends(get_usuario_atual)):
     return usuario
 
+@app.post("/me/dados", response_model=UsuarioResponse)
+def atualizar_meus_dados(
+    dados: UsuarioUpdateMe,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    email_em_uso = db.query(Usuario).filter(
+        Usuario.email == dados.email,
+        Usuario.id != usuario.id
+    ).first()
+
+    if email_em_uso:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
+    cpf_em_uso = db.query(Usuario).filter(
+        Usuario.cpf == dados.cpf,
+        Usuario.id != usuario.id
+    ).first()
+
+    if cpf_em_uso:
+        raise HTTPException(status_code=400, detail="CPF já cadastrado")
+
+    usuario.nome = dados.nome
+    usuario.email = dados.email
+    usuario.cpf = dados.cpf
+    usuario.telefone = dados.telefone
+
+    if dados.senha:
+        usuario.senha_hash = hash_senha(dados.senha)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="E-mail ou CPF já cadastrado")
+
+    db.refresh(usuario)
+    return usuario
+
 import os
-import requests
 from fastapi import HTTPException, Request
-from sqlalchemy import text
 
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5500/site-html")
@@ -1103,7 +1309,7 @@ def confirmar_pagamento(payload: dict, db: Session = Depends(get_db), user=Depen
             LIMIT 1
         )
     """), {
-        "st": "PAGO",
+        "st": status.upper(),
         "pid": str(payment_id),
         "u": user.id,
         "c": curso_id
@@ -1111,26 +1317,32 @@ def confirmar_pagamento(payload: dict, db: Session = Depends(get_db), user=Depen
     db.commit()
 
     # 2) Libera acesso ao curso
-    db.execute(text("""
-        INSERT INTO acessos_curso (usuario_id, curso_id, ativo)
-        VALUES (:u, :c, TRUE)
-        ON CONFLICT (usuario_id, curso_id)
-        DO UPDATE SET ativo = TRUE
-    """), {
-        "u": user.id,
-        "c": curso_id
-    })
-    db.commit()
+    liberou = False
+
+    if status == "approved":
+        db.execute(text("""
+            INSERT INTO acessos_curso (usuario_id, curso_id, ativo, data_inicio, data_fim)
+            VALUES (:u, :c, TRUE, NOW(), NULL)
+            ON CONFLICT (usuario_id, curso_id)
+            DO UPDATE SET
+                ativo = TRUE,
+                data_inicio = COALESCE(acessos_curso.data_inicio, NOW()),
+                data_fim = NULL
+        """), {
+            "u": user.id,
+            "c": curso_id
+        })
+        db.commit()
+        liberou = True
 
     return {
         "ok": True,
-        "status": "PAGO",
-        "curso_id": curso_id
+        "status": status.upper(),
+        "curso_id": curso_id,
+        "liberou_acesso": liberou
     }
 
-
 from fastapi import Request, HTTPException
-from sqlalchemy import text
 
 @app.post("/webhooks/mercadopago")
 async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
@@ -1204,11 +1416,21 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
             INSERT INTO acessos_curso (usuario_id, curso_id, ativo, data_inicio, data_fim)
             VALUES (:u, :c, TRUE, NOW(), NULL)
             ON CONFLICT (usuario_id, curso_id)
-            DO UPDATE SET ativo=TRUE, data_inicio=COALESCE(acessos_curso.data_inicio, NOW()), data_fim=NULL
-        """), {"u": user_id, "c": curso_id})
+            DO UPDATE SET
+                ativo = TRUE,
+                data_inicio = COALESCE(acessos_curso.data_inicio, NOW()),
+                data_fim = NULL
+        """), {
+            "u": user_id,
+            "c": curso_id
+        })
         db.commit()
 
-    return {"ok": True, "status": status, "payment_id": str(payment_id), "user_id": user_id, "curso_id": curso_id}
+    return {
+        "ok": True,
+        "status": status.upper(),
+        "curso_id": curso_id
+    }
 
 
 @app.get("/debug/env")
@@ -1218,42 +1440,36 @@ def debug_env():
         "app_base_url": os.getenv("APP_BASE_URL", "")
     }
 
-
-@app.get("/admin/pagamentos", tags=["Admin Pagamentos"])
-def admin_listar_pagamentos(
-    q: str | None = None,  # filtro simples (email/nome/curso/status)
-    limit: int = 50,
+@app.get("/admin/reembolsos", tags=["Admin Reembolsos"])
+def admin_listar_reembolsos(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
     if not usuario.is_admin:
         raise HTTPException(status_code=403, detail="Apenas admin")
 
-    sql = """
-      SELECT
-        p.id, p.usuario_id, p.curso_id, p.status, p.valor_cents, p.provedor, p.moeda,
-        p.mp_preference_id, p.mp_payment_id, p.criado_em, p.atualizado_em,
-        u.nome as usuario_nome, u.email as usuario_email,
-        c.nome as curso_nome
-      FROM pagamentos p
-      JOIN usuarios u ON u.id = p.usuario_id
-      JOIN cursos c ON c.id = p.curso_id
-    """
+    rows = db.execute(text("""
+        SELECT
+            p.id AS pagamento_id,
+            p.usuario_id,
+            u.nome AS usuario_nome,
+            u.email AS usuario_email,
+            p.curso_id,
+            c.nome AS curso_nome,
+            p.status,
+            p.criado_em AS data_compra,
+            p.atualizado_em AS data_solicitacao,
+            p.valor_cents,
+            p.mp_payment_id,
+            p.mp_preference_id
+        FROM pagamentos p
+        JOIN usuarios u ON u.id = p.usuario_id
+        JOIN cursos c ON c.id = p.curso_id
+        WHERE p.status IN ('REFUND_IN_PROCESS', 'REFUNDED', 'REFUND_ERROR')
+        ORDER BY p.atualizado_em DESC
+    """)).mappings().all()
 
-    params = {}
-    if q and q.strip():
-        sql += """
-          WHERE
-            (LOWER(u.email) LIKE :q OR LOWER(u.nome) LIKE :q OR LOWER(c.nome) LIKE :q OR LOWER(p.status) LIKE :q)
-        """
-        params["q"] = f"%{q.strip().lower()}%"
-
-    sql += " ORDER BY p.id DESC LIMIT :limit"
-    params["limit"] = int(limit)
-
-    rows = db.execute(text(sql), params).mappings().all()
     return [dict(r) for r in rows]
-
 
 @app.post("/admin/pagamentos/revalidar", tags=["Admin Pagamentos"])
 def admin_revalidar_pagamento(
@@ -1381,60 +1597,7 @@ def admin_listar_pagamentos(
     return [dict(r) for r in rows]
 
 
-@app.get("/admin/pagamentos", tags=["Admin Pagamentos"])
-def admin_listar_pagamentos(
-    q: str | None = None,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas admin")
-
-    q_norm = (q or "").strip().lower()
-
-    sql = """
-        SELECT
-            p.id,
-            p.usuario_id,
-            u.nome AS usuario_nome,
-            u.email AS usuario_email,
-            p.curso_id,
-            c.nome AS curso_nome,
-            p.status,
-            p.valor_cents,
-            p.provedor,
-            p.moeda,
-            p.mp_preference_id,
-            p.mp_payment_id,
-            p.criado_em,
-            p.atualizado_em
-        FROM pagamentos p
-        JOIN usuarios u ON u.id = p.usuario_id
-        JOIN cursos c ON c.id = p.curso_id
-    """
-
-    params = {}
-    if q_norm:
-        sql += """
-        WHERE
-            LOWER(u.email) LIKE :q
-            OR LOWER(u.nome) LIKE :q
-            OR LOWER(c.nome) LIKE :q
-            OR LOWER(p.status) LIKE :q
-            OR CAST(p.id AS TEXT) LIKE :q2
-            OR COALESCE(p.mp_payment_id, '') LIKE :q2
-            OR COALESCE(p.mp_preference_id, '') LIKE :q2
-        """
-        params["q"] = f"%{q_norm}%"
-        params["q2"] = f"%{(q or '').strip()}%"
-
-    sql += " ORDER BY p.id DESC LIMIT 200"
-
-    rows = db.execute(text(sql), params).mappings().all()
-    return [dict(r) for r in rows]
-
 from fastapi import Body
-
 
 @app.post("/admin/alunos", tags=["Admin Alunos"])
 def admin_criar_aluno(
@@ -1447,23 +1610,31 @@ def admin_criar_aluno(
 
     nome = (payload.get("nome") or "").strip()
     email = (payload.get("email") or "").strip().lower()
+    cpf = (payload.get("cpf") or "").strip()
+    telefone = (payload.get("telefone") or "").strip()
     senha = (payload.get("senha") or "").strip()
 
     # ✅ NOVO: lê flag do payload
     is_admin = bool(payload.get("is_admin", False))
 
-    if not nome or not email or not senha:
-        raise HTTPException(status_code=400, detail="Informe nome, email e senha")
+    if not nome or not email or not cpf or not telefone or not senha:
+        raise HTTPException(status_code=400, detail="Informe nome, email, CPF, telefone e senha")
 
     existe = db.query(Usuario).filter(Usuario.email == email).first()
     if existe:
         raise HTTPException(status_code=409, detail="Já existe usuário com esse email")
+
+    existe_cpf = db.query(Usuario).filter(Usuario.cpf == cpf).first()
+    if existe_cpf:
+        raise HTTPException(status_code=409, detail="Já existe usuário com esse CPF")
 
     senha_hash = hash_senha(senha)
 
     u = Usuario(
         nome=nome,
         email=email,
+        cpf=cpf,
+        telefone=telefone,
         senha_hash=senha_hash,
         ativo=True,
         # ✅ AQUI: salva o valor correto
@@ -1508,3 +1679,145 @@ def admin_listar_alunos(
         "is_admin": u.is_admin
     } for u in alunos]
 
+@app.post("/recuperar-senha")
+def recuperar_senha(
+    dados: RecuperarSenhaRequest,
+    db: Session = Depends(get_db)
+):
+    login_digitado = dados.login.strip()
+
+    login_apenas_digitos = ''.join(
+        ch for ch in login_digitado if ch.isdigit()
+    )
+
+    eh_email = "@" in login_digitado
+
+    if eh_email:
+        usuario = db.query(Usuario).filter(
+            Usuario.email == login_digitado.lower()
+        ).first()
+
+        if not usuario:
+            raise HTTPException(
+                status_code=404,
+                detail="Não há cadastro registrado com o email informado."
+            )
+
+    else:
+        usuario = db.query(Usuario).filter(
+            Usuario.cpf == login_apenas_digitos
+        ).first()
+
+        if not usuario:
+            raise HTTPException(
+                status_code=404,
+                detail="Não há cadastro registrado com o CPF informado."
+            )
+
+    return {
+        "ok": True,
+        "message": (
+            "Processo de recuperação realizado com sucesso! "
+            "Verifique seu email para obter a senha."
+        )
+    }
+
+@app.post("/me/reembolso/{pagamento_id}")
+def solicitar_reembolso(
+    pagamento_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    pagamento = db.query(Pagamento).filter(
+        Pagamento.id == pagamento_id,
+        Pagamento.usuario_id == usuario.id
+    ).first()
+
+    if not pagamento:
+        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+
+    if pagamento.status not in ["APPROVED", "approved", "PAGO"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Este pagamento não está elegível para reembolso"
+        )
+
+    limite_reembolso = pagamento.criado_em + timedelta(days=7)
+
+    if datetime.utcnow() > limite_reembolso:
+        raise HTTPException(
+            status_code=400,
+            detail="Prazo de reembolso expirado"
+        )
+
+    if not pagamento.mp_payment_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Pagamento sem mp_payment_id. Não foi possível solicitar reembolso automático."
+        )
+
+    acesso = db.query(AcessoCurso).filter(
+        AcessoCurso.usuario_id == usuario.id,
+        AcessoCurso.curso_id == pagamento.curso_id,
+        AcessoCurso.ativo == True
+    ).first()
+
+    if acesso:
+        acesso.ativo = False
+        acesso.data_fim = datetime.utcnow()
+
+    pagamento.status = "REFUND_IN_PROCESS"
+    pagamento.atualizado_em = datetime.utcnow()
+    db.commit()
+
+    try:
+        r = requests.post(
+            f"https://api.mercadopago.com/v1/payments/{pagamento.mp_payment_id}/refunds",
+            headers={
+                **mp_headers(),
+            },
+            json={},
+            timeout=20
+        )
+
+        if r.status_code not in [200, 201]:
+            pagamento.status = "REFUND_ERROR"
+            pagamento.atualizado_em = datetime.utcnow()
+            db.commit()
+
+            raise HTTPException(
+                status_code=502,
+                detail=f"Erro ao solicitar reembolso no Mercado Pago: {r.text}"
+            )
+
+        dados_mp = r.json()
+        status_refund = (dados_mp.get("status") or "").lower()
+
+        if status_refund == "approved":
+            pagamento.status = "REFUNDED"
+        elif status_refund == "in_process":
+            pagamento.status = "REFUND_IN_PROCESS"
+        else:
+            pagamento.status = "REFUND_IN_PROCESS"
+
+        pagamento.atualizado_em = datetime.utcnow()
+        db.commit()
+
+        return {
+            "ok": True,
+            "message": "Reembolso solicitado com sucesso",
+            "status": pagamento.status
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        pagamento.status = "REFUND_ERROR"
+        pagamento.atualizado_em = datetime.utcnow()
+        db.commit()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro inesperado ao solicitar reembolso: {str(e)}"
+        )

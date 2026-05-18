@@ -8,34 +8,113 @@
 </head>
 <body>
 
-  <header>
-    <h1>Login</h1>
+  <header style="padding-top:12px;padding-bottom:15px;">
+    <div style="margin-top:18px;">
+      <h1 style="margin-bottom:2px;">🔐 Login</h1>
+    </div>
     <nav>
       <a href="index.html" class="btn">Início</a>
     </nav>
-    <p>Entre para acessar seus cursos</p>
+    
   </header>
 
   <main class="container">
     <div class="card">
-      <h2>🔐 Acessar minha conta</h2>
+      <h2> Acessar minha área de estudo</h2>
 
       <div id="msg" style="margin: 10px 0;"></div>
 
       <form id="formLogin">
         <div class="list">
           <label>
-            Email:
-            <input id="email" type="email" required placeholder="seuemail@exemplo.com" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
+            Email ou CPF:
+            <input id="email" type="email" required placeholder="email ou CPF" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
           </label>
 
           <label>
             Senha:
-            <input id="senha" type="password" required placeholder="********" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
+
+            <div style="position:relative; width:100%;">
+              <input
+                id="senha"
+                type="password"
+                required
+                placeholder="********"
+                style="
+                  padding:12px;
+                  padding-right:48px;
+                  border:1px solid #ddd;
+                  border-radius:6px;
+                  width:100%;
+                "
+              >
+
+              <button
+                type="button"
+                id="toggleSenha"
+                style="
+                  position:absolute;
+                  right:10px;
+                  top:50%;
+                  transform:translateY(-50%);
+                  border:none;
+                  background:none;
+                  cursor:pointer;
+                  font-size:1rem;
+                "
+              >
+                👁
+              </button>
+            </div>
           </label>
 
           <button type="submit" class="btn">Entrar</button>
-          <a class="btn" href="register.html">Não tenho conta (cadastrar)</a>
+          <div style="
+            margin-top:35px;
+            display:flex;
+            align-items:center;
+            gap:126px;
+            flex-wrap:wrap;
+          ">
+
+            <div style="
+              font-weight:bold;
+              white-space:nowrap;
+            ">
+              Recuperar senha:
+            </div>
+
+            <input
+              id="recuperarLogin"
+              type="text"
+              placeholder="Informe seu Email ou CPF"
+              style="
+                padding:10px;
+                border:1px solid #ddd;
+                border-radius:6px;
+                width:320px;
+              "
+            >
+
+            <button
+              type="button"
+              class="btn"
+              onclick="recuperarSenha()"
+              style="
+                margin:0;
+                height:37px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+              "
+            >
+              Recuperar
+            </button>
+
+          </div>
+
+          <div id="msgRecuperarSenha" style="margin-top:8px;"></div>
+          <a class="btn" href="register.html">Não tenho cadastro (cadastrar agora)</a>
         </div>
       </form>
     </div>
@@ -47,6 +126,82 @@
 
   <script src="js/app.js"></script>
   <script src="js/login.js"></script>
+
+  <script>
+    const btnToggleSenha = document.getElementById("toggleSenha");
+    const campoSenha = document.getElementById("senha");
+
+    btnToggleSenha.addEventListener("click", () => {
+
+      if (campoSenha.type === "password") {
+        campoSenha.type = "text";
+        btnToggleSenha.textContent = "🙈";
+      } else {
+        campoSenha.type = "password";
+        btnToggleSenha.textContent = "👁";
+      }
+
+    });
+  </script>
+  <script>
+    function somenteDigitos(valor) {
+      return String(valor || "").replace(/\D/g, "");
+    }
+
+    function formatarCpf(valor) {
+      let v = somenteDigitos(valor).slice(0, 11);
+
+      v = v.replace(/^(\d{3})(\d)/, "$1.$2");
+      v = v.replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+      v = v.replace(/\.(\d{3})(\d)/, ".$1-$2");
+
+      return v;
+    }
+
+    const campoRecuperar = document.getElementById("recuperarLogin");
+
+    campoRecuperar.addEventListener("input", () => {
+      const valor = campoRecuperar.value;
+
+      const pareceCpf = /^[\d.\-]+$/.test(valor);
+
+      if (pareceCpf) {
+        campoRecuperar.value = formatarCpf(valor);
+      }
+    });
+
+    async function recuperarSenha() {
+      const valor = document.getElementById("recuperarLogin").value.trim();
+      const msg = document.getElementById("msgRecuperarSenha");
+
+      if (!valor) {
+        msg.textContent = "Informe seu Email ou CPF.";
+        msg.style.color = "#8a1f1f";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/recuperar-senha`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ login: valor })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "Erro ao recuperar senha.");
+        }
+
+        msg.textContent = data.message;
+        msg.style.color = "#2f5e46";
+
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.style.color = "#8a1f1f";
+      }
+    }
+  </script>
 </body>
 </html>
 

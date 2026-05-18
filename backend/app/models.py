@@ -235,6 +235,8 @@ class Usuario(Base):
     senha_hash = Column(String, nullable=False)
     ativo = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
+    cpf = Column(String, unique=True, nullable=False)
+    telefone = Column(String, nullable=False)
 
     criado_em = Column(DateTime, default=datetime.utcnow)
 
@@ -255,3 +257,40 @@ class AcessoCurso(Base):
     usuario = relationship("Usuario")
     curso = relationship("Curso")
 
+class Pagamento(Base):
+    __tablename__ = "pagamentos"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
+
+    status = Column(String(50), nullable=False)
+    valor_cents = Column(Integer, nullable=False, default=0)
+
+    provedor = Column(String(50), nullable=True)
+    moeda = Column(String(20), nullable=True)
+
+    mp_preference_id = Column(String, nullable=True)
+    mp_payment_id = Column(String, nullable=True)
+
+    criado_em = Column(DateTime, default=datetime.utcnow)
+    atualizado_em = Column(DateTime, default=datetime.utcnow)
+
+    usuario = relationship("Usuario")
+    curso = relationship("Curso")
+
+class ProgressoAula(Base):
+    __tablename__ = "progresso_aulas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    pasta_id = Column(Integer, ForeignKey("pastas.id"), nullable=False)
+    aula_id = Column(Integer, ForeignKey("aulas.id"), nullable=False)
+
+    concluida = Column(Boolean, default=True)
+    data_conclusao = Column(DateTime, default=datetime.utcnow)
+
+    usuario = relationship("Usuario")
+    pasta = relationship("Pasta")
+    aula = relationship("Aula")

@@ -1,62 +1,169 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <title>Plataforma de Estudos para Concursos</title>
-  <!-- Ligação com o CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <header>
-    <h1>CleanConcursos</h1>
+  <header style="padding-top:6px;padding-bottom:1px;">
+    <div style="margin-top:12px;">
+      <h1 style="margin-bottom:-5px;">Clean Concursos</h1>
+      <p style="margin-top:8px;">Enxuto. Ojbetivo. Direto ao ponto</p>
+    </div>
+
     <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a href="#" class="btn" onclick="entrarEEstudar(); return false;">Área do Aluno</a>
+      <a href="#" class="btn" onclick="entrarEEstudar(); return false;">Área do Aluno (entrar ou se cadastrar)</a>
       <a id="btnSairHome" href="#" class="btn" onclick="logout(); return false;">Sair</a>
     </nav>
-    <p>Concursos • Redações • Vestibulares</p>
+
   </header>
 
   <main>
 
     <div class="card">
-      <h2>📚 Disponível:</h2>
-      <p>Estudo de alta performance</p>
-      <div id="lista-cursos-publicos" class="list"></div>
-    </div>
-    <script src="js/app.js"></script>
-    <script>
-      // Esconde o botão "Sair" se não estiver logado
-      (function () {
-        const btn = document.getElementById("btnSairHome");
-        if (!btn) return;
-        const token = localStorage.getItem("access_token");
-        btn.style.display = token ? "inline-block" : "none";
-      })();
-    </script>
-    <script>
-      pageHomeCursosPublico(); 
-    </script>
-    
-    <div class="card">
-      <h2>📝 Contato:</h2>
-      <p> Zap / E-mail / Fone</p>
-      <a href="#" class="btn">Acesse</a>
+      <h2>📚 Cursos disponíveis</h2>
+
+      <div id="lista-cursos-publicos" class="list" style="margin-top:15px;"></div>
+
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:14px;
+        margin:18px 0 10px;
+        flex-wrap:wrap;
+      ">
+
+        <label style="
+          font-weight:bold;
+          white-space:nowrap;
+        ">
+          🔎 Localizar
+        </label>
+
+        <input
+          id="buscaCurso"
+          type="text"
+          placeholder="Digite uma palavra do nome do cargo"
+          oninput="renderizarCursosPublicos()"
+          style="
+            padding:6px;
+            border:1px solid #ddd;
+            border-radius:1px;
+            width:330px;
+            font-style:italic;
+          "
+        >
+
+        <div style="
+          font-weight:bold;
+          margin-left:28px;
+          white-space:nowrap;
+        ">
+          Por área
+        </div>
+
+        <div id="filtros-area" style="
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+        ">
+          <button class="btn-area" onclick="filtrarCursosPorArea('EDUCAÇÃO')">EDUCAÇÃO</button>
+
+          <button class="btn-area" onclick="filtrarCursosPorArea('SAÚDE')">SAÚDE</button>
+
+          <button class="btn-area" onclick="filtrarCursosPorArea('OUTROS')">OUTROS CURSOS</button>
+
+          <button class="btn-area" onclick="filtrarCursosPorArea('TODOS')">TODOS</button>
+        </div>
+
+      </div>
+
+      
+      </div>
+
+      <div id="mais-cursos-box" style="margin-top:12px;"></div>
     </div>
 
     <div class="card">
-      <h2>📊 [Colocar alguma coisa]:</h2>
-      <p>[descricao].</p>
-      <a href="#" class="btn">Saiba mais e Acesse</a>
+      <h2>📝 Não encontrou o Curso que gostaria?</h2>
+      <p>Fale conosco. Prepararemos o curso para o cargo que deseja: [Clique agora - Número_WhatsApp - clica aqui mesmo]</p>
     </div>
 
+    <div class="card">
+      <h2>📊 O funcionamento da nossa Plataforma e a Garantia da qualidade:</h2>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+        gap:16px;
+        margin-top:14px;
+      ">
+        <div class="assunto">
+          <h3>▶️ Como Funciona a Plataforma</h3>
+          <div style="height:180px; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+            Vídeo 1
+          </div>
+        </div>
+
+        <div class="assunto">
+          <h3>💰 Comprovação da Qualidade ou seu Dinheiro de volta</h3>
+          <div style="height:180px; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+            Vídeo 2
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔗 Atendimento Clean</h2>
+
+      <div style="
+        display:flex;
+        gap:18px;
+        flex-wrap:wrap;
+        margin-left:39px;
+        margin-top:-15px;
+      ">
+        <a class="btn" href="login.html?next=meus-dados.html">
+          Atualizar meus dados
+        </a>
+
+        <a class="btn" href="fale-com-a-clean.html">
+          Falar com a Clean
+        </a>
+
+        <a class="btn" href="login.html?next=reembolso.html">
+          Solicitar reembolso
+        </a>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem; letter-spacing:12px;">
+      <span style="display:inline-block; transform:scaleX(-1);">🏎️</span> ... 🏁
+    </div>
+  </div>
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma de Estudos High Quality</p>
+    <p>© 2026 - A Martins - Direitos Reservados QA (Quality Assurance) - Plataforma em High Quality</p>
   </footer>
+
+  <script src="js/app.js"></script>
+
+  <script>
+    (function () {
+      const btn = document.getElementById("btnSairHome");
+      if (!btn) return;
+      const token = localStorage.getItem("access_token");
+      btn.style.display = token ? "inline-block" : "none";
+    })();
+
+    pageHomeCursosPublico();
+  </script>
 
 </body>
 </html>

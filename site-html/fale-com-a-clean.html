@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fale com a Clean</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+  <header style="padding-top:10px;padding-bottom:5px;">
+    <div style="margin-top:20px;">
+      <h1 style="margin-bottom:-5px;">💬 Fale com a Clean</h1>
+    </div>
+
+    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <a class="btn" href="index.html">Início</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>Como podemos ajudar?</h2>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+        <button class="btn" onclick="mostrarAluno()">ALUNO</button>
+        <button class="btn" onclick="mostrarNaoAluno()">NÃO ALUNO</button>
+      </div>
+
+      <div id="areaAtendimento"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const area = document.getElementById("areaAtendimento");
+
+    function mostrarAluno() {
+      area.innerHTML = `
+        <div class="assunto">
+          <h3>Atendimento ao aluno</h3>
+
+          <label><b>Assunto</b></label>
+          <input
+            id="assuntoAluno"
+            type="text"
+            placeholder="Ex.: acesso, pagamento, curso, aula, reembolso..."
+            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin:6px 0 12px;"
+          >
+
+          <label><b>Mensagem</b></label>
+          <textarea
+            id="mensagemAluno"
+            placeholder="Descreva sua dúvida ou solicitação"
+            style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px; margin-top:6px;"
+          ></textarea>
+
+          <button class="btn" style="margin-top:12px;" onclick="enviarMensagemAluno()">
+            Enviar mensagem
+          </button>
+
+          <div id="msgAluno" style="margin-top:10px;"></div>
+        </div>
+      `;
+    }
+
+    function mostrarNaoAluno() {
+      area.innerHTML = `
+        <div class="assunto">
+          <h3>Atendimento para não aluno</h3>
+          <p>Escolha uma opção para falar conosco pelo WhatsApp:</p>
+
+          <div class="list">
+            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20conhecer%20os%20cursos%20da%20CleanConcursos" target="_blank">
+              Quero conhecer os cursos
+            </a>
+
+            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20tirar%20d%C3%BAvidas%20sobre%20a%20CleanConcursos" target="_blank">
+              Quero tirar dúvidas
+            </a>
+
+            <a class="btn" href="https://wa.me/5500000000000?text=Gostaria%20de%20pedir%20um%20curso%20espec%C3%ADfico" target="_blank">
+              Quero pedir um curso específico
+            </a>
+
+            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20entender%20como%20funciona%20a%20plataforma" target="_blank">
+              Quero entender como funciona
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function enviarMensagemAluno() {
+      const assunto = document.getElementById("assuntoAluno").value.trim();
+      const mensagem = document.getElementById("mensagemAluno").value.trim();
+      const msg = document.getElementById("msgAluno");
+
+      if (!assunto) {
+        msg.textContent = "Por favor, informe o assunto.";
+        msg.style.color = "#8a1f1f";
+        return;
+      }
+
+      if (!mensagem) {
+        msg.textContent = "Por favor, escreva sua mensagem.";
+        msg.style.color = "#8a1f1f";
+        return;
+      }
+
+      msg.textContent = "Mensagem enviada com sucesso! Em breve a Clean entrará em contato.";
+      msg.style.color = "#2f5e46";
+    }
+  </script>
+</body>
+</html>

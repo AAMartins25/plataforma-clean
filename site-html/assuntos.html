@@ -8,15 +8,17 @@
 </head>
 <body data-page="assuntos">
   <header>
-    <h1>🧩 Assuntos</h1>
+    <div style="margin-top:10px;">
+      <h1 id="titulo_curso" style="margin-bottom:12px;"></h1>
+      <h2 id="titulo_pagina" style="margin-top:-6px; margin-bottom:-8px;"></h2>
+    </div>
     <a class="btn" href="javascript:history.back()">Voltar</a>
     <a href="#" class="btn" onclick="logout()">Sair</a> 
-    <div id="subtitulo" style="margin-top:10px"></div>
   </header>
 
   <main class="container" id="conteudo">
     <div class="card">
-      <h2>Selecione o assunto (estão em ordem de prioridade)</h2>
+      <h2>Selecione o assunto (já estão em ordem de prioridade para este concurso)</h2>
       <div id="lista" class="list"></div>
     </div>
   </main>

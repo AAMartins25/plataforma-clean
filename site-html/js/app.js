@@ -87,7 +87,7 @@ function escapeHtml(str) {
  */
 function renderList(containerId, items) {
   const html = items.map(it => `
-    <div class="disciplina">
+    <div class="disciplina" style="padding:6px 14px;">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
         <div>
           <div style="font-weight:bold">${escapeHtml(it.title)}</div>
@@ -156,7 +156,7 @@ window.entrarEEstudar = async function entrarEEstudar() {
   // 1) Não logado → login
   if (!token) {
     // ✅ ao logar, decide com base no /me (admin vai pro painel)
-    localStorage.setItem("pos_login_redirect", "index.html"); // voltar pra HOME (opcional)
+    localStorage.setItem("pos_login_redirect", "cursos.html");
     window.location.href = "login.html";
     return;
   }
@@ -174,11 +174,10 @@ window.entrarEEstudar = async function entrarEEstudar() {
     // token inválido/expirado → força login de novo
     console.warn("Falha ao obter /me:", err);
     clearToken();
-    localStorage.setItem("pos_login_redirect", "index.html");
+    localStorage.setItem("pos_login_redirect", "cursos.html");
     window.location.href = "login.html";
   }
 };
-
 
 // Tenta “pegar” automaticamente um botão comum na HOME, sem precisar mexer no HTML.
 // Se não achar, não faz nada (mas você pode usar o onclick="entrarEEstudar()").
@@ -257,6 +256,64 @@ async function comprarCurso(cursoId) {
   }
 }
 
+async function calcularProgressoCurso(cursoId) {
+  try {
+    const disciplinas = await apiGet(`/cursos/${cursoId}/disciplinas`);
+
+    let totalAulas = 0;
+    let aulasConcluidas = 0;
+
+    for (const disciplina of disciplinas) {
+      const prog = await calcularProgressoDisciplina(disciplina.id);
+      totalAulas += prog.totalAulas;
+      aulasConcluidas += prog.aulasConcluidas;
+    }
+
+    const percentual = totalAulas > 0
+      ? Math.round((aulasConcluidas / totalAulas) * 100)
+      : 0;
+
+    return { percentual, aulasConcluidas, totalAulas };
+
+  } catch {
+    return { percentual: 0, aulasConcluidas: 0, totalAulas: 0 };
+  }
+}
+
+function renderProgressoLinha(percentual, aulasConcluidas) {
+  return `
+    <div style="
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    ">
+      <div style="
+        font-size:0.95rem;
+        color:${aulasConcluidas > 0 ? '#16a34a' : '#c2cad9'};
+        font-weight:bold;
+        min-width:34px;
+      ">
+        ${percentual}%
+      </div>
+
+      <div style="
+        flex:1;
+        height:6px;
+        background:#d1d5db;
+        border-radius:999px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:${percentual}%;
+          height:100%;
+          background:${aulasConcluidas > 0 ? '#16a34a' : '#c2cad9'};
+        "></div>
+      </div>
+    </div>
+  `;
+}
+
 // 1) Cursos (ÁREA LOGADA: mostra SOMENTE cursos adquiridos)
 async function pageCursos() {
   const el = document.getElementById("lista");
@@ -277,44 +334,148 @@ async function pageCursos() {
     }
 
     const acessos = await apiGetAuth("/me/cursos"); // só cursos liberados pro usuário
+    const historico = await apiGetAuth("/me/cursos/historico");
+
+    const tituloCursos = document.getElementById("titulo_cursos");
+    if (tituloCursos) {
+      tituloCursos.style.display = acessos && acessos.length > 0 ? "block" : "none";
+    }
 
     el.innerHTML = "";
 
     if (!acessos || acessos.length === 0) {
       el.innerHTML = `
         <div class="disciplina">
-          <div><strong>Você ainda não possui preparatório ativo no momento.</strong></div>
-          <div style="margin-top:8px; opacity:.85;">
-            Vá para a página inicial para ver os cursos disponíveis para compra.
-          </div>
+          <div><strong>Você não possui curso ativo no momento.</strong></div>
+
+          ${
+            historico && historico.length > 0
+              ? `
+                <div style="margin-top:12px;">
+                  <strong>Histórico:</strong>
+                </div>
+
+                <div class="list" style="margin-top:12px;">
+                  ${historico.map(c => `
+                    <div class="assunto">
+                      <div style="font-weight:bold;">${escapeHtml(c.nome_curso)}</div>
+                      <div style="opacity:.85;">
+                        Liberação: ${escapeHtml(c.data_inicio || "-")}<br/>
+                        Cessação da liberação: ${escapeHtml(c.data_fim || "-")}
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>
+              `
+              : ""
+          }
         </div>
       `;
       return;
     }
 
     // Renderiza só "Abrir"
-    acessos.forEach(a => {
+    for (const a of acessos) {
+      const prog = await calcularProgressoCurso(a.curso_id);
       const div = document.createElement("div");
       div.className = "disciplina";
+      div.style.padding = "15px 14px";
 
       div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-          <div>
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          
+          <div style="flex:1; min-width:0;">
             <div style="font-size:1.05rem;font-weight:bold;">${a.nome_curso}</div>
-            <div style="opacity:.85;">curso_id=${a.curso_id} • ativo=${a.ativo}</div>
+
+            ${renderProgressoLinha(prog.percentual, prog.aulasConcluidas)}
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a class="btn" href="disciplinas.html?curso_id=${a.curso_id}&curso_nome=${encodeURIComponent(a.nome_curso)}">Abrir</a>
+          <div style="margin-left:12px;">
+            <a class="btn" href="curso.html?curso_id=${a.curso_id}&curso_nome=${encodeURIComponent(a.nome_curso)}">Abrir</a>
           </div>
+
         </div>
       `;
 
       el.appendChild(div);
-    });
+    };
+
+    if (historico && historico.length > 0) {
+      const histDiv = document.createElement("div");
+      histDiv.className = "disciplina";
+
+      histDiv.innerHTML = `
+        <div style="font-weight:bold;">Histórico:</div>
+
+        <div class="list" style="margin-top:12px;">
+          ${historico.map(c => `
+            <div class="assunto">
+              <div style="font-weight:bold;">${escapeHtml(c.nome_curso)}</div>
+              <div style="opacity:.85;">
+                Liberação: ${escapeHtml(c.data_inicio || "-")}<br/>
+                Cessação da liberação: ${escapeHtml(c.data_fim || "-")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      el.appendChild(histDiv);
+    }
 
   } catch (err) {
     showError("conteudo", err);
+  }
+}
+
+async function calcularProgressoDisciplina(disciplinaId) {
+  try {
+
+    // assuntos da disciplina
+    const assuntos = await apiGet(`/disciplinas/${disciplinaId}/assuntos`);
+
+    let totalAulas = 0;
+    let aulasConcluidas = 0;
+
+    for (const assunto of assuntos) {
+
+      // pastas do assunto
+      const pastas = await apiGet(`/assuntos/${assunto.id}/pastas`);
+
+      // pega apenas TEORIA
+      const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
+
+      if (!pastaTeoria) continue;
+
+      // aulas da pasta teoria
+      const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas`);
+
+      totalAulas += aulas.length;
+
+      // progresso do aluno
+      const progresso = await apiGetAuth(`/me/progresso?pasta_id=${pastaTeoria.id}`);
+
+      aulasConcluidas += progresso.length;
+    }
+
+    const percentual = totalAulas > 0
+      ? Math.round((aulasConcluidas / totalAulas) * 100)
+      : 0;
+
+    return {
+      percentual,
+      aulasConcluidas,
+      totalAulas
+    };
+
+  } catch (err) {
+    console.error("Erro ao calcular progresso:", err);
+
+    return {
+      percentual: 0,
+      aulasConcluidas: 0,
+      totalAulas: 0
+    };
   }
 }
 
@@ -322,7 +483,13 @@ async function pageCursos() {
 async function pageDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
-  setHTML("subtitulo", cursoNome ? `Curso: <b>${escapeHtml(cursoNome)}</b> (id=${cursoId})` : `Curso id=${cursoId}`);
+  const titulo = document.getElementById("titulo_pagina");
+
+  if (titulo) {
+    titulo.innerText = cursoNome
+      ? `📘 ${cursoNome}`
+      : "📚 Disciplinas";
+  }
 
   if (!cursoId) {
     showError("conteudo", new Error("Faltou curso_id na URL. Volte e clique no curso novamente."));
@@ -331,21 +498,148 @@ async function pageDisciplinas() {
 
   try {
     const disciplinas = await apiGet(`/cursos/${cursoId}/disciplinas`);
-    renderList("lista", disciplinas.map(d => ({
-      title: d.nome,
-      subtitle: `id=${d.id} • ativo=${d.ativo}`,
-      href: `assuntos.html?disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}`
-    })));
+    const lista = document.getElementById("lista");
+
+    lista.innerHTML = "";
+
+    for (const d of disciplinas) {
+
+      const prog = await calcularProgressoDisciplina(d.id);
+
+      const div = document.createElement("div");
+      div.className = "disciplina";
+      div.style.padding = "3px 14px";
+
+      div.innerHTML = `
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:12px;
+          flex-wrap:wrap;
+        ">
+
+          <div style="flex:1; min-width:240px;">
+
+            <div style="
+              font-weight:bold;
+              margin-top:-6px;
+            ">
+              ${escapeHtml(d.nome)}
+            </div>
+
+          </div>
+
+          <div>
+            <a class="btn"
+              href="assuntos.html?disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}">
+              Abrir
+            </a>
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:18px;
+          display:flex;
+          align-items:center;
+          gap:2px;
+        ">
+
+          <div style="
+            font-size:0.95rem;
+            color:${prog.aulasConcluidas > 0 ? '#16a34a' : '#c2cad9'};
+            font-weight:bold;
+            min-width:34px;
+          ">
+            ${prog.percentual}%
+          </div>
+
+          <div style="
+            flex:1;
+            height:6px;
+            background:#d1d5db;
+            border-radius:999px;
+            overflow:hidden;
+          ">
+            <div style="
+              width:${prog.percentual}%;
+              height:100%;
+              background:${prog.aulasConcluidas > 0 ? '#16a34a' : '#c2cad9'};
+            "></div>
+          </div>
+
+        </div>
+      `;
+
+      lista.appendChild(div);
+    }
   } catch (err) {
     showError("conteudo", err);
   }
+}
+
+async function calcularProgressoAssunto(assuntoId) {
+  try {
+    const pastas = await apiGet(`/assuntos/${assuntoId}/pastas`);
+    const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
+
+    if (!pastaTeoria) {
+      return { percentual: 0, aulasConcluidas: 0, totalAulas: 0 };
+    }
+
+    const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas`);
+    const progresso = await apiGetAuth(`/me/progresso?pasta_id=${pastaTeoria.id}`);
+
+    const concluidasSet = new Set(progresso.map(p => p.aula_id));
+
+    const totalAulas = aulas.length;
+    const aulasConcluidas = aulas.filter(a => concluidasSet.has(a.id)).length;
+
+    const percentual = totalAulas > 0
+      ? Math.round((aulasConcluidas / totalAulas) * 100)
+      : 0;
+
+    return { percentual, aulasConcluidas, totalAulas };
+
+  } catch {
+    return { percentual: 0, aulasConcluidas: 0, totalAulas: 0 };
+  }
+}
+
+async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeEncoded) {
+  const pastas = await apiGet(`/assuntos/${assuntoId}/pastas`);
+  const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
+
+  if (!pastaTeoria) {
+    alert("Não encontrei a pasta de Teoria deste assunto.");
+    return;
+  }
+
+  window.location.href =
+    `teoria.html?pasta_id=${pastaTeoria.id}&assunto_id=${assuntoId}&assunto_nome=${assuntoNomeEncoded}&disciplina_nome=${disciplinaNomeEncoded}`;
 }
 
 // 3) Assuntos da Disciplina
 async function pageAssuntos() {
   const disciplinaId = qs("disciplina_id");
   const disciplinaNome = qs("disciplina_nome") || "";
-  setHTML("subtitulo", disciplinaNome ? `Disciplina: <b>${escapeHtml(disciplinaNome)}</b> (id=${disciplinaId})` : `Disciplina id=${disciplinaId}`);
+  const cursoNome = qs("curso_nome") || "";
+
+  const tituloCurso = document.getElementById("titulo_curso");
+  const titulo = document.getElementById("titulo_pagina");
+
+  if (tituloCurso) {
+    tituloCurso.innerText = cursoNome
+      ? `📘 ${cursoNome}`
+      : "📘 Curso";
+  }
+
+  if (titulo) {
+    titulo.innerText = disciplinaNome
+      ? disciplinaNome
+      : "🧩 Assuntos";
+  }
 
   if (!disciplinaId) {
     showError("conteudo", new Error("Faltou disciplina_id na URL. Volte e clique na disciplina novamente."));
@@ -360,11 +654,36 @@ async function pageAssuntos() {
       assuntos = await apiGet(`/disciplinas/${disciplinaId}/assunto`);
     }
 
-    renderList("lista", assuntos.map(a => ({
-      title: a.nome,
-      subtitle: `id=${a.id} • ativo=${a.ativo ?? true}`,
-      href: `pastas.html?assunto_id=${a.id}&assunto_nome=${encodeURIComponent(a.nome)}`
-    })));
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    for (const a of assuntos) {
+      const prog = await calcularProgressoAssunto(a.id);
+
+      const div = document.createElement("div");
+      div.className = "disciplina";
+      div.style.padding = "10px 14px";
+
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          <div style="flex:1; min-width:240px;">
+            <div style="font-weight:bold;">
+              ${escapeHtml(a.nome)}
+            </div>
+
+            ${renderProgressoLinha(prog.percentual, prog.aulasConcluidas)}
+          </div>
+
+          <a class="btn"
+            href="javascript:void(0)"
+            onclick="abrirAssuntoDireto(${a.id}, '${encodeURIComponent(a.nome)}', '${encodeURIComponent(disciplinaNome)}')">
+            Abrir
+          </a>
+        </div>
+      `;
+
+      lista.appendChild(div);
+    }
   } catch (err) {
     showError("conteudo", err);
   }
@@ -374,7 +693,20 @@ async function pageAssuntos() {
 async function pagePastas() {
   const assuntoId = qs("assunto_id");
   const assuntoNome = qs("assunto_nome") || "";
-  setHTML("subtitulo", assuntoNome ? `Assunto: <b>${escapeHtml(assuntoNome)}</b> (id=${assuntoId})` : `Assunto id=${assuntoId}`);
+  const disciplinaNome = qs("disciplina_nome") || "";
+
+  const tituloDisciplina = document.getElementById("titulo_disciplina");
+  const tituloAssunto = document.getElementById("titulo_assunto");
+
+  if (tituloDisciplina) {
+    tituloDisciplina.innerText = disciplinaNome
+      ? `📘 ${disciplinaNome}`
+      : "📂 Pastas";
+  }
+
+  if (tituloAssunto) {
+    tituloAssunto.innerText = assuntoNome;
+  }
 
   if (!assuntoId) {
     showError("conteudo", new Error("Faltou assunto_id na URL. Volte e clique no assunto novamente."));
@@ -391,26 +723,23 @@ async function pagePastas() {
 
     if (teoria) {
       html += `
-        <div class="disciplina">
-          <div style="font-weight:bold">📘 ${escapeHtml(teoria.nome || "Teoria e Questões")}</div>
-          <div style="opacity:.85">pasta_id=${teoria.id} • tipo=${teoria.tipo}</div>
-          <a class="btn" href="teoria.html?pasta_id=${teoria.id}&assunto_id=${assuntoId}">Abrir</a>
+        <div class="disciplina" style="padding-top:12px;padding-bottom:26px;">  
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+
+            <div style="font-weight:bold">
+              📘 ${escapeHtml(teoria.nome || "Teoria e Questões")}
+            </div>
+
+            <a class="btn"
+              href="teoria.html?pasta_id=${teoria.id}&assunto_id=${assuntoId}&disciplina_nome=${encodeURIComponent(disciplinaNome)}&assunto_nome=${encodeURIComponent(assuntoNome)}">
+              Abrir
+            </a>
+
+          </div>
         </div>
       `;
     } else {
       html += `<p>Não achei a pasta TEORIA.</p>`;
-    }
-
-    if (inter) {
-      html += `
-        <div class="disciplina">
-          <div style="font-weight:bold">🎯 ${escapeHtml(inter.nome || "Interatividade")}</div>
-          <div style="opacity:.85">pasta_id=${inter.id} • tipo=${inter.tipo}</div>
-          <a class="btn" href="interatividade.html?pasta_id=${inter.id}&assunto_id=${assuntoId}">Abrir</a>
-        </div>
-      `;
-    } else {
-      html += `<p>Não achei a pasta INTERATIVIDADE.</p>`;
     }
 
     html += `</div>`;
@@ -575,6 +904,205 @@ async function pageQuestoesIA() {
   }
 }
 
+function corDesempenho(percentual) {
+  if (percentual <= 59) return "#d32f2f";      // vermelho
+  if (percentual <= 69) return "#1F4E79";      // azul normal
+  return "#1F4E79";                            // azul destacado
+}
+
+function pesoDesempenho(percentual) {
+  return percentual >= 70 ? "bold" : "normal";
+}
+
+async function calcularDesempenhoAssuntoInteratividade(assuntoId) {
+  // Etapa 1: ainda não temos acertos reais salvos no banco.
+  // Por enquanto, retorna null para mostrar "Ainda não iniciado".
+  return null;
+}
+
+async function pageInteratividadeAssuntos() {
+  const disciplinaId = qs("disciplina_id");
+  const disciplinaNome = qs("disciplina_nome") || "";
+  const cursoNome = qs("curso_nome") || "";
+
+  const tituloCurso = document.getElementById("titulo_curso");
+  const tituloDisciplina = document.getElementById("titulo_disciplina");
+  const lista = document.getElementById("lista");
+
+  if (tituloCurso) tituloCurso.innerText = cursoNome ? `📘 ${cursoNome}` : "";
+  if (tituloDisciplina) tituloDisciplina.innerText = disciplinaNome;
+
+  if (!disciplinaId || !lista) return;
+
+  try {
+    let assuntos;
+
+    try {
+      assuntos = await apiGet(`/disciplinas/${disciplinaId}/assuntos`);
+    } catch {
+      assuntos = await apiGet(`/disciplinas/${disciplinaId}/assunto`);
+    }
+
+    lista.innerHTML = "";
+
+    for (const a of assuntos) {
+      const desempenho = await calcularDesempenhoAssuntoInteratividade(a.id);
+
+      const pastas = await apiGet(`/assuntos/${a.id}/pastas`);
+      const pastaInteratividade = pastas.find(p => p.tipo === "INTERATIVIDADE");
+
+      const desempenhoHtml = desempenho === null
+
+        ? `<span style="opacity:.65;">Ainda não iniciado</span>`
+        : `<span style="
+              color:${corDesempenho(desempenho)};
+              font-weight:${pesoDesempenho(desempenho)};
+            ">${desempenho}%</span>`;
+
+      const div = document.createElement("div");
+      div.className = "disciplina";
+      div.style.padding = "10px 14px";
+
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div>
+            <div style="font-weight:bold;">${escapeHtml(a.nome)}</div>
+            <div style="margin-top:4px;">
+              Desempenho: ${desempenhoHtml}
+            </div>
+          </div>
+
+          <a class="btn"
+            href="interatividade.html?pasta_id=${pastaInteratividade?.id || ""}&assunto_id=${a.id}&assunto_nome=${encodeURIComponent(a.nome)}&disciplina_nome=${encodeURIComponent(disciplinaNome)}">
+            Abrir
+          </a>
+        </div>
+      `;
+
+      lista.appendChild(div);
+    }
+
+  } catch (err) {
+    lista.innerHTML = "<p>Erro ao carregar assuntos.</p>";
+    console.error(err);
+  }
+}
+
+function pageCurso() {
+  const cursoId = qs("curso_id");
+  const cursoNome = qs("curso_nome") || "";
+
+  const tituloCurso = document.getElementById("titulo_curso");
+  const acoes = document.getElementById("acoes_curso");
+
+  if (tituloCurso) {
+    tituloCurso.innerText = cursoNome || "Curso";
+  }
+
+  if (!cursoId || !acoes) {
+    if (acoes) acoes.innerHTML = "<p>Erro: curso não identificado.</p>";
+    return;
+  }
+
+  acoes.innerHTML = `
+    <div class="disciplina" style="padding:10px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-weight:bold;">📚 Disciplinas do curso</div>
+        <a class="btn" href="disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
+      </div>
+    </div>
+
+    <div class="disciplina" style="padding:10px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-weight:bold;">📊 Meu Progresso e Revisão</div>
+        <a class="btn" href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
+      </div>
+    </div>
+
+    <div class="disciplina" style="padding:10px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-weight:bold;">🎯 Interatividade</div>
+        <a class="btn" href="interatividade-disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
+      </div>
+    </div>
+  `;
+}
+
+async function pageCursoInfo() {
+  const cursoId = qs("curso_id");
+  const cursoNome = qs("curso_nome") || "";
+
+  const tituloCurso = document.getElementById("titulo_curso");
+  const estrutura = document.getElementById("estrutura_curso");
+  const btnQueroCurso = document.getElementById("btnQueroCurso");
+
+  if (tituloCurso) {
+    tituloCurso.innerText = cursoNome || "Curso";
+  }
+
+  if (!cursoId || !estrutura) {
+    if (estrutura) estrutura.innerHTML = "<p>Curso não identificado.</p>";
+    return;
+  }
+
+  if (btnQueroCurso) {
+    btnQueroCurso.onclick = () => comprarCursoFromHome(Number(cursoId));
+  }
+
+  try {
+    const disciplinas = await apiGet(`/cursos/${cursoId}/disciplinas`);
+
+    if (!disciplinas || disciplinas.length === 0) {
+      estrutura.innerHTML = "<p>Nenhuma disciplina cadastrada para este curso.</p>";
+      return;
+    }
+
+    let html = "";
+
+    for (const d of disciplinas) {
+      let assuntos = [];
+
+      try {
+        assuntos = await apiGet(`/disciplinas/${d.id}/assuntos`);
+      } catch {
+        assuntos = await apiGet(`/disciplinas/${d.id}/assunto`);
+      }
+
+      html += `
+        <div class="disciplina" style="padding:10px 14px;">
+          <div style="font-weight:bold;">
+            📚 ${escapeHtml(d.nome)}
+          </div>
+
+          ${
+            assuntos && assuntos.length > 0
+              ? `
+                <div class="list" style="margin-top:10px;">
+                  ${assuntos.map(a => `
+                    <div class="assunto" style="padding:8px 12px;">
+                      ${escapeHtml(a.nome)}
+                    </div>
+                  `).join("")}
+                </div>
+              `
+              : `<p style="opacity:.75;">Nenhum assunto cadastrado.</p>`
+          }
+        </div>
+      `;
+    }
+
+    estrutura.innerHTML = html;
+
+  } catch (err) {
+    estrutura.innerHTML = `
+      <div class="card">
+        <h2>Erro ao carregar estrutura do curso</h2>
+        <pre style="white-space:pre-wrap">${escapeHtml(err.message)}</pre>
+      </div>
+    `;
+  }
+}
+
 // Dispatcher
 window.onload = () => {
   const page = document.body.getAttribute("data-page");
@@ -586,6 +1114,12 @@ window.onload = () => {
   if (page === "quiz") pageQuiz();
   if (page === "cartoes") pageCartoes();
   if (page === "questoesia") pageQuestoesIA();
+  if (page === "interatividade-disciplinas") {
+    pageInteratividadeDisciplinas();
+  }
+  if (page === "interatividade-assuntos") pageInteratividadeAssuntos();
+  if (page === "curso") pageCurso();
+  if (page === "curso-info") pageCursoInfo();
 
   // ✅ NOVO: tenta bindar o botão “Entre e comece a estudar” na HOME (se existir)
   bindBotaoEntrarEEstudarSeExistir();
@@ -601,28 +1135,116 @@ function logout() {
 
 
 // HOME (pública): lista cursos disponíveis para compra
+let cursosPublicosCache = [];
+let areaSelecionada = "TODOS";
+let mostrarTodosCursos = false;
+
+function identificarAreaCurso(nome) {
+  const n = String(nome || "").toUpperCase();
+
+  if (n.includes("PROFESSOR") || n.includes("SEDUC") || n.includes("EDUCAÇÃO") || n.includes("EDUCACAO")) {
+    return "EDUCAÇÃO";
+  }
+
+  if (n.includes("SAÚDE") || n.includes("SAUDE") || n.includes("AGENTE COMUNITÁRIO") || n.includes("AGENTE COMUNITARIO")) {
+    return "SAÚDE";
+  }
+
+  if (n.includes("TJ") || n.includes("JUDICIÁRIO") || n.includes("JUDICIARIO")) {
+    return "TRIBUNAIS";
+  }
+
+  if (n.includes("DPE") || n.includes("DEFENSORIA")) {
+    return "DPE";
+  }
+
+  if (n.includes("FISCAL") || n.includes("SEFAZ") || n.includes("ISS")) {
+    return "FISCAL";
+  }
+
+  return "OUTROS";
+}
+
+function filtrarCursosPorArea(area) {
+  areaSelecionada = area;
+  mostrarTodosCursos = false;
+  renderizarCursosPublicos();
+}
+
+function renderizarCursosPublicos() {
+  const el = document.getElementById("lista-cursos-publicos");
+  const maisBox = document.getElementById("mais-cursos-box");
+
+  if (!el) return;
+
+  const busca = (document.getElementById("buscaCurso")?.value || "")
+    .trim()
+    .toUpperCase();
+
+  let cursos = [...cursosPublicosCache]
+    .filter(c => c.ativo)
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+  if (areaSelecionada !== "TODOS") {
+    cursos = cursos.filter(c => identificarAreaCurso(c.nome) === areaSelecionada);
+  }
+
+  if (busca) {
+    cursos = cursos.filter(c => c.nome.toUpperCase().includes(busca));
+  }
+
+  const limiteInicial = 15;
+  const cursosVisiveis = mostrarTodosCursos
+    ? cursos
+    : cursos.slice(0, limiteInicial);
+
+  el.style.display = "grid";
+  el.style.paddingLeft = "39px";
+  el.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, max-content))";
+  el.style.gridAutoFlow = "column";
+  el.style.gridTemplateRows = "repeat(5, auto)";
+  el.style.gap = "4px 90px";
+
+  el.innerHTML = cursosVisiveis.map(c => `
+    <div class="curso-linha" style="
+      padding:8px 10px;
+      border:1px solid #ddd;
+      border-radius:8px;
+    ">
+      <a
+        href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
+        style="font-weight:bold; text-decoration:none; color:inherit;"
+      >
+        ${escapeHtml(c.nome)}
+      </a>
+    </div>
+  `).join("") || "<p>Nenhum curso encontrado.</p>";
+
+  if (maisBox) {
+    if (cursos.length > limiteInicial && !mostrarTodosCursos) {
+      maisBox.innerHTML = `
+        <button class="btn" onclick="mostrarTodosCursos = true; renderizarCursosPublicos();">
+          Mais cursos
+        </button>
+      `;
+    } else if (cursos.length > limiteInicial && mostrarTodosCursos) {
+      maisBox.innerHTML = `
+        <button class="btn" onclick="mostrarTodosCursos = false; renderizarCursosPublicos();">
+          Mostrar menos
+        </button>
+      `;
+    } else {
+      maisBox.innerHTML = "";
+    }
+  }
+}
+
 async function pageHomeCursosPublico() {
-  const containerId = "lista-cursos-publicos";
-
   try {
-    const cursos = await apiGet("/cursos"); // público
-
-    const html = (cursos || [])
-      .filter(c => c.ativo)
-      .map(c => `
-        <div class="curso-linha">
-          <span class="curso-nome">${c.nome}</span>
-          <button class="btn" onclick="comprarCursoFromHome(${Number(c.id)})">Comprar</button>
-        </div>
-      `)
-      .join("");
-
-    const el = document.getElementById(containerId);
-    if (!el) throw new Error(`Não achei o elemento #${containerId} no index.html`);
-
-    el.innerHTML = html || "<p>Nenhum curso disponível no momento.</p>";
+    cursosPublicosCache = await apiGet("/cursos");
+    renderizarCursosPublicos();
   } catch (err) {
-    showError(containerId, err);
+    showError("lista-cursos-publicos", err);
   }
 }
 
@@ -657,3 +1279,59 @@ async function comprarCursoFromHome(cursoId) {
   }
 }
 
+async function pageInteratividadeDisciplinas() {
+
+  const cursoId = qs("curso_id");
+  const cursoNome = qs("curso_nome") || "";
+
+  const titulo = document.getElementById("titulo_curso");
+
+  if (titulo) {
+    titulo.innerText = cursoNome;
+  }
+
+  const lista = document.getElementById("lista");
+
+  if (!cursoId || !lista) return;
+
+  try {
+
+    const disciplinas = await apiGet(`/cursos/${cursoId}/disciplinas`);
+
+    lista.innerHTML = "";
+
+    disciplinas.forEach(d => {
+
+      const div = document.createElement("div");
+
+      div.className = "disciplina";
+      div.style.padding = "10px 14px";
+
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+
+          <div style="font-weight:bold;">
+            ${escapeHtml(d.nome)}
+          </div>
+
+          <a class="btn"
+            href="interatividade-assuntos.html?disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}">
+            Abrir
+          </a>
+
+        </div>
+      `;
+
+      lista.appendChild(div);
+
+    });
+
+  } catch (err) {
+
+    lista.innerHTML = `
+      <p>Erro ao carregar disciplinas.</p>
+    `;
+
+    console.error(err);
+  }
+}

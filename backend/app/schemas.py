@@ -132,8 +132,9 @@ from pydantic import BaseModel, EmailStr, Field
 class UsuarioCreate(BaseModel):
     nome: str
     email: EmailStr
+    cpf: str
+    telefone: str
     senha: str = Field(min_length=8, max_length=64)
-
 
 class UsuarioResponse(BaseModel):
     id: int
@@ -144,6 +145,13 @@ class UsuarioResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UsuarioUpdateMe(BaseModel):
+    nome: str
+    email: EmailStr
+    cpf: str
+    telefone: str
+    senha: str | None = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -165,3 +173,16 @@ class AcessoCursoResponse(BaseModel):
     data_inicio: datetime
     data_fim: Optional[datetime] = None
 
+class ProgressoAulaResponse(BaseModel):
+    id: int
+    usuario_id: int
+    pasta_id: int
+    aula_id: int
+    concluida: bool
+    data_conclusao: datetime
+
+    class Config:
+        from_attributes = True
+
+class RecuperarSenhaRequest(BaseModel):
+    login: str

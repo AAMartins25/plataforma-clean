@@ -7,24 +7,26 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>📝 Criar conta</h1>
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+  <header style="padding-top:10px;padding-bottom:5px;">
+    <div style="margin-top:20px;">
+      <h1 style="margin-bottom:-5px;">📝 Criar conta</h1>
+    </div>
+
+    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
       <a class="btn" href="index.html">Início</a>
-      <a class="btn" href="login.html">Já tenho conta</a>
+      <a class="btn" href="login.html">Login</a>
     </nav>
-    <p>Crie seu cadastro para acessar os cursos.</p>
   </header>
 
   <main class="container">
     <div class="card">
       <h2>Cadastro</h2>
 
-      <form id="formRegister" class="list">
+      <form id="formRegister" class="list" novalidate>
         <div class="assunto">
           <label><b>Nome</b></label><br/>
           <input id="nome" type="text" placeholder="Seu nome"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required/>
         </div>
 
         <div class="assunto">
@@ -34,12 +36,57 @@
         </div>
 
         <div class="assunto">
-          <label><b>Senha</b></label><br/>
-          <input id="senha" type="password" placeholder="Crie uma senha"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+          <label><b>CPF</b></label><br/>
+          <input id="cpf" type="text" placeholder="000.000.000-00"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
         </div>
 
-        <button class="btn" type="submit">Criar conta</button>
+        <div class="assunto">
+          <label><b>Telefone</b></label><br/>
+          <input id="telefone" type="text" placeholder="(00) 00000-0000"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+        </div>
+
+        <label>
+          Senha:
+
+          <div style="position:relative; width:100%;">
+            <input
+              id="senha"
+              type="password"
+              required
+              placeholder="********"
+              style="
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+                width:100%;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleSenha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+          </div>
+        </label>
+
+        <button id="btnCriarConta" class="btn" type="submit">
+          Criar conta
+        </button>
         <div id="msg" style="margin-top:10px;"></div>
       </form>
     </div>
@@ -51,5 +98,21 @@
 
   <script src="js/app.js"></script>
   <script src="js/register.js"></script>
+
+  <script>
+    const btnToggleSenha = document.getElementById("toggleSenha");
+    const campoSenha = document.getElementById("senha");
+
+    btnToggleSenha.addEventListener("click", () => {
+      if (campoSenha.type === "password") {
+        campoSenha.type = "text";
+        btnToggleSenha.textContent = "🙈";
+      } else {
+        campoSenha.type = "password";
+        btnToggleSenha.textContent = "👁";
+      }
+    });
+  </script>
+  
 </body>
 </html>

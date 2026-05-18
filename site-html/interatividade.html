@@ -7,17 +7,20 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-  <header>
-    <h1>🧩 Interatividade</h1>
-    <a class="btn" href="javascript:history.back()">Voltar</a>
-    <a href="#" class="btn" onclick="logout()">Sair</a> 
-    <div id="subtitulo" style="margin-top:10px;"></div>
-    <p>Quizzes, Cartões e QuestõesIA</p>
+  <header style="padding-top:12px; padding-bottom:10px;">
+    <div style="margin-top:20px;">
+      <h1 id="titulo_disciplina" style="margin-bottom:2px;"></h1>
+      <h2 id="titulo_assunto" style="margin-top:-6px; margin-bottom:1px;"></h2>
+    </div>
+
+    <div style="margin-top:4px;">
+      <a class="btn" href="javascript:history.back()">Voltar</a>
+      <a href="#" class="btn" onclick="logout()">Sair</a>
+    </div>
   </header>
 
   <main class="container">
     <div class="card">
-      <h2>Escolha uma atividade</h2>
       <div class="list" id="acoes"></div>
       <div id="erro"></div>
     </div>
@@ -43,10 +46,21 @@
     const pastaId = qs("pasta_id");
     const assuntoId = qs("assunto_id");
 
-    const subt = document.getElementById("subtitulo");
-    subt.innerHTML = pastaId
-      ? `pasta_id=<b>${esc(pastaId)}</b> • assunto_id=${esc(assuntoId || "-")}`
-      : `Faltou pasta_id na URL`;
+    const disciplinaNome = qs("disciplina_nome") || "";
+    const assuntoNome = qs("assunto_nome") || "";
+
+    const tituloDisciplina = document.getElementById("titulo_disciplina");
+    const tituloAssunto = document.getElementById("titulo_assunto");
+
+    if (tituloDisciplina) {
+      tituloDisciplina.innerText = disciplinaNome
+        ? `📘 ${disciplinaNome}`
+        : "📘 Disciplina";
+    }
+
+    if (tituloAssunto) {
+      tituloAssunto.innerText = assuntoNome;
+    }
 
     const acoes = document.getElementById("acoes");
     const erro = document.getElementById("erro");
@@ -56,21 +70,45 @@
     } else {
       acoes.innerHTML = `
         <div class="assunto">
-          <b>📝 QuizIA</b>
-          <p style="opacity:.85">5 questões (objetivo e direto).</p>
-          <a class="btn" href="quiz.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <b>📝 QuizIA</b>
+              <p style="opacity:.85">5 questões (objetivo e direto).</p>
+            </div>
+
+            <a class="btn"
+              href="quiz.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">
+              Abrir
+            </a>
+          </div>
         </div>
 
         <div class="assunto">
-          <b>🃏 Cartões IA</b>
-          <p style="opacity:.85">Pergunta (frente) → Resposta (verso).</p>
-          <a class="btn" href="cartoes.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <b>🃏 Cartões IA</b>
+              <p style="opacity:.85">Pergunta (frente) → resposta (verso).</p>
+            </div>
+
+            <a class="btn"
+              href="cartoes.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">
+              Abrir
+            </a>
+          </div>
         </div>
 
         <div class="assunto">
-          <b>🧠 QuestõesIA</b>
-          <p style="opacity:.85">10 questões no estilo bateria (sem gabarito explícito).</p>
-          <a class="btn" href="questoes-ia.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">Abrir</a>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <b>🧠 QuestõesIA</b>
+              <p style="opacity:.85">10 questões no estilo bateria.</p>
+            </div>
+
+            <a class="btn"
+              href="questoes-ia.html?pasta_id=${encodeURIComponent(pastaId)}&assunto_id=${encodeURIComponent(assuntoId || "")}">
+              Abrir
+            </a>
+          </div>
         </div>
       `;
     }

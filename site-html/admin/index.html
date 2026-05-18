@@ -7,28 +7,32 @@
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-  <header>
-    <h1>⚙️ Painel do Administrador</h1>
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+  <header style="padding-top:3px;padding-bottom:5px;">
+    <div style="margin-top:20px;">
+      <h1 style="margin-bottom:-10px;">⚙️ Painel do Administrador</h1>
+    </div>
+
+    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
       <a class="btn" href="../index.html">Início</a>
       <a class="btn" href="#" onclick="logout(); return false;">Sair</a>
     </nav>
-    <p>Gerencie cursos e conteúdos (sem Swagger).</p>
   </header>
 
   <main class="container">
     <div class="card">
-      <h2>📦 Gestão</h2>
+      <h2>📦 Gestão da Plataforma</h2>
+
       <div class="list">
         <a class="btn" href="cursos.html">Cursos</a>
         <a class="btn" href="disciplinas.html">Disciplinas</a>
         <a class="btn" href="assuntos.html">Assuntos</a>
-        <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a> 
-        <a class="btn" href="aulas.html">Aulas</a> 
-        <a class="btn" href="aula-conteudo.html">Conteúdo da Aula</a> 
+        <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
+        <a class="btn" href="aulas.html">Aulas</a>
+        <a class="btn" href="aula-conteudo.html">Conteúdo da Aula</a>
         <a class="btn" href="alunos.html">Alunos/usuários</a>
         <a class="btn" href="pagamentos.html">Pagamentos</a>
-        <!-- Próximos: disciplinas.html, assuntos.html, aulas.html... -->
+        <a class="btn" href="atendimentos.html">Atendimento</a>
+        <a class="btn" href="reembolsos.html">Reembolso</a>
       </div>
     </div>
   </main>
