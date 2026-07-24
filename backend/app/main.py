@@ -80,6 +80,9 @@ from dateutil.relativedelta import relativedelta
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "https://plataforma-quality.onrender.com",
+    ],
     allow_origin_regex=r"https://.*\.app\.github\.dev",
     allow_credentials=True,
     allow_methods=["*"],
