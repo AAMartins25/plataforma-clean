@@ -1,121 +1,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <title>Pagamento aprovado</title>
-  <link rel="stylesheet" href="css/style.css" />
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  />
 </head>
+
 <body>
+
   <header>
     <h1>Pagamento</h1>
-    <nav>
-      <a href="cursos.html" class="btn">Voltar aos cursos</a>
-    </nav>
-    <p>Confirmando sua compra...</p>
   </header>
 
   <main class="container">
+
     <div class="card">
-      <h2>✅ Quase lá…</h2>
-      <p id="msg">Lendo dados do pagamento...</p>
-      <pre id="debug" style="white-space: pre-wrap;"></pre>
-      <a href="cursos.html" class="btn">Ir para meus cursos</a>
+
+      <h2>
+        ✅ Pagamento aprovado!
+      </h2>
+
+      <p id="msg">
+        Pagamento aprovado! Estamos liberando seu acesso...
+      </p>
+
     </div>
+
   </main>
 
   <script src="js/app.js"></script>
+
   <script>
     (async function () {
-      const params = new URLSearchParams(window.location.search);
 
-      // MP pode retornar com nomes diferentes dependendo do fluxo.
-      const paymentId =
-        params.get("payment_id") ||
-        params.get("collection_id") ||   // comum em retornos
-        params.get("id");
-
-      const status = params.get("status") || params.get("collection_status");
-      const externalRef = params.get("external_reference");
-      const preferenceId = params.get("preference_id");
-
-      document.getElementById("debug").textContent =
-        JSON.stringify({
-          paymentId, status, externalRef, preferenceId,
-          allParams: Object.fromEntries(params.entries())
-        }, null, 2);
-
-      if (!paymentId) {
-        document.getElementById("msg").textContent =
-          "Não veio payment_id na URL. Abra o debug acima e me envie os parâmetros.";
-        return;
-      }
-
-      // Descobrir curso_id
-      // Melhor: guardar curso_id no localStorage quando clicar em "Comprar"
-      const cursoId = Number(localStorage.getItem("ultimo_curso_id_compra") || "0");
-      if (!cursoId) {
-        document.getElementById("msg").textContent =
-          "Não encontrei curso_id da compra (localStorage). Volte e tente comprar de novo.";
-        return;
-      }
+      const msg =
+        document.getElementById(
+          "msg"
+        );
 
       try {
-        document.getElementById("msg").textContent = "Confirmando no backend...";
-        const resp = await apiPostAuth("/pagamentos/confirmar", {
-          payment_id: Number(paymentId),
-          curso_id: cursoId
-        });
+        const params =
+          new URLSearchParams(
+            window.location.search
+          );
 
-        document.getElementById("msg").textContent =
-          `✅ Compra confirmada! Status: ${resp.status}. Atualizando lista de cursos...`;
+        const paymentId =
+          params.get("payment_id") ||
+          params.get("collection_id") ||
+          params.get("id");
 
-        // Recarrega cursos
-        setTimeout(() => window.location.href = "cursos.html", 900);
+        const cursoId =
+          Number(
+            localStorage.getItem(
+              "ultimo_checkout_curso_id"
+            ) ||
+            localStorage.getItem(
+              "ultimo_curso_id_compra"
+            ) ||
+            "0"
+          );
+
+        if (!paymentId) {
+          msg.textContent =
+            "Não foi possível identificar o pagamento.";
+
+          return;
+        }
+
+        if (!cursoId) {
+          msg.textContent =
+            "Não foi possível identificar o curso adquirido.";
+
+          return;
+        }
+
+        await apiPostAuth(
+          "/pagamentos/confirmar",
+          {
+            payment_id:
+              Number(paymentId),
+
+            curso_id:
+              cursoId
+          }
+        );
+
+        localStorage.removeItem(
+          "ultimo_curso_id_compra"
+        );
+
+        localStorage.removeItem(
+          "ultimo_checkout_curso_id"
+        );
+
+        localStorage.removeItem(
+          "pos_login_redirect"
+        );
+
+        localStorage.removeItem(
+          "voltar_para_compra"
+        );
+
+        localStorage.removeItem(
+          "estado_compra_curso"
+        );
+
+        localStorage.removeItem(
+          "continuar_compra_apos_login"
+        );
+
+        msg.textContent =
+          "Pagamento aprovado! Estamos liberando seu acesso...";
+
+        setTimeout(
+          () => {
+            window.location.href =
+              "cursos.html";
+          },
+          900
+        );
 
       } catch (e) {
-        document.getElementById("msg").textContent =
-          "Erro ao confirmar. Veja o debug e o console.";
         console.error(e);
+
+        msg.textContent =
+          "Não foi possível concluir a liberação do acesso. " +
+          "Por favor, tente novamente em instantes.";
       }
+
     })();
   </script>
 
-  <script src="js/app.js"></script>
-<script>
-(async function () {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const paymentId = params.get("payment_id");
-
-    const cursoId = Number(localStorage.getItem("ultimo_checkout_curso_id") || "0");
-
-    if (!paymentId) {
-      alert("Voltou do pagamento, mas não veio payment_id na URL.");
-      return;
-    }
-    if (!cursoId) {
-      alert("Não encontrei ultimo_checkout_curso_id no navegador.");
-      return;
-    }
-
-    await apiPostAuth("/pagamentos/confirmar", {
-      payment_id: Number(paymentId),
-      curso_id: cursoId
-    });
-
-    // limpa intenções de compra
-    localStorage.removeItem("ultimo_curso_id_compra");
-    localStorage.removeItem("ultimo_checkout_curso_id");
-    localStorage.removeItem("pos_login_redirect");
-
-    // vai para Meus Cursos
-    window.location.href = "cursos.html";
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao confirmar pagamento. Veja o Console (F12).");
-  }
-})();
-</script>
-
 </body>
+
 </html>

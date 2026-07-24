@@ -9,14 +9,53 @@
 
 <body data-page="curso">
 
-  <header style="padding-top:12px;padding-bottom:10px;">
+  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
     <div style="margin-top:20px;">
       <h1 id="titulo_curso" style="margin-bottom:1px;">Curso</h1>
     </div>
 
-    <div style="margin-top:4px;">
-      <a class="btn" href="javascript:history.back()">Voltar</a>
-      <a href="#" class="btn" onclick="logout()">Sair</a>
+    <div style="
+      position:absolute;
+      right:24px;
+      top:22px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    ">
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="
+          localStorage.removeItem('voltar_para_curso');
+          localStorage.removeItem('voltar_para_disciplinas');
+          localStorage.removeItem('voltar_para_assuntos');
+          window.location.replace('cursos.html');
+        "
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="
+          localStorage.setItem('pagina_antes_inicio', window.location.href);
+          window.location.replace('index.html');
+        "
+        title="Página inicial"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="sairComConfirmacao()"
+        title="Sair"
+      >
+        ⎋
+      </a>
     </div>
   </header>
 
@@ -24,12 +63,22 @@
     <div class="card">
       <div class="list" id="acoes_curso"></div>
     </div>
+
+    <div class="card" style="padding:0;height:0px;"></div>
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
-  </footer>
+  <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+</footer>
 
   <script src="js/app.js"></script>
+
+  <script>
+    const anoAtual = document.getElementById("ano_atual");
+    if (anoAtual) {
+      anoAtual.textContent = new Date().getFullYear();
+    }
+  </script>
+
 </body>
 </html>

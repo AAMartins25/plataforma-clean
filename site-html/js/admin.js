@@ -404,9 +404,18 @@ const AdminAssuntos = {
         <div class="list">
           ${assuntos.map(a => `
             <div class="disciplina">
-              <b>${esc(a.nome)}</b><br/>
-              <span style="opacity:.8">id=${esc(a.id)} • ativo=${esc(a.ativo)}</span>
-              ${a.descricao ? `<div style="margin-top:8px; opacity:.85">${esc(a.descricao)}</div>` : ""}
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div>
+                  <b>${esc(a.nome)}</b><br/>
+                  <span style="opacity:.8">id=${esc(a.id)} • ativo=${esc(a.ativo)}</span>
+                  ${a.descricao ? `<div style="margin-top:8px; opacity:.85">${esc(a.descricao)}</div>` : ""}
+                </div>
+
+                <a class="btn"
+                  href="admin-questoes-pratica.html?assunto_id=${encodeURIComponent(a.id)}&assunto_nome=${encodeURIComponent(a.nome)}">
+                  Questões
+                </a>
+              </div>
             </div>
           `).join("")}
         </div>
@@ -424,11 +433,11 @@ const AdminAssuntos = {
     const msg = document.getElementById("msgCriarAssunto");
 
     if (!disciplinaId) {
-      msg.innerHTML = "⚠️ Selecione uma disciplina.";
+      msg.innerHTML = "Selecione uma disciplina.";
       return;
     }
     if (!nome) {
-      msg.innerHTML = "⚠️ Informe o nome do assunto.";
+      msg.innerHTML = "Informe o nome do assunto.";
       return;
     }
 
@@ -939,95 +948,376 @@ const AdminAlunos = {
   async init() {
     if (!(await requireAdmin())) return;
 
-    const form = document.getElementById("formCriarAluno");
-    const btnBuscar = document.getElementById("btnBuscarAlunos");
+    const form =
+      document.getElementById(
+        "formCriarAluno"
+      );
+
+    const btnBuscar =
+      document.getElementById(
+        "btnBuscarAlunos"
+      );
 
     if (form) {
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await this.criar();
-      });
+      form.addEventListener(
+        "submit",
+        async (e) => {
+          e.preventDefault();
+
+          await this.criar();
+        }
+      );
     }
 
     if (btnBuscar) {
-      btnBuscar.addEventListener("click", async () => {
-        await this.buscar();
-      });
+      btnBuscar.addEventListener(
+        "click",
+        async () => {
+          await this.buscar();
+        }
+      );
     }
   },
 
   async criar() {
-    const nome = (document.getElementById("alunoNome")?.value || "").trim();
-    const email = (document.getElementById("alunoEmail")?.value || "").trim();
-    const senha = (document.getElementById("alunoSenha")?.value || "").trim();
-    const is_admin = !!document.getElementById("alunoIsAdmin")?.checked;
+    const nome =
+      (
+        document.getElementById(
+          "alunoNome"
+        )?.value || ""
+      ).trim();
 
-    const msg = document.getElementById("msgCriarAluno");
-    if (msg) msg.innerHTML = "Criando usuário...";
+    const cpf =
+      (
+        document.getElementById(
+          "novoUsuarioCpf"
+        )?.value || ""
+      ).trim();
+
+    const data_nascimento =
+      (
+        document.getElementById(
+          "novoUsuarioDataNascimento"
+        )?.value || ""
+      ).trim();
+
+    const email =
+      (
+        document.getElementById(
+          "alunoEmail"
+        )?.value || ""
+      ).trim();
+
+    const telefone =
+      (
+        document.getElementById(
+          "novoUsuarioTelefone"
+        )?.value || ""
+      ).trim();
+
+    const senha =
+      (
+        document.getElementById(
+          "alunoSenha"
+        )?.value || ""
+      ).trim();
+
+    const confirmarSenha =
+      (
+        document.getElementById(
+          "novoUsuarioConfirmarSenha"
+        )?.value || ""
+      ).trim();
+
+    const is_admin =
+      !!document.getElementById(
+        "alunoIsAdmin"
+      )?.checked;
+
+    const msg =
+      document.getElementById(
+        "msgCriarAluno"
+      );
+
+    if (
+      !nome ||
+      !cpf ||
+      !data_nascimento ||
+      !email ||
+      !telefone ||
+      !senha ||
+      !confirmarSenha
+    ) {
+      if (msg) {
+        msg.innerHTML =
+          "Preencha todas as informações para criar o usuário.";
+      }
+
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      if (msg) {
+        msg.innerHTML =
+          "A senha e a confirmação da senha não coincidem.";
+      }
+
+      return;
+    }
+
+    if (msg) {
+      msg.innerHTML =
+        "Criando usuário...";
+    }
 
     try {
-      // ✅ aqui estava o erro: você não estava mandando is_admin
-      const r = await apiPostAuth("/admin/alunos", { nome, email, senha, is_admin });
+      const r =
+        await apiPostAuth(
+          "/admin/alunos",
+          {
+            nome,
+            cpf,
+            data_nascimento,
+            email,
+            telefone,
+            senha,
+            is_admin
+          }
+        );
 
       if (msg) {
         msg.innerHTML = `
           <div class="disciplina">
-            ✅ Usuário criado!<br/>
-            id=<b>${esc(r.id)}</b> • ${esc(r.nome)} • ${esc(r.email)} • is_admin=${esc(r.is_admin)}
+            ${
+              is_admin
+                ? "✅ Usuário admin criado com sucesso!"
+                : "✅ Usuário aluno criado com sucesso!"
+            }
           </div>
         `;
       }
 
-      // limpa
-      const elNome = document.getElementById("alunoNome");
-      const elEmail = document.getElementById("alunoEmail");
-      const elSenha = document.getElementById("alunoSenha");
-      const elIsAdmin = document.getElementById("alunoIsAdmin");
+      const elNome =
+        document.getElementById(
+          "alunoNome"
+        );
 
-      if (elNome) elNome.value = "";
-      if (elEmail) elEmail.value = "";
-      if (elSenha) elSenha.value = "";
-      if (elIsAdmin) elIsAdmin.checked = false;
+      const elCpf =
+        document.getElementById(
+          "novoUsuarioCpf"
+        );
+
+      const elDataNascimento =
+        document.getElementById(
+          "novoUsuarioDataNascimento"
+        );
+
+      const elEmail =
+        document.getElementById(
+          "alunoEmail"
+        );
+
+      const elTelefone =
+        document.getElementById(
+          "novoUsuarioTelefone"
+        );
+
+      const elSenha =
+        document.getElementById(
+          "alunoSenha"
+        );
+
+      const elConfirmarSenha =
+        document.getElementById(
+          "novoUsuarioConfirmarSenha"
+        );
+
+      const elIsAdmin =
+        document.getElementById(
+          "alunoIsAdmin"
+        );
+
+      if (elNome) {
+        elNome.value = "";
+      }
+
+      if (elCpf) {
+        elCpf.value = "";
+      }
+
+      if (elDataNascimento) {
+        elDataNascimento.value = "";
+      }
+
+      if (elEmail) {
+        elEmail.value = "";
+      }
+
+      if (elTelefone) {
+        elTelefone.value = "";
+      }
+
+      if (elSenha) {
+        elSenha.value = "";
+      }
+
+      if (elConfirmarSenha) {
+        elConfirmarSenha.value = "";
+      }
+
+      if (elIsAdmin) {
+        elIsAdmin.checked = false;
+      }
 
     } catch (err) {
-      if (msg) msg.innerHTML = `<pre style="white-space:pre-wrap; color:#6B4F3F">${esc(err.message)}</pre>`;
+      let mensagemErro =
+        String(
+          err?.message ||
+          "Não foi possível criar o usuário."
+        );
+
+      try {
+        const erroJson =
+          JSON.parse(mensagemErro);
+
+        if (erroJson?.detail) {
+          mensagemErro =
+            erroJson.detail;
+        }
+      } catch {
+        // Mantém a mensagem original.
+      }
+
+      if (msg) {
+        if (
+          mensagemErro.includes(
+            "Já existe usuário com esse email"
+          )
+        ) {
+          msg.innerHTML = `
+            <div class="disciplina">
+              Já existe usuário cadastrado com esse e-mail.
+            </div>
+          `;
+
+        } else if (
+          mensagemErro.includes(
+            "Já existe usuário com esse CPF"
+          )
+        ) {
+          msg.innerHTML = `
+            <div class="disciplina">
+              Já existe usuário cadastrado com esse CPF.
+            </div>
+          `;
+
+        } else {
+          msg.innerHTML = `
+            <div class="disciplina">
+              ${esc(mensagemErro)}
+            </div>
+          `;
+        }
+      }
     }
   },
 
   async buscar() {
-    const q = (document.getElementById("qAluno")?.value || "").trim();
-    const msg = document.getElementById("msgBuscarAlunos");
-    const box = document.getElementById("listaAlunos");
+    const q =
+      (
+        document.getElementById(
+          "qAluno"
+        )?.value || ""
+      ).trim();
 
-    if (msg) msg.innerHTML = "Buscando...";
-    if (box) box.innerHTML = "";
+    const msg =
+      document.getElementById(
+        "msgBuscarAlunos"
+      );
+
+    const box =
+      document.getElementById(
+        "listaAlunos"
+      );
+
+    if (msg) {
+      msg.innerHTML =
+        "Buscando...";
+    }
+
+    if (box) {
+      box.innerHTML = "";
+    }
 
     try {
-      const data = await apiGetAuth(`/admin/alunos${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+      const data =
+        await apiGetAuth(
+          `/admin/alunos${
+            q
+              ? `?q=${encodeURIComponent(q)}`
+              : ""
+          }`
+        );
 
-      if (!data || data.length === 0) {
-        if (msg) msg.innerHTML = "Nenhum usuário encontrado.";
-        if (box) box.innerHTML = "<p>Nenhum resultado.</p>";
+      if (
+        !data ||
+        data.length === 0
+      ) {
+        if (msg) {
+          msg.innerHTML =
+            "Nenhum usuário encontrado.";
+        }
+
+        if (box) {
+          box.innerHTML =
+            "<p>Nenhum resultado.</p>";
+        }
+
         return;
       }
 
-      if (msg) msg.innerHTML = `✅ ${data.length} usuário(s) encontrado(s).`;
+      if (msg) {
+        msg.innerHTML =
+          `✅ ${data.length} usuário(s) encontrado(s).`;
+      }
 
       if (box) {
         box.innerHTML = `
           <div class="list">
-            ${data.map(u => `
-              <div class="disciplina">
-                <b>#${esc(u.id)}</b> • ${esc(u.nome)}<br/>
-                <span style="opacity:.9">${esc(u.email)} • ativo=${esc(u.ativo)} • is_admin=${esc(u.is_admin)}</span>
-              </div>
-            `).join("")}
+            ${data.map(
+              u => `
+                <div class="disciplina">
+                  <b>#${esc(u.id)}</b>
+                  • ${esc(u.nome)}
+                  <br/>
+
+                  <span style="opacity:.9">
+                    ${esc(u.email)}
+                    • ativo=${esc(u.ativo)}
+                    • is_admin=${esc(u.is_admin)}
+                  </span>
+                </div>
+              `
+            ).join("")}
           </div>
         `;
       }
+
     } catch (err) {
-      if (msg) msg.innerHTML = `<pre style="white-space:pre-wrap; color:#6B4F3F">${esc(err.message)}</pre>`;
-      if (box) box.innerHTML = "";
+      if (msg) {
+        msg.innerHTML = `
+          <pre
+            style="
+              white-space:pre-wrap;
+              color:#6B4F3F;
+            "
+          >${esc(err.message)}</pre>
+        `;
+      }
+
+      if (box) {
+        box.innerHTML = "";
+      }
     }
   }
 };
@@ -1409,3 +1699,124 @@ const AdminAulas = {
     }
   }
 };
+
+const AdminQuestoesAluno = {
+  async init() {
+    if (!(await requireAdmin())) return;
+
+    await this.carregarCursos();
+    this.bind();
+  },
+
+  bind() {
+    document.getElementById("cursoSelectQuestoes")
+      ?.addEventListener("change", async () => {
+        await this.carregarDisciplinas();
+      });
+
+    document.getElementById("disciplinaSelectQuestoes")
+      ?.addEventListener("change", async () => {
+        await this.carregarAssuntos();
+      });
+
+    document.getElementById("btnAbrirQuestoes")
+      ?.addEventListener("click", () => {
+        this.abrirQuestoes();
+      });
+  },
+
+  async carregarCursos() {
+    const select = document.getElementById("cursoSelectQuestoes");
+
+    const todosCursos = await apiGetAuth("/admin/cursos");
+
+    // Exibe somente cursos ativos
+    const cursos = (todosCursos || []).filter(
+      c => c.ativo === true
+    );
+
+    if (cursos.length === 0) {
+      select.innerHTML = `
+        <option value="">
+          Nenhum curso ativo encontrado
+        </option>
+      `;
+      return;
+    }
+
+    select.innerHTML = cursos.map(c => `
+      <option value="${c.id}">
+        ${esc(c.nome)}
+      </option>
+    `).join("");
+
+    await this.carregarDisciplinas();
+  },
+
+  async carregarDisciplinas() {
+    const cursoId = document.getElementById("cursoSelectQuestoes")?.value;
+    const select = document.getElementById("disciplinaSelectQuestoes");
+
+    if (!cursoId || !select) return;
+
+    const disciplinas = await apiGetAuth(
+      `/admin/cursos/${cursoId}/disciplinas`
+    );
+
+    select.innerHTML = disciplinas.map(d => `
+      <option value="${d.id}">
+        ${esc(d.nome)}
+      </option>
+    `).join("");
+
+    await this.carregarAssuntos();
+  },
+
+  async carregarAssuntos() {
+    const cursoId = document.getElementById("cursoSelectQuestoes")?.value;
+    const disciplinaId = document.getElementById("disciplinaSelectQuestoes")?.value;
+    const select = document.getElementById("assuntoSelectQuestoes");
+
+    if (!cursoId || !disciplinaId || !select) return;
+
+    const assuntos = await apiGetAuth(
+      `/admin/cursos/${cursoId}/disciplinas/${disciplinaId}/assuntos`
+    );
+
+    select.innerHTML = assuntos.map(a => `
+      <option value="${a.id}">
+        ${esc(a.nome)}
+      </option>
+    `).join("");
+  },
+
+  abrirQuestoes() {
+    const cursoSelect = document.getElementById("cursoSelectQuestoes");
+    const disciplinaSelect = document.getElementById("disciplinaSelectQuestoes");
+    const assuntoSelect = document.getElementById("assuntoSelectQuestoes");
+
+    const cursoId = cursoSelect.value;
+    const cursoNome = cursoSelect.options[cursoSelect.selectedIndex]?.text || "";
+
+    const disciplinaId = disciplinaSelect.value;
+    const disciplinaNome = disciplinaSelect.options[disciplinaSelect.selectedIndex]?.text || "";
+
+    const assuntoId = assuntoSelect.value;
+    const assuntoNome = assuntoSelect.options[assuntoSelect.selectedIndex]?.text || "";
+
+    if (!cursoId || !disciplinaId || !assuntoId) {
+      alert("Selecione curso, disciplina e assunto.");
+      return;
+    }
+
+    window.location.href =
+      `admin-questoes-pratica.html?curso_id=${encodeURIComponent(cursoId)}` +
+      `&curso_nome=${encodeURIComponent(cursoNome)}` +
+      `&disciplina_id=${encodeURIComponent(disciplinaId)}` +
+      `&disciplina_nome=${encodeURIComponent(disciplinaNome)}` +
+      `&assunto_id=${encodeURIComponent(assuntoId)}` +
+      `&assunto_nome=${encodeURIComponent(assuntoNome)}`;
+  }
+};
+
+window.AdminQuestoesAluno = AdminQuestoesAluno;

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Mensagens de questões</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        💬 Mensagens de questões
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- ABAS -->
+    <div class="card">
+
+      <div
+        style="
+          display:flex;
+          gap:22px;
+          flex-wrap:wrap;
+        "
+      >
+        <button
+          id="btnAbaAtendimento"
+          class="btn"
+          type="button"
+          onclick="trocarAba('atendimento')"
+        >
+          Mensagens em atendimento
+        </button>
+
+        <button
+          id="btnAbaConcluidos"
+          class="btn"
+          type="button"
+          onclick="trocarAba('concluidos')"
+        >
+          Chats concluídos
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card">
+
+      <h2>
+        Filtros
+      </h2>
+
+      <div
+        style="
+          display:flex;
+          flex-direction:column;
+          gap:14px;
+          margin-top:12px;
+        "
+      >
+        <div>
+          <label for="filtro_curso">
+            <b>Curso</b>
+          </label>
+
+          <br>
+
+          <select
+            id="filtro_curso"
+            style="width:250px;"
+          ></select>
+        </div>
+
+        <div>
+          <label for="filtro_disciplina">
+            <b>Disciplina</b>
+          </label>
+
+          <br>
+
+          <select
+            id="filtro_disciplina"
+            style="width:250px;"
+          ></select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TOTAL -->
+    <div
+      class="card"
+      style="
+        padding:8px 25px;
+        min-height:58px;
+        display:flex;
+        align-items:center;
+      "
+    >
+      <h2
+        id="titulo_total"
+        style="margin-bottom:0;"
+      >
+        Total: 0
+      </h2>
+    </div>
+
+    <!-- MENSAGENS -->
+    <div id="area_mensagens"></div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+    let abaAtual = "atendimento";
+    let mensagensAtendimento = [];
+    let mensagensConcluidas = [];
+
+    function getToken() {
+      return localStorage.getItem(
+        "access_token"
+      );
+    }
+
+    function esc(texto) {
+      if (texto == null) return "";
+
+      return String(texto)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    async function apiGetAdmin(path) {
+      const token = getToken();
+
+      const res = await fetch(
+        `${API_BASE}${path}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        const txt = await res.text();
+
+        throw new Error(
+          txt || `Erro ${res.status}`
+        );
+      }
+
+      return await res.json();
+    }
+
+    async function apiPostAdmin(
+      path,
+      body
+    ) {
+      const token = getToken();
+
+      const res = await fetch(
+        `${API_BASE}${path}`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`
+          },
+
+          body: JSON.stringify(
+            body || {}
+          )
+        }
+      );
+
+      if (!res.ok) {
+        const txt = await res.text();
+
+        throw new Error(
+          txt || `Erro ${res.status}`
+        );
+      }
+
+      return await res.json();
+    }
+
+    async function carregarMensagens() {
+      try {
+        mensagensAtendimento =
+          await apiGetAdmin(
+            "/admin/mensagens-questoes?concluidas=false"
+          );
+
+        mensagensConcluidas =
+          await apiGetAdmin(
+            "/admin/mensagens-questoes?concluidas=true"
+          );
+
+        atualizarBotoesAbas();
+        configurarHoverAbas();
+        preencherFiltros();
+        renderizarMensagens();
+
+      } catch (err) {
+        console.error(err);
+
+        document
+          .getElementById("area_mensagens")
+          .innerHTML = `
+            <div class="card">
+              Erro ao carregar mensagens.
+            </div>
+          `;
+      }
+    }
+
+    function dadosDaAba() {
+      return abaAtual === "concluidos"
+        ? mensagensConcluidas
+        : mensagensAtendimento;
+    }
+
+    function trocarAba(aba) {
+      abaAtual = aba;
+
+      document
+        .getElementById("filtro_curso")
+        .value = "";
+
+      document
+        .getElementById("filtro_disciplina")
+        .value = "";
+
+      atualizarBotoesAbas();
+      preencherFiltros();
+      renderizarMensagens();
+    }
+
+    function preencherFiltros() {
+      const dados = dadosDaAba();
+
+      const cursoSelect =
+        document.getElementById(
+          "filtro_curso"
+        );
+
+      const disciplinaSelect =
+        document.getElementById(
+          "filtro_disciplina"
+        );
+
+      const cursoAtual =
+        cursoSelect.value;
+
+      const disciplinaAtual =
+        disciplinaSelect.value;
+
+      const cursos = [
+        ...new Map(
+          dados.map(mensagem => [
+            mensagem.curso_id,
+            {
+              id: mensagem.curso_id,
+              nome: mensagem.curso_nome
+            }
+          ])
+        ).values()
+      ].sort(
+        (a, b) =>
+          String(a.nome).localeCompare(
+            String(b.nome)
+          )
+      );
+
+      cursoSelect.innerHTML =
+        `<option value="">TODOS</option>`;
+
+      cursos.forEach(curso => {
+        cursoSelect.innerHTML += `
+          <option value="${curso.id}">
+            ${esc(curso.nome)}
+          </option>
+        `;
+      });
+
+      if (
+        [...cursoSelect.options].some(
+          opcao =>
+            opcao.value === cursoAtual
+        )
+      ) {
+        cursoSelect.value = cursoAtual;
+      }
+
+      let dadosDisciplinas = dados;
+
+      if (cursoSelect.value) {
+        dadosDisciplinas =
+          dadosDisciplinas.filter(
+            mensagem =>
+              String(
+                mensagem.curso_id
+              ) === cursoSelect.value
+          );
+      }
+
+      const disciplinas = [
+        ...new Map(
+          dadosDisciplinas.map(
+            mensagem => [
+              mensagem.disciplina_id,
+              {
+                id:
+                  mensagem.disciplina_id,
+
+                nome:
+                  mensagem.disciplina_nome
+              }
+            ]
+          )
+        ).values()
+      ].sort(
+        (a, b) =>
+          String(a.nome).localeCompare(
+            String(b.nome)
+          )
+      );
+
+      disciplinaSelect.innerHTML =
+        `<option value="">TODAS</option>`;
+
+      disciplinas.forEach(
+        disciplina => {
+          disciplinaSelect.innerHTML += `
+            <option value="${disciplina.id}">
+              ${esc(disciplina.nome)}
+            </option>
+          `;
+        }
+      );
+
+      if (
+        [...disciplinaSelect.options].some(
+          opcao =>
+            opcao.value === disciplinaAtual
+        )
+      ) {
+        disciplinaSelect.value =
+          disciplinaAtual;
+      }
+
+      cursoSelect.onchange = () => {
+        document
+          .getElementById(
+            "filtro_disciplina"
+          )
+          .value = "";
+
+        preencherFiltros();
+        renderizarMensagens();
+      };
+
+      disciplinaSelect.onchange =
+        renderizarMensagens;
+    }
+
+    function renderizarMensagens() {
+      const cursoId =
+        document.getElementById(
+          "filtro_curso"
+        ).value;
+
+      const disciplinaId =
+        document.getElementById(
+          "filtro_disciplina"
+        ).value;
+
+      let dados = [
+        ...dadosDaAba()
+      ];
+
+      if (cursoId) {
+        dados = dados.filter(
+          mensagem =>
+            String(
+              mensagem.curso_id
+            ) === cursoId
+        );
+      }
+
+      if (disciplinaId) {
+        dados = dados.filter(
+          mensagem =>
+            String(
+              mensagem.disciplina_id
+            ) === disciplinaId
+        );
+      }
+
+      document
+        .getElementById("titulo_total")
+        .innerText =
+          `Total: ${dados.length}`;
+
+      if (!dados.length) {
+        document
+          .getElementById("area_mensagens")
+          .innerHTML = `
+            <div class="card">
+              ${
+                abaAtual === "concluidos"
+                  ? "Não há chat concluído."
+                  : "Não há mensagem em atendimento."
+              }
+            </div>
+          `;
+
+        return;
+      }
+
+      let html = "";
+
+      dados.forEach(conversa => {
+        html +=
+          montarCardConversa(
+            conversa
+          );
+      });
+
+      document
+        .getElementById("area_mensagens")
+        .innerHTML = html;
+    }
+
+    function montarCardConversa(conversa) {
+      const ultimaMensagem =
+        conversa.mensagens?.length
+          ? conversa.mensagens[
+              conversa.mensagens.length - 1
+            ]
+          : null;
+
+      const podeResponder =
+        abaAtual === "atendimento" &&
+        conversa.status !== "ENCERRADA" &&
+        ultimaMensagem &&
+        ultimaMensagem.autor === "ALUNO";
+
+      const aguardandoAluno =
+        abaAtual === "atendimento" &&
+        conversa.status !== "ENCERRADA" &&
+        ultimaMensagem &&
+        ultimaMensagem.autor ===
+          "PROFESSOR";
+
+      const ehCertoErrado =
+        conversa.gabarito === "C" ||
+        conversa.gabarito === "E";
+
+      const respostaCorreta =
+        ehCertoErrado
+          ? (
+              conversa.gabarito === "C"
+                ? "CERTO"
+                : "ERRADO"
+            )
+          : (
+              conversa.gabarito || ""
+            );
+
+      return `
+        <div class="card">
+
+          <h2 style="margin-bottom:4px;">
+            ${
+              esc(
+                conversa.aluno_nome ||
+                "Aluno"
+              )
+            }
+          </h2>
+
+          <div
+            style="
+              font-weight:bold;
+              margin-bottom:24px;
+            "
+          >
+            ${
+              esc(
+                conversa.curso_nome ||
+                ""
+              )
+            }
+          </div>
+
+          <div
+            style="
+              opacity:.85;
+              margin-bottom:14px;
+            "
+          >
+            ${
+              esc(
+                conversa.disciplina_nome ||
+                ""
+              )
+            }
+          </div>
+
+          <div
+            style="
+              font-weight:bold;
+              white-space:normal;
+              text-align:justify;
+              text-indent:0;
+              margin-top:12px;
+            "
+          >
+            ${
+              ehCertoErrado
+                ? `
+                  ${esc(conversa.enunciado)}
+                  (${respostaCorreta})
+                `
+                : esc(conversa.enunciado)
+            }
+          </div>
+
+          ${
+            ehCertoErrado
+              ? ""
+              : `
+                <div style="margin-top:8px;">
+                  ${esc(respostaCorreta)}
+                </div>
+              `
+          }
+
+          <div
+            style="
+              margin-top:8px;
+              white-space:normal;
+              text-align:justify;
+              text-indent:0;
+            "
+          >
+            ${esc(conversa.comentario || "")}
+          </div>
+
+          <div style="margin-top:30px;">
+            ${montarMensagens(conversa)}
+          </div>
+
+          ${
+            podeResponder
+              ? montarAreaResposta(
+                  conversa.conversa_id
+                )
+
+              : aguardandoAluno
+                ? `
+                  <div
+                    style="
+                      margin-top:16px;
+                      opacity:.8;
+                      font-size:.9rem;
+                    "
+                  >
+                    Aguardando nova mensagem do aluno.
+                  </div>
+                `
+
+                : conversa.status === "ENCERRADA"
+                  ? `
+                    <div
+                      style="
+                        margin-top:16px;
+                        opacity:.8;
+                        font-size:.9rem;
+                      "
+                    >
+                      Chat finalizado.
+                    </div>
+                  `
+
+                  : ""
+          }
+
+        </div>
+      `;
+    }
+
+    function formatarData(dataIso) {
+      if (!dataIso) return "";
+
+      const data =
+        new Date(dataIso);
+
+      const dia =
+        String(data.getDate())
+          .padStart(2, "0");
+
+      const mes =
+        String(
+          data.getMonth() + 1
+        ).padStart(2, "0");
+
+      const ano =
+        data.getFullYear();
+
+      return `${dia}-${mes}-${ano}`;
+    }
+
+    function montarMensagens(conversa) {
+      return (
+        conversa.mensagens || []
+      ).map(mensagem => {
+        const ehAluno =
+          mensagem.autor === "ALUNO";
+
+        return `
+          <div
+            style="
+              margin-top:12px;
+              padding:14px;
+              border-radius:8px;
+              background:${
+                ehAluno
+                  ? "#fff8dc"
+                  : "#eef6ff"
+              };
+              border-left:5px solid ${
+                ehAluno
+                  ? "#e6d85a"
+                  : "#1F4E79"
+              };
+            "
+          >
+            <div
+              style="
+                margin-bottom:6px;
+                opacity:.78;
+                font-size:.9rem;
+              "
+            >
+              ${ehAluno ? "Aluno" : "Prof"}
+            </div>
+
+            <div
+              style="
+                white-space:normal;
+                text-align:justify;
+                text-indent:0;
+              "
+            >
+              ${esc(mensagem.texto)}
+            </div>
+
+            <div
+              style="
+                margin-top:4px;
+                text-align:right;
+                font-size:.62rem;
+                opacity:.45;
+              "
+            >
+              ${
+                formatarData(
+                  mensagem.criada_em
+                )
+              }
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function montarAreaResposta(
+      conversaId
+    ) {
+      return `
+        <div
+          style="
+            margin-top:18px;
+            padding:12px;
+            background:#f8f8f8;
+            border-radius:6px;
+          "
+        >
+          <h3>
+            Responder ao aluno
+          </h3>
+
+          <textarea
+            id="resposta_${conversaId}"
+            placeholder="Escreva sua resposta..."
+            style="
+              width:100%;
+              min-height:110px;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          ></textarea>
+
+          <div style="margin-top:12px;">
+            <button
+              class="btn"
+              type="button"
+              onclick="responderAluno(${conversaId})"
+            >
+              Responder
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function responderAluno(
+      conversaId
+    ) {
+      const campo =
+        document.getElementById(
+          `resposta_${conversaId}`
+        );
+
+      if (!campo) return;
+
+      const texto =
+        campo.value.trim();
+
+      if (!texto) {
+        alert(
+          "Escreva a resposta antes de enviar."
+        );
+
+        return;
+      }
+
+      const confirmar = confirm(
+        "Confirma enviar esta resposta ao aluno? " +
+        "Após o envio, ela não poderá ser editada."
+      );
+
+      if (!confirmar) return;
+
+      try {
+        await apiPostAdmin(
+          `/admin/mensagens-questoes/${conversaId}/responder`,
+          {
+            texto
+          }
+        );
+
+        await carregarMensagens();
+
+      } catch (err) {
+        console.error(err);
+
+        alert(
+          "Erro ao enviar resposta: " +
+          err.message
+        );
+      }
+    }
+
+    function atualizarBotoesAbas() {
+      const btnAtendimento =
+        document.getElementById(
+          "btnAbaAtendimento"
+        );
+
+      const btnConcluidos =
+        document.getElementById(
+          "btnAbaConcluidos"
+        );
+
+      if (
+        !btnAtendimento ||
+        !btnConcluidos
+      ) {
+        return;
+      }
+
+      const ativar = botao => {
+        botao.style.background =
+          "#fdee8a";
+
+        botao.style.color =
+          "#1F4E79";
+
+        botao.style.border =
+          "3px solid #1F4E79";
+
+        botao.style.boxShadow =
+          "0 0 0 2px rgba(31,78,121,.12)";
+      };
+
+      const desativar = botao => {
+        botao.style.background =
+          "#fdee8a";
+
+        botao.style.color =
+          "#1F4E79";
+
+        botao.style.border =
+          "1px solid #ddd";
+
+        botao.style.boxShadow =
+          "none";
+      };
+
+      if (abaAtual === "atendimento") {
+        ativar(btnAtendimento);
+        desativar(btnConcluidos);
+
+      } else {
+        ativar(btnConcluidos);
+        desativar(btnAtendimento);
+      }
+    }
+
+    function configurarHoverAbas() {
+      const botoes = [
+        document.getElementById(
+          "btnAbaAtendimento"
+        ),
+
+        document.getElementById(
+          "btnAbaConcluidos"
+        )
+      ];
+
+      botoes.forEach(botao => {
+        if (!botao) return;
+
+        botao.addEventListener(
+          "mouseenter",
+          () => {
+            botao.style.background =
+              "#eef6ff";
+
+            botao.style.color =
+              "#1F4E79";
+          }
+        );
+
+        botao.addEventListener(
+          "mouseleave",
+          () => {
+            atualizarBotoesAbas();
+          }
+        );
+      });
+    }
+
+    requireAdmin();
+    carregarMensagens();
+  </script>
+
+</body>
+
+</html>

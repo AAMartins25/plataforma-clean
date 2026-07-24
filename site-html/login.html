@@ -1,207 +1,401 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Login</title>
-  <link rel="stylesheet" href="css/style.css" />
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
 </head>
+
 <body>
 
-  <header style="padding-top:12px;padding-bottom:15px;">
-    <div style="margin-top:18px;">
-      <h1 style="margin-bottom:2px;">🔐 Login</h1>
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        🔐 Login
+      </h1>
     </div>
-    <nav>
-      <a href="index.html" class="btn">Início</a>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
     </nav>
-    
   </header>
 
   <main class="container">
-    <div class="card">
-      <h2> Acessar minha área de estudo</h2>
 
-      <div id="msg" style="margin: 10px 0;"></div>
+    <div class="card">
+
+      <h2>
+        Acessar minha área
+      </h2>
+
+      <div
+        id="msg"
+        style="margin:10px 0;"
+      ></div>
 
       <form id="formLogin">
+
         <div class="list">
-          <label>
-            Email ou CPF:
-            <input id="email" type="email" required placeholder="email ou CPF" style="padding:12px; border:1px solid #ddd; border-radius:6px; width:100%;">
+
+          <label for="email">
+            <b>E-mail ou CPF</b>
           </label>
 
-          <label>
-            Senha:
+          <input
+            id="email"
+            type="text"
+            required
+            autocomplete="username"
+            placeholder="Informe seu e-mail ou CPF"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
 
-            <div style="position:relative; width:100%;">
-              <input
-                id="senha"
-                type="password"
-                required
-                placeholder="********"
-                style="
-                  padding:12px;
-                  padding-right:48px;
-                  border:1px solid #ddd;
-                  border-radius:6px;
-                  width:100%;
-                "
-              >
-
-              <button
-                type="button"
-                id="toggleSenha"
-                style="
-                  position:absolute;
-                  right:10px;
-                  top:50%;
-                  transform:translateY(-50%);
-                  border:none;
-                  background:none;
-                  cursor:pointer;
-                  font-size:1rem;
-                "
-              >
-                👁
-              </button>
-            </div>
+          <label for="senha">
+            <b>Senha</b>
           </label>
 
-          <button type="submit" class="btn">Entrar</button>
-          <div style="
-            margin-top:35px;
-            display:flex;
-            align-items:center;
-            gap:126px;
-            flex-wrap:wrap;
-          ">
-
-            <div style="
-              font-weight:bold;
-              white-space:nowrap;
-            ">
-              Recuperar senha:
-            </div>
-
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
             <input
-              id="recuperarLogin"
-              type="text"
-              placeholder="Informe seu Email ou CPF"
+              id="senha"
+              type="password"
+              required
+              autocomplete="current-password"
+              placeholder="Informe sua senha"
               style="
-                padding:10px;
+                width:100%;
+                padding:12px;
+                padding-right:48px;
                 border:1px solid #ddd;
                 border-radius:6px;
-                width:320px;
               "
             >
 
             <button
               type="button"
-              class="btn"
-              onclick="recuperarSenha()"
+              id="toggleSenha"
+              title="Mostrar ou ocultar senha"
+              aria-label="Mostrar ou ocultar senha"
               style="
-                margin:0;
-                height:37px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
               "
             >
-              Recuperar
+              👁
             </button>
-
           </div>
 
-          <div id="msgRecuperarSenha" style="margin-top:8px;"></div>
-          <a class="btn" href="register.html">Não tenho cadastro (cadastrar agora)</a>
+          <button
+            type="submit"
+            class="btn"
+          >
+            Entrar
+          </button>
+
         </div>
+
       </form>
+
+      <!-- RECUPERAÇÃO DE SENHA -->
+      <div
+        class="assunto"
+        style="margin-top:30px;"
+      >
+        <h3 style="margin-top:0;">
+          Recuperar ou atualizar minha senha
+        </h3>
+
+        <div
+          style="
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+            flex-wrap:wrap;
+            margin-top:12px;
+          "
+        >
+          <input
+            id="recuperarLogin"
+            type="text"
+            placeholder="Informe seu e-mail ou CPF"
+            style="
+              flex:1;
+              height:41px;
+              min-width:240px;
+              padding:10px;
+              top:-16px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
+
+          <button
+            type="button"
+            class="btn"
+            onclick="recuperarSenha()"
+            style="
+              height:41px;
+              margin-top:0px;"
+          >
+            Recuperar / atualizar
+          </button>
+        </div>
+
+        <div
+          id="msgRecuperarSenha"
+          style="margin-top:10px;"
+        ></div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <a
+          class="btn"
+          href="register.html"
+          title="Cadastrar-se na plataforma"
+          style="
+            height:48px;
+            display:block;
+            top:-14px;
+            text-align:center;
+          "
+        >
+          Não possuo cadastro
+        </a>
+      </div>
+
     </div>
+
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
   <script src="js/app.js"></script>
   <script src="js/login.js"></script>
 
   <script>
-    const btnToggleSenha = document.getElementById("toggleSenha");
-    const campoSenha = document.getElementById("senha");
+    const btnToggleSenha =
+      document.getElementById("toggleSenha");
 
-    btnToggleSenha.addEventListener("click", () => {
+    const campoSenha =
+      document.getElementById("senha");
 
-      if (campoSenha.type === "password") {
-        campoSenha.type = "text";
-        btnToggleSenha.textContent = "🙈";
-      } else {
-        campoSenha.type = "password";
-        btnToggleSenha.textContent = "👁";
-      }
+    if (btnToggleSenha && campoSenha) {
+      btnToggleSenha.addEventListener(
+        "click",
+        () => {
+          const senhaEstaOculta =
+            campoSenha.type === "password";
 
-    });
-  </script>
-  <script>
+          campoSenha.type =
+            senhaEstaOculta
+              ? "text"
+              : "password";
+
+          btnToggleSenha.textContent =
+            senhaEstaOculta
+              ? "🙈"
+              : "👁";
+        }
+      );
+    }
+
     function somenteDigitos(valor) {
-      return String(valor || "").replace(/\D/g, "");
+      return String(valor || "")
+        .replace(/\D/g, "");
     }
 
     function formatarCpf(valor) {
-      let v = somenteDigitos(valor).slice(0, 11);
+      let v =
+        somenteDigitos(valor)
+          .slice(0, 11);
 
-      v = v.replace(/^(\d{3})(\d)/, "$1.$2");
-      v = v.replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
-      v = v.replace(/\.(\d{3})(\d)/, ".$1-$2");
+      v = v.replace(
+        /^(\d{3})(\d)/,
+        "$1.$2"
+      );
+
+      v = v.replace(
+        /^(\d{3})\.(\d{3})(\d)/,
+        "$1.$2.$3"
+      );
+
+      v = v.replace(
+        /\.(\d{3})(\d)/,
+        ".$1-$2"
+      );
 
       return v;
     }
 
-    const campoRecuperar = document.getElementById("recuperarLogin");
+    const campoRecuperar =
+      document.getElementById(
+        "recuperarLogin"
+      );
 
-    campoRecuperar.addEventListener("input", () => {
-      const valor = campoRecuperar.value;
+    if (campoRecuperar) {
+      campoRecuperar.addEventListener(
+        "input",
+        () => {
+          const valor =
+            campoRecuperar.value;
 
-      const pareceCpf = /^[\d.\-]+$/.test(valor);
+          const pareceCpf =
+            /^[\d.\-]+$/.test(valor);
 
-      if (pareceCpf) {
-        campoRecuperar.value = formatarCpf(valor);
-      }
-    });
+          if (pareceCpf) {
+            campoRecuperar.value =
+              formatarCpf(valor);
+          }
+        }
+      );
+    }
 
     async function recuperarSenha() {
-      const valor = document.getElementById("recuperarLogin").value.trim();
-      const msg = document.getElementById("msgRecuperarSenha");
+      const campo =
+        document.getElementById(
+          "recuperarLogin"
+        );
+
+      const msg =
+        document.getElementById(
+          "msgRecuperarSenha"
+        );
+
+      const valor =
+        campo?.value.trim() || "";
 
       if (!valor) {
-        msg.textContent = "Informe seu Email ou CPF.";
-        msg.style.color = "#8a1f1f";
+        msg.textContent =
+          "Informe seu e-mail ou CPF.";
+
+        msg.style.color =
+          "#8a1f1f";
+
         return;
       }
 
       try {
-        const res = await fetch(`${API_BASE}/recuperar-senha`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ login: valor })
-        });
+        msg.textContent =
+          "Processando...";
 
-        const data = await res.json();
+        msg.style.color = "";
+
+        const res = await fetch(
+          `${API_BASE}/recuperar-senha`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              login: valor
+            })
+          }
+        );
+
+        const data =
+          await res.json();
 
         if (!res.ok) {
-          throw new Error(data.detail || "Erro ao recuperar senha.");
+          throw new Error(
+            data.detail ||
+            "Erro ao recuperar senha."
+          );
         }
 
-        msg.textContent = data.message;
-        msg.style.color = "#2f5e46";
+        msg.textContent =
+          data.message;
+
+        msg.style.color =
+          "#2f5e46";
 
       } catch (err) {
-        msg.textContent = err.message;
-        msg.style.color = "#8a1f1f";
+        msg.textContent =
+          err.message;
+
+        msg.style.color =
+          "#8a1f1f";
       }
     }
-  </script>
-</body>
-</html>
 
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+  </script>
+
+</body>
+
+</html>

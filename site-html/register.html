@@ -7,15 +7,31 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header style="padding-top:10px;padding-bottom:5px;">
-    <div style="margin-top:20px;">
-      <h1 style="margin-bottom:-5px;">📝 Criar conta</h1>
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        📝 Criar conta
+      </h1>
     </div>
-
-    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a class="btn" href="index.html">Início</a>
-      <a class="btn" href="login.html">Login</a>
-    </nav>
   </header>
 
   <main class="container">
@@ -93,26 +109,40 @@
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
   <script src="js/app.js"></script>
   <script src="js/register.js"></script>
 
   <script>
-    const btnToggleSenha = document.getElementById("toggleSenha");
-    const campoSenha = document.getElementById("senha");
+    const btnToggleSenha =
+      document.getElementById("toggleSenha");
 
-    btnToggleSenha.addEventListener("click", () => {
-      if (campoSenha.type === "password") {
-        campoSenha.type = "text";
-        btnToggleSenha.textContent = "🙈";
-      } else {
-        campoSenha.type = "password";
-        btnToggleSenha.textContent = "👁";
-      }
-    });
+    const campoSenha =
+      document.getElementById("senha");
+
+    if (btnToggleSenha && campoSenha) {
+      btnToggleSenha.addEventListener("click", () => {
+        if (campoSenha.type === "password") {
+          campoSenha.type = "text";
+          btnToggleSenha.textContent = "🙈";
+        } else {
+          campoSenha.type = "password";
+          btnToggleSenha.textContent = "👁";
+        }
+      });
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
   </script>
-  
 </body>
 </html>

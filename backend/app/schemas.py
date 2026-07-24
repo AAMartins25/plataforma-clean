@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class CursoCreate(BaseModel):
     nome: str
@@ -20,6 +20,7 @@ class DisciplinaResponse(BaseModel):
     id: int
     nome: str
     ativo: bool
+    disponivel_demonstracao: bool
 
     class Config:
         from_attributes = True
@@ -82,6 +83,7 @@ class BateriaCreate(BaseModel):
     aula_id: int
     titulo: str
     ordem: int = 1
+    status: str = "EM_ANDAMENTO"
     ativo: bool = True
 
 class BateriaResponse(BaseModel):
@@ -94,9 +96,14 @@ class BateriaResponse(BaseModel):
 class QuestaoCreate(BaseModel):
     bateria_id: int
     enunciado: str
-    tipo: str  # "MULTIPLA" ou "CERTO_ERRADO"
+    tipo: str
     ordem: int = 1
     ativo: bool = True
+
+    tipo_questao: str | None = None
+    quantidade_alternativas: int | None = None
+    gabarito: str | None = None
+    comentario: str | None = None
 
 
 class AlternativaCreate(BaseModel):
@@ -107,7 +114,6 @@ class AlternativaCreate(BaseModel):
 
 class ComentarioGeralCreate(BaseModel):
     texto: str
-
 
 from typing import Optional
 
@@ -134,7 +140,10 @@ class UsuarioCreate(BaseModel):
     email: EmailStr
     cpf: str
     telefone: str
-    senha: str = Field(min_length=8, max_length=64)
+    senha: str = Field(
+        min_length=8,
+        max_length=64
+    )
 
 class UsuarioResponse(BaseModel):
     id: int
@@ -142,6 +151,11 @@ class UsuarioResponse(BaseModel):
     email: EmailStr
     ativo: bool
     is_admin: bool
+
+    perfil_inicial: str
+    is_vendedor: bool = False
+    is_aluno: bool = False
+    tem_cursos: bool = False
 
     class Config:
         from_attributes = True
@@ -157,7 +171,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 class AcessoCursoCreate(BaseModel):
@@ -186,3 +200,272 @@ class ProgressoAulaResponse(BaseModel):
 
 class RecuperarSenhaRequest(BaseModel):
     login: str
+
+class AtendimentoCreate(BaseModel):
+    assunto: str
+    mensagem: str
+
+class AtendimentoResponse(BaseModel):
+    id: int
+    usuario_id: int
+    assunto: str
+    mensagem: str
+    status: str
+    resposta_admin: str | None = None
+    criado_em: datetime
+
+    class Config:
+        from_attributes = True
+
+class CursoDisciplinaPropriaCreate(BaseModel):
+    curso_id: int
+    nome: str
+    ativo: bool = True
+    ordem: int = 1
+
+
+class CursoDisciplinaPropriaUpdate(BaseModel):
+    nome: str | None = None
+    ativo: bool | None = None
+    ordem: int | None = None
+
+
+class CursoDisciplinaPropriaResponse(BaseModel):
+    id: int
+    curso_id: int
+    nome: str
+    ativo: bool
+    ordem: int
+    bloqueada: bool = False
+
+    class Config:
+        from_attributes = True
+
+class CursoAssuntoProprioCreate(BaseModel):
+    curso_disciplina_propria_id: int
+    nome: str
+    descricao: str | None = None
+    ativo: bool = True
+    ordem: int = 1
+
+
+class CursoAssuntoProprioUpdate(BaseModel):
+    nome: str | None = None
+    descricao: str | None = None
+    ativo: bool | None = None
+    ordem: int | None = None
+
+
+class CursoAssuntoProprioResponse(BaseModel):
+    id: int
+    curso_disciplina_propria_id: int
+    nome: str
+    descricao: str | None = None
+    ativo: bool
+    ordem: int
+
+    class Config:
+        from_attributes = True
+
+class AulaUpdate(BaseModel):
+    titulo: str | None = None
+    descricao: str | None = None
+    ordem: int | None = None
+    ativo: bool | None = None
+
+class RespostaAlunoQuestaoCreate(BaseModel):
+    questao_id: int
+    bateria_id: int
+    resposta: str | None = None
+    dificuldade: str | None = None
+
+
+class RespostaAlunoQuestaoResponse(BaseModel):
+    id: int
+    usuario_id: int
+    questao_id: int
+    bateria_id: int
+    resposta: str | None = None
+    dificuldade: str | None = None
+    respondida: bool
+    finalizada: bool
+    em_revisao: bool
+    acertou: bool | None = None
+
+    class Config:
+        from_attributes = True
+
+class RespostaQuestaoAlunoCreate(BaseModel):
+    questao_id: int
+    resposta_marcada: str
+    dificuldade: str | None = None
+    rever: bool = False
+
+
+class ConcluirBateriaCreate(BaseModel):
+    bateria_id: int
+    respostas: list[RespostaQuestaoAlunoCreate]
+
+
+class TentativaBateriaResponse(BaseModel):
+    id: int
+    usuario_id: int
+    bateria_id: int
+    status: str
+    percentual_acerto: int
+
+    class Config:
+        from_attributes = True
+
+class QuestaoPraticaMarcacaoAlunoCreate(BaseModel):
+    dificuldade_marcada: Optional[str] = None
+    acertou: Optional[bool] = None
+
+class QuestaoPraticaMarcacaoAlunoResponse(BaseModel):
+    id: int
+    usuario_id: int
+    questao_id: int
+    dificuldade_marcada: Optional[str]
+    acertou: Optional[bool]
+
+    class Config:
+        from_attributes = True
+
+class ProximaQuestaoPraticaRequest(BaseModel):
+    filtros: list[str] = ["TODAS"]
+    ids_questoes_sessao: Optional[list[int]] = None
+
+class ResponderQuestaoPraticaRequest(BaseModel):
+    dificuldade_marcada: str
+    acertou: Optional[bool] = None
+    rever: bool = False
+    nao_soube: bool = False
+    filtros: list[str] = ["TODAS"]
+
+class QuestaoPraticaAlternativaCreate(BaseModel):
+    letra: str
+    texto: str
+    correta: bool = False
+
+class QuestaoPraticaAdminCreate(BaseModel):
+    curso_assunto_proprio_id: int
+    tipo: str
+    enunciado: str
+    gabarito: str
+    comentario: Optional[str] = None
+    ativo: bool = True
+    alternativas: Optional[list[QuestaoPraticaAlternativaCreate]] = None
+
+class QuestaoPraticaAdminUpdate(BaseModel):
+    tipo: str
+    enunciado: str
+    gabarito: Optional[str] = None
+    comentario: Optional[str] = None
+    ativo: bool = True
+    alternativas: Optional[list[QuestaoPraticaAlternativaCreate]] = None
+
+class DuplicarCursoRequest(BaseModel):
+    novo_nome: str
+
+class CopiarDisciplinaRequest(BaseModel):
+    curso_destino_id: int
+
+class CopiarAssuntoRequest(BaseModel):
+    disciplina_destino_id: int
+
+class VendedorCreate(BaseModel):
+    nome: str
+    cpf_cnpj: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    email: Optional[str] = None
+    telefone: Optional[str] = None
+    senha: str = Field(
+        min_length=8,
+        max_length=64
+    )
+    estado_uf: Optional[str] = None
+    cidade: Optional[str] = None
+
+
+class VendedorUpdate(BaseModel):
+    nome: Optional[str] = None
+    cpf_cnpj: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    email: Optional[str] = None
+    telefone: Optional[str] = None
+    estado_uf: Optional[str] = None
+    cidade: Optional[str] = None
+    ativo: Optional[bool] = None
+
+
+class VendedorResponse(BaseModel):
+    id: int
+    nome: str
+    cpf_cnpj: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    email: Optional[str] = None
+    telefone: Optional[str] = None
+    estado_uf: Optional[str] = None
+    cidade: Optional[str] = None
+    ativo: bool
+    usuario_id: Optional[int] = None
+    descredenciado_em: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class VendedorVincularUsuarioRequest(BaseModel):
+    usuario_id: Optional[int] = None
+
+class QRCodeCreate(BaseModel):
+    quantidade: int = 1
+
+
+class QRCodeVincularVendedorRequest(BaseModel):
+    vendedor_id: Optional[int] = None
+
+
+class QRCodeResponse(BaseModel):
+    id: int
+    codigo: str
+    vendedor_id: Optional[int] = None
+    ativo: bool
+
+    class Config:
+        from_attributes = True
+
+class CupomDescontoGerarRequest(BaseModel):
+    quantidade: int
+
+
+class CupomDescontoVincularVendedorRequest(BaseModel):
+    vendedor_id: Optional[int] = None
+
+
+class CupomDescontoResponse(BaseModel):
+    id: int
+    codigo: str
+    vendedor_id: Optional[int] = None
+    percentual_desconto: int
+    ativo: bool
+
+    class Config:
+        from_attributes = True
+
+class ValidarCupomRequest(BaseModel):
+    codigo_cupom: str
+
+
+class ValidarCupomResponse(BaseModel):
+    valido: bool
+    codigo_cupom: str
+    percentual_desconto: int
+    vendedor_id: Optional[int] = None
+
+class VendedorExistenteCreate(BaseModel):
+    telefone: Optional[str] = None
+    cpf_cnpj: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    estado_uf: Optional[str] = None
+    cidade: Optional[str] = None
+

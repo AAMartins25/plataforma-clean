@@ -1,74 +1,1134 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Questões</title>
+    <link rel="stylesheet" href="css/style.css"/>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Sprint de Questões</title>
-  <!-- Ligação com o CSS -->
-  <link rel="stylesheet" href="css/style.css">
-</head>
+  <body>
+    <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+      <div style="margin-top:0;">
+        <h1
+          id="titulo_bateria"
+          style="
+            margin-bottom:0;
+            font-weight:400;
+            font-size:1.45rem;
+            line-height:2.1;
+          ">
+        </h1>
+      </div>
 
-<body>
+      <div style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      ">
+        <a class="btn" href="javascript:void(0)" onclick="voltarParaListaQuestoes()" title="Voltar">⇦</a>
 
-  <header>
-    <h1>(Colocar nome condizente [Atos administrativos])</h1>
-    <nav>
-        <a href="index.html" class="btn">Início</a>
-    </nav>
-    <p>Concursos Públicos • Organização • Aprendizado</p>
-  </header>
+        <a
+          class="btn"
+          href="javascript:void(0)"
+          onclick="
+            localStorage.setItem('pagina_antes_inicio', window.location.href);
+            window.location.replace('index.html');
+          "
+          title="Página inicial"
+        >
+          ⌂
+        </a>
 
-  <main>
+        <a class="btn" href="javascript:void(0)" onclick="confirmarSairSprint()" title="Sair">⎋</a>
+      </div>
+    </header>
 
-    <div class="card">
-     <h2>Questão 1</h2>
+    <main class="container">
+      <div id="area_questoes"></div>
+    </main>
 
-     <p>
-       Sobre os atos administrativos, assinale a alternativa correta:
-     </p>
-
-     <ul>
-        <li>a) São sempre vinculados.</li>
-        <li>b) Podem ser vinculados ou discricionários.</li>
-        <li>c) Dependem exclusivamente de autorização judicial.</li>
-        <li>d) Nunca admitem controle.</li>
-        <li>e) Produzem efeitos apenas internos.</li>
-     </ul>
-
-     <p>
-        <strong>Comentário:</strong><br>
-        A classificação dos atos administrativos leva em conta o grau de liberdade conferido à Administração.
-     </p>
+    <div class="container">
+      <div class="card" style="padding:0;height:0px;"></div>
     </div>
 
-    <div class="card">
-     <h2>Questão 2</h2>
+    <footer style="margin-top:4px;">
+      <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+    </footer>
 
-     <p>
-        O elemento finalidade do ato administrativo:
-     </p>
+    <script src="js/app.js"></script>
 
-     <ul>
-        <li>a) Pode ser livremente escolhido.</li>
-        <li>b) Sempre decorre da lei.</li>
-        <li>c) Não admite controle.</li>
-        <li>d) É irrelevante para a validade.</li>
-        <li>e) É definido pelo agente.</li>
-     </ul>
+    <script>
+      let questoes = [];
+      let indiceAtual = 0;
+      let respostasAluno = {};
+      let dificuldadesAluno = {};
+      let bateriaId = null;
+      let tentativaAtiva = null;
+      let modo = null;
+      let reverQuestoesAluno = {};
 
-     <p>
-        <strong>Comentário:</strong><br>
-        A finalidade está vinculada ao interesse público previsto em lei.
-     </p>
-    </div>
+      function qsLocal(nome) {
+        return new URLSearchParams(window.location.search).get(nome);
+      }
 
-    <a href="aula.html" class="btn">Voltar para a aula</a>
+      function escLocal(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
 
-  </main>
+      function confirmarSairSprint() {
+        const ok = confirm("Deseja realmente sair da plataforma?");
 
-  <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
-  </footer>
+        if (!ok) return;
 
-</body>
-</html>
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("me_cache");
+
+        window.location.href = "login.html";
+      }
+
+      async function carregarBateria() {
+        bateriaId = qsLocal("bateria_id");
+        modo = qsLocal("modo");
+        const titulo = qsLocal("titulo") || "Bateria de questões";
+        const assuntoNome = qsLocal("assunto_nome") || "";
+
+        document.getElementById("titulo_bateria").innerText =
+          assuntoNome ? `${assuntoNome} - Parte I` : titulo;
+
+        if (!bateriaId) {
+          document.getElementById("area_questoes").innerHTML = `
+            <div class="card">
+              <p>Erro: bateria não identificada.</p>
+            </div>
+          `;
+          return;
+        }
+
+        try {
+          questoes = await apiGetAuth(`/baterias/${bateriaId}/questoes`);
+          questoes.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+          await carregarTentativaAtiva();
+
+          if (!questoes.length) {
+            document.getElementById("area_questoes").innerHTML = `
+              <div class="card">
+                <p>Nenhuma questão encontrada.</p>
+              </div>
+            `;
+            return;
+          }
+
+          if (modo === "visualizar") {
+            revisarAgora();
+            return;
+          }
+
+          if (tentativaAtiva && tentativaAtiva.status === "EM_ANDAMENTO") {
+            revisarAgora();
+          } else {
+            renderizarTodasQuestoes();
+          }
+
+        } catch (err) {
+          document.getElementById("area_questoes").innerHTML = `
+            <div class="card">
+              <h2>Erro ao carregar questões</h2>
+              <pre style="white-space:pre-wrap;">${escLocal(err.message)}</pre>
+            </div>
+          `;
+        }
+      }
+
+      function voltarParaListaQuestoes() {
+        const destino = localStorage.getItem("voltar_para_questoes");
+
+        if (destino) {
+          window.location.href = destino;
+          return;
+        }
+
+        history.back();
+      }
+
+      async function carregarTentativaAtiva() {
+        try {
+          const dados = await apiGetAuth(`/baterias/${bateriaId}/minha-tentativa-ativa`);
+
+          if (!dados || !dados.tentativa) {
+            return;
+          }
+
+          tentativaAtiva = dados.tentativa;
+
+          localStorage.setItem(
+            `tentativa_bateria_${bateriaId}`,
+            JSON.stringify(dados.tentativa)
+          );
+
+          (dados.respostas || []).forEach(r => {
+            respostasAluno[r.questao_id] = r.resposta_marcada;
+
+            if (r.dificuldade) {
+              dificuldadesAluno[r.questao_id] = r.dificuldade;
+            }
+
+            reverQuestoesAluno[r.questao_id] = r.rever === true;
+          });
+
+        } catch (err) {
+          console.error("Erro ao carregar tentativa ativa:", err);
+        }
+      }
+
+      function renderizarTodasQuestoes() {
+        const total = questoes.length;
+
+        let html = "";
+
+        questoes.forEach((q, idx) => {
+          const alternativas = q.alternativas || [];
+          const ehCertoErrado = q.tipo_questao === "CERTO_ERRADO" || q.tipo === "CERTO_ERRADO";
+
+          html += `
+            <div class="card" id="questao_${q.id}" style="padding:26px;">
+              <div style="margin-bottom:6px;">
+                <h3 style="
+                  margin:0;
+                  font-size:1.25rem;
+                  color:#174a84;
+                ">
+                  Questão ${idx + 1} de ${total}
+                </h3>
+              </div>
+
+              <div style="
+                white-space:pre-line;
+                margin-top:4px;
+                font-size:1.05rem;
+                line-height:1.6;
+                text-indent:0;
+                margin-left:0;
+                padding-left:0;
+                text-align:justify;
+              ">
+                ${escLocal(q.enunciado)}
+              </div>
+
+              ${
+                ehCertoErrado
+                  ? `
+                    <div class="list" style="margin-top:10px;">
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_C" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:6px;">
+                        <input type="radio" name="resposta_${q.id}" value="C"
+                          ${respostasAluno[q.id] === "C" ? "checked" : ""}
+                          onchange="marcarAlternativaVisual(${q.id}, 'C'); resetarBotaoResponder(${q.id});"
+                          style="margin-right:16px;"
+                        />
+                        <b>CERTO</b>
+                      </label>
+
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_E" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:6px;">
+                        <input type="radio" name="resposta_${q.id}" value="E"
+                          ${respostasAluno[q.id] === "E" ? "checked" : ""}
+                          onchange="marcarAlternativaVisual(${q.id}, 'E'); resetarBotaoResponder(${q.id});"
+                          style="margin-right:16px;"
+                        />
+                        <b>ERRADO</b>
+                      </label>
+
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_NAO_SEI" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:22px;">
+                        <input type="radio" name="resposta_${q.id}" value="NAO_SEI"
+                          ${respostasAluno[q.id] === "NAO_SEI" ? "checked" : ""}
+                          onchange="marcarAlternativaVisual(${q.id}, 'NAO_SEI'); resetarBotaoResponder(${q.id});"
+                          style="margin-right:16px;"
+                        />
+                        <b>Não tenho certeza ou não sei</b>
+                      </label>
+
+                      <div style="margin-top:14px; text-align:right;">
+                        <label style="cursor:pointer;">
+                          <input
+                            type="checkbox"
+                            name="rever_${q.id}"
+                            ${reverQuestoesAluno[q.id] === true ? "checked" : ""}
+                            onchange="resetarBotaoResponder(${q.id});"
+                            style="margin-right:8px;"
+                          />
+                          <b>Rever esta questão</b>
+                        </label>
+                      </div>
+                    </div>
+                  `
+                  : `
+                    <div class="list" style="margin-top:18px;">
+                      ${alternativas.map(a => `
+                        <label
+                          class="assunto alternativa-opcao"
+                          id="alt_${q.id}_${a.letra}"
+                          style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 16px; margin-top:10px; line-height:1.5; transition:.15s;"
+                        >
+                          <input
+                            type="radio"
+                            name="resposta_${q.id}"
+                            value="${escLocal(a.letra)}"
+                            onchange="marcarAlternativaVisual(${q.id}, '${a.letra}'); resetarBotaoResponder(${q.id});"
+                            ${respostasAluno[q.id] === a.letra ? "checked" : ""}
+                            style="margin-right:16px;"
+                          />
+                          <b>${escLocal(a.letra)})</b> ${escLocal(a.texto)}
+                        </label>
+                      `).join("")}
+                    </div>
+                  `
+              }
+
+              ${
+                ehCertoErrado
+                  ? ``
+                  : `
+                    <div class="card" style="margin-top:22px; padding:18px;">
+                      <p><b>Essa questão para você, neste momento, foi:</b></p>
+
+                      <label id="dif_${q.id}_FACIL" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; margin-right:10px; font-size:.92rem;">
+                        <input type="radio" name="dificuldade_${q.id}" value="FACIL"
+                          ${dificuldadesAluno[q.id] === "FACIL" ? "checked" : ""}
+                          onchange="marcarDificuldadeVisual(${q.id}, 'FACIL'); resetarBotaoResponder(${q.id});">
+                        FÁCIL
+                      </label>
+
+                      <label id="dif_${q.id}_MEDIA" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; margin-right:10px; font-size:.92rem;">
+                        <input type="radio" name="dificuldade_${q.id}" value="MEDIA"
+                          ${dificuldadesAluno[q.id] === "MEDIA" ? "checked" : ""}
+                          onchange="marcarDificuldadeVisual(${q.id}, 'MEDIA'); resetarBotaoResponder(${q.id});">
+                        MÉDIA
+                      </label>
+
+                      <label id="dif_${q.id}_DIFICIL" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; font-size:.92rem;">
+                        <input type="radio" name="dificuldade_${q.id}" value="DIFICIL"
+                          ${dificuldadesAluno[q.id] === "DIFICIL" ? "checked" : ""}
+                          onchange="marcarDificuldadeVisual(${q.id}, 'DIFICIL'); resetarBotaoResponder(${q.id});">
+                        DIFÍCIL
+                      </label>
+                    </div>
+                  `
+              }
+
+              <div style="margin-top:18px;">
+                <button
+                  id="btnResponder_${q.id}"
+                  class="btn"
+                  onclick="responderQuestaoLista(${q.id}, ${idx})"
+                >
+                  Responder
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+          <div class="card" id="boxConcluirBateria">
+            <h3 style="margin-top:0;">Finalizar bateria</h3>
+
+            <button
+              id="btnConcluirBateriaAluno"
+              class="btn"
+              onclick="concluirBateriaAluno()"
+            >
+              Concluir bateria
+            </button>
+          </div>
+        `;
+
+        document.getElementById("area_questoes").innerHTML = html;
+
+        document.getElementById(`questao_${questoes[0].id}`).scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+
+      function marcarAlternativaVisual(questaoId, letra) {
+        const opcoes = document.querySelectorAll(`[id^="alt_${questaoId}_"]`);
+
+        opcoes.forEach(op => {
+          op.style.background = "";
+          op.style.borderColor = "#ddd";
+          op.style.fontWeight = "normal";
+        });
+
+        const escolhida = document.getElementById(`alt_${questaoId}_${letra}`);
+
+        if (escolhida) {
+          escolhida.style.background = "#e7f7ee";
+          escolhida.style.borderColor = "#2f5e46";
+          escolhida.style.fontWeight = "bold";
+        }
+      }
+
+      function marcarDificuldadeVisual(questaoId, dificuldade) {
+        ["FACIL", "MEDIA", "DIFICIL"].forEach(nivel => {
+          const el = document.getElementById(`dif_${questaoId}_${nivel}`);
+
+          if (el) {
+            el.style.background = "";
+            el.style.borderColor = "#ddd";
+            el.style.fontWeight = "normal";
+          }
+        });
+
+        const selecionada =
+          document.getElementById(`dif_${questaoId}_${dificuldade}`);
+
+        if (selecionada) {
+          selecionada.style.background = "#e7f7ee";
+          selecionada.style.borderColor = "#2f5e46";
+          selecionada.style.fontWeight = "bold";
+        }
+      }
+
+      function responderQuestaoLista(questaoId, idx) {
+        const respostaMarcada = document.querySelector(`input[name='resposta_${questaoId}']:checked`);
+        const q = questoes[idx];
+        const ehCertoErrado = q.tipo_questao === "CERTO_ERRADO" || q.tipo === "CERTO_ERRADO";
+
+        const dificuldadeMarcada = document.querySelector(`input[name='dificuldade_${questaoId}']:checked`);
+        const reverMarcada = document.querySelector(`input[name='rever_${questaoId}']`);
+
+        if (!respostaMarcada) {
+          alert("Marque uma resposta.");
+          return;
+        }
+
+        if (!ehCertoErrado && !dificuldadeMarcada) {
+          alert("Marque a dificuldade da questão.");
+          return;
+        }
+
+        respostasAluno[questaoId] = respostaMarcada.value;
+
+        dificuldadesAluno[questaoId] = ehCertoErrado
+          ? null
+          : dificuldadeMarcada.value;
+
+        reverQuestoesAluno[questaoId] =
+          reverMarcada && reverMarcada.checked ? true : false;
+
+        const btn = document.getElementById(`btnResponder_${questaoId}`);
+
+        if (btn) {
+          btn.textContent = "Respondida";
+          btn.style.background = "#dff3e6";
+          btn.style.color = "#2f5e46";
+          btn.style.borderColor = "#2f5e46";
+        }
+
+        if (idx < questoes.length - 1) {
+          const proxima = questoes[idx + 1];
+
+          document.getElementById(`questao_${proxima.id}`).scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        } else {
+          document.getElementById("boxConcluirBateria").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      }
+
+      function renderizarQuestao() {
+        const q = questoes[indiceAtual];
+        const total = questoes.length;
+
+        const alternativas = q.alternativas || [];
+
+        document.getElementById("area_questoes").innerHTML = `
+          <div class="card" id="cardQuestaoAtual">
+            <h2>Questão ${indiceAtual + 1} de ${total}</h2>
+
+            <div style="white-space:pre-wrap; margin-top:12px;">
+              ${escLocal(q.enunciado)}
+            </div>
+
+            <div class="list" style="margin-top:18px;">
+              ${
+                alternativas.map(a => `
+                  <label class="assunto" style="display:block; cursor:pointer;">
+                    <input
+                      type="radio"
+                      name="resposta"
+                      value="${escLocal(a.letra)}"
+                      ${respostasAluno[q.id] === a.letra ? "checked" : ""}
+                    />
+                    <b>${escLocal(a.letra)})</b> ${escLocal(a.texto)}
+                  </label>
+                `).join("")
+              }
+            </div>
+
+            ${
+              ehCertoErrado
+                ? `
+                  <div class="card" style="margin-top:22px; padding:18px;">
+                    <label style="cursor:pointer;">
+                      <input
+                        type="checkbox"
+                        name="rever_${q.id}"
+                        onchange="resetarBotaoResponder(${q.id});"
+                        style="margin-right:10px;"
+                      />
+                      <b>Rever esta questão</b>
+                    </label>
+                  </div>
+                `
+                : `
+                  <div class="card" style="margin-top:22px; padding:18px;">
+                    <p><b>Essa questão para você, neste momento, foi:</b></p>
+
+                    <!-- mantenha aqui os seus três labels atuais: FÁCIL, MÉDIA e DIFÍCIL -->
+                  </div>
+                `
+            }
+
+            <div style="margin-top:18px;">
+              <button class="btn" onclick="responderQuestao()">
+                Responder
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("cardQuestaoAtual").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+
+      function responderQuestao() {
+        const q = questoes[indiceAtual];
+
+        const respostaMarcada = document.querySelector("input[name='resposta']:checked");
+        const dificuldadeMarcada = document.querySelector("input[name='dificuldade']:checked");
+
+        if (!respostaMarcada) {
+          alert("Marque uma resposta.");
+          return;
+        }
+
+        if (!dificuldadeMarcada) {
+          alert("Marque a dificuldade da questão.");
+          return;
+        }
+
+        respostasAluno[q.id] = respostaMarcada.value;
+        dificuldadesAluno[q.id] = dificuldadeMarcada.value;
+
+        if (indiceAtual < questoes.length - 1) {
+          indiceAtual++;
+          renderizarQuestao();
+        } else {
+          renderizarConclusao();
+        }
+      }
+
+      function renderizarConclusao() {
+        document.getElementById("area_questoes").innerHTML = `
+          <div class="card">
+            <h2>Bateria respondida</h2>
+            <p>Você respondeu todas as questões.</p>
+
+            <button class="btn" onclick="concluirBateriaAluno()">
+              Concluir bateria
+            </button>
+          </div>
+        `;
+
+        document.getElementById("area_questoes").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+
+      async function concluirBateriaAluno() {
+        const questoesNaoRespondidas = questoes
+          .filter(q => !respostasAluno[q.id])
+          .map(q => q.ordem);
+
+        if (questoesNaoRespondidas.length === 1) {
+          alert(
+            `A questão ${questoesNaoRespondidas[0]} ainda não foi respondida. ` +
+            `Responda todas para concluir a bateria.`
+          );
+          return;
+        }
+
+        if (questoesNaoRespondidas.length > 1) {
+          alert(
+            `As questões ${questoesNaoRespondidas.join(", ")} ainda não foram respondidas. ` +
+            `Responda todas para concluir a bateria.`
+          );
+          return;
+        }
+
+        const btnConcluir = document.getElementById("btnConcluirBateriaAluno");
+
+        if (btnConcluir) {
+          btnConcluir.textContent = "Bateria concluída";
+          btnConcluir.style.background = "#dff3e6";
+          btnConcluir.style.color = "#2f5e46";
+          btnConcluir.style.borderColor = "#2f5e46";
+          btnConcluir.disabled = true;
+        }
+
+        const payload = {
+          bateria_id: Number(bateriaId),
+          respostas: questoes.map(q => ({
+            questao_id: q.id,
+            resposta_marcada: respostasAluno[q.id],
+            dificuldade: dificuldadesAluno[q.id] || null,
+            rever: reverQuestoesAluno[q.id] === true
+          }))
+        };
+
+        try {
+          const tentativa = await apiPostAuth("/baterias/concluir", payload);
+
+          localStorage.setItem(
+            `tentativa_bateria_${bateriaId}`,
+            JSON.stringify(tentativa)
+          );
+
+          localStorage.setItem("voltar_para_questoes_forcar_atualizacao", "1");
+
+          document.getElementById("area_questoes").innerHTML = `
+            <div class="card">
+              <h2>Bateria de questões concluída!</h2>
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+                <button class="btn" onclick="revisarAgora()">
+                  Revisar agora
+                </button>
+
+                <button class="btn" onclick="voltarParaListaQuestoes()">
+                  Revisar depois
+                </button>
+              </div>
+            </div>
+          `;
+
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao concluir bateria: " + err.message);
+        }
+      }
+      
+      function revisarAgora() {
+        let html = `
+          <div class="card" style="padding-top:10px; padding-bottom:10px;">
+            <h2 style="margin:0; font-size:1.15rem;">Revisão</h2>
+          </div>
+        `;
+
+        questoes.forEach((q, idx) => {
+          const respostaAluno = respostasAluno[q.id];
+          const acertou = respostaAluno === q.gabarito;
+          const ehCertoErrado = q.tipo_questao === "CERTO_ERRADO" || q.tipo === "CERTO_ERRADO";
+          const gabaritoTexto = q.gabarito === "C" ? "CERTO" : q.gabarito === "E" ? "ERRADO" : "-";
+          const respostaTexto = respostaAluno === "C"
+            ? "CERTO"
+            : respostaAluno === "E"
+              ? "ERRADO"
+              : "Não tenho certeza ou não sei";
+
+          html += `
+            <div class="card" style="padding-top:10px; padding-bottom:6px; margin-bottom:8px;">
+              <h2 style="
+                font-size:1.15rem;
+                margin-top:0;
+                margin-bottom:6px;
+              ">
+                Questão ${idx + 1}
+              </h2>
+
+              <div style="
+                white-space:normal;
+                margin-top:15px;
+                text-align:justify;
+                text-indent:0;
+                margin-left:0;
+                padding-left:0;
+                line-height:1.6;
+              ">
+                ${escLocal(q.enunciado)}
+              </div>
+
+              <div class="list" style="margin-top:14px;">
+                ${(q.alternativas || []).map(a => {
+                  const ehCorreta = a.letra === q.gabarito;
+                  const ehMarcadaErrada = a.letra === respostaAluno && !acertou;
+
+                  let estilo = "";
+
+                  if (ehCorreta) {
+                    estilo = `
+                      background:#e7f7ee;
+                      border-color:#2f5e46;
+                      font-weight:bold;
+                    `;
+                  }
+
+                  if (ehMarcadaErrada) {
+                    estilo = `
+                      background:#fff3e6;
+                      border-color:#9a5a16;
+                      color:#9a5a16;
+                      font-weight:bold;
+                    `;
+                  }
+
+                  return `
+                    <div class="assunto" style="${estilo}">
+                      <b>${escLocal(a.letra)})</b> ${escLocal(a.texto)}
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+
+              <div style="margin-top:6px;">
+                ${
+                  ehCertoErrado
+                    ? `
+                      <div style="
+                        color:${acertou ? "#2f5e46" : "#9a5a16"};
+                        font-weight:bold;
+                        font-size:1.05rem;
+                      ">
+                        ${
+                          acertou
+                            ? `Você: ${respostaTexto}`
+                            : `❌ Você: ${respostaTexto}`
+                        }
+                      </div>
+
+                      <div style="margin-top:3px;">
+                        Gabarito: ${gabaritoTexto}
+                      </div>
+                    `
+                    : (
+                        acertou
+                          ? `
+                            <div style="
+                              color:#2f5e46;
+                              font-weight:bold;
+                              font-size:1.05rem;
+                            ">
+                              ✅ Certo!
+                            </div>
+                          `
+                          : `
+                            <div style="
+                              color:#9a5a16;
+                              font-weight:bold;
+                              font-size:1.05rem;
+                            ">
+                              ❌ Não foi desta vez.
+                            </div>
+
+                            <div style="margin-top:6px;">
+                              Gabarito: ${escLocal(q.gabarito || "-")}
+                            </div>
+                          `
+                      )
+                }
+              </div>
+
+              <div style="margin-top:18px;">
+                <b>Comentário:</b>
+
+                <div style="
+                  margin-top:6px;
+                  white-space:normal;
+                  text-align:justify;
+                  text-indent:0;
+                  margin-left:0;
+                  padding-left:0;
+                  line-height:1.6;
+                ">
+                  ${escLocal(q.comentario || "Comentário não cadastrado.")}
+                </div>
+              </div>
+
+              ${
+                reverQuestoesAluno[q.id] === true
+                  ? `
+                    <div style="
+                      margin-top:10px;
+                      text-align:right;
+                    ">
+                      <span style="
+                        display:inline-block;
+                        padding:3px 8px;
+                        border:1px solid #b37a1f;
+                        border-radius:999px;
+                        color:#b37a1f;
+                        font-size:.78rem;
+                      ">
+                        Marcada para rever
+                      </span>
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${
+                modo === "visualizar"
+                  ? ""
+                  : `
+                    <div class="card" style="margin-top:16px;">
+                      <h3>Minha anotação sobre esta questão</h3>
+
+                      <textarea
+                        id="anotacao_${q.id}"
+                        placeholder="Escreva sua anotação ou dúvida..."
+                        style="
+                          width:100%;
+                          min-height:100px;
+                          padding:12px;
+                          border:1px solid #ddd;
+                          border-radius:6px;
+                        "
+                      ></textarea>
+
+                      <div style="
+                        margin-top:12px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                      ">
+                        <button
+                          id="btn_salvar_mim_${q.id}"
+                          class="btn"
+                          onclick="salvarAnotacaoParaMim(${q.id})"
+                        >
+                          Salvar para mim
+                        </button>
+
+                        <span
+                          id="tooltip_salvar_mim_${q.id}"
+                          style="
+                            display:none;
+                            position:absolute;
+                            margin-top:-45px;
+                            margin-left:0;
+                            background:#fff;
+                            border:1px solid #ddd;
+                            border-radius:6px;
+                            padding:6px 10px;
+                            font-size:.78rem;
+                            white-space:nowrap;
+                            box-shadow:0 2px 8px rgba(0,0,0,.08);
+                            z-index:999;
+                          "
+                        >
+                          Acesse em
+                          <b style="color:#1F4E79;">Minhas anotações</b>
+                        </span>
+
+                        <button
+                          id="btn_enviar_prof_${q.id}"
+                          class="btn"
+                          onclick="salvarEnviarProf(${q.id})"
+                        >
+                          Enviar ao prof
+                        </button>
+
+                        <span
+                          id="tooltip_enviar_prof_${q.id}"
+                          style="
+                            display:none;
+                            position:absolute;
+                            margin-top:-45px;
+                            margin-left:0;
+                            background:#fff;
+                            border:1px solid #ddd;
+                            border-radius:6px;
+                            padding:6px 10px;
+                            font-size:.78rem;
+                            white-space:nowrap;
+                            box-shadow:0 2px 8px rgba(0,0,0,.08);
+                            z-index:999;
+                          "
+                        >
+                          Acompanhe em
+                          <b style="color:#1F4E79;">Mensagens ao prof</b>
+                        </span>
+                      </div>
+                    </div>
+                  `
+              }
+            </div>
+          `;
+        });
+
+        html += `
+          <div class="card">
+            ${
+              modo === "visualizar"
+                ? `
+                  <button class="btn" onclick="voltarParaListaQuestoes()">
+                    Fechar
+                  </button>
+                `
+                : `
+                  <button id="btnFinalizarRevisao" class="btn" onclick="finalizarRevisao()">
+                    Finalizar revisão e voltar
+                  </button>
+                `
+            }
+          </div>
+
+          <div id="area_resultado_final"></div>
+        `;
+
+        document.getElementById("area_questoes").innerHTML = html;
+
+        document.getElementById("area_questoes").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+
+      function desativarBotaoSalvarMim(questaoId) {
+        const btn = document.getElementById(`btn_salvar_mim_${questaoId}`);
+        const tooltip = document.getElementById(`tooltip_salvar_mim_${questaoId}`);
+
+        if (!btn) return;
+
+        btn.innerText = "Anotação salva";
+        btn.dataset.bloqueado = "1";
+
+        btn.style.opacity = ".45";
+        btn.style.cursor = "default";
+        btn.style.pointerEvents = "auto";
+        btn.style.background = "#d9e2f3";
+        btn.style.color = "#6b7280";
+        btn.style.border = "1px solid #cbd5e1";
+
+        btn.onclick = function(event) {
+          event.preventDefault();
+          return false;
+        };
+
+        btn.onmouseenter = () => {
+          btn.style.background = "#d9e2f3";
+          btn.style.color = "#6b7280";
+          if (tooltip) tooltip.style.display = "inline";
+        };
+
+        btn.onmouseleave = () => {
+          btn.style.background = "#d9e2f3";
+          btn.style.color = "#6b7280";
+          if (tooltip) tooltip.style.display = "none";
+        };
+      }
+
+      function desativarBotaoEnviarProf(questaoId) {
+        const btn = document.getElementById(`btn_enviar_prof_${questaoId}`);
+        const tooltip = document.getElementById(`tooltip_enviar_prof_${questaoId}`);
+
+        if (!btn) return;
+
+        btn.innerText = "Mensagem enviada ao prof";
+        btn.dataset.bloqueado = "1";
+
+        btn.style.opacity = ".45";
+        btn.style.cursor = "default";
+        btn.style.pointerEvents = "auto";
+        btn.style.background = "#d9e2f3";
+        btn.style.color = "#6b7280";
+        btn.style.border = "1px solid #cbd5e1";
+
+        btn.onclick = function(event) {
+          event.preventDefault();
+          return false;
+        };
+
+        btn.onmouseenter = () => {
+          btn.style.background = "#d9e2f3";
+          btn.style.color = "#6b7280";
+          if (tooltip) tooltip.style.display = "inline";
+        };
+
+        btn.onmouseleave = () => {
+          btn.style.background = "#d9e2f3";
+          btn.style.color = "#6b7280";
+          if (tooltip) tooltip.style.display = "none";
+        };
+      }
+
+      async function salvarAnotacaoParaMim(questaoId) {
+        const campo = document.getElementById(`anotacao_${questaoId}`);
+
+        if (
+          document.getElementById(`btn_salvar_mim_${questaoId}`)
+            ?.dataset.bloqueado === "1"
+        ) {
+          return;
+        }
+
+        if (!campo) return;
+
+        const texto = campo.value.trim();
+
+        if (!texto) {
+          alert("Escreva uma anotação antes de salvar.");
+          return;
+        }
+
+        const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
+
+        if (totalPalavras > 300) {
+          alert("A anotação deve ter no máximo 300 palavras.");
+          return;
+        }
+
+        try {
+          await apiPostAuth("/me/anotacoes-questoes", {
+            questao_id: questaoId,
+            bateria_id: Number(bateriaId),
+            texto: texto
+          });
+
+          alert("Anotação salva com sucesso.");
+
+          campo.value = "";
+          
+          desativarBotaoSalvarMim(questaoId);
+
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao salvar anotação: " + err.message);
+        }
+      }
+
+      async function salvarEnviarProf(questaoId) {
+        const campo = document.getElementById(`anotacao_${questaoId}`);
+
+        if (
+          document.getElementById(`btn_enviar_prof_${questaoId}`)
+            ?.dataset.bloqueado === "1"
+        ) {
+          return;
+        }
+
+        if (!campo) return;
+
+        const texto = campo.value.trim();
+
+        if (!texto) {
+          alert("Escreva uma mensagem antes de enviar ao professor.");
+          return;
+        }
+
+        const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
+
+        if (totalPalavras > 300) {
+          alert("A mensagem deve ter no máximo 300 palavras.");
+          return;
+        }
+
+        const confirmar = confirm(
+          "Confirma enviar esta mensagem ao professor? Após o envio, ela não poderá ser editada."
+        );
+
+        if (!confirmar) return;
+
+        try {
+          await apiPostAuth("/me/mensagens-prof", {
+            questao_id: questaoId,
+            bateria_id: Number(bateriaId),
+            texto: texto
+          });
+
+          alert("Mensagem enviada ao professor.");
+
+          campo.value = "";
+          
+          desativarBotaoEnviarProf(questaoId);
+
+        } catch (err) {
+          console.error(err);
+
+          const msg = String(err.message || "");
+
+          if (
+            msg.includes("já existe") ||
+            msg.includes("ja existe") ||
+            msg.includes("conversa") ||
+            msg.includes("mensagem")
+          ) {
+            alert("Mensagem já enviada ao professor.");
+
+            campo.value = "";
+
+            desativarBotaoEnviarProf(questaoId);
+            return;
+          }
+
+          alert("Erro ao enviar mensagem: " + err.message);
+        }
+      }
+
+      function resetarBotaoResponder(questaoId) {
+        const btn = document.getElementById(`btnResponder_${questaoId}`);
+
+        if (btn) {
+          btn.textContent = "Responder";
+          btn.style.background = "";
+          btn.style.color = "";
+        }
+      }
+
+      async function finalizarRevisao() {
+        try {
+          const tentativaSalva = JSON.parse(
+            localStorage.getItem(`tentativa_bateria_${bateriaId}`) || "null"
+          );
+
+          if (!tentativaSalva || !tentativaSalva.id) {
+            alert("Não foi possível localizar a tentativa desta bateria.");
+            return;
+          }
+
+          await apiPutAuth(`/tentativas/${tentativaSalva.id}/finalizar-revisao`, {});
+
+          window.location.href =
+            localStorage.getItem("voltar_para_questoes") || "cursos.html";
+
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao finalizar revisão.");
+        }
+      }
+
+      window.voltarParaListaQuestoes = voltarParaListaQuestoes;
+
+      const anoAtual = document.getElementById("ano_atual");
+      if (anoAtual) {
+        anoAtual.textContent = new Date().getFullYear();
+      } 
+
+      carregarBateria();
+    </script>
+  </body>
+  </html>

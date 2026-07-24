@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disciplinas do curso expirado</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+  <header>
+    <h1 id="titulo_curso">📘 Curso</h1>
+
+    <nav style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <a class="btn" href="javascript:void(0)" onclick="voltarCursoExpirado()">Voltar</a>
+      <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>📚 Disciplinas</h2>
+      <div id="lista_disciplinas" class="list">
+        <p>Carregando disciplinas...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function getToken() {
+      return localStorage.getItem("access_token");
+    }
+
+    function logout() {
+      localStorage.removeItem("access_token");
+      window.location.href = "index.html";
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function voltarCursoExpirado() {
+      const cursoId = qs("curso_id");
+      const cursoNome = qs("curso_nome") || "";
+      const dataInicio = qs("data_inicio") || "";
+      const dataFim = qs("data_fim") || "";
+
+      window.location.href =
+        `curso-expirado.html?curso_id=${encodeURIComponent(cursoId || "")}` +
+        `&curso_nome=${encodeURIComponent(cursoNome)}` +
+        `&data_inicio=${encodeURIComponent(dataInicio)}` +
+        `&data_fim=${encodeURIComponent(dataFim)}`;
+    }
+
+    async function apiGet(path) {
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: token ? {
+          "Authorization": `Bearer ${token}`
+        } : {}
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${path}\n${txt}`);
+      }
+
+      return res.json();
+    }
+
+    async function carregarDisciplinasExpirado() {
+      try {
+        await apiGet("/me");
+
+        const cursoId = qs("curso_id");
+        const cursoNome = qs("curso_nome") || "Curso";
+
+        document.getElementById("titulo_curso").innerText = `📘 ${cursoNome}`;
+
+        if (!cursoId) {
+          document.getElementById("lista_disciplinas").innerHTML =
+            "<p>Curso não identificado.</p>";
+          return;
+        }
+
+        const disciplinas = await apiGet(`/me/cursos-expirados/${cursoId}/disciplinas`);
+
+        if (!disciplinas || disciplinas.length === 0) {
+          document.getElementById("lista_disciplinas").innerHTML =
+            "<p>Nenhuma disciplina encontrada.</p>";
+          return;
+        }
+
+        document.getElementById("lista_disciplinas").innerHTML =
+          disciplinas.map(d => `
+            <div class="disciplina">
+              <div style="font-weight:bold;">
+                ${esc(d.nome)}
+              </div>
+            </div>
+          `).join("");
+
+      } catch (err) {
+        document.querySelector("main").innerHTML = `
+          <div class="card">
+            <h2>Erro ao carregar disciplinas</h2>
+            <pre style="white-space:pre-wrap">${esc(err.message)}</pre>
+          </div>
+        `;
+      }
+    }
+
+    carregarDisciplinasExpirado();
+  </script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Admin • Parceiros/vendedores</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  />
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        🧑‍💼 Vendedores
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="../index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2>1) Cadastrar parceiro/vendedor</h2>
+
+      <form
+        id="formVendedor"
+        class="list"
+      >
+
+        <div class="assunto">
+          <label for="vendedorNome">
+            <b>Nome</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorNome"
+            type="text"
+            maxlength="120"
+            placeholder="Nome do parceiro/vendedor"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorCpfCnpj">
+            <b>CPF/CNPJ</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorCpfCnpj"
+            type="text"
+            maxlength="18"
+            placeholder="CPF ou CNPJ"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorDataNascimento">
+            <b>Data de Nascimento</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorDataNascimento"
+            type="date"
+            min="1900-01-01"
+            max="2100-12-31"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorEmail">
+            <b>Email</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorEmail"
+            type="email"
+            maxlength="150"
+            placeholder="parceiro@email.com"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorTelefone">
+            <b>Telefone</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorTelefone"
+            type="text"
+            maxlength="15"
+            placeholder="(00) 00000-0000"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorEstadoUf">
+            <b>Estado / UF</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorEstadoUf"
+            type="text"
+            maxlength="2"
+            placeholder="Ex.: RO"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+              text-transform:uppercase;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorCidade">
+            <b>Cidade</b>
+          </label>
+          <br/>
+
+          <input
+            id="vendedorCidade"
+            type="text"
+            maxlength="100"
+            placeholder="Ex.: Porto Velho"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorSenha">
+            <b>Senha</b>
+          </label>
+          <br/>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="vendedorSenha"
+              type="password"
+              placeholder="Senha inicial"
+              required
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            />
+
+            <button
+              type="button"
+              id="toggleVendedorSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+          </div>
+        </div>
+
+        <div class="assunto">
+          <label for="vendedorConfirmarSenha">
+            <b>Confirmar senha</b>
+          </label>
+          <br/>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="vendedorConfirmarSenha"
+              type="password"
+              placeholder="Repita a senha"
+              required
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            />
+
+            <button
+              type="button"
+              id="toggleVendedorConfirmarSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="btn"
+          type="submit"
+        >
+          Cadastrar parceiro/vendedor
+        </button>
+
+        <div
+          id="msgVendedor"
+          style="margin-top:10px;"
+        ></div>
+
+      </form>
+
+    </div>
+
+    <div class="card">
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:12px;
+          flex-wrap:wrap;
+        "
+      >
+        <h2
+          id="tituloVendedoresCadastrados"
+          style="
+            margin:0;
+            cursor:pointer;
+            flex:1;
+          "
+          title="Abrir ou recolher lista de parceiros/vendedores"
+        >
+          2) Vendedores cadastrados
+        </h2>
+
+        <button
+          id="btnLocalizarVendedor"
+          class="btn"
+          type="button"
+          title="Localizar parceiro/vendedor"
+        >
+          🔍 Localizar
+        </button>
+      </div>
+
+      <div
+        id="areaVendedoresCadastrados"
+        style="display:none; margin-top:16px;"
+      >
+
+        <div
+          id="boxBuscaVendedor"
+          style="display:none; margin-bottom:14px;"
+        >
+          <input
+            id="buscaVendedor"
+            type="text"
+            maxlength="120"
+            placeholder="Digite o nome do parceiro/vendedor"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          />
+        </div>
+
+        <div
+          id="listaVendedores"
+          class="list"
+        >
+          Carregando vendedores...
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/admin-vendedores.js"></script>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+    function configurarToggleSenha(
+      campoId,
+      botaoId
+    ) {
+      const campo =
+        document.getElementById(
+          campoId
+        );
+
+      const botao =
+        document.getElementById(
+          botaoId
+        );
+
+      if (!campo || !botao) {
+        return;
+      }
+
+      botao.addEventListener(
+        "click",
+        () => {
+          const oculta =
+            campo.type === "password";
+
+          campo.type =
+            oculta
+              ? "text"
+              : "password";
+
+          botao.textContent =
+            oculta
+              ? "🙈"
+              : "👁";
+        }
+      );
+    }
+
+    configurarToggleSenha(
+      "vendedorSenha",
+      "toggleVendedorSenha"
+    );
+
+    configurarToggleSenha(
+      "vendedorConfirmarSenha",
+      "toggleVendedorConfirmarSenha"
+    );
+  </script>
+
+</body>
+</html>

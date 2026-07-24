@@ -20,7 +20,11 @@
       <h2>O que fazer?</h2>
       <p>
         Se o pagamento estiver em análise/pendente, aguarde um pouco e clique em
-        <b>Voltar para cursos</b> para atualizar.
+        <button
+            class="btn"
+            onclick="voltarParaCurso()">
+            ← Voltar para o curso
+        </button> para atualizar.
       </p>
 
       <a href="cursos.html?refresh=1" class="btn">Atualizar cursos</a>
@@ -30,5 +34,20 @@
   <footer>
     <p>© 2026 - Plataforma Quality Estudos</p>
   </footer>
+
+  <script>
+  function voltarParaCurso() {
+
+      const url = localStorage.getItem("voltar_para_compra");
+
+      if (url) {
+          window.location.href = url;
+          return;
+      }
+
+      window.location.href = "index.html";
+  }
+  </script>
+  
 </body>
 </html>

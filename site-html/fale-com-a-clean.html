@@ -10,7 +10,7 @@
 <body>
   <header style="padding-top:10px;padding-bottom:5px;">
     <div style="margin-top:20px;">
-      <h1 style="margin-bottom:-5px;">💬 Fale com a Clean</h1>
+      <h1 style="margin-bottom:-5px;">💬 Falar com a Clean</h1>
     </div>
 
     <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
@@ -20,11 +20,16 @@
 
   <main class="container">
     <div class="card">
-      <h2>Como podemos ajudar?</h2>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-        <button class="btn" onclick="mostrarAluno()">ALUNO</button>
-        <button class="btn" onclick="mostrarNaoAluno()">NÃO ALUNO</button>
+      <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:16px;
+        justify-content:center;
+      ">
+        <button id="btnAluno" class="btn" onclick="mostrarAluno()">ALUNO</button>
+        <button id="btnNaoAluno" class="btn" onclick="mostrarNaoAluno()">NÃO ALUNO</button>
       </div>
 
       <div id="areaAtendimento"></div>
@@ -35,13 +40,49 @@
     <p>© 2026 - Plataforma Quality Estudos</p>
   </footer>
 
+  <script src="js/app.js"></script>
+
   <script>
     const area = document.getElementById("areaAtendimento");
 
+    let atendimentoAtual = null;
+
+    function destacarBotao(tipo) {
+      const btnAluno = document.getElementById("btnAluno");
+      const btnNaoAluno = document.getElementById("btnNaoAluno");
+
+      btnAluno.style.border = tipo === "aluno" ? "3px solid #1F4E79" : "";
+      btnNaoAluno.style.border = tipo === "nao-aluno" ? "3px solid #1F4E79" : "";
+
+      btnAluno.style.boxShadow = tipo === "aluno" ? "0 0 0 3px rgba(31,78,121,.15)" : "";
+      btnNaoAluno.style.boxShadow = tipo === "nao-aluno" ? "0 0 0 3px rgba(31,78,121,.15)" : "";
+    }
+
+    function getToken() {
+      return localStorage.getItem("access_token");
+    }
+
     function mostrarAluno() {
+      if (atendimentoAtual === "aluno") {
+        atendimentoAtual = null;
+        area.innerHTML = "";
+        destacarBotao(null);
+        return;
+      }
+
+      atendimentoAtual = "aluno";
+      destacarBotao("aluno");
+      
+      const token = getToken();
+
+      if (!token) {
+        window.location.href = "login.html?next=fale-com-a-clean.html?tipo=aluno";
+        return;
+      }
+
       area.innerHTML = `
         <div class="assunto">
-          <h3>Atendimento ao aluno</h3>
+          <h3>Escreva sua mensagem</h3>
 
           <label><b>Assunto</b></label>
           <input
@@ -58,61 +99,175 @@
             style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px; margin-top:6px;"
           ></textarea>
 
-          <button class="btn" style="margin-top:12px;" onclick="enviarMensagemAluno()">
+          <button id="btnEnviarMensagemAluno" class="btn" style="margin-top:12px;" onclick="enviarMensagemAluno()">
             Enviar mensagem
           </button>
 
           <div id="msgAluno" style="margin-top:10px;"></div>
+
+          <button class="btn" type="button" onclick="toggleHistoricoAtendimentos()">
+            Atendimentos anteriores
+          </button>
+
+          <div
+            id="historicoAtendimentos"
+            class="list"
+            style="display:none; margin:14px 0;"
+          ></div>
         </div>
       `;
     }
 
     function mostrarNaoAluno() {
+      if (atendimentoAtual === "nao-aluno") {
+        atendimentoAtual = null;
+        area.innerHTML = "";
+        destacarBotao(null);
+        return;
+      }
+
+      atendimentoAtual = "nao-aluno";
+      destacarBotao("nao-aluno");
       area.innerHTML = `
         <div class="assunto">
-          <h3>Atendimento para não aluno</h3>
-          <p>Escolha uma opção para falar conosco pelo WhatsApp:</p>
+          <p>Escolha um assunto para falar conosco pelo WhatsApp:</p>
 
           <div class="list">
-            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20conhecer%20os%20cursos%20da%20CleanConcursos" target="_blank">
-              Quero conhecer os cursos
+            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20um%20curso%20espec%C3%ADfico" target="_blank">
+              Quero um curso específico
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20tirar%20d%C3%BAvidas%20sobre%20a%20CleanConcursos" target="_blank">
-              Quero tirar dúvidas
+            <a class="btn" href="https://wa.me/5500000000000?text=Quais%20cursos%20est%C3%A3o%20dispon%C3%ADveis" target="_blank">
+              Quais cursos estão disponíveis
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=Gostaria%20de%20pedir%20um%20curso%20espec%C3%ADfico" target="_blank">
-              Quero pedir um curso específico
+            <a class="btn" href="https://wa.me/5500000000000?text=Quanto%20tempo%20acesso%20o%20curso" target="_blank">
+              Quanto tempo acesso o curso
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20entender%20como%20funciona%20a%20plataforma" target="_blank">
-              Quero entender como funciona
+            <a class="btn" href="https://wa.me/5500000000000?text=D%C3%BAvidas%20em%20geral" target="_blank">
+              Dúvidas em geral
             </a>
           </div>
         </div>
       `;
     }
 
-    function enviarMensagemAluno() {
+    async function enviarMensagemAluno() {
       const assunto = document.getElementById("assuntoAluno").value.trim();
       const mensagem = document.getElementById("mensagemAluno").value.trim();
       const msg = document.getElementById("msgAluno");
 
       if (!assunto) {
-        msg.textContent = "Por favor, informe o assunto.";
+        msg.textContent = "Por favor preencha o campo 'Assunto'";
         msg.style.color = "#8a1f1f";
         return;
       }
 
       if (!mensagem) {
-        msg.textContent = "Por favor, escreva sua mensagem.";
+        msg.textContent = "Por favor preencha o campo 'Mensagem'";
         msg.style.color = "#8a1f1f";
         return;
       }
 
-      msg.textContent = "Mensagem enviada com sucesso! Em breve a Clean entrará em contato.";
-      msg.style.color = "#2f5e46";
+      try {
+        await apiPostAuth("/me/atendimentos", {
+          assunto,
+          mensagem
+        });
+
+        msg.style.color = "#2f5e46";
+        document.getElementById("btnEnviarMensagemAluno").style.display = "none";
+
+        msg.innerHTML = `
+          Mensagem enviada com sucesso!<br/>
+          A Clean responderá pelo atendimento interno.
+
+          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn" href="index.html">VOLTAR À PÁGINA INICIAL</a>
+            <a class="btn" href="cursos.html">IR PARA MEUS CURSOS</a>
+          </div>
+        `;
+
+        document.getElementById("assuntoAluno").value = "";
+        document.getElementById("mensagemAluno").value = "";
+
+      } catch (err) {
+        msg.textContent = "Erro ao enviar mensagem: " + err.message;
+        msg.style.color = "#8a1f1f";
+        console.error(err);
+      }
+    }
+  
+    (function abrirFormularioAlunoSeVierDoLogin() {
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.get("tipo") === "aluno") {
+        mostrarAluno();
+      }
+    })();
+  
+    let historicoAtendimentosAberto = false;
+
+    function formatarDataAtendimento(dataISO) {
+      if (!dataISO) return "-";
+      return new Date(dataISO).toLocaleString("pt-BR");
+    }
+
+    async function toggleHistoricoAtendimentos() {
+      const box = document.getElementById("historicoAtendimentos");
+      if (!box) return;
+
+      historicoAtendimentosAberto = !historicoAtendimentosAberto;
+
+      if (!historicoAtendimentosAberto) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.style.display = "block";
+      box.innerHTML = "<p>Carregando atendimentos anteriores...</p>";
+
+      try {
+        const dados = await apiGetAuth("/me/atendimentos");
+
+        if (!dados || dados.length === 0) {
+          box.innerHTML = `
+            <div class="assunto">
+              Ainda não há atendimentos realizados.
+            </div>
+          `;
+          return;
+        }
+
+        box.innerHTML = dados.map(a => `
+          <div class="assunto">
+            <b>${a.assunto}</b><br/>
+            <span style="opacity:.85;">
+              Data: ${formatarDataAtendimento(a.criado_em)}<br/>
+              Status: ${a.status}
+            </span>
+
+            <div style="margin-top:10px; white-space:pre-wrap;">
+              <b>Sua mensagem:</b><br/>
+              ${a.mensagem}
+            </div>
+
+            <div style="margin-top:10px; white-space:pre-wrap;">
+              <b>Resposta da Clean:</b><br/>
+              ${a.resposta_admin || "Ainda não respondido."}
+            </div>
+          </div>
+        `).join("");
+
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = `
+          <div class="assunto">
+            Erro ao carregar atendimentos anteriores.
+          </div>
+        `;
+      }
     }
   </script>
 </body>

@@ -2,133 +2,125 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Plataforma de Estudos para Concursos</title>
+  <title>Clean Concursos</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <header style="padding-top:6px;padding-bottom:1px;">
-    <div style="margin-top:12px;">
-      <h1 style="margin-bottom:-5px;">Clean Concursos</h1>
-      <p style="margin-top:8px;">Enxuto. Ojbetivo. Direto ao ponto</p>
+<header style="padding:25px 0 12px; position:relative;">
+  <div style="text-align:center;">
+    <h1 style="margin:0;color:#0f4c92;font-weight:700;line-height:1.05;">
+      <span style="display:inline-flex;align-items:flex-start;gap:8px;font-size:2.5rem;">
+        Quality
+      </span>
+
+      <br>
+
+      <span style="
+          display:block;
+          margin-top:2px;
+          font-size:1.2rem;
+          font-family:inherit;
+          font-weight:500;
+          color:#7d9068;
+          letter-spacing:0.5px;
+      ">
+          Estudos
+      </span>
+    </h1>
+  </div>
+
+  <nav style="position:relative;margin-top:8px;margin-bottom:4px;min-height:36px;">
+    <div style="text-align:center;">
+      <a href="#" class="btn" onclick="entrarEEstudar(); return false;" title="Área do Aluno">
+        👤
+      </a>
     </div>
 
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a href="#" class="btn" onclick="entrarEEstudar(); return false;">Área do Aluno (entrar ou se cadastrar)</a>
-      <a id="btnSairHome" href="#" class="btn" onclick="logout(); return false;">Sair</a>
-    </nav>
+    <div style="position:absolute;right:20px;top:0;display:flex;gap:10px;">
+      <a id="btnVoltarHome" href="#" class="btn" onclick="voltarDaPaginaInicial(); return false;" title="Voltar" style="display:none;">
+        ⇦
+      </a>
 
-  </header>
+      <a id="btnSairHome" href="#" class="btn" onclick="sairComConfirmacao(); return false;" title="Sair">
+        ⎋
+      </a>
+    </div>
+  </nav>
+</header>
 
-  <main>
+<main class="container">
 
-    <div class="card">
+  <div class="card">
+    <h2>📊 Como funciona a plataforma. A garantia de qualidade</h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-top:14px;">
+      <div class="assunto">
+        <h3>▶️ Como funciona</h3>
+        <div style="height:180px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          Vídeo 1
+        </div>
+      </div>
+
+      <div class="assunto">
+        <h3>💰 Seu dinheiro de volta</h3>
+        <div style="height:180px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          Vídeo 2
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div onclick="alternarCursosDisponiveis()" style="cursor:pointer;">
       <h2>📚 Cursos disponíveis</h2>
+    </div>
 
+    <div id="area_cursos_disponiveis" style="display:none;">
       <div id="lista-cursos-publicos" class="list" style="margin-top:15px;"></div>
 
-      <div style="
-        display:flex;
-        align-items:center;
-        gap:14px;
-        margin:18px 0 10px;
-        flex-wrap:wrap;
-      ">
-
-        <label style="
-          font-weight:bold;
-          white-space:nowrap;
-        ">
+      <div style="display:flex;align-items:center;gap:14px;margin:18px 0 10px;flex-wrap:wrap;">
+        <label style="font-weight:bold;white-space:nowrap;">
           🔎 Localizar
         </label>
 
         <input
           id="buscaCurso"
           type="text"
-          placeholder="Digite uma palavra do nome do cargo"
+          placeholder="Digite uma palavra referente ao cargo que deseja encontrar"
           oninput="renderizarCursosPublicos()"
-          style="
-            padding:6px;
-            border:1px solid #ddd;
-            border-radius:1px;
-            width:330px;
-            font-style:italic;
-          "
+          style="padding:6px;border:1px solid #ddd;border-radius:1px;width:542px;font-style:italic;"
         >
-
-        <div style="
-          font-weight:bold;
-          margin-left:28px;
-          white-space:nowrap;
-        ">
-          Por área
-        </div>
-
-        <div id="filtros-area" style="
-          display:flex;
-          gap:10px;
-          flex-wrap:wrap;
-        ">
-          <button class="btn-area" onclick="filtrarCursosPorArea('EDUCAÇÃO')">EDUCAÇÃO</button>
-
-          <button class="btn-area" onclick="filtrarCursosPorArea('SAÚDE')">SAÚDE</button>
-
-          <button class="btn-area" onclick="filtrarCursosPorArea('OUTROS')">OUTROS CURSOS</button>
-
-          <button class="btn-area" onclick="filtrarCursosPorArea('TODOS')">TODOS</button>
-        </div>
-
       </div>
 
-      
+      <div class="assunto" style="margin-top:18px;">
+        <h3>📝 Não há o curso que gostaria?</h3>
+
+        <p style="margin-top:12px;">
+          Fale agora conosco. Prepararemos o curso que você deseja.
+        </p>
+
+        <p style="margin-top:10px;">
+          <strong style="color:#25D366;">
+            👉 Chame agora no WhatsApp!
+          </strong>
+        </p>
       </div>
 
       <div id="mais-cursos-box" style="margin-top:12px;"></div>
     </div>
+  </div>
 
-    <div class="card">
-      <h2>📝 Não encontrou o Curso que gostaria?</h2>
-      <p>Fale conosco. Prepararemos o curso para o cargo que deseja: [Clique agora - Número_WhatsApp - clica aqui mesmo]</p>
+  <div class="card">
+    <div onclick="alternarLista('area_atendimento_clean')" style="cursor:pointer;">
+      <h2>🔗 Atendimento </h2>
     </div>
 
-    <div class="card">
-      <h2>📊 O funcionamento da nossa Plataforma e a Garantia da qualidade:</h2>
-
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
-        gap:16px;
-        margin-top:14px;
-      ">
-        <div class="assunto">
-          <h3>▶️ Como Funciona a Plataforma</h3>
-          <div style="height:180px; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center;">
-            Vídeo 1
-          </div>
-        </div>
-
-        <div class="assunto">
-          <h3>💰 Comprovação da Qualidade ou seu Dinheiro de volta</h3>
-          <div style="height:180px; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center;">
-            Vídeo 2
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>🔗 Atendimento Clean</h2>
-
-      <div style="
-        display:flex;
-        gap:18px;
-        flex-wrap:wrap;
-        margin-left:39px;
-        margin-top:-15px;
-      ">
+    <div id="area_atendimento_clean" style="display:none;margin-top:15px;">
+      <div style="display:flex;gap:18px;flex-wrap:wrap;">
         <a class="btn" href="login.html?next=meus-dados.html">
-          Atualizar meus dados
+          Atualizar meus dados / histórico de compras
         </a>
 
         <a class="btn" href="fale-com-a-clean.html">
@@ -140,30 +132,132 @@
         </a>
       </div>
     </div>
+  </div>
 
-    <div class="card" style="text-align:center;">
-      <div style="font-size:3rem; letter-spacing:12px;">
-      <span style="display:inline-block; transform:scaleX(-1);">🏎️</span> ... 🏁
+  <div class="card" style="text-align:center;">
+    <h2>🏁 Acelere!</h2>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:22px;margin:22px 0 8px;">
+      <span style="font-size:2.4rem;transform:scaleX(-1);">🏎️</span>
+
+      <span style="font-size:2rem;color:#999;letter-spacing:8px;">...</span>
+
+      <span style="font-size:2.5rem;">🏁</span>
     </div>
   </div>
-  </main>
 
-  <footer>
-    <p>© 2026 - A Martins - Direitos Reservados QA (Quality Assurance) - Plataforma em High Quality</p>
-  </footer>
+</main>
 
-  <script src="js/app.js"></script>
+<footer>
+  <p>© <span id="ano_atual"></span> • Plataforma Quality Estudos</p>
+</footer>
 
-  <script>
-    (function () {
-      const btn = document.getElementById("btnSairHome");
-      if (!btn) return;
-      const token = localStorage.getItem("access_token");
-      btn.style.display = token ? "inline-block" : "none";
-    })();
+<script src="js/app.js"></script>
 
-    pageHomeCursosPublico();
-  </script>
+<script>
+  (function () {
+    const btnSair = document.getElementById("btnSairHome");
+    const btnVoltar = document.getElementById("btnVoltarHome");
+    const token = localStorage.getItem("access_token");
+
+    if (btnSair) {
+      btnSair.style.display = token ? "inline-block" : "none";
+    }
+
+    if (btnVoltar) {
+      btnVoltar.style.display =
+        token && localStorage.getItem("pagina_antes_inicio")
+          ? "inline-block"
+          : "none";
+    }
+  })();
+
+  const anoAtual = document.getElementById("ano_atual");
+  if (anoAtual) {
+    anoAtual.textContent = new Date().getFullYear();
+  }
+
+  function alternarCursosDisponiveis() {
+  const area = document.getElementById("area_cursos_disponiveis");
+  const lista = document.getElementById("lista-cursos-publicos");
+
+  if (!area) return;
+
+  const estavaFechada = area.style.display === "none";
+
+  area.style.display = estavaFechada ? "block" : "none";
+
+  if (estavaFechada && lista) {
+    setTimeout(() => {
+      lista.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 100);
+  }
+}
+
+  async function iniciarPaginaInicial() {
+    await pageHomeCursosPublico();
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const abrirCursos =
+      params.get("cursos") === "aberto";
+    const abrirAtendimento =
+      params.get("atendimento") === "aberto";
+
+    if (abrirCursos) {
+      const area =
+        document.getElementById(
+          "area_cursos_disponiveis"
+        );
+
+      const lista =
+        document.getElementById(
+          "lista-cursos-publicos"
+        );
+
+      if (area) {
+        area.style.display =
+          "block";
+      }
+
+      if (lista) {
+        setTimeout(() => {
+          lista.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }, 300);
+      }
+    }
+
+    if (abrirAtendimento) {
+      const areaAtendimento =
+        document.getElementById(
+          "area_atendimento_clean"
+        );
+
+      if (areaAtendimento) {
+        areaAtendimento.style.display =
+          "block";
+
+        setTimeout(() => {
+          areaAtendimento.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }, 300);
+      }
+    }
+  }
+
+  iniciarPaginaInicial();
+</script>
 
 </body>
 </html>

@@ -5,66 +5,264 @@
   <title>Checkout</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-  <header>
-    <h1>Pagamento</h1>
-    <nav>
-      <a class="btn" href="index.html">Início</a>
-      <a class="btn" href="cursos.html">Meus cursos</a>
-    </nav>
-    <p>Iniciando o checkout...</p>
+  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+    <h1 style="margin-bottom:0;font-weight:400;font-size:1.7rem;">
+      Adquirir curso
+    </h1>
+
+    <div style="position:absolute;right:24px;top:22px;display:flex;gap:10px;">
+      <a class="btn" href="index.html" title="Início">⌂</a>
+      <a class="btn" href="cursos.html" title="Meus cursos">🎓</a>
+    </div>
   </header>
 
   <main class="container">
     <div class="card">
-      <h2>🧾 Checkout</h2>
-      <p id="msg">Preparando pagamento…</p>
+      <h2 id="nomeCurso" style="cursor:pointer;margin-top:0;font-weight:500;">
+        Carregando curso...
+      </h2>
+
+      <div id="estruturaCurso" style="display:none;margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2
+        onclick="alternarInformacoesCheckout()"
+        style="cursor:pointer;margin-top:0;font-size:1.2rem;"
+      >
+        Informações
+      </h2>
+
+      <div
+        id="infoCurso"
+        style="display:none;white-space:pre-line;line-height:1.6;margin-top:12px;"
+      ></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;font-size:1.2rem;">Acesso:</h2>
+
+      <div id="opcoesAcesso" class="list"></div>
+
+      <div
+        id="avisoDemo"
+        class="assunto"
+        style="display:none;margin-top:14px;line-height:1.6;"
+      >
+        <b>Nesta modalidade de acesso:</b><br/>
+        • somente as duas primeiras disciplinas estarão disponíveis;<br/>
+        • todas as funcionalidades dessas disciplinas poderão ser utilizadas normalmente;<br/>
+        • suas respostas, anotações e outros que houver feito nesta experiência serão excluídos após expirar o prazo do acesso;<br/>
+        • caso deseje refazer esta experiência, ela estará disponível para você novamente após 30 dias;<br/>
+        Obrigado!
+      </div>
+
+      <div style="margin-top:18px;text-align:right;">
+        <button class="btn" onclick="adquirirAgora()">
+          Adquirir agora
+        </button>
+      </div>
+
+      <div id="msgCheckout" style="margin-top:12px;"></div>
     </div>
   </main>
 
-  <script src="js/app.js"></script>
-  <script>
-    (async function () {
-      const msg = (t) => document.getElementById("msg").textContent = t;
+  <footer style="margin-top:4px;">
+    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+  </footer>
 
-      const cursoId = Number(localStorage.getItem("ultimo_curso_id_compra") || "0");
-      if (!cursoId) {
-        msg("Não encontrei o curso para compra. Volte para a página inicial e clique em Comprar novamente.");
+  <script src="js/app.js"></script>
+
+  <script>
+    let dadosCheckout = null;
+    let disciplinaAbertaId = null;
+
+    function formatarDinheiro(cents) {
+      return (Number(cents || 0) / 100).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function alternarInformacoesCheckout() {
+      const box = document.getElementById("infoCurso");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+
+    function alternarEstruturaCurso() {
+      const box = document.getElementById("estruturaCurso");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+
+    function alternarDisciplinaCheckout(id) {
+      disciplinaAbertaId = disciplinaAbertaId === id ? null : id;
+      renderizarEstruturaCurso();
+    }
+
+    function renderizarEstruturaCurso() {
+      const box = document.getElementById("estruturaCurso");
+
+      box.innerHTML = (dadosCheckout.disciplinas || []).map(d => `
+        <div class="assunto" style="padding:10px 14px;">
+          <div
+            onclick="alternarDisciplinaCheckout(${d.id})"
+            style="cursor:pointer;font-weight:bold;"
+          >
+            ${escapeHtml(d.nome)}
+          </div>
+
+          ${
+            disciplinaAbertaId === d.id
+              ? `
+                <div style="margin-top:10px;padding-left:14px;">
+                  ${
+                    (d.assuntos || []).length === 0
+                      ? `<div style="opacity:.75;">Nenhum assunto cadastrado.</div>`
+                      : d.assuntos.map(a => `
+                          <div style="margin-top:6px;">
+                            • ${escapeHtml(a.nome)}
+                          </div>
+                        `).join("")
+                  }
+                </div>
+              `
+              : ""
+          }
+        </div>
+      `).join("");
+    }
+
+    function renderizarOpcoesAcesso() {
+      const box = document.getElementById("opcoesAcesso");
+
+      const opcoesPagas = (dadosCheckout.tempos_acesso || []).map(t => `
+        <label class="assunto" style="display:block;cursor:pointer;">
+          <input
+            type="radio"
+            name="tipo_acesso"
+            value="tempo_${t.id}"
+            data-tempo-id="${t.id}"
+            onchange="controleAvisoDemo()"
+            style="margin-right:10px;"
+          />
+          ${t.meses} meses (${formatarDinheiro(t.valor_cents)})
+        </label>
+      `).join("");
+
+      box.innerHTML = `
+        <label class="assunto" style="display:block;cursor:pointer;">
+          <input
+            type="radio"
+            name="tipo_acesso"
+            value="demo"
+            onchange="controleAvisoDemo()"
+            style="margin-right:10px;"
+          />
+          1 dia gratuito para conhecer a plataforma
+        </label>
+
+        ${opcoesPagas}
+      `;
+    }
+
+    function controleAvisoDemo() {
+      const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
+      const aviso = document.getElementById("avisoDemo");
+
+      aviso.style.display =
+        selecionado && selecionado.value === "demo"
+          ? "block"
+          : "none";
+    }
+
+    async function adquirirAgora() {
+      const msg = document.getElementById("msgCheckout");
+      const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
+
+      if (!selecionado) {
+        alert("Selecione uma opção de acesso.");
         return;
       }
 
-      // precisa estar logado aqui
       const token = getToken();
+
       if (!token) {
-        msg("Você não está logado. Redirecionando para login...");
+        localStorage.setItem("pos_login_redirect", window.location.pathname.split("/").pop() + window.location.search);
         window.location.href = "login.html";
         return;
       }
 
       try {
-        // se já tem o curso, pede confirmação
-        const meus = await apiGetAuth("/me/cursos");
-        const meusIds = new Set((meus || []).map(m => Number(m.curso_id)));
-
-        if (meusIds.has(cursoId)) {
-          const ok = confirm("Você já possui este preparatório! Deseja continuar mesmo assim?\n\n[OK] Sim • [Cancelar] Não");
-          if (!ok) {
-            msg("Ok — compra cancelada. Indo para seus cursos...");
-            setTimeout(() => window.location.href = "cursos.html", 600);
-            return;
-          }
+        if (selecionado.value === "demo") {
+          msg.textContent = "Ativando acesso gratuito...";
+          await apiPostAuth(`/cursos/${dadosCheckout.id}/demonstracao`, {});
+          window.location.href = "cursos.html";
+          return;
         }
 
-        msg("Abrindo checkout do Mercado Pago...");
-        await comprarCurso(cursoId); // sua função já abre sandbox_init_point/init_point
+        const tempoId = selecionado.dataset.tempoId;
 
-        msg("Checkout aberto. Após pagar, volte para a plataforma (Meus cursos).");
+        msg.textContent = "Abrindo checkout do Mercado Pago...";
 
-      } catch (e) {
-        console.error(e);
-        msg("Erro ao iniciar checkout. Veja o console.");
+        const r = await apiPostAuth("/checkout/mercadopago", {
+          tempo_acesso_id: Number(tempoId)
+        });
+
+        localStorage.setItem("ultimo_curso_id_compra", String(dadosCheckout.id));
+        localStorage.setItem("ultimo_checkout_curso_id", String(dadosCheckout.id));
+
+        const url = r.sandbox_init_point || r.init_point;
+
+        if (!url) {
+          throw new Error("Checkout não retornou link de pagamento.");
+        }
+
+        window.location.href = url;
+
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "Erro ao iniciar acesso: " + err.message;
+        msg.style.color = "#8a1f1f";
       }
-    })();
+    }
+
+    async function carregarCheckout() {
+      const msg = document.getElementById("msgCheckout");
+
+      const cursoId =
+        Number(new URLSearchParams(window.location.search).get("curso_id")) ||
+        Number(localStorage.getItem("ultimo_curso_id_compra") || "0");
+
+      if (!cursoId) {
+        msg.textContent = "Curso não identificado.";
+        return;
+      }
+
+      try {
+        dadosCheckout = await apiGet(`/public/cursos/${cursoId}/checkout`);
+
+        document.getElementById("nomeCurso").textContent = dadosCheckout.nome;
+        document.getElementById("nomeCurso").onclick = alternarEstruturaCurso;
+
+        document.getElementById("infoCurso").textContent =
+          dadosCheckout.descricao_publica || "Informações ainda não cadastradas.";
+
+        renderizarEstruturaCurso();
+        renderizarOpcoesAcesso();
+
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "Erro ao carregar checkout.";
+        msg.style.color = "#8a1f1f";
+      }
+    }
+
+    const anoAtual = document.getElementById("ano_atual");
+    if (anoAtual) anoAtual.textContent = new Date().getFullYear();
+
+    carregarCheckout();
   </script>
 </body>
 </html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Minha Área</title>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        👤 Minha Área
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaida(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2
+        style="
+          text-align:center;
+          margin-bottom:18px;
+        "
+      >
+        Escolha a área
+      </h2>
+
+      <div
+        id="opcoesMinhaArea"
+        style="
+          display:flex;
+          flex-direction:column;
+          gap:14px;
+        "
+      >
+
+        <a
+          id="opcaoAdmin"
+          class="btn"
+          href="admin/index.html"
+          style="
+            display:none;
+            text-align:center;
+            padding:14px;
+          "
+        >
+          Painel ADM
+        </a>
+
+
+        <a
+          id="opcaoVendedor"
+          class="btn"
+          href="minhas-vendas.html"
+          style="
+            display:none;
+            text-align:center;
+            padding:14px;
+          "
+        >
+          Minhas Vendas
+        </a>
+
+
+        <a
+          id="opcaoCursos"
+          class="btn"
+          href="cursos.html"
+          style="
+            display:none;
+            text-align:center;
+            padding:14px;
+          "
+        >
+          Meus Cursos
+        </a>
+
+      </div>
+
+
+      <div
+        id="msgMinhaArea"
+        style="
+          margin-top:16px;
+          text-align:center;
+        "
+      >
+        Carregando...
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+
+  <script src="js/app.js"></script>
+
+  <script>
+    async function carregarMinhaArea() {
+      const msg =
+        document.getElementById(
+          "msgMinhaArea"
+        );
+
+      const opcaoAdmin =
+        document.getElementById(
+          "opcaoAdmin"
+        );
+
+      const opcaoVendedor =
+        document.getElementById(
+          "opcaoVendedor"
+        );
+
+      const opcaoCursos =
+        document.getElementById(
+          "opcaoCursos"
+        );
+
+      const token =
+        getToken();
+
+      if (!token) {
+        window.location.href =
+          "login.html";
+
+        return;
+      }
+
+      try {
+        const me =
+          await apiGetAuth(
+            "/me"
+          );
+
+        let quantidadeAreas = 0;
+
+
+        if (me?.is_admin) {
+          opcaoAdmin.style.display =
+            "block";
+
+          quantidadeAreas++;
+        }
+
+
+        if (me?.is_vendedor) {
+          opcaoVendedor.style.display =
+            "block";
+
+          quantidadeAreas++;
+        }
+
+
+        if (me?.is_aluno) {
+          opcaoCursos.style.display =
+            "block";
+
+          quantidadeAreas++;
+        }
+
+
+        if (msg) {
+          msg.style.display =
+            quantidadeAreas > 0
+              ? "none"
+              : "block";
+
+          if (quantidadeAreas === 0) {
+            msg.textContent =
+              "Nenhuma área disponível no momento.";
+          }
+        }
+
+      } catch (err) {
+        console.error(
+          "Erro ao carregar áreas do usuário:",
+          err
+        );
+
+        clearToken();
+
+        window.location.href =
+          "login.html";
+      }
+    }
+
+
+    function confirmarSaida() {
+      const ok =
+        confirm(
+          "Deseja realmente sair da plataforma?"
+        );
+
+      if (!ok) {
+        return;
+      }
+
+      logout();
+    }
+
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+
+    carregarMinhaArea();
+  </script>
+
+</body>
+
+</html>

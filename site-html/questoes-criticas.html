@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questões críticas</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Questões críticas</h1>
+
+  <div>
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+    <a class="btn" href="#" onclick="logout()">Sair</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="card">
+    <h2>Filtros</h2>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+      <div>
+        <label><b>Disciplina</b></label><br>
+
+        <select id="filtroDisciplina"
+          onchange="aplicarFiltros()"
+          style="padding:10px; min-width:260px;">
+        </select>
+      </div>
+
+      <div>
+        <label><b>Questões</b></label><br>
+
+        <select id="filtroTipo"
+          onchange="aplicarFiltros()"
+          style="padding:10px; min-width:260px;">
+
+          <option value="TODAS">TODAS</option>
+          <option value="ERRO">Só as que errei</option>
+          <option value="DIFICIL">As difíceis</option>
+          <option value="REVER">As que marquei para rever</option>
+
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="area_questoes"></div>
+
+  <div id="area_relatorio"></div>
+
+  <div class="card" style="text-align:center;">
+    <a class="btn" href="javascript:history.back()">
+      Voltar
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  © 2026 - Plataforma Quality Estudos
+</footer>
+
+<script src="js/app.js"></script>
+
+<script>
+
+let questoesCriticas = [];
+
+function esc(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function traduzResposta(v) {
+  if (v === "C") return "CERTO";
+  if (v === "E") return "ERRADO";
+  return v || "-";
+}
+
+async function carregarQuestoesCriticas() {
+
+  try {
+
+    questoesCriticas =
+      await apiGetAuth("/me/questoes-criticas");
+
+    preencherFiltroDisciplinas();
+
+    aplicarFiltros();
+
+  } catch (err) {
+
+    console.error(err);
+
+    document.getElementById("area_questoes").innerHTML = `
+      <div class="card">
+        Erro ao carregar questões críticas.
+      </div>
+    `;
+  }
+}
+
+function preencherFiltroDisciplinas() {
+
+  const select =
+    document.getElementById("filtroDisciplina");
+
+  const disciplinas = [];
+
+  questoesCriticas.forEach(q => {
+
+    if (
+      !disciplinas.some(
+        d => d.id === q.disciplina_id
+      )
+    ) {
+      disciplinas.push({
+        id: q.disciplina_id,
+        nome: q.disciplina_nome,
+        ordem: q.disciplina_ordem
+      });
+    }
+
+  });
+
+  disciplinas.sort(
+    (a,b) => a.ordem - b.ordem
+  );
+
+  select.innerHTML = `
+    <option value="TODAS">TODAS</option>
+  `;
+
+  disciplinas.forEach(d => {
+
+    select.innerHTML += `
+      <option value="${d.id}">
+        ${esc(d.nome)}
+      </option>
+    `;
+  });
+}
+
+function aplicarFiltros() {
+
+  const disciplina =
+    document.getElementById("filtroDisciplina").value;
+
+  const tipo =
+    document.getElementById("filtroTipo").value;
+
+  let lista = [...questoesCriticas];
+
+  if (disciplina !== "TODAS") {
+
+    lista = lista.filter(
+      q => String(q.disciplina_id) === disciplina
+    );
+  }
+
+  if (tipo === "ERRO") {
+    lista = lista.filter(q => q.erro);
+  }
+
+  if (tipo === "DIFICIL") {
+    lista = lista.filter(q => q.dificil);
+  }
+
+  if (tipo === "REVER") {
+    lista = lista.filter(q => q.para_rever);
+  }
+
+  renderizarQuestoes(lista);
+
+  renderizarMiniRelatorio(lista, disciplina);
+}
+
+function renderizarQuestoes(lista) {
+  const area = document.getElementById("area_questoes");
+  const disciplinaSelecionada = document.getElementById("filtroDisciplina").value;
+
+  if (!lista.length) {
+    area.innerHTML = `
+      <div class="card">
+        Nenhuma questão encontrada.
+      </div>
+    `;
+    return;
+  }
+
+  const listaOrdenada = [...lista].sort((a, b) =>
+    (a.disciplina_ordem ?? 0) - (b.disciplina_ordem ?? 0) ||
+    (a.assunto_ordem ?? 0) - (b.assunto_ordem ?? 0) ||
+    (a.questao_ordem ?? 0) - (b.questao_ordem ?? 0)
+  );
+
+  let html = `
+    <div class="card">
+      <h2>Total: ${listaOrdenada.length} questão(ões)</h2>
+    </div>
+  `;
+
+  let disciplinaAtual = null;
+  let assuntoAtual = null;
+  let questaoNumero = 1;
+
+  const disciplinas = [];
+
+  listaOrdenada.forEach(q => {
+    let disciplina = disciplinas.find(d => d.id === q.disciplina_id);
+
+    if (!disciplina) {
+      disciplina = {
+        id: q.disciplina_id,
+        nome: q.disciplina_nome,
+        ordem: q.disciplina_ordem,
+        assuntos: []
+      };
+
+      disciplinas.push(disciplina);
+    }
+
+    let assunto = disciplina.assuntos.find(a => a.id === q.assunto_id);
+
+    if (!assunto) {
+      assunto = {
+        id: q.assunto_id,
+        nome: q.assunto_nome,
+        ordem: q.assunto_ordem,
+        questoes: []
+      };
+
+      disciplina.assuntos.push(assunto);
+    }
+
+    assunto.questoes.push(q);
+  });
+
+  disciplinas.forEach(disciplina => {
+    if (disciplinaSelecionada === "TODAS" && disciplinaAtual !== disciplina.id) {
+      disciplinaAtual = disciplina.id;
+
+      html += `
+        <div class="card" style="padding-bottom:12px;">
+          <h2 style="margin:0; font-size:1.45rem;">
+            ${esc(disciplina.nome || "")}
+          </h2>
+        </div>
+      `;
+    }
+
+    disciplina.assuntos.forEach(assunto => {
+      if (assuntoAtual !== assunto.id) {
+        assuntoAtual = assunto.id;
+
+        html += `
+          <div class="card" style="padding-bottom:12px;">
+            <h3 style="margin:0; font-size:1.15rem;">
+              ${esc(assunto.nome || "")}
+            </h3>
+          </div>
+        `;
+      }
+
+      const jaRenderizadas = new Set();
+
+      const erros = assunto.questoes
+        .filter(q => q.erro)
+        .sort((a, b) =>
+          (b.qtd_erros ?? 0) - (a.qtd_erros ?? 0) ||
+          (a.questao_ordem ?? 0) - (b.questao_ordem ?? 0)
+        );
+
+      erros.forEach(q => {
+        html += montarCardQuestaoCritica(q, questaoNumero++, "ERRO");
+        jaRenderizadas.add(q.questao_id);
+      });
+
+      const dificeis = assunto.questoes
+        .filter(q => q.dificil && !jaRenderizadas.has(q.questao_id))
+        .sort((a, b) => (a.questao_ordem ?? 0) - (b.questao_ordem ?? 0));
+
+      dificeis.forEach(q => {
+        html += montarCardQuestaoCritica(q, questaoNumero++, "DIFICIL");
+        jaRenderizadas.add(q.questao_id);
+      });
+
+      const paraRever = assunto.questoes
+        .filter(q => q.para_rever && !jaRenderizadas.has(q.questao_id))
+        .sort((a, b) => (a.questao_ordem ?? 0) - (b.questao_ordem ?? 0));
+
+      paraRever.forEach(q => {
+        html += montarCardQuestaoCritica(q, questaoNumero++, "REVER");
+        jaRenderizadas.add(q.questao_id);
+      });
+    });
+  });
+
+  area.innerHTML = html;
+}
+
+function montarCardQuestaoCritica(q, numero, tipoGrupo) {
+  let marcador = "";
+
+  if (tipoGrupo === "ERRO") {
+    marcador = q.qtd_erros > 1
+      ? `${q.qtd_erros}❌`
+      : "❌";
+  }
+
+  if (tipoGrupo === "DIFICIL") {
+    marcador = "D";
+  }
+
+  if (tipoGrupo === "REVER") {
+    marcador = "R";
+  }
+
+  const corMarcador = tipoGrupo === "ERRO"
+    ? "#9a5a16"
+    : "#9a6a00";
+
+  return `
+    <div class="card">
+      <h3 style="margin-top:0; font-size:1rem;">
+        Questão ${numero}
+      </h3>
+
+      <div style="white-space:pre-wrap; margin-top:8px;">
+        ${esc(q.enunciado)}
+      </div>
+
+      <div style="margin-top:14px;">
+        <p><b>Gabarito:</b> ${esc(traduzResposta(q.gabarito))}</p>
+      </div>
+
+      <div style="white-space:pre-wrap; margin-top:6px;">
+        ${esc(q.comentario || "Comentário não cadastrado.")}
+      </div>
+
+      <div style="
+        margin-top:16px;
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-end;
+        gap:10px;
+      ">
+        <div style="
+          font-size:.95rem;
+          font-weight:bold;
+          color:${corMarcador};
+        ">
+          ${marcador}
+        </div>
+
+        <div style="
+          text-align:right;
+          font-size:.72rem;
+          opacity:.75;
+        ">
+          Sua resposta: ${esc(traduzResposta(q.resposta_marcada))}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderizarMiniRelatorio(lista, disciplinaSelecionada) {
+  const area = document.getElementById("area_relatorio");
+
+  if (!lista.length) {
+    area.innerHTML = "";
+    return;
+  }
+
+  const disciplinas = [];
+
+  lista.forEach(q => {
+    let disciplina = disciplinas.find(d => d.id === q.disciplina_id);
+
+    if (!disciplina) {
+      disciplina = {
+        id: q.disciplina_id,
+        nome: q.disciplina_nome,
+        ordem: q.disciplina_ordem,
+        assuntos: []
+      };
+
+      disciplinas.push(disciplina);
+    }
+
+    let assunto = disciplina.assuntos.find(a => a.id === q.assunto_id);
+
+    if (!assunto) {
+      assunto = {
+        id: q.assunto_id,
+        nome: q.assunto_nome,
+        ordem: q.assunto_ordem,
+        erros: 0,
+        dificeis: 0,
+        paraRever: 0
+      };
+
+      disciplina.assuntos.push(assunto);
+    }
+
+    if (q.erro) assunto.erros += 1;
+    if (q.dificil) assunto.dificeis += 1;
+    if (q.para_rever) assunto.paraRever += 1;
+  });
+
+  disciplinas.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+  disciplinas.forEach(d => {
+    d.assuntos.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+  });
+
+  const tituloRelatorio =
+    disciplinaSelecionada === "TODAS"
+      ? "Relatório geral das disciplinas"
+      : `Relatório da Disciplina (${esc(disciplinas[0]?.nome || "")})`;
+
+  let html = `
+    <div class="card">
+      <h2>${tituloRelatorio}</h2>
+  `;
+
+  disciplinas.forEach(disciplina => {
+    if (disciplinaSelecionada === "TODAS") {
+      html += `
+        <div style="margin-top:24px;">
+          <h3 style="
+            margin:0 0 12px 0;
+            font-size:1.15rem;
+            text-transform:uppercase;
+          ">
+            ${esc(disciplina.nome || "")}
+          </h3>
+      `;
+    } else {
+      html += `
+        <div style="margin-top:12px;">
+      `;
+    }
+
+    html += `
+      <div style="
+        font-weight:bold;
+        margin-bottom:12px;
+      ">
+        Assunto:
+      </div>
+    `;
+
+    disciplina.assuntos.forEach(assunto => {
+      const temRegistro =
+        assunto.erros > 0 ||
+        assunto.dificeis > 0 ||
+        assunto.paraRever > 0;
+
+      if (!temRegistro) return;
+
+      html += `
+        <div style="margin-top:16px;">
+          <div style="
+            font-weight:bold;
+            margin-bottom:6px;
+          ">
+            ${esc(assunto.nome || "")}
+          </div>
+      `;
+
+      if (assunto.erros > 0) {
+        html += `
+          <div>
+            ${assunto.erros} erro${assunto.erros > 1 ? "s" : ""}
+          </div>
+        `;
+      }
+
+      if (assunto.dificeis > 0) {
+        html += `
+          <div>
+            ${assunto.dificeis} ${assunto.dificeis > 1 ? "difíceis" : "difícil"}
+          </div>
+        `;
+      }
+
+      if (assunto.paraRever > 0) {
+        html += `
+          <div>
+            ${assunto.paraRever} para rever
+          </div>
+        `;
+      }
+
+      html += `
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+    `;
+  });
+
+  html += `
+    </div>
+  `;
+
+  area.innerHTML = html;
+}
+
+carregarQuestoesCriticas();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Gerenciar perfis</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        🔐 Gerenciar perfis
+      </h1>
+
+    </div>
+
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+
+      <a
+        class="btn"
+        href="#"
+        onclick="
+          irParaInicio('../index.html');
+          return false;
+        "
+        title="Início"
+      >
+        ⌂
+      </a>
+
+
+      <a
+        class="btn"
+        href="#"
+        onclick="
+          confirmarSaidaAdmin();
+          return false;
+        "
+        title="Sair"
+      >
+        ⎋
+      </a>
+
+    </nav>
+
+  </header>
+
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2>
+        Localizar usuário
+      </h2>
+
+      <div
+        style="
+          margin-top:14px;
+        "
+      >
+
+        <input
+          id="buscaPerfilUsuario"
+          type="text"
+          placeholder="Digite nome, e-mail ou CPF"
+          style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:6px;
+          "
+        >
+
+      </div>
+
+
+      <div
+        style="
+          margin-top:12px;
+        "
+      >
+
+        <button
+          id="btnBuscarPerfilUsuario"
+          class="btn"
+          type="button"
+        >
+          Buscar
+        </button>
+
+      </div>
+
+
+      <div
+        id="msgBuscaPerfilUsuario"
+        style="
+          margin-top:12px;
+        "
+      >
+      </div>
+
+    </div>
+
+
+    <div
+      id="areaPerfisUsuario"
+      class="card"
+      style="display:none;"
+    >
+
+      <h2>
+        Perfis do usuário
+      </h2>
+
+
+      <div
+        id="dadosUsuarioPerfil"
+        style="
+          margin-top:14px;
+        "
+      >
+      </div>
+
+
+      <div
+        id="acoesPerfilUsuario"
+        style="
+          margin-top:18px;
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+        "
+      >
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+
+  </footer>
+
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+
+  <script src="../js/perfis.js"></script>
+
+
+  <script>
+
+    function confirmarSaidaAdmin() {
+
+      const ok =
+        confirm(
+          "Deseja realmente sair da plataforma?"
+        );
+
+      if (!ok) {
+        return;
+      }
+
+      logout();
+
+    }
+
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+
+      anoAtual.textContent =
+        new Date().getFullYear();
+
+    }
+
+
+    requireAdmin();
+
+  </script>
+
+</body>
+
+</html>

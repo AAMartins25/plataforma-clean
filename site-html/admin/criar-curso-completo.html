@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar Curso Completo</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        🧩 Criar Curso
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="../index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- CURSO -->
+    <div class="card">
+      <h2>1) Criar / editar curso</h2>
+
+      <form id="formCurso" class="list">
+
+        <div class="assunto">
+          <label><b>Criar curso novo</b></label><br/>
+
+          <input
+            id="cursoNome"
+            type="text"
+            placeholder="Ex.: Guarda Municipal Porto Velho 2026"
+            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          />
+        </div>
+
+        <button class="btn" type="submit">
+          Criar curso
+        </button>
+
+      </form>
+
+      <div class="assunto" style="margin-top:20px;">
+        <label><b>Selecionar curso existente</b></label><br/>
+
+        <select
+          id="cursoExistenteSelect"
+          style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+        >
+          <option value="">Carregando cursos...</option>
+        </select>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+
+          <button class="btn" id="btnUsarCursoExistente" type="button">
+            Usar curso selecionado
+          </button>
+
+          <button class="btn" id="btnEditarCurso" type="button">
+            Editar nome do curso
+          </button>
+
+          <button class="btn" id="btnDuplicarCurso" type="button">
+            Duplicar curso
+          </button>
+
+          <button class="btn" id="btnExcluirCurso" type="button">
+            Excluir este curso
+          </button>
+
+          <button
+            class="btn"
+            id="btnPublicarCurso"
+            type="button"
+            style="display:none;"
+          >
+            Publicar curso
+          </button>
+
+          <button
+            class="btn"
+            id="btnRetirarCursoVenda"
+            type="button"
+            style="display:none;"
+          >
+            Desativar venda
+          </button>
+
+        </div>
+
+        <div id="msgCurso" style="margin-top:10px;"></div>
+
+        <div id="boxConfigPublicaCurso" class="assunto" style="display:none; margin-top:20px;">
+          <h3>Descrição pública e valores de acesso</h3>
+
+          <label><b>Informações do curso</b></label><br/>
+          <textarea
+            id="cursoDescricaoPublica"
+            placeholder="Descreva como funciona o curso, professor, cargo, remuneração, prova etc."
+            style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          ></textarea>
+
+          <div style="margin-top:16px;">
+            <label><b>4 meses</b></label><br/>
+            <input id="valor4Meses" type="text" placeholder="Ex.: 149,90"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          </div>
+
+          <div style="margin-top:12px;">
+            <label><b>8 meses</b></label><br/>
+            <input id="valor8Meses" type="text" placeholder="Ex.: 229,90"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          </div>
+
+          <div style="margin-top:12px;">
+            <label><b>12 meses</b></label><br/>
+            <input id="valor12Meses" type="text" placeholder="Ex.: 299,90"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          </div>
+
+          <div style="
+            margin-top:14px;
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:12px;
+          ">
+
+            <button
+              class="btn"
+              id="btnEditarConfigPublicaCurso"
+              type="button">
+              Editar descrição e ou valores
+            </button>
+
+            <div
+              style="
+                display:flex;
+                flex-direction:column;
+                align-items:flex-end;
+              ">
+
+              <button
+                class="btn"
+                id="btnSalvarConfigPublicaCurso"
+                type="button"
+                disabled
+                style="opacity:.45;">
+                Salvar descrição e valores
+              </button>
+
+              <div
+                id="msgConfigPublicaCurso"
+                style="
+                  margin-top:8px;
+                  min-height:18px;
+                  font-size:.90rem;
+                  font-weight:bold;
+                  color:#2f5e46;
+                  text-align:right;
+                  width:100%;
+                ">
+              </div>
+
+            </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DISCIPLINAS -->
+    <div class="card">
+
+      <h2>2) Disciplinas do curso</h2>
+
+      <div id="boxDisciplinas" style="display:none;">
+
+        
+        <div
+          id="listaDisciplinasCurso"
+          style="margin-top:15px;"
+        >
+        </div>
+
+        <div class="assunto">
+          <label><b>Criar nova disciplina</b></label><br/>
+          <input
+            id="disciplinaNome"
+            type="text"
+            placeholder="Ex.: Língua Portuguesa"
+            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          />
+          <div style="margin-top:12px;">
+            <button class="btn" id="btnAdicionarDisciplina">
+              Adicionar disciplina
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="card">
+
+      <h2>3) Assuntos da disciplina</h2>
+
+      <div id="boxConteudo" style="display:none;">
+
+        <div id="areaAssuntos" style="display:none; margin-top:20px;">
+          <h3 id="tituloDisciplinaSelecionada">Disciplina selecionada</h3>
+
+          <div id="listaAssuntos" style="margin-top:15px;">
+            Nenhum assunto carregado.
+          </div>
+
+          <div
+            id="boxCopiarAssunto"
+            class="assunto"
+            style="display:none; margin-top:15px;"
+          >
+            <h3>Copiar assunto para outra disciplina</h3>
+
+            <div style="margin-top:12px;">
+              <label>
+                <b>Curso de destino</b>
+              </label>
+
+              <select
+                id="cursoDestinoAssuntoSelect"
+                style="
+                  width:100%;
+                  padding:12px;
+                  border:1px solid #ddd;
+                  border-radius:6px;
+                  margin-top:6px;
+                "
+              >
+                <option value="">
+                  Selecione o curso de destino
+                </option>
+              </select>
+            </div>
+
+            <div style="margin-top:12px;">
+              <label>
+                <b>Disciplina de destino</b>
+              </label>
+
+              <select
+                id="disciplinaDestinoAssuntoSelect"
+                disabled
+                style="
+                  width:100%;
+                  padding:12px;
+                  border:1px solid #ddd;
+                  border-radius:6px;
+                  margin-top:6px;
+                "
+              >
+                <option value="">
+                  Selecione primeiro o curso
+                </option>
+              </select>
+            </div>
+
+            <div
+              style="
+                margin-top:15px;
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+              <button
+                id="btnConfirmarCopiaAssunto"
+                class="btn"
+                type="button"
+              >
+                Copiar assunto
+              </button>
+
+              <button
+                id="btnCancelarCopiaAssunto"
+                class="btn"
+                type="button"
+              >
+                Cancelar
+              </button>
+            </div>
+
+            <div
+              id="msgCopiarAssunto"
+              style="margin-top:10px;"
+            ></div>
+          </div>
+          
+          <div class="assunto">
+            <label><b>Criar novo assunto</b></label><br/>
+            <input
+              id="assuntoNome"
+              type="text"
+              placeholder="Ex.: Interpretação de textos"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            />
+
+            <div style="margin-top:12px;">
+              <button class="btn" id="btnAdicionarAssunto" type="button">
+                Adicionar assunto
+              </button>
+            </div>
+          </div>
+
+          <div id="areaAulas" style="display:none; margin-top:25px;">
+
+            <h3 id="tituloAreaAulas">Área do assunto</h3>
+
+            <div id="boxCriacaoAula" class="assunto">
+              <label><b>Título da aula</b></label><br/>
+              <input
+                id="aulaTitulo"
+                type="text"
+                placeholder="Ex.: Aula 1 — Introdução"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              />
+
+              <div style="margin-top:12px;">
+                <button class="btn" id="btnAdicionarAula" type="button">
+                  Adicionar aula
+                </button>
+              </div>
+            </div>
+
+            <div id="listaAulas" style="margin-top:15px;">
+              Nenhuma aula carregada.
+            </div>
+
+            <div id="areaConteudoAula" style="display:none; margin-top:25px;">
+
+              <h3>Conteúdo</h3>
+
+              <div class="assunto">
+
+                <div id="boxConteudoAula" style="margin-top:15px;"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/admin-criar-curso-completo.js"></script>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm("Deseja realmente sair da plataforma?");
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual = document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent = new Date().getFullYear();
+    }
+  </script>
+
+</body>
+</html>

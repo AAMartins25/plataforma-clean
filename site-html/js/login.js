@@ -12,56 +12,209 @@
   }
 
   async function redirectDepoisDoLogin() {
-    // 1) prioridade: redirect explícito (ex: veio do botão Comprar)
-    const nextUrl = new URLSearchParams(window.location.search).get("next");
+    // 1) Redirect explícito recebido pela URL
+    const nextUrl =
+      new URLSearchParams(
+        window.location.search
+      ).get("next");
+
     if (nextUrl) {
-      window.location.href = nextUrl;
-      return;
-    }
-    const next = localStorage.getItem("pos_login_redirect") || "";
-    localStorage.removeItem("pos_login_redirect");
-    if (next) {
-      window.location.href = next;
+      localStorage.removeItem(
+        "pos_login_redirect"
+      );
+
+      window.location.href =
+        nextUrl;
+
       return;
     }
 
-    // 2) Se existe intenção de compra pendente, segue pro checkout
-    const cursoCompra = localStorage.getItem("ultimo_curso_id_compra");
-    if (cursoCompra) {
-      window.location.href = "checkout.html";
+
+    // 2) Compra iniciada antes do login
+    const continuarCompra =
+      localStorage.getItem(
+        "continuar_compra_apos_login"
+      ) === "1";
+
+    const estadoCompraSalvo =
+      localStorage.getItem(
+        "estado_compra_curso"
+      );
+
+    if (
+      continuarCompra &&
+      estadoCompraSalvo
+    ) {
+      let destinoCompra =
+        localStorage.getItem(
+          "pos_login_redirect"
+        );
+
+      // Segurança adicional:
+      // se o redirect tiver sido perdido,
+      // reconstrói a página pelo curso salvo.
+      if (!destinoCompra) {
+        try {
+          const estadoCompra =
+            JSON.parse(
+              estadoCompraSalvo
+            );
+
+          if (estadoCompra?.curso_id) {
+            destinoCompra =
+              `curso-info.html?curso_id=${encodeURIComponent(
+                estadoCompra.curso_id
+              )}`;
+          }
+
+        } catch (err) {
+          console.error(
+            "Erro ao recuperar estado da compra:",
+            err
+          );
+        }
+      }
+
+      if (destinoCompra) {
+        localStorage.removeItem(
+          "pos_login_redirect"
+        );
+
+        window.location.href =
+          destinoCompra;
+
+        return;
+      }
+    }
+
+
+    // 3) Redirect comum salvo
+    const next =
+      localStorage.getItem(
+        "pos_login_redirect"
+      ) || "";
+
+    localStorage.removeItem(
+      "pos_login_redirect"
+    );
+
+    // Só respeita redirect comum
+    // quando ele realmente aponta para
+    // uma página específica do fluxo.
+    //
+    // "cursos.html" não deve forçar
+    // vendedor ou admin para a área de aluno.
+    if (
+      next &&
+      next !== "cursos.html"
+    ) {
+      window.location.href =
+        next;
+
       return;
     }
 
-    // 3) Caso normal: decide por perfil (admin → painel / aluno → cursos)
+    // 4) Caso normal:
+    // decide pelo perfil do usuário
     try {
-      const token = localStorage.getItem("access_token");
+      const token =
+        localStorage.getItem(
+          "access_token"
+        );
+
       if (!token) {
-        window.location.href = "login.html";
+        window.location.href =
+          "login.html";
+
         return;
       }
 
-      const r = await fetch(`${API_BASE}/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const r =
+        await fetch(
+          `${API_BASE}/me`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
 
       if (!r.ok) {
-        // token inválido/expirado
-        localStorage.removeItem("access_token");
-        window.location.href = "login.html";
+        localStorage.removeItem(
+          "access_token"
+        );
+
+        window.location.href =
+          "login.html";
+
         return;
       }
 
-      const me = await r.json();
+      const me =
+        await r.json();
 
-      if (me && me.is_admin) {
-        window.location.href = "admin/index.html";
-      } else {
-        window.location.href = "cursos.html";
+      const quantidadeAreas =
+        Number(!!me?.is_admin) +
+        Number(!!me?.is_vendedor) +
+        Number(!!me?.is_aluno);
+
+
+      // Mais de uma área disponível:
+      // mostra a tela de escolha.
+      if (quantidadeAreas > 1) {
+        window.location.href =
+          "minha-area.html";
+
+        return;
       }
+
+
+      // Apenas Admin.
+      if (me?.is_admin) {
+        window.location.href =
+          "admin/index.html";
+
+        return;
+      }
+
+
+      // Apenas Vendedor.
+      if (me?.is_vendedor) {
+        window.location.href =
+          "minhas-vendas.html";
+
+        return;
+      }
+
+
+      // Possui somente área de aluno.
+      if (me?.is_aluno) {
+        window.location.href =
+          "cursos.html";
+
+        return;
+      }
+
+
+      // Sem área disponível.
+      window.location.href =
+        "index.html";
+
     } catch (e) {
-      // fallback seguro
-      window.location.href = "cursos.html";
+      console.error(
+        "Erro ao identificar o perfil do usuário:",
+        e
+      );
+
+      localStorage.removeItem(
+        "access_token"
+      );
+
+      window.location.href =
+        "login.html";
     }
+    
   }
 
   // Se já tem token, pode ir direto

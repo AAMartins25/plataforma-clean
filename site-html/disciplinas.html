@@ -6,24 +6,98 @@
   <title>Disciplinas</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
+
 <body data-page="disciplinas">
-  <header style="padding-top:12px;padding-bottom:12px;">
-    <div style="margin-top:20px;">
+  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+    <div style="margin-top:0;">
       <h1 id="titulo_pagina" style="margin-bottom:1px;">📚 Disciplinas</h1>
     </div>
-    <a class="btn" href="javascript:history.back()">Voltar</a>
-    <a href="#" class="btn" onclick="logout()">Sair</a> 
+
+    <div style="
+      position:absolute;
+      right:24px;
+      top:22px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    ">
+      <a
+        id="btnVoltarCurso"
+        class="btn"
+        href="#"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="
+          localStorage.setItem('pagina_antes_inicio', window.location.href);
+          window.location.replace('index.html');
+        "
+        title="Página inicial"
+      >
+        ⌂
+      </a>
+
+      <a
+        href="javascript:void(0)"
+        class="btn"
+        onclick="sairComConfirmacao()"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </div>
   </header>
 
   <main class="container" id="conteudo">
-    <div style="margin-bottom:14px;">
+    <div class="card" style="padding-top:18px; padding-bottom:10px; margin-bottom:10px;">
+      <h2 style="font-weight:500;font-size:1.25rem;margin:0;">
+        Disciplinas (em ordem de prioridade)
+      </h2>
     </div>
+
     <div class="card">
-      <h2>Disciplinas (na ordem de prioridade)</h2>
       <div id="lista" class="list"></div>
     </div>
+
+    <div class="card" style="padding:0;height:0px;"></div>
   </main>
 
+  <footer>
+    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+  </footer>
+
+  <script>
+    document.getElementById("btnVoltarCurso").addEventListener("click", function(e) {
+      e.preventDefault();
+
+      const p = new URLSearchParams(window.location.search);
+      const cursoId = p.get("curso_id");
+      const cursoNome = p.get("curso_nome") || "";
+
+      localStorage.removeItem("voltar_para_curso");
+
+      if (cursoId) {
+        window.location.href =
+          "curso.html?curso_id=" + encodeURIComponent(cursoId) +
+          "&curso_nome=" + encodeURIComponent(cursoNome);
+      } else {
+        window.location.href = "cursos.html";
+      }
+    });
+  </script>
+
   <script src="js/app.js"></script>
+
+  <script>
+    const anoAtual = document.getElementById("ano_atual");
+    if (anoAtual) {
+      anoAtual.textContent = new Date().getFullYear();
+    }
+  </script>
 </body>
 </html>

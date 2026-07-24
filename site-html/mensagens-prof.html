@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensagens ao prof</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header>
+  <h1>💬 Mensagens ao prof</h1>
+
+  <nav style="
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  ">
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+
+    <a href="javascript:void(0)" class="btn" onclick="logout()">
+      Sair
+    </a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <div class="card">
+    <h2>Filtros</h2>
+
+    <div style="
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    ">
+      <div>
+        <label><b>Disciplina</b></label><br>
+        <select id="filtro_disciplina"></select>
+      </div>
+
+      <div>
+        <label><b>Assunto</b></label><br>
+        <select id="filtro_assunto"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="total_mensagens">
+      Total: 0 conversa(s)
+    </h2>
+  </div>
+
+  <div id="area_mensagens"></div>
+
+</main>
+
+<footer>
+  <p>© 2026 - Plataforma Quality Estudos</p>
+</footer>
+
+<script>
+const API_BASE =
+"https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
+
+let conversas = [];
+
+function logout() {
+  localStorage.removeItem("access_token");
+  window.location.href = "index.html";
+}
+
+function getToken() {
+  return localStorage.getItem("access_token");
+}
+
+function esc(texto) {
+  if (texto == null) return "";
+
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+async function apiGet(path) {
+  const token = getToken();
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Erro ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+async function apiPost(path, body) {
+  const token = getToken();
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(body || {})
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || `Erro ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+async function carregarMensagens() {
+  try {
+    conversas = await apiGet("/me/mensagens-prof");
+
+    preencherFiltroDisciplinas();
+    renderizarConversas();
+
+  } catch (err) {
+    console.error(err);
+
+    document.getElementById("area_mensagens").innerHTML = `
+      <div class="card">
+        Erro ao carregar mensagens.
+      </div>
+    `;
+  }
+}
+
+function preencherFiltroDisciplinas() {
+  const select = document.getElementById("filtro_disciplina");
+
+  const disciplinas = [
+    ...new Map(
+      conversas.map(c => [
+        c.disciplina_id,
+        {
+          id: c.disciplina_id,
+          nome: c.disciplina_nome,
+          ordem: c.disciplina_ordem
+        }
+      ])
+    ).values()
+  ];
+
+  disciplinas.sort((a, b) => a.ordem - b.ordem);
+
+  select.innerHTML = `<option value="">TODAS</option>`;
+
+  disciplinas.forEach(d => {
+    select.innerHTML += `
+      <option value="${d.id}">
+        ${esc(d.nome)}
+      </option>
+    `;
+  });
+
+  preencherFiltroAssuntos();
+
+  select.onchange = () => {
+    preencherFiltroAssuntos();
+    renderizarConversas();
+  };
+}
+
+function preencherFiltroAssuntos() {
+  const disciplinaId =
+    document.getElementById("filtro_disciplina").value;
+
+  let dados = conversas;
+
+  if (disciplinaId) {
+    dados = dados.filter(
+      c => String(c.disciplina_id) === disciplinaId
+    );
+  }
+
+  const assuntos = [
+    ...new Map(
+      dados.map(c => [
+        c.assunto_id,
+        {
+          id: c.assunto_id,
+          nome: c.assunto_nome,
+          ordem: c.assunto_ordem
+        }
+      ])
+    ).values()
+  ];
+
+  assuntos.sort((a, b) => a.ordem - b.ordem);
+
+  const select = document.getElementById("filtro_assunto");
+
+  select.innerHTML = `<option value="">TODOS</option>`;
+
+  assuntos.forEach(a => {
+    select.innerHTML += `
+      <option value="${a.id}">
+        ${esc(a.nome)}
+      </option>
+    `;
+  });
+
+  select.onchange = renderizarConversas;
+}
+
+function renderizarConversas() {
+  const disciplinaId =
+    document.getElementById("filtro_disciplina").value;
+
+  const assuntoId =
+    document.getElementById("filtro_assunto").value;
+
+  let dados = [...conversas];
+
+  if (disciplinaId) {
+    dados = dados.filter(
+      c => String(c.disciplina_id) === disciplinaId
+    );
+  }
+
+  if (assuntoId) {
+    dados = dados.filter(
+      c => String(c.assunto_id) === assuntoId
+    );
+  }
+
+  document.getElementById("total_mensagens").innerText =
+    `Total: ${dados.length} conversa(s)`;
+
+  if (!dados.length) {
+    document.getElementById("area_mensagens").innerHTML = `
+      <div class="card">
+        Nenhuma mensagem encontrada.
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
+  let disciplinaAtual = null;
+  let assuntoAtual = null;
+
+  dados.forEach(c => {
+    if (disciplinaAtual !== c.disciplina_id) {
+      disciplinaAtual = c.disciplina_id;
+      assuntoAtual = null;
+
+      html += `
+        <div class="card">
+          <h2>${esc(c.disciplina_nome)}</h2>
+        </div>
+      `;
+    }
+
+    if (assuntoAtual !== c.assunto_id) {
+      assuntoAtual = c.assunto_id;
+
+      html += `
+        <div class="card">
+          <h3>${esc(c.assunto_nome)}</h3>
+        </div>
+      `;
+    }
+
+    html += montarCardConversa(c);
+  });
+
+  document.getElementById("area_mensagens").innerHTML = html;
+}
+
+function montarCardConversa(c) {
+  const ehCertoErrado =
+    c.tipo === "CERTO_ERRADO" ||
+    c.tipo_questao === "CERTO_ERRADO";
+
+  const respostaCorreta = ehCertoErrado
+    ? (c.gabarito === "C" ? "CERTO" : "ERRADO")
+    : (c.gabarito || "");
+
+  const mensagensAluno =
+    (c.mensagens || []).filter(m => m.autor === "ALUNO").length;
+
+  const ultimaMensagem =
+    c.mensagens && c.mensagens.length
+      ? c.mensagens[c.mensagens.length - 1]
+      : null;
+
+  const podeResponder =
+    c.status !== "ENCERRADA" &&
+    mensagensAluno < 3 &&
+    ultimaMensagem &&
+    ultimaMensagem.autor === "PROFESSOR";
+
+  const aguardandoProfessor =
+    ultimaMensagem &&
+    ultimaMensagem.autor === "ALUNO" &&
+    mensagensAluno < 3;
+
+  const conversaEncerrada =
+    c.status === "ENCERRADA" ||
+    (
+      mensagensAluno >= 3 &&
+      ultimaMensagem &&
+      ultimaMensagem.autor === "PROFESSOR"
+    );
+
+  return `
+    <div class="card">
+
+      <div style="
+        font-weight:bold;
+        white-space:normal;
+        margin-bottom:4px;
+        text-align:justify;
+        text-indent:0;
+      ">
+        ${
+          ehCertoErrado
+            ? `${esc(c.enunciado)} (${respostaCorreta})`
+            : `${esc(c.enunciado)}`
+        }
+      </div>
+
+      ${
+        ehCertoErrado
+          ? ""
+          : `
+            <div style="margin-top:10px;">
+              ${esc(respostaCorreta)}
+            </div>
+          `
+      }
+
+      <div style="
+        margin-top:12px;
+        white-space:normal;
+        text-align:justify;
+        text-indent:0;
+      ">
+        ${esc(c.comentario || "")}
+      </div>
+
+      <div style="margin-top:18px;">
+        ${montarMensagens(c)}
+      </div>
+
+      ${
+        podeResponder
+          ? montarAreaNovaMensagem(c.conversa_id)
+          : aguardandoProfessor
+            ? `
+              <div style="
+                margin-top:16px;
+                font-size:.9rem;
+                opacity:.8;
+              ">
+                Aguardando resposta do professor.
+              </div>
+            `
+            : conversaEncerrada
+              ? `
+                <div style="
+                  margin-top:16px;
+                  font-size:.9rem;
+                  opacity:.8;
+                ">
+                  Chat finalizado.
+                </div>
+              `
+              : ""
+      }
+
+    </div>
+  `;
+}
+
+function montarMensagens(c) {
+  return (c.mensagens || []).map((m, idx) => {
+    const ehAluno = m.autor === "ALUNO";
+
+    return `
+      <div style="
+        margin-top:12px;
+        padding:12px;
+        border-radius:6px;
+        background:${ehAluno ? "#fffdf1" : "#eef6ff"};
+        border-left:4px solid ${ehAluno ? "#e6d85a" : "#7aa7d9"};
+      ">
+        <div style="
+            font-size:0.74rem;
+            font-weight:500;
+            opacity:0.90;
+            margin-bottom:2px;
+        ">
+            ${ehAluno ? "Eu" : "Prof"}
+        </div>
+
+        <div style="white-space:pre-wrap;">
+          ${esc(m.texto)}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function numeroMensagem(autor, mensagens, idxAtual) {
+  let contador = 0;
+
+  for (let i = 0; i <= idxAtual; i++) {
+    if (mensagens[i].autor === autor) {
+      contador++;
+    }
+  }
+
+  return contador;
+}
+
+function montarAreaNovaMensagem(conversaId) {
+  return `
+    <div style="
+      margin-top:18px;
+      padding:12px;
+      background:#f8f8f8;
+      border-radius:6px;
+    ">
+      <h3>Responder ao professor</h3>
+
+      <textarea
+        id="nova_msg_${conversaId}"
+        placeholder="Escreva sua nova mensagem ao professor..."
+        style="
+          width:100%;
+          min-height:100px;
+          padding:12px;
+          border:1px solid #ddd;
+          border-radius:6px;
+        "
+      ></textarea>
+
+      <div style="margin-top:12px;">
+        <button
+          class="btn"
+          onclick="enviarNovaMensagem(${conversaId})"
+        >
+          Enviar ao prof.
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function enviarNovaMensagem(conversaId) {
+  const conversa = conversas.find(c => c.conversa_id === conversaId);
+
+  if (!conversa) return;
+
+  const campo = document.getElementById(`nova_msg_${conversaId}`);
+
+  if (!campo) return;
+
+  const texto = campo.value.trim();
+
+  if (!texto) {
+    alert("Escreva uma mensagem antes de enviar.");
+    return;
+  }
+
+  const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
+
+  if (totalPalavras > 300) {
+    alert("A mensagem deve ter no máximo 300 palavras.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "Confirma enviar esta mensagem ao professor? Após o envio, ela não poderá ser editada."
+  );
+
+  if (!confirmar) return;
+
+  try {
+    await apiPost("/me/mensagens-prof", {
+      questao_id: conversa.questao_id,
+      bateria_id: conversa.bateria_id,
+      texto
+    });
+
+    await carregarMensagens();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao enviar mensagem: " + err.message);
+  }
+}
+
+carregarMensagens();
+</script>
+
+</body>
+</html>

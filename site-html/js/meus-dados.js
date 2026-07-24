@@ -1,6 +1,7 @@
 (function () {
   const form = document.getElementById("formMeusDados");
   const msg = document.getElementById("msg");
+  const historicoCompras = document.getElementById("historicoCompras");
 
   function show(text, ok = false) {
     msg.textContent = text;
@@ -12,6 +13,11 @@
 
   function somenteDigitos(valor) {
     return String(valor || "").replace(/\D/g, "");
+  }
+
+  function formatarData(dataISO) {
+    if (!dataISO) return "-";
+    return new Date(dataISO).toLocaleDateString("pt-BR");
   }
 
   function formatarCpf(valor) {
@@ -34,6 +40,23 @@
     }
 
     return v;
+  }
+
+  function traduzirStatus(status) {
+    const s = String(status || "").toUpperCase();
+
+    const mapa = {
+      APPROVED: "Compra aprovada",
+      PAGO: "Compra aprovada",
+      REFUND_REQUESTED: "Reembolso solicitado",
+      REFUNDED: "Reembolso aprovado",
+      REFUND_IN_PROCESS: "Reembolso em processamento",
+      REFUND_ERROR: "Erro no reembolso",
+      REFUND_DENIED: "Reembolso recusado",
+      PENDENTE: "Pagamento pendente"
+    };
+
+    return mapa[s] || s || "-";
   }
 
   document.getElementById("cpf").addEventListener("input", (e) => {
@@ -59,6 +82,49 @@
     }
   }
 
+  async function carregarHistoricoCompras() {
+    if (!historicoCompras) return;
+
+    try {
+      const historico = await apiGetAuth("/me/compras/historico");
+
+      if (!historico || historico.length === 0) {
+        historicoCompras.innerHTML = `
+          <div class="assunto">
+            Nenhum histórico de compras encontrado.
+          </div>
+        `;
+        return;
+      }
+
+      historicoCompras.innerHTML = historico.map(c => `
+        <div class="assunto">
+          <b>${c.nome_curso} (${c.situacao})</b><br/>
+
+          <span style="opacity:.85;">
+            Data de aquisição: ${formatarData(c.data_aquisicao)}<br/>
+            Início do acesso: ${formatarData(c.data_inicio)}<br/>
+            ${
+              c.data_fim
+                ? `Cessação do acesso: ${formatarData(c.data_fim)}<br/>`
+                : ""
+            }
+            Status interno: ${traduzirStatus(c.pagamento_status)}
+          </span>
+        </div>
+      `).join("");
+
+    } catch (err) {
+      historicoCompras.innerHTML = `
+        <div class="assunto">
+          Erro ao carregar histórico de compras.<br/>
+          ${err.message}
+        </div>
+      `;
+      console.error(err);
+    }
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -66,7 +132,6 @@
     const email = document.getElementById("email").value.trim().toLowerCase();
     const cpf = somenteDigitos(document.getElementById("cpf").value);
     const telefone = somenteDigitos(document.getElementById("telefone").value);
-    const senha = document.getElementById("senha").value.trim();
 
     if (!nome) return show("Por favor, preencha este campo: Nome.");
     if (!email) return show("Por favor, preencha este campo: Email.");
@@ -75,15 +140,13 @@
 
     if (cpf.length !== 11) return show("CPF inválido.");
     if (telefone.length < 10 || telefone.length > 11) return show("Telefone inválido.");
-    if (senha && senha.length < 8) return show("A nova senha deve ter pelo menos 8 caracteres.");
 
     try {
       await apiPostAuth("/me/dados", {
         nome,
         email,
         cpf,
-        telefone,
-        senha: senha || null
+        telefone
       });
 
       show("Atualização realizada com sucesso!", true);
@@ -93,6 +156,25 @@
       console.error(err);
     }
   });
+
+  let historicoJaCarregado = false;
+
+  window.mostrarHistoricoCompras = async function () {
+    const box = document.getElementById("historicoCompras");
+
+    if (box.style.display === "none") {
+      box.style.display = "block";
+
+      if (!historicoJaCarregado) {
+        box.innerHTML = "<p>Carregando histórico...</p>";
+        await carregarHistoricoCompras();
+        historicoJaCarregado = true;
+      }
+
+    } else {
+      box.style.display = "none";
+    }
+  };
 
   carregarMeusDados();
 })();

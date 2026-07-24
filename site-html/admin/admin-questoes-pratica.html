@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Questões</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
+
+  <script
+    src="../js/app.js"
+    defer
+  ></script>
+</head>
+
+<body data-page="admin-questoes-pratica">
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        📝 Questões
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="admin-questoes-aluno.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- BOTÕES PRINCIPAIS -->
+    <div class="card">
+
+      <div
+        style="
+          display:flex;
+          gap:48px;
+          align-items:center;
+          flex-wrap:wrap;
+        "
+      >
+        <button
+          class="btn"
+          type="button"
+          onclick="novaQuestaoPraticaAdmin()"
+        >
+          Nova questão
+        </button>
+
+        <button
+          class="btn"
+          type="button"
+          disabled
+        >
+          Importar questões
+        </button>
+
+        <button
+          id="btnListarQuestoesAdmin"
+          class="btn"
+          type="button"
+          onclick="alternarListagemQuestoesAdmin()"
+        >
+          Listar questões
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FORMULÁRIO DE CRIAÇÃO/EDIÇÃO -->
+    <div id="formulario_questao"></div>
+
+    <!-- ÁREA RECOLHÍVEL DA LISTAGEM -->
+    <div
+      id="areaListagemQuestoesAdmin"
+      style="display:none;"
+    >
+
+      <!-- CARD DOS FILTROS -->
+      <div class="card">
+
+        <div
+          style="
+            display:flex;
+            gap:18px;
+            align-items:center;
+            flex-wrap:wrap;
+          "
+        >
+          <label>
+            <input
+              type="radio"
+              name="filtro_tipo_questao_admin"
+              value="TODAS"
+              checked
+              onchange="filtrarQuestoesPraticaAdmin('TODAS')"
+            >
+            Todas
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="filtro_tipo_questao_admin"
+              value="MULTIPLA_5"
+              onchange="filtrarQuestoesPraticaAdmin('MULTIPLA_5')"
+            >
+            Questões múltipla 5
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="filtro_tipo_questao_admin"
+              value="MULTIPLA_4"
+              onchange="filtrarQuestoesPraticaAdmin('MULTIPLA_4')"
+            >
+            Questões múltipla 4
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="filtro_tipo_questao_admin"
+              value="CERTO_ERRADO"
+              onchange="filtrarQuestoesPraticaAdmin('CERTO_ERRADO')"
+            >
+            Questões certo / errado
+          </label>
+        </div>
+
+        <div
+          style="
+            display:flex;
+            justify-content:flex-end;
+            margin-top:14px;
+          "
+        >
+          <span
+            id="contador_questoes_admin"
+            style="
+              font-size:1rem;
+              font-weight:400;
+            "
+          >
+            0
+          </span>
+        </div>
+
+      </div>
+
+      <!-- LISTAGEM DAS QUESTÕES -->
+      <div id="lista_questoes"></div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+  </script>
+
+</body>
+
+</html>

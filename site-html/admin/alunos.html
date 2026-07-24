@@ -1,91 +1,615 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin • Alunos</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Alunos / Usuários</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
 </head>
+
 <body>
-  <header>
-    <h1>👤 Admin • Alunos</h1>
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a class="btn" href="index.html">Painel</a>
-      <a class="btn" href="assuntos.html">Assuntos</a>
-      <a class="btn" href="aulas.html">Aulas</a>
-      <a class="btn" href="pagamentos.html">Pagamentos</a>
-      <a class="btn" href="../index.html">Início</a>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        👤 Alunos / Usuários
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
     </nav>
-    <p>Criar aluno novo e (opcional) buscar alunos.</p>
   </header>
 
   <main class="container">
 
+    <!-- CRIAÇÃO DE USUÁRIO -->
     <div class="card">
-      <h2>1) Criar novo aluno/usuário</h2>
 
-      <form id="formCriarAluno" class="list" style="margin-top:15px;">
+      <h2>
+        1) Criar novo aluno / usuário
+      </h2>
+
+      <form
+        id="formCriarAluno"
+        class="list"
+        style="margin-top:15px;"
+      >
+
+        <!-- NOME -->
         <div class="assunto">
-          <label><b>Nome</b></label><br/>
-          <input id="alunoNome" type="text" placeholder="Ex.: João da Silva"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <label for="alunoNome">
+            <b>Nome</b>
+          </label>
+
+          <br>
+
+          <input
+            id="alunoNome"
+            type="text"
+            placeholder="Ex.: João da Silva"
+            required
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
         </div>
 
+        <!-- CPF -->
         <div class="assunto">
-          <label><b>Email</b></label><br/>
-          <input id="alunoEmail" type="email" placeholder="aluno@email.com"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+          <label for="novoUsuarioCpf">
+            <b>CPF</b>
+          </label>
+
+          <br>
+
+          <input
+            id="novoUsuarioCpf"
+            type="text"
+            inputmode="numeric"
+            maxlength="14"
+            placeholder="000.000.000-00"
+            required
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
         </div>
 
+        <!-- DATA DE NASCIMENTO -->
         <div class="assunto">
-          <label><b>Senha</b></label><br/>
-          <input id="alunoSenha" type="text" placeholder="Senha inicial"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
-          <div style="opacity:.85; margin-top:6px;">Dica: depois o aluno pode trocar a senha.</div>
+          <label for="novoUsuarioDataNascimento">
+            <b>Data de Nascimento</b>
+          </label>
+
+          <br>
+
+          <input
+            id="novoUsuarioDataNascimento"
+            type="date"
+            min="1900-01-01"
+            max="2100-12-31"
+            required
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
         </div>
+
+        <!-- E-MAIL -->
         <div class="assunto">
-            <label style="display:flex; gap:10px; align-items:center;">
-                <input id="alunoIsAdmin" type="checkbox" />
-                <b>Criar como administrador</b>
-            </label>
-            <div style="opacity:.85; margin-top:6px;">
-                Só marque se for realmente necessário.
-            </div>
+          <label for="alunoEmail">
+            <b>E-mail</b>
+          </label>
+
+          <br>
+
+          <input
+            id="alunoEmail"
+            type="email"
+            placeholder="aluno@email.com"
+            required
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
         </div>
-        <button class="btn" type="submit">Criar aluno/usuário</button>
-        <div id="msgCriarAluno" style="margin-top:10px;"></div>
+
+        <!-- TELEFONE -->
+        <div class="assunto">
+          <label for="novoUsuarioTelefone">
+            <b>Telefone</b>
+          </label>
+
+          <br>
+
+          <input
+            id="novoUsuarioTelefone"
+            type="text"
+            inputmode="numeric"
+            maxlength="15"
+            placeholder="(00) 00000-0000"
+            required
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
+        </div>
+
+        <!-- SENHA -->
+        <div class="assunto">
+          <label for="alunoSenha">
+            <b>Senha</b>
+          </label>
+
+          <br>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="alunoSenha"
+              type="password"
+              placeholder="Senha inicial"
+              required
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleAlunoSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+          </div>
+
+          <div
+            style="
+              opacity:.85;
+              margin-top:6px;
+            "
+          >
+            Dica: depois o aluno poderá trocar a senha.
+          </div>
+        </div>
+
+        <!-- CONFIRMAR SENHA -->
+        <div class="assunto">
+          <label for="novoUsuarioConfirmarSenha">
+            <b>Confirmar senha</b>
+          </label>
+
+          <br>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="novoUsuarioConfirmarSenha"
+              type="password"
+              placeholder="Repita a senha"
+              required
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleConfirmarSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+          </div>
+        </div>
+
+        <!-- ADMINISTRADOR -->
+        <div class="assunto">
+
+          <label
+            style="
+              display:flex;
+              gap:10px;
+              align-items:center;
+            "
+          >
+            <input
+              id="alunoIsAdmin"
+              type="checkbox"
+            >
+
+            <b>Criar como administrador</b>
+          </label>
+
+          <div
+            style="
+              opacity:.85;
+              margin-top:6px;
+            "
+          >
+            Marque somente se for realmente necessário.
+          </div>
+
+        </div>
+
+        <button
+          class="btn"
+          type="submit"
+        >
+          Criar aluno / usuário
+        </button>
+
+        <div
+          id="msgCriarAluno"
+          style="margin-top:10px;"
+        ></div>
+
       </form>
+
     </div>
 
+    <!-- BUSCA DE USUÁRIOS -->
     <div class="card">
-      <h2>2) Buscar alunos (opcional)</h2>
+
+      <h2>
+        2) Buscar alunos / usuários
+      </h2>
 
       <div class="list">
+
         <div class="assunto">
-          <label><b>Filtro (nome/email)</b></label><br/>
-          <input id="qAluno" type="text" placeholder="ex: aluno@email.com"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
-          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn" id="btnBuscarAlunos">Buscar</button>
+
+          <label for="qAluno">
+            <b>Filtro por nome ou e-mail</b>
+          </label>
+
+          <br>
+
+          <input
+            id="qAluno"
+            type="text"
+            placeholder="Ex.: aluno@email.com"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+          >
+
+          <div
+            style="
+              margin-top:10px;
+              display:flex;
+              gap:10px;
+              flex-wrap:wrap;
+            "
+          >
+            <button
+              class="btn"
+              id="btnBuscarAlunos"
+              type="button"
+            >
+              Buscar
+            </button>
           </div>
-          <div id="msgBuscarAlunos" style="margin-top:10px;"></div>
+
+          <div
+            id="msgBuscarAlunos"
+            style="margin-top:10px;"
+          ></div>
+
         </div>
+
       </div>
 
-      <div id="listaAlunos" style="margin-top:12px;">Use a busca.</div>
+      <div
+        id="listaAlunos"
+        style="margin-top:12px;"
+      >
+        Use a busca.
+      </div>
+
     </div>
 
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
   <script src="../js/app.js"></script>
   <script src="../js/admin.js"></script>
-  <script>
-    AdminAlunos.init();
-  </script>
-</body>
-</html>
 
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+    function somenteDigitos(valor) {
+      return String(valor || "")
+        .replace(/\D/g, "");
+    }
+
+
+    function formatarCpfUsuario(valor) {
+      let v =
+        somenteDigitos(valor)
+          .slice(0, 11);
+
+      v = v.replace(
+        /^(\d{3})(\d)/,
+        "$1.$2"
+      );
+
+      v = v.replace(
+        /^(\d{3})\.(\d{3})(\d)/,
+        "$1.$2.$3"
+      );
+
+      v = v.replace(
+        /\.(\d{3})(\d)/,
+        ".$1-$2"
+      );
+
+      return v;
+    }
+
+
+    function formatarTelefoneUsuario(valor) {
+      let v =
+        somenteDigitos(valor)
+          .slice(0, 11);
+
+      if (v.length <= 10) {
+        v = v.replace(
+          /^(\d{2})(\d)/,
+          "($1) $2"
+        );
+
+        v = v.replace(
+          /(\d{4})(\d)/,
+          "$1-$2"
+        );
+
+      } else {
+        v = v.replace(
+          /^(\d{2})(\d)/,
+          "($1) $2"
+        );
+
+        v = v.replace(
+          /(\d{5})(\d)/,
+          "$1-$2"
+        );
+      }
+
+      return v;
+    }
+
+
+    const campoCpfUsuario =
+      document.getElementById(
+        "novoUsuarioCpf"
+      );
+
+    if (campoCpfUsuario) {
+      campoCpfUsuario.addEventListener(
+        "input",
+        () => {
+          campoCpfUsuario.value =
+            formatarCpfUsuario(
+              campoCpfUsuario.value
+            );
+        }
+      );
+    }
+
+
+    const campoTelefoneUsuario =
+      document.getElementById(
+        "novoUsuarioTelefone"
+      );
+
+    if (campoTelefoneUsuario) {
+      campoTelefoneUsuario.addEventListener(
+        "input",
+        () => {
+          campoTelefoneUsuario.value =
+            formatarTelefoneUsuario(
+              campoTelefoneUsuario.value
+            );
+        }
+      );
+    }
+
+    function configurarToggleSenha(
+      campoId,
+      botaoId
+    ) {
+      const campo =
+        document.getElementById(
+          campoId
+        );
+
+      const botao =
+        document.getElementById(
+          botaoId
+        );
+
+      if (!campo || !botao) {
+        return;
+      }
+
+      botao.addEventListener(
+        "click",
+        () => {
+          const oculta =
+            campo.type === "password";
+
+          campo.type =
+            oculta
+              ? "text"
+              : "password";
+
+          botao.textContent =
+            oculta
+              ? "🙈"
+              : "👁";
+        }
+      );
+    }
+
+
+    configurarToggleSenha(
+      "alunoSenha",
+      "toggleAlunoSenha"
+    );
+
+    configurarToggleSenha(
+      "novoUsuarioConfirmarSenha",
+      "toggleConfirmarSenha"
+    );
+
+
+    AdminAlunos.init();
+
+
+  </script>
+
+</body>
+
+</html>

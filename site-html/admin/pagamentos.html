@@ -1,72 +1,220 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin • Pagamentos</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Pagamentos</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
 </head>
+
 <body>
 
-  <header>
-    <h1>💳 Admin • Pagamentos</h1>
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a class="btn" href="index.html">Painel</a>
-      <a class="btn" href="assuntos.html">Assuntos</a>
-      <a class="btn" href="aulas.html">Aulas</a>
-      <a class="btn" href="../index.html">Início</a>
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        💳 Pagamentos
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
     </nav>
-    <p>Listar pagamentos e revalidar no Mercado Pago (somente ADMIN).</p>
   </header>
 
   <main class="container">
 
     <div class="card">
-      <h2>1) Buscar compras</h2>
+
+      <h2>
+        1) Buscar compras
+      </h2>
 
       <div class="assunto">
-        <label><b>Filtro (email / curso / status)</b></label><br/>
-        <input id="q" type="text"
-               placeholder="ex: aluno@email.com ou APPROVED"
-               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+
+        <label for="q">
+          <b>Filtro por e-mail, curso ou status</b>
+        </label>
+
+        <br>
+
+        <input
+          id="q"
+          type="text"
+          placeholder="Ex.: aluno@email.com ou APPROVED"
+          style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:6px;
+          "
+        >
+
         <div style="margin-top:10px;">
-          <button class="btn" id="btnBuscar">Buscar</button>
+          <button
+            class="btn"
+            id="btnBuscar"
+            type="button"
+          >
+            Buscar
+          </button>
         </div>
-        <div id="msgBusca" style="margin-top:10px;"></div>
+
+        <div
+          id="msgBusca"
+          style="margin-top:10px;"
+        ></div>
+
       </div>
 
-      <div id="listaPagamentos" style="margin-top:12px;">
+      <div
+        id="listaPagamentos"
+        style="margin-top:12px;"
+      >
         Use a busca.
       </div>
+
     </div>
 
     <div class="card">
-      <h2>2) Revalidar pagamento no Mercado Pago</h2>
+
+      <h2>
+        2) Revalidar pagamento no Mercado Pago
+      </h2>
 
       <div class="assunto">
-        <label><b>mp_payment_id</b></label><br/>
-        <input id="mp_payment_id" type="text"
-               placeholder="ex: 123456789"
-               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+
+        <label for="mp_payment_id">
+          <b>ID do pagamento no Mercado Pago</b>
+        </label>
+
+        <br>
+
+        <input
+          id="mp_payment_id"
+          type="text"
+          placeholder="Ex.: 123456789"
+          style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:6px;
+          "
+        >
+
         <div style="margin-top:10px;">
-          <button class="btn" id="btnRevalidar">Revalidar</button>
+          <button
+            class="btn"
+            id="btnRevalidar"
+            type="button"
+          >
+            Revalidar
+          </button>
         </div>
-        <div id="msgRevalidar" style="margin-top:10px;"></div>
+
+        <div
+          id="msgRevalidar"
+          style="margin-top:10px;"
+        ></div>
+
       </div>
+
     </div>
 
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
-  <!-- ORDEM CORRETA -->
   <script src="../js/app.js"></script>
   <script src="../js/admin.js"></script>
+
   <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
     AdminPagamentos.init();
   </script>
 
 </body>
+
 </html>

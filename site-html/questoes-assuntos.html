@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Questões - Assuntos</title>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body data-page="questoes-assuntos">
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+      "
+    >
+
+      <h1
+        id="titulo_curso"
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+      </h1>
+
+      <h2
+        id="titulo_disciplina"
+        style="
+          margin:4px 0 0 0;
+          font-size:1.05rem;
+          text-align:center;
+        "
+      >
+      </h2>
+
+    </div>
+
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:58px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+
+      <a
+        id="btnVoltarQuestoesDisciplinas"
+        class="btn"
+        href="#"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaQuestoes(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+
+    </nav>
+
+  </header>
+
+
+  <main
+    class="container"
+    id="conteudo"
+  >
+
+    <div class="card">
+
+      <h2>
+        Assuntos
+      </h2>
+
+      <div
+        id="lista"
+        class="list"
+      >
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+
+  </footer>
+
+
+  <script src="js/app.js"></script>
+
+
+  <script>
+
+    function confirmarSaidaQuestoes() {
+      const ok =
+        confirm(
+          "Deseja realmente sair da plataforma?"
+        );
+
+      if (!ok) {
+        return;
+      }
+
+      logout();
+    }
+
+
+    const btnVoltar =
+      document.getElementById(
+        "btnVoltarQuestoesDisciplinas"
+      );
+
+    if (btnVoltar) {
+
+      btnVoltar.addEventListener(
+        "click",
+        function (e) {
+
+          e.preventDefault();
+
+          const p =
+            new URLSearchParams(
+              window.location.search
+            );
+
+          const cursoId =
+            p.get("curso_id");
+
+          const cursoNome =
+            p.get("curso_nome") || "";
+
+          if (cursoId) {
+
+            window.location.href =
+              "questoes-disciplinas.html" +
+              "?curso_id=" +
+              encodeURIComponent(
+                cursoId
+              ) +
+              "&curso_nome=" +
+              encodeURIComponent(
+                cursoNome
+              );
+
+          } else {
+
+            window.location.href =
+              "curso.html";
+
+          }
+
+        }
+      );
+
+    }
+
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+
+      anoAtual.textContent =
+        new Date().getFullYear();
+
+    }
+
+  </script>
+
+</body>
+
+</html>

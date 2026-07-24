@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Questões para Rever</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+  <header>
+    <h1>Questões para rever</h1>
+    <div>
+      <a class="btn" href="javascript:history.back()">Voltar</a>
+      <a class="btn" href="#" onclick="logout()">Sair</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="area_questoes_rever">
+      <div class="card">
+        <p>Carregando questões marcadas...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+
+  <script>
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function traduzResposta(valor) {
+      if (valor === "C") return "CERTO";
+      if (valor === "E") return "ERRADO";
+      if (valor === "NAO_SEI") return "Não tenho certeza ou não sei";
+      return valor || "-";
+    }
+
+    async function carregarQuestoesParaRever() {
+      const box = document.getElementById("area_questoes_rever");
+
+      try {
+        const questoes = await apiGetAuth("/me/questoes-para-rever");
+
+        if (!questoes || questoes.length === 0) {
+          box.innerHTML = `
+            <div class="card">
+              <p>Nenhuma questão marcada para rever.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const bateriaTitulo = questoes[0]?.bateria_titulo || "Bateria";
+
+        box.innerHTML = `
+        <div class="card">
+            <h2>Total: ${questoes.length} questão(ões)</h2>
+            <p style="margin-top:10px;">
+              <b>Tipo CERTO/ERRADO</b>
+            </p>
+        </div>
+
+        ${questoes.map((q, idx) => `
+            <div class="card">
+            <h2>Questão ${idx + 1}</h2>
+
+            <div style="white-space:pre-wrap; margin-top:6px;">
+                ${esc(q.enunciado)}
+            </div>
+
+            <div style="margin-top:16px;">
+                <p><b>Gabarito:</b> ${esc(traduzResposta(q.gabarito))}</p>
+            </div>
+
+            <div style="white-space:pre-wrap; margin-top:6px;">
+              ${esc(q.comentario || "Comentário não cadastrado.")}
+            </div>
+
+            <div style="margin-top:10px; text-align:right; font-size:.82rem; opacity:.75;">
+                Sua resposta: ${esc(traduzResposta(q.resposta_marcada))}
+            </div>
+            </div>
+        `).join("")}
+        `;
+
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = `
+          <div class="card">
+            <h2>Erro ao carregar questões</h2>
+            <pre style="white-space:pre-wrap;">${esc(err.message)}</pre>
+          </div>
+        `;
+      }
+    }
+
+    carregarQuestoesParaRever();
+  </script>
+</body>
+</html>

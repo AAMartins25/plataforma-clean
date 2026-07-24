@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Questões</title>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body data-page="questoes-disciplinas">
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        id="titulo_curso"
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        📝 Questões
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        id="btnVoltarQuestoesCurso"
+        class="btn"
+        href="#"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="sairComConfirmacao(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main
+    class="container"
+    id="conteudo"
+  >
+    <div class="card">
+
+      <h2>
+        Disciplinas
+      </h2>
+
+      <div
+        id="lista"
+        class="list"
+      ></div>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script>
+    document
+      .getElementById("btnVoltarQuestoesCurso")
+      .addEventListener(
+        "click",
+        function (e) {
+          e.preventDefault();
+
+          const p =
+            new URLSearchParams(
+              window.location.search
+            );
+
+          const cursoId =
+            p.get("curso_id");
+
+          const cursoNome =
+            p.get("curso_nome") || "";
+
+          if (cursoId) {
+            window.location.href =
+              "curso.html?curso_id=" +
+              encodeURIComponent(cursoId) +
+              "&curso_nome=" +
+              encodeURIComponent(cursoNome);
+
+          } else {
+            window.location.href =
+              "cursos.html";
+          }
+        }
+      );
+  </script>
+
+  <script src="js/app.js"></script>
+
+  <script>
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+  </script>
+
+</body>
+
+</html>

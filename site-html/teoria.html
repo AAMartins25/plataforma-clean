@@ -5,47 +5,232 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Teoria e Questões</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body .card {
+      border-top-color: #dbe2f0;
+    }
+
+    .area-estudo {
+      position: relative;
+    }
+
+    .menu-estudo-lateral {
+      position: absolute;
+      left: 100%;
+      margin-left: 22px;
+      top: 118px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 50;
+    }
+
+    .botao-estudo-lateral {
+      width: 39px;
+      min-height: 102px;
+      border-radius: 600px;
+      border: 1px solid #8b8b8b;
+      background: #ffffff;
+      color: #003b7a;
+      font-weight: 600;
+      cursor: pointer;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+
+      font-family: inherit;
+      font-size: 0.78rem;
+      line-height: 1;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    .botao-estudo-lateral:hover {
+      background: #f4f8ff;
+    }
+
+    .botao-estudo-lateral.ativo {
+      background: #d9ecff;
+      border-color: #6ca8ff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    }
+
+    .icone-menu-lateral {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .menu-estudo-lateral.menu-questoes {
+      top: 3px;
+    }
+
+  </style>
 </head>
 
 <body>
-  <header style="padding-top:12px; padding-bottom:10px;">
+  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
 
-    <div style="margin-top:20px;">
-      <h1 id="titulo_disciplina" style="margin-bottom:8px;"></h1>
-      <h2 id="titulo_assunto" style="margin-top:-6px; margin-bottom:1px;"></h2>
+    <div style="margin-top:0;">
+      <h1 id="titulo_disciplina" style="margin-bottom:0;"></h1>
     </div>
 
-    <div style="margin-top:4px;">
-      <a class="btn" href="javascript:history.back()">Voltar</a>
-      <a href="#" class="btn" onclick="logout()">Sair</a>
+    <div style="
+      position:absolute;
+      right:24px;
+      top:22px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    ">
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="voltarParaAssuntos()"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="
+          localStorage.setItem('pagina_antes_inicio', window.location.href);
+          window.location.replace('index.html');
+        "
+        title="Página inicial"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="confirmarSair()"
+        title="Sair"
+      >
+        ⎋
+      </a>
     </div>
 
   </header>
 
   <main class="container" id="conteudo">
 
-    <div class="card">
-      <!-- removido -->
-      
-      <div id="lista_aulas" class="list"></div>
-    </div>
+    <div id="area_estudo" class="area-estudo">
 
-    <div id="detalhes_aula"></div>
+      <div class="card" style="padding-top:18px; padding-bottom:10px; margin-bottom:10px;">
+        <h2 id="card_assunto_titulo"
+          style="
+            font-weight:400;
+            font-size:1.1rem;
+            margin:-2px 0 0 0;
+          ">
+        </h2>
+      </div>
+
+      <div id="lista_aulas" style="display:none;"></div>
+
+      <div id="detalhes_aula" style="margin-top:-14px;"></div>
+
+      <div class="card" style="padding:0;height:0px;"></div>
+
+      <div
+        id="paginacao_teoria"
+        style="
+          text-align:right;
+          margin-top:-2px;
+          padding-right:4px;
+          font-size:0.78rem;
+          font-weight:400;
+          color:#6b7280;
+        "
+      ></div>
+
+      <div id="menu_estudo_lateral" class="menu-estudo-lateral" style="display:none;">
+        <button id="btn_teoria" class="botao-estudo-lateral" onclick="abrirSecaoTeoria(aulaAtualId)" title="Texto">
+          <span class="icone-menu-lateral">📖</span>
+          <span>T</span>
+          <span>e</span>
+          <span>x</span>
+          <span>t</span>
+          <span>o</span>
+        </button>
+
+        <button id="btn_video" class="botao-estudo-lateral" onclick="abrirSecaoVideo(aulaAtualId)" title="Vídeo">
+          <span class="icone-menu-lateral">🎥</span>
+          <span>V</span>
+          <span>í</span>
+          <span>d</span>
+          <span>e</span>
+          <span>o</span>
+        </button>
+
+        <button id="btn_questoes" class="botao-estudo-lateral" onclick="abrirSecaoQuestoes(aulaAtualId)" title="Questões">
+          <span class="icone-menu-lateral">🏁</span>
+          <span>Q</span>
+          <span>u</span>
+          <span>e</span>
+          <span>s</span>
+          <span>t</span>
+          <span>õ</span>
+          <span>e</span>
+          <span>s</span>
+        </button>
+      </div>
+
+    </div>
 
   </main>
 
-  <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+  <div id="menu_estudo_lateral" class="menu-estudo-lateral" style="display:none;">
+    <button id="btn_teoria" class="botao-estudo-lateral" onclick="abrirSecaoTeoria(aulaAtualId)" title="Texto">
+      <span class="icone-menu-lateral">📖</span>
+      <span>T</span>
+      <span>e</span>
+      <span>x</span>
+      <span>t</span>
+      <span>o</span>
+    </button>
+
+    <button id="btn_video" class="botao-estudo-lateral" onclick="abrirSecaoVideo(aulaAtualId)" title="Vídeo">
+      <span class="icone-menu-lateral">🎥</span>
+      <span>V</span>
+      <span>í</span>
+      <span>d</span>
+      <span>e</span>
+      <span>o</span>
+    </button>
+
+    <button id="btn_questoes" class="botao-estudo-lateral" onclick="abrirSecaoQuestoes(aulaAtualId)" title="Questões">
+      <span class="icone-menu-lateral">🏁</span>
+      <span>Q</span>
+      <span>u</span>
+      <span>e</span>
+      <span>s</span>
+      <span>t</span>
+      <span>õ</span>
+      <span>e</span>
+      <span>s</span>
+    </button>
+  </div>
+
+  <footer style="margin-top:4px;">
+    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
   </footer>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8002";
+    const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
     
     // 🔥 variável global (controle da aula selecionada)
     let aulaAtualId = null;
     let pastaAtualId = null;
     let filtroAulas = "todas";
     let aulasCache = []; 
+    let paginasTeoria = [];
+    let paginaTeoriaAtual = 0;
 
     function qs(name) {
       return new URLSearchParams(window.location.search).get(name);
@@ -60,6 +245,41 @@
 
     function getToken() {
       return localStorage.getItem("access_token");
+    }
+
+    function voltarParaAssuntos() {
+      const urlSalva = localStorage.getItem("voltar_para_assuntos");
+
+      if (urlSalva) {
+        window.location.href = urlSalva;
+        return;
+      }
+
+      const disciplinaId = qs("disciplina_id");
+      const disciplinaNome = qs("disciplina_nome") || "";
+      const cursoNome = qs("curso_nome") || "";
+
+      if (disciplinaId) {
+        window.location.href =
+          `assuntos.html?disciplina_id=${encodeURIComponent(disciplinaId)}` +
+          `&disciplina_nome=${encodeURIComponent(disciplinaNome)}` +
+          `&curso_nome=${encodeURIComponent(cursoNome)}`;
+        return;
+      }
+
+      alert("Não foi possível identificar a disciplina para voltar.");
+      window.location.href = "cursos.html";
+    }
+
+    function confirmarSair() {
+      const ok = confirm("Deseja realmente sair da plataforma?");
+
+      if (!ok) return;
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("me_cache");
+
+      window.location.href = "login.html";
     }
 
     async function apiGet(path) {
@@ -99,6 +319,26 @@
       return res.json();
     }
 
+    async function apiPut(path, body = {}) {
+      const token = getToken();
+
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Erro ${res.status} em ${path}\n${txt}`);
+      }
+
+      return res.json();
+    }
+
     async function tryMany(endpoints) {
       let lastErr = null;
       for (const ep of endpoints) {
@@ -120,6 +360,32 @@
           <pre style="white-space:pre-wrap">${esc(msg)}</pre>
         </div>
       `;
+    }
+
+    function destacarBotaoSecao(secao) {
+      const botoes = {
+        teoria: document.getElementById("btn_teoria"),
+        video: document.getElementById("btn_video"),
+        questoes: document.getElementById("btn_questoes")
+      };
+
+      Object.values(botoes).forEach(btn => {
+        if (btn) btn.classList.remove("ativo");
+      });
+
+      if (botoes[secao]) {
+        botoes[secao].classList.add("ativo");
+      }
+
+      const menu = document.getElementById("menu_estudo_lateral");
+
+      if (menu) {
+        if (secao === "questoes") {
+          menu.classList.add("menu-questoes");
+        } else {
+          menu.classList.remove("menu-questoes");
+        }
+      }
     }
 
     async function getProgressoBackend(pastaId) {
@@ -183,6 +449,82 @@
       salvarRevisoes(pastaAtualId, revisoes);
     }
 
+    function criarOuAtualizarRevisaoDoAssunto() {
+      if (!pastaAtualId) return;
+
+      const revisoes = getRevisoes(pastaAtualId);
+      const hoje = hojeISO();
+
+      const modoRevisao =
+        localStorage.getItem(`modo_revisao_assunto_${pastaAtualId}`) === "1";
+
+      const assuntoRefeito =
+        localStorage.getItem(`assunto_refeito_${pastaAtualId}`) === "1";
+
+      let revisaoAtual = revisoes.find(r =>
+        r.tipo === "ASSUNTO" && r.concluida !== true
+      );
+
+      if (!revisaoAtual) {
+        revisoes.push({
+          tipo: "ASSUNTO",
+          etapa: 1,
+          proximaRevisao: adicionarDias(new Date(), 7),
+          concluida: false
+        });
+
+        salvarRevisoes(pastaAtualId, revisoes);
+        localStorage.removeItem(`assunto_refeito_${pastaAtualId}`);
+        return;
+      }
+
+      if (revisaoAtual.proximaRevisao > hoje) {
+        if (!assuntoRefeito) return;
+
+        revisaoAtual.etapa = 1;
+        revisaoAtual.proximaRevisao = adicionarDias(new Date(), 7);
+        revisaoAtual.concluida = false;
+
+        salvarRevisoes(pastaAtualId, revisoes);
+        localStorage.removeItem(`assunto_refeito_${pastaAtualId}`);
+        return;
+      }
+
+      if (revisaoAtual.proximaRevisao <= hoje) {
+        if (!modoRevisao || !assuntoRefeito) return;
+
+        if (revisaoAtual.etapa >= 4) {
+          revisaoAtual.concluida = true;
+
+          salvarRevisoes(pastaAtualId, revisoes);
+
+          localStorage.removeItem(`modo_revisao_assunto_${pastaAtualId}`);
+          localStorage.removeItem(`assunto_refeito_${pastaAtualId}`);
+          return;
+        }
+
+        const proximaEtapa = revisaoAtual.etapa + 1;
+
+        const intervalos = {
+          2: 15,
+          3: 21,
+          4: 28
+        };
+
+        revisaoAtual.etapa = proximaEtapa;
+        revisaoAtual.proximaRevisao = adicionarDias(
+          new Date(),
+          intervalos[proximaEtapa]
+        );
+        revisaoAtual.concluida = false;
+
+        salvarRevisoes(pastaAtualId, revisoes);
+
+        localStorage.removeItem(`modo_revisao_assunto_${pastaAtualId}`);
+        localStorage.removeItem(`assunto_refeito_${pastaAtualId}`);
+      }
+    }
+
     function marcarRevisaoFeita(aulaId) {
       if (!pastaAtualId) return;
 
@@ -216,7 +558,6 @@
 
       try {
         await apiPost(`/me/progresso/aulas/${aulaId}/concluir`);
-        criarRevisaoInicial(aulaId);
 
         await carregarAulas();
 
@@ -239,18 +580,20 @@
       const assuntoId = qs("assunto_id");
       const disciplinaNome = qs("disciplina_nome") || "";
       const assuntoNome = qs("assunto_nome") || "";
+      const abrir = qs("abrir");
 
       const tituloDisciplina = document.getElementById("titulo_disciplina");
-      const tituloAssunto = document.getElementById("titulo_assunto");
-
+      const cardAssuntoTitulo = document.getElementById("card_assunto_titulo");
       if (tituloDisciplina) {
         tituloDisciplina.innerText = disciplinaNome
           ? `📘 ${disciplinaNome}`
           : "📘 Disciplina";
       }
 
-      if (tituloAssunto) {
-        tituloAssunto.innerText = assuntoNome;
+      if (cardAssuntoTitulo) {
+        cardAssuntoTitulo.innerText = assuntoNome
+          ? `${assuntoNome} - Parte I`
+          : "Assunto - Parte I";
       }
 
       pastaAtualId = pastaId; 
@@ -287,6 +630,31 @@
 
       aulas.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
       aulasCache = aulas;
+
+      const aulaPrincipal = aulas[0];
+
+      if (!aulaPrincipal) {
+        document.getElementById("lista_aulas").innerHTML =
+          "<p>Nenhuma aula encontrada para este assunto.</p>";
+        return;
+      }
+
+      aulaAtualId = aulaPrincipal.id;
+
+      document.getElementById("lista_aulas").innerHTML = "";
+      document.getElementById("menu_estudo_lateral").style.display = "flex";
+
+      document.getElementById("detalhes_aula").innerHTML = "";
+
+      if (abrir === "questoes") {
+        abrirSecaoQuestoes(aulaPrincipal.id);
+      } else if (abrir === "video") {
+        abrirSecaoVideo(aulaPrincipal.id);
+      } else {
+        abrirSecaoTeoria(aulaPrincipal.id);
+      }
+
+      return;
 
       const lista = document.getElementById("lista_aulas");
 
@@ -650,12 +1018,432 @@
       }
     }
 
+    function limparTextoTeoria(texto) {
+      return String(texto || "")
+        .split("\n")
+        .map(linha => linha.trim())
+        .join("\n");
+    }
+
+    function dividirTextoEmPaginas(texto, limite = 2600) {
+      const partes = String(texto || "").split(/\n\s*\n/);
+      const paginas = [];
+      let atual = "";
+
+      for (const parte of partes) {
+        if ((atual + "\n\n" + parte).length > limite && atual.trim()) {
+          paginas.push(atual.trim());
+          atual = parte;
+        } else {
+          atual += atual ? "\n\n" + parte : parte;
+        }
+      }
+
+      if (atual.trim()) paginas.push(atual.trim());
+
+      return paginas.length ? paginas : [""];
+    }
+
+    function renderizarPaginaTeoria() {
+      const box = document.getElementById("detalhes_aula");
+      const texto = paginasTeoria[paginaTeoriaAtual] || "";
+
+      box.innerHTML = `
+        <div class="card" style="padding:14px 18px 18px; position:relative;">
+          <div style="
+            line-height:1.8;
+            white-space:pre-line;
+            text-indent:0;
+            text-align:justify;
+          ">
+            ${esc(texto)}
+          </div>
+
+          ${
+            paginasTeoria.length > 1 && paginaTeoriaAtual < paginasTeoria.length - 1
+              ? `
+                <div style="
+                  position:absolute;
+                  right:0;
+                  bottom:-38px;
+                ">
+                  <button class="btn" onclick="proximaPaginaTeoria()" title="Próxima página">
+                    ⇨
+                  </button>
+                </div>
+              `
+              : ""
+          }
+        </div>
+      `;
+
+      const paginacao = document.getElementById("paginacao_teoria");
+      if (paginacao) {
+        paginacao.innerText = `${paginaTeoriaAtual + 1}/${paginasTeoria.length}`;
+      }
+
+    }
+
+    function proximaPaginaTeoria() {
+      if (paginaTeoriaAtual < paginasTeoria.length - 1) {
+        paginaTeoriaAtual++;
+        renderizarPaginaTeoria();
+        document.getElementById("detalhes_aula").scrollIntoView({ behavior: "smooth" });
+      }
+    }
+
+    async function abrirSecaoTeoria(aulaId) {
+      aulaAtualId = aulaId;
+
+      destacarBotaoSecao("teoria");
+
+      const box = document.getElementById("detalhes_aula");
+      box.innerHTML = `
+        <div class="card">
+          <p>Carregando teoria...</p>
+        </div>
+      `;
+
+      box.scrollIntoView({ behavior: "smooth" });
+
+      try {
+        const materiais = await tryMany([
+          `/aulas/${aulaId}/materiais`,
+          `/materiais?aula_id=${aulaId}`
+        ]);
+
+        const textos = (materiais || []).filter(m => m.tipo === "TEXTO");
+
+        if (textos.length === 0) {
+          box.innerHTML = `
+            <div class="card">
+              <p>Nenhum texto cadastrado.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const textoCompleto = textos
+          .map(t => limparTextoTeoria(t.conteudo || t.texto || ""))
+          .join("\n\n");
+
+        paginasTeoria = dividirTextoEmPaginas(textoCompleto, 2600);
+        paginaTeoriaAtual = 0;
+
+        renderizarPaginaTeoria();
+
+      } catch (err) {
+        box.innerHTML = renderError("Erro ao carregar teoria", err.message);
+      }
+    }
+
+    async function abrirSecaoVideo(aulaId) {
+      aulaAtualId = aulaId;
+
+      destacarBotaoSecao("video");
+
+      const box = document.getElementById("detalhes_aula");
+      const paginacao = document.getElementById("paginacao_teoria");
+      if (paginacao) paginacao.innerText = "";
+
+      box.innerHTML = `
+        <div class="card">
+          <p>Carregando vídeos...</p>
+        </div>
+      `;
+
+      box.scrollIntoView({ behavior: "smooth" });
+
+      try {
+        const videos = await tryMany([
+          `/aulas/${aulaId}/videos`,
+          `/videos?aula_id=${aulaId}`
+        ]);
+
+        const vids = Array.isArray(videos) ? videos : [];
+        vids.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+        box.innerHTML = `
+          <div class="card">
+
+            ${
+              vids.length === 0
+                ? "<p>Nenhum vídeo cadastrado.</p>"
+                : vids.map(v => `
+                    <div class="assunto">
+                      <h3>${esc(v.titulo || "Vídeo")}</h3>
+                      ${renderVideo(v.url)}
+                    </div>
+                  `).join("")
+            }
+          </div>
+        `;
+
+      } catch (err) {
+        box.innerHTML = renderError("Erro ao carregar vídeos", err.message);
+      }
+    }
+
+    async function limparRefazerSprint(bateriaId) {
+      const ok = confirm("Confirma recomeçar a sprint?");
+
+      if (!ok) return;
+
+      if (pastaAtualId) {
+        localStorage.setItem(`assunto_refeito_${pastaAtualId}`, "1");
+      }
+
+      try {
+        await apiPut(`/baterias/${bateriaId}/limpar-minha-sprint`, {});
+
+        const urlRetorno = window.location.href.includes("abrir=questoes")
+          ? window.location.href
+          : window.location.href + "&abrir=questoes";
+
+        localStorage.setItem("voltar_para_questoes", urlRetorno);
+
+        window.location.href =
+          `sprint.html?bateria_id=${bateriaId}` +
+          `&titulo=${encodeURIComponent("Bateria de questões")}` +
+          `&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}`;
+
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao limpar sprint.");
+      }
+    }
+
+    async function abrirSecaoQuestoes(aulaId) {
+      aulaAtualId = aulaId;
+
+      destacarBotaoSecao("questoes");
+
+      const paginacao = document.getElementById("paginacao_teoria");
+      if (paginacao) paginacao.innerText = "";
+
+      const box = document.getElementById("detalhes_aula");
+      box.innerHTML = `
+        <div class="card">
+          <p>Carregando baterias...</p>
+        </div>
+      `;
+
+      box.scrollIntoView({ behavior: "smooth" });
+
+      try {
+        const baterias = await apiGet(`/aulas/${aulaId}/baterias-com-status`);
+
+        const concluidas = (baterias || []).filter(
+          b => b.status_bateria === "CONCLUIDA" || b.status === "CONCLUIDA"
+        );
+
+        const todasAsBateriasDoAssuntoFeitas =
+          concluidas.length > 0 &&
+          concluidas.every(b => b.status_aluno === "FEITA");
+
+        if (todasAsBateriasDoAssuntoFeitas) {
+          criarOuAtualizarRevisaoDoAssunto();
+        }
+
+        box.innerHTML = `
+          <div class="card" style="padding:14px 18px 18px;">
+            ${
+              concluidas.length === 0
+                ? "<p>Nenhuma bateria concluída disponível ainda.</p>"
+                : `
+                  <div class="list">
+                    ${concluidas.map(b => `
+                      <div class="assunto" style="padding:12px 14px;">
+                        <div style="
+                          display:flex;
+                          justify-content:space-between;
+                          align-items:center;
+                          gap:12px;
+                          flex-wrap:wrap;
+                        ">
+                          <div style="flex:1; min-width:220px;">
+                            <div style="font-weight:700;">
+                              ${esc(b.titulo || "Bateria de questões")}
+                            </div>
+
+                            ${
+                              b.status_aluno === "FEITA"
+                                ? `
+                                  <div style="
+                                    margin-top:6px;
+                                    font-size:0.86rem;
+                                    color:#4b5563;
+                                  ">
+                                    Desempenho: ${b.percentual_acerto}%
+                                  </div>
+                                `
+                                : ""
+                            }
+                          </div>
+
+                          <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                            flex-wrap:wrap;
+                            justify-content:flex-end;
+                          ">
+                            ${
+                              b.status_aluno === "EM_ANDAMENTO"
+                                ? `
+                                  <span style="
+                                    padding:4px 10px;
+                                    border:1px solid #8a5a00;
+                                    border-radius:999px;
+                                    font-size:0.82rem;
+                                  ">
+                                    EM ANDAMENTO
+                                  </span>
+                                `
+                                : ""
+                            }
+
+                            ${
+                              b.status_aluno === "FEITA"
+                                ? `
+                                  <span style="
+                                    padding:4px 10px;
+                                    border:1px solid #2f5e46;
+                                    border-radius:999px;
+                                    font-size:0.82rem;
+                                    position:relative;
+                                    top:6.5px;
+                                  ">
+                                    FEITA
+                                  </span>
+                                `
+                                : ""
+                            }
+
+                            ${
+                              b.status_aluno === "FEITA"
+                                ? `
+                                  <a
+                                    class="btn"
+                                    onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
+                                    href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&modo=visualizar&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                    style="
+                                      min-width:112px;
+                                      height:40px;
+                                      padding:0 14px;
+                                      display:inline-flex;
+                                      align-items:center;
+                                      justify-content:center;
+                                      font-weight:700;
+                                      font-size:0.8rem;
+                                      font-family:inherit;
+                                    "
+                                  >
+                                    visualizar
+                                  </a>
+                                `
+                                : b.status_aluno === "EM_ANDAMENTO"
+                                  ? `
+                                    <a
+                                      class="btn"
+                                      onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
+                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                      style="
+                                        min-width:132px;
+                                        height:40px;
+                                        padding:0 14px;
+                                        display:inline-flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        font-weight:700;
+                                        font-size:0.9rem;
+                                        font-family:inherit;
+                                      "
+                                    >
+                                      continuar
+                                    </a>
+                                  `
+                                  : `
+                                    <a
+                                      class="btn"
+                                      onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
+                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                      style="
+                                        min-width:112px;
+                                        height:40px;
+                                        padding:0 14px;
+                                        display:inline-flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        font-weight:700;
+                                        font-size:0.9rem;
+                                        font-family:inherit;
+                                      "
+                                    >
+                                      fazer
+                                    </a>
+                                  `
+                            }
+
+                            ${
+                              b.status_aluno === "FEITA" || b.status_aluno === "EM_ANDAMENTO"
+                                ? `
+                                  <button
+                                    class="btn"
+                                    type="button"
+                                    onclick="limparRefazerSprint(${b.id})"
+                                    style="
+                                      min-width:126px;
+                                      height:40px;
+                                      padding:0 14px;
+                                      border:none;
+                                      box-shadow:none;
+                                      display:inline-flex;
+                                      align-items:center;
+                                      justify-content:center;
+                                      font-weight:700;
+                                      font-size:0.9rem;
+                                      font-family:inherit;
+                                    "
+                                  >
+                                    limpar e refazer
+                                  </button>
+                                `
+                                : ""
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    `).join("")}
+                  </div>
+                `
+            }
+          </div>
+        `;
+
+      } catch (err) {
+        box.innerHTML = renderError("Erro ao carregar baterias", err.message);
+      }
+    }
+
     window.abrirAula = abrirAula;
     window.carregarQuestoes = carregarQuestoes;
     window.filtrarAulas = filtrarAulas;
     window.marcarRevisaoFeita = marcarRevisaoFeita;
     window.marcarConcluida = marcarConcluida;
     carregarAulas();
+    window.abrirSecaoTeoria = abrirSecaoTeoria;
+    window.abrirSecaoVideo = abrirSecaoVideo;
+    window.limparRefazerSprint = limparRefazerSprint;
+    window.abrirSecaoQuestoes = abrirSecaoQuestoes;
+
+    const anoAtual = document.getElementById("ano_atual");
+    if (anoAtual) {
+      anoAtual.textContent = new Date().getFullYear();
+    }
+
+    window.proximaPaginaTeoria = proximaPaginaTeoria;
+
   </script>
 </body>
 </html>

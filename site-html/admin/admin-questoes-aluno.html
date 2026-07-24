@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questões para o aluno</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header
+  style="
+    padding-top:8px;
+    padding-bottom:24px;
+    position:relative;
+  "
+>
+  <div
+    style="
+      margin-top:32px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    "
+  >
+    <h1
+      style="
+        margin:-6px 0 0 0;
+        font-size:1.55rem;
+        text-align:center;
+      "
+    >
+      📝 Questões para o aluno
+    </h1>
+  </div>
+
+  <nav
+    style="
+      position:absolute;
+      right:24px;
+      top:22px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    "
+  >
+    <a
+      class="btn"
+      href="index.html"
+      title="Voltar"
+    >
+      ⇦
+    </a>
+
+    <a
+      class="btn"
+      href="../index.html"
+      title="Início"
+    >
+      ⌂
+    </a>
+
+    <a
+      class="btn"
+      href="#"
+      onclick="confirmarSaidaAdmin(); return false;"
+      title="Sair"
+    >
+      ⎋
+    </a>
+  </nav>
+</header>
+
+<main class="container">
+
+    <div class="card">
+
+        <h2>1) Selecionar curso</h2>
+
+        <select
+            id="cursoSelectQuestoes"
+            style="width:100%;padding:12px;">
+        </select>
+
+    </div>
+
+    <div class="card">
+
+        <h2>2) Selecionar disciplina</h2>
+
+        <select
+            id="disciplinaSelectQuestoes"
+            style="width:100%;padding:12px;">
+        </select>
+
+    </div>
+
+    <div class="card">
+
+        <h2>3) Selecionar assunto</h2>
+
+        <select
+            id="assuntoSelectQuestoes"
+            style="width:100%;padding:12px;">
+        </select>
+
+        <div style="margin-top:20px;">
+
+            <button
+                class="btn"
+                id="btnAbrirQuestoes">
+
+                Abrir questões
+
+            </button>
+
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+  <p>
+    © <span id="ano_atual"></span> - Quality Estudos
+  </p>
+</footer>
+
+<script src="../js/app.js"></script>
+<script src="../js/admin.js"></script>
+
+<script>
+AdminQuestoesAluno.init();
+</script>
+
+<script>
+  function confirmarSaidaAdmin() {
+    const ok = confirm("Deseja realmente sair da plataforma?");
+
+    if (!ok) return;
+
+    logout();
+  }
+
+  const anoAtual = document.getElementById("ano_atual");
+
+  if (anoAtual) {
+    anoAtual.textContent = new Date().getFullYear();
+  }
+</script>
+
+</body>
+</html>

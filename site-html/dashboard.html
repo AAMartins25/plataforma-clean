@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard do Aluno</title>
+  <title>Progresso do Aluno</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 
 <body>
   <header>
-    <h1>📊 Meu Progresso</h1>
+    <h1 id="titulo_topo">📊 Carregando curso...</h1>
 
     <nav style="
       display:flex;
@@ -18,41 +18,50 @@
       flex-wrap:wrap;
       margin-top:10px;
     ">
-      <a class="btn" href="javascript:history.back()">Voltar</a>
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="voltarParaCurso()"
+      >
+        Voltar
+      </a>
 
       <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
     </nav>
   </header>
 
   <main class="container">
-    
-    <div class="card">
-        <h2 id="nome_curso">📘 Carregando curso...</h2>
-    </div>
 
-    <div class="card">
-      <h2>📈 Progresso geral do curso</h2>
-      <p id="progresso_geral">Carregando progresso...</p>
-
-      <div class="barra-progresso">
-        <div id="barra_geral" class="barra-progresso-preenchida" style="width:0%"></div>
+    <div class="card" style="padding:19px 28px;">
+      <div
+        onclick="alternarLista('lista_disciplinas')"
+        style="
+          display:flex;
+          justify-content:flex-start;
+          align-items:center;
+          cursor:pointer;
+        "
+      >
+        <h2 style="margin:1px 0 0 0;">
+          📚 Desempenho nas disciplinas
+        </h2>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>📚 Progresso por Disciplina</h2>
-      <div id="lista_disciplinas" class="list">
+      <div
+        id="lista_disciplinas"
+        class="list"
+        style="display:block; margin-top:28px;"
+      >
         <p>Carregando disciplinas...</p>
       </div>
     </div>
 
-    <div class="card">
-      <h2>🔁 Revisões</h2>
-
-      <p id="resumo_revisoes">Carregando revisões...</p>
-
-      <div id="lista_revisoes" class="list" style="margin-top:14px;">
-      </div>
+    <div class="card" style="
+        min-height:8px;
+        padding:0;
+        margin-top:-3px;
+        background:#fff;
+    ">
     </div>
 
   </main>
@@ -62,10 +71,43 @@
   </footer>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8002";
+    const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
 
     function getToken() {
       return localStorage.getItem("access_token");
+    }
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function logout() {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("me_cache");
+      window.location.href = "login.html";
+    }
+
+    function voltarParaCurso() {
+      const cursoId = qs("curso_id");
+      const cursoNome = qs("curso_nome") || "";
+
+      window.location.replace(
+        `curso.html?curso_id=${encodeURIComponent(cursoId || "")}&curso_nome=${encodeURIComponent(cursoNome)}`
+      );
+    }
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function alternarLista(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      el.style.display = el.style.display === "none" ? "block" : "none";
     }
 
     async function apiGet(path) {
@@ -85,8 +127,37 @@
       return res.json();
     }
 
-    function hojeISO() {
-      return new Date().toISOString().slice(0, 10);
+    async function carregarCursoAtual() {
+      const cursos = await apiGet("/me/cursos");
+      const cursoIdUrl = Number(qs("curso_id") || 0);
+
+      if (!cursos || cursos.length === 0) return null;
+
+      return cursos.find(c => Number(c.curso_id) === cursoIdUrl) || cursos[0];
+    }
+
+    async function carregarDisciplinasDoCurso(cursoId) {
+      return await apiGet(`/cursos/${cursoId}/disciplinas-proprias`);
+    }
+
+    async function carregarAssuntosDaDisciplina(disciplinaId) {
+      return await apiGet(`/disciplinas-proprias/${disciplinaId}/assuntos-proprios`);
+    }
+
+    async function carregarPastaTeoriaDoAssunto(assuntoId) {
+      try {
+        return await apiGet(`/assuntos-proprios/${assuntoId}/pasta-teoria`);
+      } catch {
+        return null;
+      }
+    }
+
+    async function carregarAulasDaPasta(pastaId) {
+      return await apiGet(`/pastas/${pastaId}/aulas`);
+    }
+
+    async function carregarBateriasComStatus(aulaId) {
+      return await apiGet(`/aulas/${aulaId}/baterias-com-status`);
     }
 
     function getRevisoes(pastaId) {
@@ -98,176 +169,163 @@
       }
     }
 
-    function logout() {
-      localStorage.removeItem("access_token");
-      window.location.href = "index.html";
+    function contarVezesAssuntoFeito(pastaId, assuntoConcluidoAgora) {
+      const revisoes = getRevisoes(pastaId);
+      const revisaoAssunto = revisoes.find(r => r.tipo === "ASSUNTO");
+
+      if (revisaoAssunto) {
+        return Math.max(Number(revisaoAssunto.etapa || 1), 1);
+      }
+
+      return assuntoConcluidoAgora ? 1 : 0;
+    }
+
+    async function calcularNotaAssunto(assuntoId) {
+      const pastaTeoria = await carregarPastaTeoriaDoAssunto(assuntoId);
+
+      if (!pastaTeoria || !pastaTeoria.id) {
+        return null;
+      }
+
+      const aulas = await carregarAulasDaPasta(pastaTeoria.id);
+
+      let totalBaterias = 0;
+      let bateriasFeitas = 0;
+      let somaPercentuais = 0;
+
+      for (const aula of aulas) {
+        const baterias = await carregarBateriasComStatus(aula.id);
+
+        for (const b of baterias || []) {
+          totalBaterias++;
+
+          if (b.status_aluno === "FEITA") {
+            bateriasFeitas++;
+            somaPercentuais += Number(b.percentual_acerto || 0);
+          }
+        }
+      }
+
+      if (totalBaterias === 0 || bateriasFeitas !== totalBaterias) {
+        return null;
+      }
+
+      const mediaPercentual = somaPercentuais / totalBaterias;
+      const nota = mediaPercentual / 10;
+
+      return Number(nota.toFixed(1));
     }
 
     async function carregarDashboard() {
       try {
-        
-        await apiGet("/me"); // apenas valida token
+        await apiGet("/me");
 
-        const cursos = await apiGet("/me/cursos");
+        const cursoAtual = await carregarCursoAtual();
 
-        if (!cursos || cursos.length === 0) {
-        document.getElementById("nome_curso").innerText = "📘 Nenhum curso disponível";
-        } else {
-        const cursoAtual = cursos[0]; // por enquanto, pega o primeiro curso do aluno
-        document.getElementById("nome_curso").innerText = `📘 ${cursoAtual.nome_curso}`;
+        if (!cursoAtual) {
+          document.getElementById("titulo_topo").innerText = "📘 Nenhum curso disponível";
+          return;
         }
 
-        let totalAulas = 0;
-        let aulasConcluidas = 0;
+        document.getElementById("titulo_topo").innerText =
+          `📘 ${cursoAtual.nome_curso}`;
 
-        if (cursos && cursos.length > 0) {
-          const cursoAtual = cursos[0];
+        const disciplinas = await carregarDisciplinasDoCurso(cursoAtual.curso_id);
 
-          const disciplinas = await apiGet(`/cursos/${cursoAtual.curso_id}/disciplinas`);
-
-          for (const disciplina of disciplinas) {
-            const assuntos = await apiGet(`/disciplinas/${disciplina.id}/assuntos`);
-
-            for (const assunto of assuntos) {
-              const pastas = await apiGet(`/assuntos/${assunto.id}/pastas`);
-
-              const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
-              if (!pastaTeoria) continue;
-
-              const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas`);
-              const progresso = await apiGet(`/me/progresso?pasta_id=${pastaTeoria.id}`);
-
-              const aulasConcluidasSet = new Set(progresso.map(p => p.aula_id));
-
-              totalAulas += aulas.length;
-              aulasConcluidas += aulas.filter(a => aulasConcluidasSet.has(a.id)).length;
-            }
-          }
-        }
-
-        const percentual = totalAulas > 0
-          ? Math.round((aulasConcluidas / totalAulas) * 100)
-          : 0;
-
-        document.getElementById("progresso_geral").innerText =
-          `${aulasConcluidas} de ${totalAulas} aulas concluídas (${percentual}%)`;
-
-        document.getElementById("barra_geral").style.width = `${percentual}%`;
-
-        let totalRevisoesPendentes = 0;
-        let totalRevisoesAtrasadas = 0;
-        const hoje = hojeISO();
-        let htmlRevisoes = "";
-
-        if (cursos && cursos.length > 0) {
-          const cursoAtual = cursos[0];
-          const disciplinas = await apiGet(`/cursos/${cursoAtual.curso_id}/disciplinas`);
-
-          for (const disciplina of disciplinas) {
-            const assuntos = await apiGet(`/disciplinas/${disciplina.id}/assuntos`);
-
-            for (const assunto of assuntos) {
-              const pastas = await apiGet(`/assuntos/${assunto.id}/pastas`);
-              const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
-              if (!pastaTeoria) continue;
-
-              const revisoes = getRevisoes(pastaTeoria.id);
-
-              const pendentes = revisoes.filter(r => r.proximaRevisao <= hoje);
-              const atrasadas = revisoes.filter(r => r.proximaRevisao < hoje);
-
-              totalRevisoesPendentes += pendentes.length;
-              totalRevisoesAtrasadas += atrasadas.length;
-
-              for (const rev of pendentes) {
-                const atrasada = rev.proximaRevisao < hoje;
-
-                htmlRevisoes += `
-                  <div class="disciplina" style="
-                    border-left: 6px solid ${atrasada ? '#d32f2f' : '#e6d85a'};
-                  ">
-                    <div style="font-weight:bold;">
-                      ${rev.titulo || "Aula"}
-                    </div>
-
-                    <div style="opacity:.85; margin-top:4px;">
-                      Revisão prevista para: ${rev.proximaRevisao}
-                    </div>
-
-                    ${
-                      atrasada
-                        ? `<div style="color:#d32f2f;font-weight:bold;margin-top:6px;">
-                            ⚠ Revisão atrasada
-                          </div>`
-                        : ""
-                    }
-                  </div>
-                `;
-              }
-            }
-          }
-        }
-
-        if (totalRevisoesPendentes === 0 && totalRevisoesAtrasadas === 0) {
-
-          document.getElementById("resumo_revisoes").innerText = "";
-
-          document.getElementById("lista_revisoes").innerHTML =
-            "<p>Ótimo, não há revisão pendente!</p>";
-
-        } else {
-
-          document.getElementById("resumo_revisoes").innerText =
-            `Revisões pendentes: ${totalRevisoesPendentes} • Revisões atrasadas: ${totalRevisoesAtrasadas}`;
-
-          document.getElementById("lista_revisoes").innerHTML = htmlRevisoes;
-        }
-
+        let totalAssuntosCurso = 0;
+        let assuntosConcluidosCurso = 0;
         let htmlDisciplinas = "";
 
-        if (cursos && cursos.length > 0) {
-          const cursoAtual = cursos[0];
+        for (const disciplina of disciplinas) {
+          const assuntos = await carregarAssuntosDaDisciplina(disciplina.id);
 
-          const disciplinas = await apiGet(`/cursos/${cursoAtual.curso_id}/disciplinas`);
+          let totalAssuntosDisciplina = assuntos.length;
+          let assuntosConcluidosDisciplina = 0;
+          let htmlAssuntos = "";
 
-          for (const disciplina of disciplinas) {
-            let totalDisciplina = 0;
-            let concluidasDisciplina = 0;
+          for (const assunto of assuntos) {
+            
+            const notaAssunto = await calcularNotaAssunto(assunto.id);
 
-            const assuntos = await apiGet(`/disciplinas/${disciplina.id}/assuntos`);
+            htmlAssuntos += `
+              <div style="
+                padding:10px 12px;
+                border:1px solid #ddd;
+                border-radius:8px;
+                margin-top:10px;
+              ">
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:12px;
+                  flex-wrap:wrap;
+                ">
+                  <div style="
+                    font-weight:normal;
+                    font-size:0.92rem;
+                    margin-left:28px;
+                  ">
+                    ${esc(assunto.nome)}
+                  </div>
 
-            for (const assunto of assuntos) {
-              const pastas = await apiGet(`/assuntos/${assunto.id}/pastas`);
-
-              const pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
-              if (!pastaTeoria) continue;
-
-              const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas`);
-              const progresso = await apiGet(`/me/progresso?pasta_id=${pastaTeoria.id}`);
-
-              const concluidasSet = new Set(progresso.map(p => p.aula_id));
-
-              totalDisciplina += aulas.length;
-              concluidasDisciplina += aulas.filter(a => concluidasSet.has(a.id)).length;
-            }
-
-            const percentualDisciplina = totalDisciplina > 0
-              ? Math.round((concluidasDisciplina / totalDisciplina) * 100)
-              : 0;
-
-            htmlDisciplinas += `
-              <div class="disciplina">
-                <div style="font-weight:bold;">${disciplina.nome}</div>
-                <div style="opacity:.85; margin-top:4px;">
-                  ${percentualDisciplina}% (${concluidasDisciplina} de ${totalDisciplina} aulas concluídas)
-                </div>
-
-                <div class="barra-progresso">
-                  <div class="barra-progresso-preenchida" style="width:${percentualDisciplina}%"></div>
+                  <div
+                    title="Desempenho nas questões deste assunto"
+                    style="
+                      font-weight:bold;
+                      color:${notaAssunto !== null && notaAssunto <= 5 ? '#d32f2f' : '#003b7a'};
+                    "
+                  >
+                    ${notaAssunto !== null ? String(notaAssunto).replace(".", ",") : ""}
+                  </div>
                 </div>
               </div>
             `;
           }
+
+          totalAssuntosCurso += totalAssuntosDisciplina;
+          assuntosConcluidosCurso += assuntosConcluidosDisciplina;
+
+          const percentualDisciplina = totalAssuntosDisciplina > 0
+            ? Math.round((assuntosConcluidosDisciplina / totalAssuntosDisciplina) * 100)
+            : 0;
+
+          const idListaAssuntos = `assuntos_disciplina_${disciplina.id}`;
+
+          htmlDisciplinas += `
+            <div class="disciplina">
+              <div
+                onclick="alternarLista('${idListaAssuntos}')"
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:12px;
+                  flex-wrap:wrap;
+                  cursor:pointer;
+                "
+              >
+                <div style="font-weight:bold;">
+                  ${esc(disciplina.nome)}
+                </div>
+
+              </div>
+
+              <div id="${idListaAssuntos}" style="display:none; margin-top:12px;">
+                ${
+                  htmlAssuntos || `
+                    <p style="
+                      margin-left:68px;
+                      font-size:0.9rem;
+                      opacity:.85;
+                    ">
+                      Não há assuntos nesta disciplina
+                    </p>
+                  `
+                }
+              </div>
+            </div>
+          `;
         }
 
         document.getElementById("lista_disciplinas").innerHTML =
@@ -276,8 +334,8 @@
       } catch (err) {
         document.querySelector("main").innerHTML = `
           <div class="card">
-            <h2>Erro ao carregar dashboard</h2>
-            <pre style="white-space:pre-wrap">${err.message}</pre>
+            <h2>Erro ao carregar progresso</h2>
+            <pre style="white-space:pre-wrap">${esc(err.message)}</pre>
           </div>
         `;
       }

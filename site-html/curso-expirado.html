@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Curso com acesso expirado</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+  <header>
+    <h1 id="titulo_curso">📘 Curso</h1>
+
+    <nav style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="voltarParaCursosExpirados()"
+      >
+        Voltar
+      </a>
+      <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+      <p id="acesso_inicio">Acesso inicial: -</p>
+      <p id="acesso_fim">Acesso expirado em: -</p>
+    </div>
+
+    <div class="card">
+      <div class="list">
+        <a class="btn" id="link_disciplinas">📚 Disciplinas</a>
+        <a class="btn" id="link_anotacoes">📝 Anotações que fiz nas questões</a>
+        <a class="btn" id="link_mensagens">💬 Mensagens que enviei ao prof</a>
+        <a class="btn" id="link_desempenho">📊 Meu desempenho</a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>© 2026 - Plataforma Quality Estudos</p>
+  </footer>
+
+  <script>
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function logout() {
+      localStorage.removeItem("access_token");
+      window.location.href = "index.html";
+    }
+
+    const cursoId = qs("curso_id");
+    const cursoNome = qs("curso_nome") || "Curso";
+
+    const dataInicioRaw =
+      qs("data_inicio") || localStorage.getItem(`curso_expirado_${cursoId}_data_inicio`) || "";
+
+    const dataFimRaw =
+      qs("data_fim") || localStorage.getItem(`curso_expirado_${cursoId}_data_fim`) || "";
+
+    if (dataInicioRaw) {
+      localStorage.setItem(`curso_expirado_${cursoId}_data_inicio`, dataInicioRaw);
+    }
+
+    if (dataFimRaw) {
+      localStorage.setItem(`curso_expirado_${cursoId}_data_fim`, dataFimRaw);
+    }
+    
+    function formatarDataBR(valor) {
+        if (!valor) return "-";
+
+        const data = new Date(valor);
+
+        if (isNaN(data.getTime())) return "-";
+
+        return data.toLocaleDateString("pt-BR");
+    }
+
+    const dataInicio = formatarDataBR(dataInicioRaw);
+    const dataFim = formatarDataBR(dataFimRaw);
+
+    document.getElementById("titulo_curso").innerText = `📘 ${cursoNome}`;
+    document.getElementById("acesso_inicio").innerText = `Acesso inicial: ${dataInicio}`;
+    document.getElementById("acesso_fim").innerText = `Acesso expirado em: ${dataFim}`;
+
+    document.getElementById("link_disciplinas").href =
+      `disciplinas-expirado.html?curso_id=${encodeURIComponent(cursoId)}` +
+      `&curso_nome=${encodeURIComponent(cursoNome)}` +
+      `&data_inicio=${encodeURIComponent(dataInicioRaw)}` +
+      `&data_fim=${encodeURIComponent(dataFimRaw)}`;
+
+    document.getElementById("link_anotacoes").href =
+      `minhas-anotacoes-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+
+    document.getElementById("link_mensagens").href =
+      `mensagens-prof-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+
+    document.getElementById("link_desempenho").href =
+      `desempenho-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+    
+    function voltarParaCursosExpirados() {
+      localStorage.setItem("abrir_cursos_expirados", "1");
+      window.location.href = "cursos.html";
+    }
+
+  </script>
+</body>
+</html>

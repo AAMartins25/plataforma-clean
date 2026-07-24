@@ -2,48 +2,269 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel Admin</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Painel do Administrador</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  />
 </head>
+
 <body>
-  <header style="padding-top:3px;padding-bottom:5px;">
-    <div style="margin-top:20px;">
-      <h1 style="margin-bottom:-10px;">⚙️ Painel do Administrador</h1>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        ⚙️ Painel do Administrador
+      </h1>
     </div>
 
-    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a class="btn" href="../index.html">Início</a>
-      <a class="btn" href="#" onclick="logout(); return false;">Sair</a>
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="../minha-area.html"
+        onclick="
+          event.preventDefault();
+          event.stopPropagation();
+          window.location.href = '../minha-area.html';
+          return false;
+        "
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
     </nav>
   </header>
 
   <main class="container">
-    <div class="card">
-      <h2>📦 Gestão da Plataforma</h2>
 
-      <div class="list">
-        <a class="btn" href="cursos.html">Cursos</a>
-        <a class="btn" href="disciplinas.html">Disciplinas</a>
-        <a class="btn" href="assuntos.html">Assuntos</a>
-        <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
-        <a class="btn" href="aulas.html">Aulas</a>
-        <a class="btn" href="aula-conteudo.html">Conteúdo da Aula</a>
-        <a class="btn" href="alunos.html">Alunos/usuários</a>
-        <a class="btn" href="pagamentos.html">Pagamentos</a>
-        <a class="btn" href="atendimentos.html">Atendimento</a>
-        <a class="btn" href="reembolsos.html">Reembolso</a>
+    <div class="card">
+
+      <h2 style="margin-top:0;">
+        📦 Gestão da Plataforma
+      </h2>
+
+      <!-- CURSOS -->
+      <section style="margin-top:20px;">
+
+        <h3 style="margin-bottom:12px;">
+          📘 Cursos
+        </h3>
+
+        <div class="list">
+
+          <a
+            class="btn"
+            href="criar-curso-completo.html"
+          >
+            Criar Curso
+          </a>
+
+          <a
+            class="btn"
+            href="admin-questoes-aluno.html"
+          >
+            Questões
+          </a>
+
+        </div>
+
+      </section>
+
+      <!-- ALUNOS -->
+      <section style="margin-top:28px;">
+
+        <h3 style="margin-bottom:12px;">
+          👨‍🎓 Alunos
+        </h3>
+
+        <div class="list">
+
+          <a
+            class="btn"
+            href="alunos.html"
+          >
+            Alunos / Usuários
+          </a>
+
+          <a
+            class="btn"
+            href="pagamentos.html"
+          >
+            Pagamentos
+          </a>
+
+          <a
+            class="btn"
+            href="reembolsos.html"
+          >
+            Reembolso
+          </a>
+
+          <a
+            class="btn"
+            href="atendimento.html"
+          >
+            Atendimento
+          </a>
+
+          <a
+            class="btn"
+            href="admin-mensagens-questoes.html"
+          >
+            Mensagens de questões
+          </a>
+
+        </div>
+
+      </section>
+
+      <!-- COMERCIAL -->
+      <section style="margin-top:28px;">
+
+        <h3 style="margin-bottom:12px;">
+          💰 Comercial
+        </h3>
+
+        <div class="list">
+
+        <a
+          class="btn"
+          href="vendedores.html"
+        >
+          Vendedores
+        </a>
+
+        <a
+          class="btn"
+          href="#"
+          onclick="recursoEmDesenvolvimento('QR Codes'); return false;"
+        >
+          QR Codes
+        </a>
+
+        <a
+          class="btn"
+          href="#"
+          onclick="recursoEmDesenvolvimento('Comissões'); return false;"
+        >
+          Comissões
+        </a>
+
+        <a
+          class="btn"
+          href="cupons.html"
+        >
+          Cupons
+        </a>
+
       </div>
+
+      </section>
+
+      <!-- PERFIS E ACESSOS -->
+      <section style="margin-top:28px;">
+
+        <h3 style="margin-bottom:12px;">
+          🔐 Perfis e acessos
+        </h3>
+
+        <div class="list">
+
+          <a
+            class="btn"
+            href="perfis.html"
+          >
+            Gerenciar perfis
+          </a>
+
+        </div>
+
+      </section>
+
     </div>
+
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
-  </footer> 
-  
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
   <script src="../js/app.js"></script>
   <script src="../js/admin.js"></script>
+
   <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm("Deseja realmente sair da plataforma?");
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    function recursoEmDesenvolvimento(nome) {
+      alert(`${nome}: recurso em desenvolvimento.`);
+    }
+
+    const anoAtual = document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent = new Date().getFullYear();
+    }
+
     requireAdmin();
   </script>
 

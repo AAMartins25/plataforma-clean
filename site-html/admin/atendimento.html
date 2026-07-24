@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Atendimento</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        💬 Atendimento
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="irParaInicio('../index.html'); return false;"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2>
+        Solicitações de atendimento
+      </h2>
+
+      <div
+        id="listaAtendimentos"
+        class="list"
+      >
+        <p>Carregando atendimentos...</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+    requireAdmin();
+
+    const lista =
+      document.getElementById("listaAtendimentos");
+
+    function formatarData(dataISO) {
+      if (!dataISO) return "-";
+
+      return new Date(dataISO)
+        .toLocaleString("pt-BR");
+    }
+
+    function cardAtendimento(
+      atendimento,
+      concluido = false
+    ) {
+      return `
+        <div
+          class="assunto"
+          style="${concluido ? "opacity:.82;" : ""}"
+        >
+          <div
+            style="
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              gap:10px;
+              flex-wrap:wrap;
+              margin-bottom:8px;
+            "
+          >
+            <b>${atendimento.assunto}</b>
+
+            <span
+              style="
+                padding:4px 10px;
+                border-radius:999px;
+                border:1px solid #ccc;
+                font-size:.85rem;
+              "
+            >
+              ${atendimento.status}
+            </span>
+          </div>
+
+          <div
+            style="
+              margin-bottom:10px;
+              opacity:.88;
+            "
+          >
+            <b>Aluno:</b>
+            ${atendimento.usuario_nome}
+
+            <br>
+
+            <b>E-mail:</b>
+            ${atendimento.usuario_email}
+
+            <br>
+
+            <b>Data:</b>
+            ${formatarData(atendimento.criado_em)}
+          </div>
+
+          <div
+            style="
+              background:#fff;
+              border:1px solid #ddd;
+              border-radius:8px;
+              padding:12px;
+              white-space:pre-wrap;
+              margin-bottom:12px;
+            "
+          >
+            ${atendimento.mensagem}
+          </div>
+
+          ${
+            concluido
+              ? `
+                <div style="margin-top:12px;">
+                  <b>Resposta da Quality Estudos:</b>
+
+                  <br>
+
+                  <div
+                    style="
+                      background:#f9fafb;
+                      border:1px solid #ddd;
+                      border-radius:8px;
+                      padding:12px;
+                      white-space:pre-wrap;
+                      margin-top:6px;
+                    "
+                  >
+                    ${
+                      atendimento.resposta_admin ||
+                      "Sem resposta registrada."
+                    }
+                  </div>
+                </div>
+              `
+              : `
+                <label for="resposta_${atendimento.id}">
+                  <b>Resposta da Quality Estudos</b>
+                </label>
+
+                <textarea
+                  id="resposta_${atendimento.id}"
+                  placeholder="Escreva a resposta ao aluno"
+                  style="
+                    width:100%;
+                    min-height:100px;
+                    padding:12px;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    margin:8px 0 12px;
+                  "
+                ></textarea>
+
+                <div
+                  style="
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                  "
+                >
+                  <button
+                    class="btn"
+                    type="button"
+                    onclick="responderAtendimento(${atendimento.id})"
+                  >
+                    Responder e concluir
+                  </button>
+
+                  <button
+                    class="btn"
+                    type="button"
+                    onclick="concluirAtendimento(${atendimento.id})"
+                  >
+                    Concluir sem resposta
+                  </button>
+                </div>
+              `
+          }
+        </div>
+      `;
+    }
+
+    async function carregarAtendimentos() {
+      try {
+        const dados = await apiGetAuth(
+          "/admin/atendimentos"
+        );
+
+        if (!dados || dados.length === 0) {
+          lista.innerHTML = `
+            <p>
+              Nenhuma solicitação cadastrada ainda.
+            </p>
+          `;
+
+          return;
+        }
+
+        const abertos = dados.filter(
+          atendimento =>
+            atendimento.status !== "CONCLUIDO"
+        );
+
+        const concluidos = dados.filter(
+          atendimento =>
+            atendimento.status === "CONCLUIDO"
+        );
+
+        lista.innerHTML = `
+          <div style="margin-bottom:30px;">
+            <h3>Em aberto</h3>
+
+            ${
+              abertos.length === 0
+                ? "<p>Nenhum atendimento em aberto.</p>"
+                : abertos
+                    .map(atendimento =>
+                      cardAtendimento(
+                        atendimento,
+                        false
+                      )
+                    )
+                    .join("")
+            }
+          </div>
+
+          <div>
+            <h3>Concluídos</h3>
+
+            ${
+              concluidos.length === 0
+                ? "<p>Nenhum atendimento concluído.</p>"
+                : concluidos
+                    .map(atendimento =>
+                      cardAtendimento(
+                        atendimento,
+                        true
+                      )
+                    )
+                    .join("")
+            }
+          </div>
+        `;
+
+      } catch (err) {
+        console.error(err);
+
+        lista.innerHTML = `
+          <div class="assunto">
+            Erro ao carregar atendimentos.
+          </div>
+        `;
+      }
+    }
+
+    async function concluirAtendimento(id) {
+      try {
+        await apiPostAuth(
+          `/admin/atendimentos/${id}/concluir`,
+          {}
+        );
+
+        await carregarAtendimentos();
+
+      } catch (err) {
+        console.error(err);
+
+        alert(
+          "Erro ao concluir atendimento."
+        );
+      }
+    }
+
+    async function responderAtendimento(id) {
+      const campo =
+        document.getElementById(`resposta_${id}`);
+
+      const resposta =
+        campo?.value.trim() || "";
+
+      if (!resposta) {
+        alert(
+          "Escreva a resposta antes de concluir."
+        );
+
+        return;
+      }
+
+      try {
+        await apiPostAuth(
+          `/admin/atendimentos/${id}/responder`,
+          {
+            resposta
+          }
+        );
+
+        await carregarAtendimentos();
+
+      } catch (err) {
+        console.error(err);
+
+        alert(
+          "Erro ao responder atendimento."
+        );
+      }
+    }
+
+    carregarAtendimentos();
+  </script>
+
+</body>
+
+</html>

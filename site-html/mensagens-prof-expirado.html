@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mensagens ao professor</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+
+<body>
+
+<header>
+  <h1 id="titulo_topo">📘 Curso</h1>
+
+  <nav style="
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+  ">
+    <a class="btn"
+       href="javascript:void(0)"
+       onclick="voltarCursoExpirado()">
+      Voltar
+    </a>
+
+    <a href="javascript:void(0)"
+       class="btn"
+       onclick="logout()">
+      Sair
+    </a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <div class="card">
+    <h2>💬 Mensagens que enviei ao prof</h2>
+
+    <div id="lista_mensagens" class="list">
+      <p>Carregando mensagens...</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>© 2026 - Plataforma Quality Estudos</p>
+</footer>
+
+<script>
+
+const API_BASE =
+"https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
+
+function qs(nome){
+    return new URLSearchParams(location.search).get(nome);
+}
+
+function getToken(){
+    return localStorage.getItem("access_token");
+}
+
+function logout(){
+    localStorage.removeItem("access_token");
+    window.location.href="index.html";
+}
+
+function esc(v){
+    return String(v ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+}
+
+function voltarCursoExpirado(){
+
+    const cursoId=qs("curso_id");
+    const cursoNome=qs("curso_nome") || "";
+    const dataInicio=qs("data_inicio") || "";
+    const dataFim=qs("data_fim") || "";
+
+    window.location.href=
+        `curso-expirado.html?curso_id=${encodeURIComponent(cursoId)}`
+        +`&curso_nome=${encodeURIComponent(cursoNome)}`
+        +`&data_inicio=${encodeURIComponent(dataInicio)}`
+        +`&data_fim=${encodeURIComponent(dataFim)}`;
+}
+
+async function apiGet(path){
+
+    const token=getToken();
+
+    const res=await fetch(`${API_BASE}${path}`,{
+        headers:{
+            "Authorization":`Bearer ${token}`
+        }
+    });
+
+    if(!res.ok){
+
+        const txt=await res.text();
+
+        throw new Error(
+            `Erro ${res.status} em ${path}\n${txt}`
+        );
+    }
+
+    return await res.json();
+}
+
+async function carregarMensagens(){
+
+    try{
+
+        await apiGet("/me");
+
+        const cursoId=qs("curso_id");
+
+        const cursoNome=qs("curso_nome") || "Curso";
+
+        document.getElementById("titulo_topo").innerText=
+            `📘 ${cursoNome}`;
+
+        if(!cursoId){
+
+            document.getElementById("lista_mensagens").innerHTML=
+                "<p>Curso não identificado.</p>";
+
+            return;
+        }
+
+        const conversas=
+            await apiGet(
+                `/me/cursos-expirados/${cursoId}/mensagens-prof`
+            );
+
+        if(!conversas || conversas.length===0){
+
+            document.getElementById("lista_mensagens").innerHTML=
+                "<p>Nenhuma mensagem encontrada.</p>";
+
+            return;
+        }
+
+        document.getElementById("lista_mensagens").innerHTML=
+            conversas.map(conv=>`
+
+<div class="disciplina">
+
+    <div style="
+        font-weight:bold;
+        margin-bottom:6px;
+    ">
+        ${esc(conv.disciplina_nome)}
+        ${conv.assunto_nome ? " • "+esc(conv.assunto_nome) : ""}
+    </div>
+
+    ${
+        conv.mensagens.map(msg=>`
+
+<div style="
+    margin-top:10px;
+    padding:12px;
+    border-radius:8px;
+    background:${msg.autor==="ALUNO"
+        ? "#eef6ff"
+        : "#f8fff0"};
+">
+
+<div style="
+    font-weight:bold;
+    margin-bottom:6px;
+">
+${msg.autor==="ALUNO"
+    ? "Você"
+    : "Professor"}
+</div>
+
+<div style="
+    white-space:pre-wrap;
+">
+${esc(msg.texto)}
+</div>
+
+</div>
+
+        `).join("")
+    }
+
+</div>
+
+            `).join("");
+
+    }
+
+    catch(err){
+
+        document.querySelector("main").innerHTML=`
+
+<div class="card">
+
+<h2>Erro ao carregar mensagens</h2>
+
+<pre style="white-space:pre-wrap">
+${esc(err.message)}
+</pre>
+
+</div>
+
+`;
+    }
+
+}
+
+carregarMensagens();
+
+</script>
+
+</body>
+</html>

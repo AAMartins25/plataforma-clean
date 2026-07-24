@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Admin • Cupons de Desconto</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  />
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        <span
+        style="
+            color:#6fa8dc;
+            font-family:Arial, sans-serif;
+        "
+        >
+        🏷
+        </span>
+        Cupons de Desconto
+      </h1>
+    </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="../index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="#"
+        onclick="confirmarSaidaAdmin(); return false;"
+        title="Sair"
+      >
+        ⎋
+      </a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2>1) Gerar cupons</h2>
+
+      <div class="assunto">
+
+        <label>
+          <b>Quantidade de cupons a gerar</b>
+        </label>
+
+        <br/>
+
+        <input
+          id="quantidadeCupons"
+          type="number"
+          min="1"
+          max="100"
+          value="1"
+          style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:6px;
+          "
+        />
+
+        <div style="margin-top:12px;">
+          <button
+            id="btnGerarCupons"
+            class="btn"
+            type="button"
+          >
+            Gerar cupons
+          </button>
+        </div>
+
+        <div
+          id="msgGerarCupons"
+          style="margin-top:10px;"
+        ></div>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    "
+  >
+    <h2
+      id="tituloCuponsDisponiveis"
+      style="
+        margin:0;
+        cursor:pointer;
+        flex:1;
+      "
+    >
+      2) Cupons disponíveis
+    </h2>
+
+    <button
+      id="btnLocalizarCupom"
+      class="btn"
+      type="button"
+    >
+      🔍 Localizar
+    </button>
+  </div>
+
+  <div
+    id="areaCuponsDisponiveis"
+    style="
+      display:none;
+      margin-top:16px;
+    "
+  >
+    <div
+      id="listaCuponsDisponiveis"
+      class="list"
+    >
+      Carregando cupons...
+    </div>
+  </div>
+
+</div>
+
+
+<div class="card">
+
+    <h2
+        id="tituloCuponsAtribuidos"
+        style="
+        margin:0;
+        cursor:pointer;
+        "
+    >
+        3) Cupons atribuídos
+    </h2>
+
+    <div
+        id="areaCuponsAtribuidos"
+        style="
+        display:none;
+        margin-top:16px;
+        "
+    >
+        <div
+        id="listaCuponsAtribuidos"
+        class="list"
+        >
+        Carregando cupons...
+        </div>
+    </div>
+
+    </div>
+
+
+    <div
+    id="boxBuscaCupom"
+    class="card"
+    style="
+        display:none;
+    "
+    >
+    <h2>Localizar cupom</h2>
+
+    <input
+        id="buscaCupom"
+        type="text"
+        maxlength="5"
+        placeholder="Digite o código do cupom"
+        style="
+        width:100%;
+        padding:12px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        text-transform:uppercase;
+        "
+    />
+
+    <div
+        id="listaResultadoBuscaCupom"
+        class="list"
+        style="margin-top:14px;"
+    ></div>
+  </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/admin-cupons.js"></script>
+
+  <script>
+    function confirmarSaidaAdmin() {
+      const ok = confirm(
+        "Deseja realmente sair da plataforma?"
+      );
+
+      if (!ok) return;
+
+      logout();
+    }
+
+    const anoAtual =
+      document.getElementById("ano_atual");
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+  </script>
+
+</body>
+</html>

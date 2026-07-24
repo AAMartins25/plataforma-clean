@@ -8,32 +8,181 @@
 
 <body data-page="curso-info">
 
-  <header style="padding-top:12px;padding-bottom:10px;">
-    <div style="margin-top:20px;">
-      <h1 id="titulo_curso" style="margin-bottom:1px;">Curso</h1>
-    </div>
+  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+    <h1 id="titulo_curso" style="margin-bottom:0;font-weight:500;font-size:1.7rem;">
+      Curso
+    </h1>
 
-    <div style="margin-top:4px;">
-      <a class="btn" href="javascript:history.back()">Voltar</a>
-      <a href="#" class="btn" onclick="entrarEEstudar(); return false;">Área do Aluno</a>
+    <div style="position:absolute;right:24px;top:22px;display:flex;gap:10px;">
+      <a class="btn" href="javascript:history.back()" title="Voltar">⇦</a>
+      <a class="btn" href="index.html" title="Início">⌂</a>
+      <a class="btn" href="#" onclick="confirmarSair(); return false;" title="Sair">⎋</a>
     </div>
   </header>
 
   <main class="container">
-    <div class="card">
-      <h2>📚 Estrutura do curso</h2>
-      <div id="estrutura_curso" class="list"></div>
 
-      <div style="margin-top:18px;">
-        <button id="btnQueroCurso" class="btn">Quero este curso</button>
-      </div>
+    <div class="card">
+      <h2
+        onclick="alternarEstruturaCursoInfo()"
+        style="cursor:pointer;margin-top:0;font-size:1.2rem;"
+      >
+        Estrutura do curso
+      </h2>
+
+      <div id="estrutura_curso" class="list" style="display:none;"></div>
     </div>
+
+    <div class="card">
+      <h2
+        onclick="alternarInformacoesCursoInfo()"
+        style="cursor:pointer;margin-top:0;font-size:1.2rem;"
+      >
+        Informações
+      </h2>
+
+      <div
+        id="informacoes_curso"
+        style="display:none;white-space:pre-line;line-height:1.6;margin-top:12px;"
+      ></div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;font-size:1.2rem;">Acesso:</h2>
+
+      <div id="opcoes_acesso" class="list"></div>
+
+      <div
+        id="box_cupom_desconto"
+        class="assunto"
+        style="display:none;margin-top:14px;"
+      >
+        <label>
+          <b>Possui cupom de desconto?</b>
+        </label>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            margin-top:16px;
+            flex-wrap:wrap;
+          "
+        >
+          <input
+            id="codigo_cupom_desconto"
+            type="text"
+            maxlength="5"
+            placeholder="Ex.: AW265"
+            style="
+              flex:1;
+              min-width:180px;
+              height:40px;
+              padding:4px 10px;
+              box-sizing:border-box;
+              border:1px solid #ddd;
+              border-radius:6px;
+              text-transform:uppercase;
+            "
+          />
+
+          <button
+            id="btnAplicarCupom"
+            class="btn"
+            type="button"
+            style="
+              height:38px;
+              padding:0 26px;
+              box-sizing:border-box;
+              position:relative;
+              top:-14px;
+            "
+          >
+            Aplicar cupom
+          </button>
+        </div>
+
+        <div
+          id="msgCupomDesconto"
+          style="margin-top:10px;"
+        ></div>
+
+        <div
+          id="resumoCupomDesconto"
+          style="
+            display:none;
+            margin-top:14px;
+            line-height:1.8;
+          "
+        >
+          <div>
+            Valor original:
+            <b id="valorOriginalCupom"></b>
+          </div>
+
+          <div>
+            Desconto:
+            <b id="valorDescontoCupom"></b>
+          </div>
+
+          <div>
+            Valor final:
+            <b id="valorFinalCupom"></b>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="aviso_demo"
+        class="assunto"
+        style="display:none;margin-top:14px;line-height:1.8;"
+      >
+        <b>Observe:</b><br/>
+
+        • este acesso será pelo prazo de 24 horas;<br/>
+        • somente as duas primeiras disciplinas estarão disponíveis;<br/>
+        • todas as funcionalidades dessas disciplinas poderão ser utilizadas normalmente;<br/>
+        • suas respostas, anotações e outros que houver feito nesta experiência serão excluídos após expirar o prazo do acesso;<br/>
+        • caso deseje refazer esta experiência, ela estará disponível para você novamente após 30 dias;<br/>
+        Obrigado!
+      </div>
+
+      <div style="margin-top:18px;text-align:right;">
+        <button
+          id="btnAdquirirAgora"
+          class="btn"
+          type="button"
+          style="
+            min-width:187px;
+            height:40px;
+            font-weight:700;
+          "
+        >
+          Adquirir agora
+        </button>
+      </div>
+
+      <div id="msgCursoInfo" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card" style="padding:0;height:0px;"></div>
+
   </main>
 
-  <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+  <footer style="margin-top:4px;">
+    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
   </footer>
 
   <script src="js/app.js"></script>
+
+  <script>
+  function confirmarSair() {
+    const ok = confirm("Deseja realmente sair da plataforma?");
+    if (!ok) return;
+
+    logout();
+  }
+  </script>
+
 </body>
 </html>

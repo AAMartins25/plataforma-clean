@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minhas anotações</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header>
+  <h1>📝 Minhas anotações</h1>
+
+  <nav style="
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  ">
+    <a class="btn" href="javascript:history.back()">Voltar</a>
+
+    <a
+      href="javascript:void(0)"
+      class="btn"
+      onclick="logout()"
+    >
+      Sair
+    </a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <div class="card">
+
+    <h2>Filtros</h2>
+
+    <div style="
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    ">
+
+      <div>
+        <label><b>Disciplina</b></label>
+        <br>
+
+        <select id="filtro_disciplina">
+        </select>
+      </div>
+
+      <div>
+        <label><b>Assunto</b></label>
+        <br>
+
+        <select id="filtro_assunto">
+        </select>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2 id="total_anotacoes">
+      Total: 0 anotação(ões)
+    </h2>
+
+  </div>
+
+  <div id="area_anotacoes">
+
+  </div>
+
+</main>
+
+<footer>
+  <p>© 2026 - Plataforma Quality Estudos</p>
+</footer>
+
+<script>
+
+const API_BASE =
+"https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
+
+let anotacoes = [];
+
+function logout() {
+
+  localStorage.removeItem("access_token");
+
+  window.location.href = "index.html";
+}
+
+function getToken() {
+
+  return localStorage.getItem("access_token");
+}
+
+function esc(texto) {
+
+  if (texto == null) return "";
+
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+async function apiGet(path) {
+
+  const token = getToken();
+
+  const res = await fetch(
+    `${API_BASE}${path}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  if (!res.ok) {
+
+    throw new Error(
+      `Erro ${res.status}`
+    );
+  }
+
+  return await res.json();
+}
+
+async function carregarAnotacoes() {
+
+  try {
+
+    anotacoes =
+      await apiGet("/me/minhas-anotacoes");
+
+    preencherFiltroDisciplinas();
+
+    renderizarAnotacoes();
+
+  } catch (err) {
+
+    console.error(err);
+
+    document.getElementById(
+      "area_anotacoes"
+    ).innerHTML = `
+      <div class="card">
+        Erro ao carregar anotações.
+      </div>
+    `;
+  }
+}
+
+function preencherFiltroDisciplinas() {
+
+  const select =
+    document.getElementById(
+      "filtro_disciplina"
+    );
+
+  const disciplinas = [
+    ...new Map(
+      anotacoes.map(a => [
+        a.disciplina_id,
+        {
+          id: a.disciplina_id,
+          nome: a.disciplina_nome,
+          ordem: a.disciplina_ordem
+        }
+      ])
+    ).values()
+  ];
+
+  disciplinas.sort(
+    (a,b) => a.ordem - b.ordem
+  );
+
+  select.innerHTML =
+    `<option value="">TODAS</option>`;
+
+  disciplinas.forEach(d => {
+
+    select.innerHTML += `
+      <option value="${d.id}">
+        ${esc(d.nome)}
+      </option>
+    `;
+  });
+
+  preencherFiltroAssuntos();
+
+  select.onchange = () => {
+
+    preencherFiltroAssuntos();
+
+    renderizarAnotacoes();
+  };
+}
+
+function preencherFiltroAssuntos() {
+
+  const disciplinaId =
+    document.getElementById(
+      "filtro_disciplina"
+    ).value;
+
+  let dados = anotacoes;
+
+  if (disciplinaId) {
+
+    dados = dados.filter(
+      a =>
+      String(a.disciplina_id)
+      === disciplinaId
+    );
+  }
+
+  const assuntos = [
+    ...new Map(
+      dados.map(a => [
+        a.assunto_id,
+        {
+          id: a.assunto_id,
+          nome: a.assunto_nome,
+          ordem: a.assunto_ordem
+        }
+      ])
+    ).values()
+  ];
+
+  assuntos.sort(
+    (a,b) => a.ordem - b.ordem
+  );
+
+  const select =
+    document.getElementById(
+      "filtro_assunto"
+    );
+
+  select.innerHTML =
+    `<option value="">TODOS</option>`;
+
+  assuntos.forEach(a => {
+
+    select.innerHTML += `
+      <option value="${a.id}">
+        ${esc(a.nome)}
+      </option>
+    `;
+  });
+
+  select.onchange =
+    renderizarAnotacoes;
+}
+
+function renderizarAnotacoes() {
+
+  const disciplinaId =
+    document.getElementById(
+      "filtro_disciplina"
+    ).value;
+
+  const assuntoId =
+    document.getElementById(
+      "filtro_assunto"
+    ).value;
+
+  let dados = [...anotacoes];
+
+  if (disciplinaId) {
+
+    dados = dados.filter(
+      a =>
+      String(a.disciplina_id)
+      === disciplinaId
+    );
+  }
+
+  if (assuntoId) {
+
+    dados = dados.filter(
+      a =>
+      String(a.assunto_id)
+      === assuntoId
+    );
+  }
+
+  document.getElementById(
+    "total_anotacoes"
+  ).innerText =
+    `Total: ${dados.length} anotação(ões)`;
+
+  if (!dados.length) {
+
+    document.getElementById(
+      "area_anotacoes"
+    ).innerHTML = `
+      <div class="card">
+        Nenhuma anotação encontrada.
+      </div>
+    `;
+
+    return;
+  }
+
+  let html = "";
+
+  let disciplinaAtual = null;
+  let assuntoAtual = null;
+
+  dados.forEach(a => {
+
+    if (
+      disciplinaAtual
+      !== a.disciplina_id
+    ) {
+
+      disciplinaAtual =
+        a.disciplina_id;
+
+      assuntoAtual = null;
+
+      html += `
+        <div class="card">
+          <h2>
+            ${esc(a.disciplina_nome)}
+          </h2>
+        </div>
+      `;
+    }
+
+    if (
+      assuntoAtual
+      !== a.assunto_id
+    ) {
+
+      assuntoAtual =
+        a.assunto_id;
+
+      html += `
+        <div class="card">
+          <h3>
+            ${esc(a.assunto_nome)}
+          </h3>
+        </div>
+      `;
+    }
+
+    html += montarCardAnotacao(a);
+
+  });
+
+  document.getElementById(
+    "area_anotacoes"
+  ).innerHTML = html;
+}
+
+function textoJustificado(extra = "") {
+  return `
+    white-space:normal;
+    text-align:justify;
+    text-indent:0;
+    margin-left:0;
+    padding-left:0;
+    line-height:1.6;
+    ${extra}
+  `;
+}
+
+function montarCardAnotacao(a) {
+  const ehCertoErrado = a.tipo === "CERTO_ERRADO" || a.tipo_questao === "CERTO_ERRADO";
+
+  const respostaCorretaCE =
+    a.gabarito === "C"
+      ? "CERTO"
+      : a.gabarito === "E"
+        ? "ERRADO"
+        : "";
+
+  const textoResposta =
+    a.texto_resposta ||
+    a.alternativa_correta_texto ||
+    a.resposta_texto ||
+    "";
+
+  const enunciadoHtml = ehCertoErrado
+    ? `${esc(a.enunciado)} (${respostaCorretaCE})`
+    : esc(a.enunciado);
+
+  return `
+    <div class="card">
+
+      <div style="
+        font-weight:bold;
+        ${textoJustificado()}
+      ">
+        ${enunciadoHtml}
+      </div>
+
+      ${
+        ehCertoErrado
+          ? ""
+          : `
+            <div style="
+              margin-top:14px;
+              font-weight:normal;
+            ">
+              Resposta:
+            </div>
+
+            <div style="
+              margin-top:4px;
+              ${textoJustificado()}
+            ">
+              ${esc(textoResposta)}
+            </div>
+          `
+      }
+
+      <div style="
+        margin-top:24px;
+        ${textoJustificado()}
+      ">
+        ${esc(a.comentario || "")}
+      </div>
+
+      <div
+        id="box_anotacao_${a.anotacao_id}"
+        style="
+          margin-top:20px;
+          padding:19px 10px;
+          background:#fffdf1;
+          border-radius:6px;
+          white-space:normal;
+          text-align:justify;
+          text-indent:0;
+          line-height:1.6;
+        "
+      >
+        ${esc(a.anotacao)}
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button
+          class="btn"
+          onclick="editarAnotacao(${a.anotacao_id})"
+        >
+          Editar
+        </button>
+
+        <button
+          class="btn"
+          onclick="excluirAnotacao(${a.anotacao_id})"
+        >
+          Excluir
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+
+function editarAnotacao(id) {
+  const anotacao = anotacoes.find(a => a.anotacao_id === id);
+  if (!anotacao) return;
+
+  const box = document.getElementById(`box_anotacao_${id}`);
+  if (!box) return;
+
+  box.innerHTML = `
+    <textarea
+      id="texto_edicao_${id}"
+      style="
+        width:100%;
+        min-height:100px;
+        padding:12px;
+        border:1px solid #ddd;
+        border-radius:6px;
+      "
+      oninput="mostrarSalvar(${id})"
+    >${esc(anotacao.anotacao)}</textarea>
+
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button
+        id="btn_salvar_${id}"
+        class="btn"
+        style="display:none;"
+        onclick="salvarEdicaoAnotacao(${id})"
+      >
+        Salvar
+      </button>
+
+      <button
+        class="btn"
+        onclick="renderizarAnotacoes()"
+      >
+        Cancelar
+      </button>
+    </div>
+  `;
+}
+
+function mostrarSalvar(id) {
+  const btn = document.getElementById(`btn_salvar_${id}`);
+  if (btn) btn.style.display = "inline-block";
+}
+
+async function salvarEdicaoAnotacao(id) {
+  const campo = document.getElementById(`texto_edicao_${id}`);
+  if (!campo) return;
+
+  const texto = campo.value.trim();
+
+  if (!texto) {
+    alert("A anotação não pode ficar vazia.");
+    return;
+  }
+
+  const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
+
+  if (totalPalavras > 300) {
+    alert("A anotação deve ter no máximo 300 palavras.");
+    return;
+  }
+
+  try {
+    await apiPut(`/me/anotacoes-questoes/${id}`, {
+      texto
+    });
+
+    const anotacao = anotacoes.find(a => a.anotacao_id === id);
+    if (anotacao) {
+      anotacao.anotacao = texto;
+    }
+
+    renderizarAnotacoes();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao salvar anotação.");
+  }
+}
+
+function excluirAnotacao(id) {
+  const confirmar = confirm("Deseja realmente excluir esta anotação?");
+
+  if (!confirmar) return;
+
+  excluirAnotacaoConfirmada(id);
+}
+
+async function excluirAnotacaoConfirmada(id) {
+  try {
+    await apiDelete(`/me/anotacoes-questoes/${id}`);
+
+    anotacoes = anotacoes.filter(a => a.anotacao_id !== id);
+
+    preencherFiltroDisciplinas();
+    renderizarAnotacoes();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao excluir anotação.");
+  }
+}
+
+async function apiPut(path, body) {
+  const token = getToken();
+
+  const res = await fetch(
+    `${API_BASE}${path}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(body || {})
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Erro ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+async function apiDelete(path) {
+  const token = getToken();
+
+  const res = await fetch(
+    `${API_BASE}${path}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Erro ${res.status}`);
+  }
+
+  return true;
+}
+
+carregarAnotacoes();
+
+</script>
+
+</body>
+</html>

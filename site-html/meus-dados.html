@@ -21,7 +21,7 @@
 
   <main class="container">
     <div class="card">
-      <h2>Atualizar cadastro</h2>
+      <h2>Meu cadastro / atualizar</h2>
 
       <div id="msg" style="margin:10px 0;"></div>
 
@@ -50,43 +50,28 @@
             style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
         </div>
 
-        <div class="assunto">
-          <label><b>Nova senha</b></label><br/>
-          <div style="position:relative; width:100%;">
-            <input
-                id="senha"
-                type="password"
-                placeholder="Preencha somente se quiser trocar"
-                style="
-                width:100%;
-                padding:12px;
-                padding-right:48px;
-                border:1px solid #ddd;
-                border-radius:6px;
-                "
-            />
-
-            <button
-                type="button"
-                id="toggleSenha"
-                style="
-                position:absolute;
-                right:10px;
-                top:50%;
-                transform:translateY(-50%);
-                border:none;
-                background:none;
-                cursor:pointer;
-                font-size:1rem;
-                "
-            >
-                👁
-            </button>
-            </div>
-        </div>
+        
 
         <button class="btn" type="submit">Confirmar atualização</button>
       </form>
+    </div>
+
+    <div class="card">
+      <h2
+        onclick="mostrarHistoricoCompras()"
+        style="
+          cursor:pointer;
+          user-select:none;
+        "
+      >
+        Meu histórico de compras
+      </h2>
+
+      <div
+        id="historicoCompras"
+        class="list"
+        style="display:none; margin-top:14px;"
+      ></div>
     </div>
   </main>
 
@@ -99,6 +84,8 @@
   <script>
   const btnToggleSenha = document.getElementById("toggleSenha");
   const campoSenha = document.getElementById("senha");
+  const btnToggleConfirmar = document.getElementById("toggleConfirmarSenha");
+  const campoConfirmar = document.getElementById("confirmarSenha");
 
   btnToggleSenha.addEventListener("click", () => {
     if (campoSenha.type === "password") {
@@ -107,6 +94,16 @@
     } else {
       campoSenha.type = "password";
       btnToggleSenha.textContent = "👁";
+    }
+  });
+
+  btnToggleConfirmar.addEventListener("click", () => {
+    if (campoConfirmar.type === "password") {
+      campoConfirmar.type = "text";
+      btnToggleConfirmar.textContent = "🙈";
+    } else {
+      campoConfirmar.type = "password";
+      btnToggleConfirmar.textContent = "👁";
     }
   });
 </script>

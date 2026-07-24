@@ -123,9 +123,30 @@
       const accessToken = data?.access_token;
 
       if (accessToken) {
-        localStorage.setItem("access_token", accessToken);
-        show("✅ Conta criada e login efetuado! Redirecionando...", true);
-        setTimeout(() => (window.location.href = "cursos.html"), 700);
+        localStorage.setItem(
+          "access_token",
+          accessToken
+        );
+
+        show(
+          "✅ Conta criada e login efetuado! Redirecionando...",
+          true
+        );
+
+        const destino =
+          localStorage.getItem(
+            "pos_login_redirect"
+          );
+
+        setTimeout(
+          () => {
+            window.location.href =
+              destino ||
+              "cursos.html";
+          },
+          700
+        );
+
         return;
       }
 
@@ -135,62 +156,155 @@
         btnCriarConta.style.display = "none";
       }
 
+      const destinoAposLogin =
+      localStorage.getItem(
+        "pos_login_redirect"
+      ) || "";
+
       msg.innerHTML = `
-        <div style="
-          padding:12px;
-          border:1px solid #cfe8d8;
-          background:#e7f7ee;
-          border-radius:8px;
+        <div
+          style="
+            padding:12px;
+            border:1px solid #cfe8d8;
+            background:#e7f7ee;
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:14px;
+            flex-wrap:wrap;
+          "
+        >
 
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:14px;
-          flex-wrap:wrap;
-        ">
-
-          <div style="font-weight:700; font-size:1.08rem;">
+          <div
+            style="
+              font-weight:700;
+              font-size:1.08rem;
+            "
+          >
             ✅ Conta criada com sucesso!
           </div>
 
-          <div style="
-            display:flex;
-            gap:10px;
-            flex-wrap:wrap;
-            margin-top:-4px;
-          ">
-            <a class="btn" href="index.html">
-              Voltar para inicial
+          <div
+            style="
+              margin-left:auto;
+              display:flex;
+              align-items:center;
+              justify-content:flex-end;
+              gap:8px;
+              flex-wrap:wrap;
+              position:relative;
+              top:5px;
+            "
+          >
+            <a
+              class="btn"
+              href="${
+                destinoAposLogin
+                  ? `login.html?next=${encodeURIComponent(destinoAposLogin)}`
+                  : "login.html"
+              }"
+              style="
+                min-width:120px;
+                height:34px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                padding:0 14px;
+                margin:0;
+                font-size:.92rem;
+                line-height:1;
+                box-sizing:border-box;
+                text-align:center;
+              "
+            >
+              <span
+                style="
+                  display:inline-block;
+                  transform:translateY(-6px);
+                "
+              >
+                Fazer login
+              </span>
             </a>
 
-            <a class="btn" href="login.html">
-              Fazer login
+            <a
+              class="btn"
+              href="index.html"
+              style="
+                min-width:120px;
+                height:34px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                padding:0 14px;
+                margin:0;
+                font-size:.92rem;
+                line-height:1;
+                box-sizing:border-box;
+                text-align:center;
+              "
+            >
+              <span
+                style="
+                  display:inline-block;
+                  transform:translateY(-6px);
+                "
+              >
+                Voltar ao início
+              </span>
             </a>
           </div>
+
         </div>
       `;
 
     } catch (err) {
-      const erroTexto = String(err?.message || err || "");
+      const erroTexto = String(
+        err?.message || err || ""
+      );
 
-      if (erroTexto.includes("E-mail já cadastrado")) {
+      if (
+        erroTexto.includes(
+          "E-mail ou CPF já cadastrado"
+        )
+      ) {
         show(
-          "Já há um cadastro com esse e-mail. Por favor, verifique se esse dado está correto.\n\nPara recuperar a senha, acesse a área de Login.",
+          "Já há um cadastro com esse e-mail e/ou CPF. " +
+          "Por favor, verifique se esses dados estão corretos e tente novamente!",
           false
         );
 
-      } else if (erroTexto.includes("CPF já cadastrado")) {
+      } else if (
+        erroTexto.includes(
+          "E-mail já cadastrado"
+        )
+      ) {
         show(
-          "Já há um cadastro com esse CPF. Por favor, verifique se esse dado está correto.\n\nPara recuperar a senha, acesse a área de Login.",
+          "Já há um cadastro com esse e-mail. " +
+          "Por favor, verifique se esse dado está correto e tente novamente!",
           false
         );
 
-      } else if (erroTexto.includes("E-mail ou CPF já cadastrado")) {
+      } else if (
+        erroTexto.includes(
+          "CPF já cadastrado"
+        )
+      ) {
         show(
-          "Já há um cadastro com esse e-mail e/ou CPF. Por favor, verifique se esses dados estão corretos.\n\nPara recuperar a senha, acesse a área de Login.",
+          "Já há um cadastro com esse CPF. " +
+          "Por favor, verifique se esse dado está correto e tente novamente!",
+          false
+        );
+
+      } else {
+        show(
+          "Não foi possível criar a conta. " +
+          "Verifique os dados informados e tente novamente!",
           false
         );
       }
+
       console.error(err);
     }
   });

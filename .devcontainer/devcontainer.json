@@ -1,0 +1,14 @@
+{
+  "name": "CleanConcursos Dev",
+  "forwardPorts": [3000, 8000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend CleanConcursos",
+      "onAutoForward": "openBrowser"
+    },
+    "8000": {
+      "label": "Backend FastAPI",
+      "onAutoForward": "notify"
+    }
+  }
+} 

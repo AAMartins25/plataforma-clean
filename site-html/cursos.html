@@ -1,27 +1,130 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cursos</title>
-  <link rel="stylesheet" href="css/style.css"/>
-</head>
-<body data-page="cursos">
-  <header style="padding-top:5px;padding-bottom:6px;">
-    <div style="margin-top:20px;">
-      <h1 style="margin-bottom:1px;">🎓 Meus Cursos</h1>
-    </div>
-    <a class="btn" href="index.html">Início</a>
-    <a href="#" class="btn" onclick="logout()">Sair</a> 
-  </header>
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cursos</title>
+    <link rel="stylesheet" href="css/style.css"/>
+  </head>
+  <body data-page="cursos">
+   <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+      <div style="text-align:center; margin-top:8px;">
+        <h1 style="margin:0;">🎓 Meus Cursos</h1>
+      </div>
 
-  <main class="container" id="conteudo">
-    <div class="card">
-      <h2 id="titulo_cursos">Selecione seu preparatório</h2>
-      <div id="lista" class="list"></div>
-    </div>
-  </main>
+      <div style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      ">
+        <a
+          id="btnVoltarMinhaArea"
+          class="btn"
+          href="minha-area.html"
+          title="Voltar"
+          style="display:none;"
+        >
+          ⇦
+        </a>
 
-  <script src="js/app.js"></script>
-</body>
-</html>
+        <a
+          class="btn"
+          href="javascript:void(0)"
+          onclick="window.location.replace('index.html')"
+          title="Página inicial"
+        >
+          ⌂
+        </a>
+
+        <a
+          class="btn"
+          href="javascript:void(0)"
+          onclick="sairComConfirmacao()"
+          title="Sair"
+        >
+          ⎋
+        </a>
+      </div>
+    </header>
+
+    <main class="container" id="conteudo">
+      <div class="card" id="card_cursos_ativos">
+        <h2 id="titulo_cursos" style="
+            font-size:1.4rem;
+            font-weight:500;
+        ">
+            Ativo
+        </h2>
+        <div id="lista" class="list"></div>
+      </div>
+
+      <div class="card" id="card_cursos_expirados" style="display:none;">
+        <div
+          onclick="alternarCursosExpirados()"
+          style="cursor:pointer;"
+        >
+          <h2 style="font-weight:normal;">Cursos com acesso expirado</h2>
+        </div>
+
+        <div id="lista_expirados" class="list" style="display:none;"></div>
+      </div>
+
+      <div class="card" style="padding:0;height:0;"></div>
+
+    </main>
+
+    <footer>
+      <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+
+    <script>
+      document.getElementById("ano_atual").innerText = new Date().getFullYear();
+
+      async function configurarVoltarMinhaArea() {
+        const btnVoltar =
+          document.getElementById(
+            "btnVoltarMinhaArea"
+          );
+
+        if (!btnVoltar) {
+          return;
+        }
+
+        try {
+          const me =
+            await apiGetAuth(
+              "/me"
+            );
+
+          const quantidadeAreas =
+            Number(!!me?.is_admin) +
+            Number(!!me?.is_vendedor) +
+            Number(!!me?.is_aluno);
+
+          btnVoltar.style.display =
+            quantidadeAreas > 1
+              ? "inline-block"
+              : "none";
+
+        } catch (err) {
+          console.error(
+            "Erro ao verificar áreas do usuário:",
+            err
+          );
+
+          btnVoltar.style.display =
+            "none";
+        }
+      }
+
+      configurarVoltarMinhaArea(); 
+
+    </script>
+
+  </body>
+  </html>
