@@ -1,5 +1,5 @@
 // js/app.js
-const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
+const API_BASE = "https://plataforma-quality-backend.onrender.com";
 
 // helpers
 function qs(name) {
