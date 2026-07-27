@@ -2266,10 +2266,10 @@ window.onload = () => {
 
 function logout() {
   localStorage.removeItem("access_token");
-  localStorage.removeItem("me_cache"); 
-  // Se estiver dentro de /admin, volta 1 nível
+  localStorage.removeItem("me_cache");
+
   const inAdmin = window.location.pathname.includes("/admin/");
-  window.location.href = inAdmin ? "../login.html" : "login.html";
+  window.location.href = inAdmin ? "../index.html" : "index.html";
 }
 
 // HOME (pública): lista cursos disponíveis para compra
