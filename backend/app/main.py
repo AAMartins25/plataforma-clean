@@ -49,6 +49,9 @@ from app.models import CursoDisciplinaPropria
 from app.models import CursoAssuntoProprio
 from app.schemas import AulaUpdate
 
+import os
+import resend
+
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -2170,8 +2173,6 @@ def atualizar_meus_dados(
     db.refresh(usuario)
     return usuario
 
-import os
-import resend
 from fastapi import HTTPException, Request
 
 def mp_headers():
