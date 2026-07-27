@@ -269,6 +269,18 @@ class Usuario(Base):
     cpf = Column(String, unique=True, nullable=False)
     telefone = Column(String, nullable=False)
 
+    tentativas_login = Column(
+        Integer,
+        nullable=False,
+        default=0
+    )
+
+    bloqueado_login = Column(
+        Boolean,
+        nullable=False,
+        default=False
+    )
+
     perfil_inicial = Column(
         String(20),
         nullable=False,
@@ -284,6 +296,58 @@ class Usuario(Base):
 
 from sqlalchemy import DateTime
 from datetime import datetime
+
+class TokenRecuperacaoSenha(Base):
+    __tablename__ = "tokens_recuperacao_senha"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey(
+            "usuarios.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    token_hash = Column(
+        String(64),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    expira_em = Column(
+        DateTime,
+        nullable=False
+    )
+
+    usado = Column(
+        Boolean,
+        nullable=False,
+        default=False
+    )
+
+    criado_em = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+
+    usado_em = Column(
+        DateTime,
+        nullable=True
+    )
+
+    usuario = relationship(
+        "Usuario"
+    )
 
 class AcessoCurso(Base):
     __tablename__ = "acessos_curso"

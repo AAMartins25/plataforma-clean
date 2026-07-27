@@ -24,6 +24,7 @@ from app.schemas import (
     AulaCreate, AulaResponse
 ) 
 import re
+import hashlib
 import secrets
 import string
 import random
@@ -37,7 +38,8 @@ from app.models import (
     AcessoCurso,
     TempoAcessoCurso,
     ProgressoAula,
-    RevisaoAluno
+    RevisaoAluno,
+    TokenRecuperacaoSenha
 )
 from app.schemas import AcessoCursoCreate, AcessoCursoResponse
 from app.schemas import RecuperarSenhaRequest
@@ -52,6 +54,19 @@ from dotenv import load_dotenv
 
 ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(dotenv_path=ENV_PATH, override=True)
+
+MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
+APP_BASE_URL = os.getenv(
+    "APP_BASE_URL",
+    "http://127.0.0.1:5500/site-html"
+)
+
+RESEND_API_KEY = os.getenv(
+    "RESEND_API_KEY",
+    ""
+)
+
+resend.api_key = RESEND_API_KEY
 
 app = FastAPI(title="Plataforma de Cursos")
 
@@ -1977,21 +1992,86 @@ def register(
     return novo
 
 @app.post("/login", response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     login_digitado = form_data.username.strip()
 
-    usuario = db.query(Usuario).filter(
-        or_(
-            Usuario.email == login_digitado,
-            Usuario.cpf == login_digitado
+    usuario = (
+        db.query(Usuario)
+        .filter(
+            or_(
+                Usuario.email == login_digitado,
+                Usuario.cpf == login_digitado
+            )
         )
-    ).first()
+        .first()
+    )
 
-    if not usuario or not verificar_senha(form_data.password, usuario.senha_hash):
-        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    if not usuario:
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciais inválidas"
+        )
 
-    token = criar_token({"sub": str(usuario.id)})
-    return {"access_token": token, "token_type": "bearer"}
+    if usuario.bloqueado_login:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Usuário bloqueado após várias tentativas "
+                "incorretas de login."
+            )
+        )
+
+    senha_correta = verificar_senha(
+        form_data.password,
+        usuario.senha_hash
+    )
+
+    if not senha_correta:
+        usuario.tentativas_login += 1
+
+        if usuario.tentativas_login >= 6:
+            usuario.bloqueado_login = True
+
+            db.commit()
+
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Usuário bloqueado após 6 tentativas "
+                    "incorretas de login."
+                )
+            )
+
+        db.commit()
+
+        tentativas_restantes = (
+            6 - usuario.tentativas_login
+        )
+
+        raise HTTPException(
+            status_code=401,
+            detail=(
+                f"Senha incorreta. "
+                f"Restam {tentativas_restantes} "
+                f"tentativa(s) antes do bloqueio."
+            )
+        )
+
+    if usuario.tentativas_login != 0:
+        usuario.tentativas_login = 0
+        db.commit()
+
+    token = criar_token({
+        "sub": str(usuario.id)
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
 
 @app.get("/me", response_model=UsuarioResponse)
 def me(
@@ -2091,10 +2171,8 @@ def atualizar_meus_dados(
     return usuario
 
 import os
+import resend
 from fastapi import HTTPException, Request
-
-MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5500/site-html")
 
 def mp_headers():
     if not MP_ACCESS_TOKEN:
@@ -3072,11 +3150,86 @@ def recuperar_senha(
                 detail="Não há cadastro registrado com o CPF informado."
             )
 
+    # O NOVO TRECHO ENTRA A PARTIR DAQUI
+
+    token_recuperacao = secrets.token_urlsafe(32)
+
+    token_hash = hashlib.sha256(
+        token_recuperacao.encode("utf-8")
+    ).hexdigest()
+
+    expira_em = (
+        datetime.utcnow()
+        + timedelta(minutes=30)
+    )
+
+    novo_token = TokenRecuperacaoSenha(
+        usuario_id=usuario.id,
+        token_hash=token_hash,
+        expira_em=expira_em,
+        usado=False
+    )
+
+    db.add(novo_token)
+
+    link_redefinicao = (
+        f"{APP_BASE_URL}/redefinir-senha.html"
+        f"?token={token_recuperacao}"
+    )
+
+    try:
+        resend.Emails.send({
+            "from": "Quality Estudos <onboarding@resend.dev>",
+            "to": [usuario.email],
+            "subject": "Redefinição de senha - Quality Estudos",
+            "html": f"""
+                <h2>Redefinição de senha</h2>
+
+                <p>
+                    Olá, {usuario.nome}.
+                </p>
+
+                <p>
+                    Recebemos uma solicitação para redefinir
+                    a senha da sua conta na Quality Estudos.
+                </p>
+
+                <p>
+                    <a href="{link_redefinicao}">
+                        Redefinir minha senha
+                    </a>
+                </p>
+
+                <p>
+                    Este link é válido por 30 minutos.
+                </p>
+
+                <p>
+                    Se você não solicitou a redefinição,
+                    ignore este e-mail.
+                </p>
+            """
+        })
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Não foi possível enviar o e-mail de recuperação. "
+                "Tente novamente mais tarde."
+            )
+        )
+
+    # TERMINA AQUI
+
     return {
         "ok": True,
         "message": (
-            "Processo de recuperação realizado com sucesso! "
-            "Verifique seu email para obter a senha."
+            "Verifique seu e-mail para redefinir sua senha!"
         )
     }
 

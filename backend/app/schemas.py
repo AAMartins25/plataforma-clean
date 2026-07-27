@@ -222,6 +222,38 @@ class ProgressoAulaResponse(BaseModel):
 class RecuperarSenhaRequest(BaseModel):
     login: str
 
+class RedefinirSenhaRequest(BaseModel):
+    token: str
+
+    nova_senha: str = Field(
+        min_length=4,
+        max_length=23
+    )
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_nova_senha(
+        cls,
+        senha: str
+    ) -> str:
+        if not any(
+            caractere.isupper()
+            for caractere in senha
+        ):
+            raise ValueError(
+                "A senha deve conter ao menos uma letra maiúscula."
+            )
+
+        if not any(
+            caractere.isdigit()
+            for caractere in senha
+        ):
+            raise ValueError(
+                "A senha deve conter ao menos um número."
+            )
+
+        return senha
+
 class AtendimentoCreate(BaseModel):
     assunto: str
     mensagem: str
