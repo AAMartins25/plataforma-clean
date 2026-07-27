@@ -129,6 +129,83 @@
     return;
   }
 
+  function mensagemErroCadastro(data) {
+
+    // Erros criados explicitamente pelo backend:
+    // HTTPException(detail="...")
+    if (
+      data &&
+      typeof data.detail === "string"
+    ) {
+      return data.detail;
+    }
+
+    // Erros automáticos de validação do FastAPI / Pydantic
+    if (
+      data &&
+      Array.isArray(data.detail) &&
+      data.detail.length > 0
+    ) {
+      const erro = data.detail[0];
+
+      const localizacao =
+        Array.isArray(erro.loc)
+          ? erro.loc
+          : [];
+
+      const campo =
+        localizacao[
+          localizacao.length - 1
+        ];
+
+      switch (campo) {
+
+        case "nome":
+          return (
+            "Nome inválido. " +
+            "Verifique o nome informado."
+          );
+
+        case "email":
+          return (
+            "Ajuste o e-mail. " +
+            "Informe um e-mail válido."
+          );
+
+        case "cpf":
+          return (
+            "Ajuste o CPF. " +
+            "Verifique o número informado e tente novamente."
+          );
+
+        case "telefone":
+          return (
+            "Telefone inválido. " +
+            "Informe um telefone com DDD e 10 ou 11 dígitos."
+          );
+
+        case "senha":
+          return (
+            "Ajuste a Senha. " +
+            "A senha deve ter entre 4 e 23 caracteres, " +
+            "conter ao menos uma letra maiúscula " +
+            "e ao menos um número."
+          );
+
+        default:
+          return (
+            "Há um dado inválido no cadastro. " +
+            "Verifique as informações preenchidas."
+          );
+      }
+    }
+
+    return (
+      "Não foi possível criar a conta. " +
+      "Verifique os dados informados e tente novamente."
+    );
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -145,6 +222,18 @@
     const telefone = somenteDigitos(document.getElementById("telefone").value);
     if (!nome) {
       show("Por favor, preencha o campo Nome.");
+      return;
+    }
+
+    const partesNome =
+      nome
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (partesNome.length < 2) {
+      show(
+        "Informe também sobrenome."
+      );
       return;
     }
 
@@ -186,20 +275,22 @@
 
     if (senha !== confirmarSenha) {
       show(
-        "As senhas informadas não coincidem."
+        "As senhas devem ser iguais."
       );
       return;
     }
 
     if (!validarCpf(cpf)) {
       show(
-        "CPF inválido. Verifique o número informado e tente novamente."
+        "Ajuste o CPF. Verifique o número informado e tente novamente."
       );
       return;
     }
 
-    if (telefone.length < 10 || telefone.length > 11) {
-      show("Telefone inválido.");
+    if (telefone.length !== 11) {
+      show(
+        "Ajuste o número do telefone. Informe DDD e um número de telefone com 9 dígitos."
+      );
       return;
     }
 
@@ -217,7 +308,9 @@
       try { data = txt ? JSON.parse(txt) : null; } catch { data = txt; }
 
       if (!res.ok) {
-        throw new Error(typeof data === "string" ? data : JSON.stringify(data, null, 2));
+        throw new Error(
+          mensagemErroCadastro(data)
+        );
       }
 
       // Alguns backends retornam access_token no register.
@@ -401,8 +494,11 @@
 
       } else {
         show(
-          "Não foi possível criar a conta. " +
-          "Verifique os dados informados e tente novamente!",
+          erroTexto ||
+          (
+            "Não foi possível criar a conta. " +
+            "Verifique os dados informados e tente novamente."
+          ),
           false
         );
       }

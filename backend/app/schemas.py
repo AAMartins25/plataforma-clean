@@ -133,7 +133,7 @@ class MaterialCreate(BaseModel):
     ativo: bool = True
 
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class UsuarioCreate(BaseModel):
     nome: str
@@ -144,6 +144,27 @@ class UsuarioCreate(BaseModel):
         min_length=4,
         max_length=23
     )
+
+    @field_validator("senha")
+    @classmethod
+    def validar_senha(cls, senha: str) -> str:
+        if not any(
+            caractere.isupper()
+            for caractere in senha
+        ):
+            raise ValueError(
+                "A senha deve conter ao menos uma letra maiúscula."
+            )
+
+        if not any(
+            caractere.isdigit()
+            for caractere in senha
+        ):
+            raise ValueError(
+                "A senha deve conter ao menos um número."
+            )
+
+        return senha
 
 class UsuarioResponse(BaseModel):
     id: int
