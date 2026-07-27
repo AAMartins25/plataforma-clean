@@ -5,6 +5,9 @@
   const campoCpf = document.getElementById("cpf");
   const campoTelefone = document.getElementById("telefone");
 
+  const campoConfirmarSenha =
+    document.getElementById("confirmarSenha");
+
   function somenteDigitos(valor) {
     return String(valor || "").replace(/\D/g, "");
   }
@@ -17,6 +20,74 @@
     v = v.replace(/\.(\d{3})(\d)/, ".$1-$2");
 
     return v;
+  }
+
+  function validarCpf(valor) {
+    const cpf = somenteDigitos(valor);
+
+    // CPF precisa ter exatamente 11 dígitos
+    if (cpf.length !== 11) {
+      return false;
+    }
+
+    // Rejeita sequências com todos os dígitos iguais
+    if (/^(\d)\1{10}$/.test(cpf)) {
+      return false;
+    }
+
+    // Primeiro dígito verificador
+    let soma = 0;
+
+    for (let i = 0; i < 9; i++) {
+      soma += Number(cpf.charAt(i)) * (10 - i);
+    }
+
+    let resto = (soma * 10) % 11;
+
+    if (resto === 10) {
+      resto = 0;
+    }
+
+    if (resto !== Number(cpf.charAt(9))) {
+      return false;
+    }
+
+    // Segundo dígito verificador
+    soma = 0;
+
+    for (let i = 0; i < 10; i++) {
+      soma += Number(cpf.charAt(i)) * (11 - i);
+    }
+
+    resto = (soma * 10) % 11;
+
+    if (resto === 10) {
+      resto = 0;
+    }
+
+    if (resto !== Number(cpf.charAt(10))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function validarSenha(senha) {
+    const temTamanhoValido =
+      senha.length >= 4 &&
+      senha.length <= 23;
+
+    const temMaiuscula =
+      /[A-Z]/.test(senha);
+
+    const temNumero =
+      /\d/.test(senha);
+
+    return (
+      temTamanhoValido &&
+      temMaiuscula &&
+      temNumero
+    );
   }
 
   function formatarTelefone(valor) {
@@ -64,6 +135,12 @@
     const nome = (document.getElementById("nome").value || "").trim();
     const email = (document.getElementById("email").value || "").trim().toLowerCase();
     const senha = (document.getElementById("senha").value || "").trim();
+    const confirmarSenha =
+      (
+        document.getElementById(
+          "confirmarSenha"
+        ).value || ""
+      ).trim();
     const cpf = somenteDigitos(document.getElementById("cpf").value);
     const telefone = somenteDigitos(document.getElementById("telefone").value);
     if (!nome) {
@@ -87,12 +164,37 @@
     }
 
     if (!senha) {
-      show("Por favor, preencha o campo Senha.");
+      show(
+        "Por favor, preencha o campo Senha."
+      );
       return;
     }
 
-    if (cpf.length !== 11) {
-      show("CPF inválido.");
+    if (!validarSenha(senha)) {
+      show(
+        "A senha deve ter entre 4 e 23 caracteres, conter pelo menos uma letra maiúscula e pelo menos um número."
+      );
+      return;
+    }
+
+    if (!confirmarSenha) {
+      show(
+        "Por favor, preencha o campo Confirmar senha."
+      );
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      show(
+        "As senhas informadas não coincidem."
+      );
+      return;
+    }
+
+    if (!validarCpf(cpf)) {
+      show(
+        "CPF inválido. Verifique o número informado e tente novamente."
+      );
       return;
     }
 

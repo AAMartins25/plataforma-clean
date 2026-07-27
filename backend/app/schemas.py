@@ -141,8 +141,8 @@ class UsuarioCreate(BaseModel):
     cpf: str
     telefone: str
     senha: str = Field(
-        min_length=8,
-        max_length=64
+        min_length=4,
+        max_length=23
     )
 
 class UsuarioResponse(BaseModel):

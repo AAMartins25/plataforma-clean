@@ -1,12 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Criar conta</title>
-  <link rel="stylesheet" href="css/style.css" />
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
 </head>
+
 <body>
+
   <header
     style="
       padding-top:8px;
@@ -14,6 +26,7 @@
       position:relative;
     "
   >
+
     <div
       style="
         margin-top:32px;
@@ -22,6 +35,7 @@
         align-items:center;
       "
     >
+
       <h1
         style="
           margin:-6px 0 0 0;
@@ -31,46 +45,171 @@
       >
         📝 Criar conta
       </h1>
+
     </div>
+
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+
+      <a
+        class="btn"
+        href="login.html"
+        title="Voltar"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+    </nav>
+
   </header>
 
   <main class="container">
+
     <div class="card">
-      <h2>Cadastro</h2>
 
-      <form id="formRegister" class="list" novalidate>
+      <h2>
+        Cadastro
+      </h2>
+
+      <form
+        id="formRegister"
+        class="list"
+        novalidate
+      >
+
+        <!-- NOME -->
         <div class="assunto">
-          <label><b>Nome</b></label><br/>
-          <input id="nome" type="text" placeholder="Seu nome"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required/>
+
+          <label for="nome">
+            <b>Nome</b>
+          </label>
+
+          <br>
+
+          <input
+            id="nome"
+            type="text"
+            placeholder="Seu nome"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+            required
+          >
+
         </div>
 
+        <!-- CPF -->
         <div class="assunto">
-          <label><b>Email</b></label><br/>
-          <input id="email" type="email" placeholder="seuemail@email.com"
-                 style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+
+          <label for="cpf">
+            <b>CPF</b>
+          </label>
+
+          <br>
+
+          <input
+            id="cpf"
+            type="text"
+            placeholder="000.000.000-00"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+            required
+          >
+
         </div>
 
+        <!-- EMAIL -->
         <div class="assunto">
-          <label><b>CPF</b></label><br/>
-          <input id="cpf" type="text" placeholder="000.000.000-00"
-                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+
+          <label for="email">
+            <b>Email</b>
+          </label>
+
+          <br>
+
+          <input
+            id="email"
+            type="email"
+            placeholder="seuemail@email.com"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+            required
+          >
+
         </div>
 
+        <!-- TELEFONE -->
         <div class="assunto">
-          <label><b>Telefone</b></label><br/>
-          <input id="telefone" type="text" placeholder="(00) 00000-0000"
-                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+
+          <label for="telefone">
+            <b>Telefone</b>
+          </label>
+
+          <br>
+
+          <input
+            id="telefone"
+            type="text"
+            placeholder="(00) 00000-0000"
+            style="
+              width:100%;
+              padding:12px;
+              border:1px solid #ddd;
+              border-radius:6px;
+            "
+            required
+          >
+
         </div>
 
-        <label>
-          Senha:
+        <!-- SENHA -->
+        <div class="assunto">
 
-          <div style="position:relative; width:100%;">
+          <label for="senha">
+            <b>Senha</b>
+          </label>
+
+          <br>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+
             <input
               id="senha"
               type="password"
               required
+              autocomplete="new-password"
               placeholder="********"
               style="
                 padding:12px;
@@ -84,6 +223,8 @@
             <button
               type="button"
               id="toggleSenha"
+              title="Mostrar ou ocultar senha"
+              aria-label="Mostrar ou ocultar senha"
               style="
                 position:absolute;
                 right:10px;
@@ -97,52 +238,191 @@
             >
               👁
             </button>
-          </div>
-        </label>
 
-        <button id="btnCriarConta" class="btn" type="submit">
+          </div>
+
+        </div>
+
+        <!-- CONFIRMAR SENHA -->
+        <div class="assunto">
+
+          <label for="confirmarSenha">
+            <b>Confirmar senha</b>
+          </label>
+
+          <br>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+
+            <input
+              id="confirmarSenha"
+              type="password"
+              required
+              autocomplete="new-password"
+              placeholder="********"
+              style="
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+                width:100%;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleConfirmarSenha"
+              title="Mostrar ou ocultar confirmação de senha"
+              aria-label="Mostrar ou ocultar confirmação de senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+                font-size:1rem;
+              "
+            >
+              👁
+            </button>
+
+          </div>
+
+        </div>
+
+        <button
+          id="btnCriarConta"
+          class="btn"
+          type="submit"
+        >
           Criar conta
         </button>
-        <div id="msg" style="margin-top:10px;"></div>
+
+        <div
+          id="msg"
+          style="margin-top:10px;"
+        ></div>
+
       </form>
+
     </div>
+
   </main>
 
   <footer>
+
     <p>
       © <span id="ano_atual"></span> - Quality Estudos
     </p>
+
   </footer>
 
   <script src="js/app.js"></script>
   <script src="js/register.js"></script>
 
   <script>
+
     const btnToggleSenha =
-      document.getElementById("toggleSenha");
+      document.getElementById(
+        "toggleSenha"
+      );
 
     const campoSenha =
-      document.getElementById("senha");
+      document.getElementById(
+        "senha"
+      );
 
-    if (btnToggleSenha && campoSenha) {
-      btnToggleSenha.addEventListener("click", () => {
-        if (campoSenha.type === "password") {
-          campoSenha.type = "text";
-          btnToggleSenha.textContent = "🙈";
-        } else {
-          campoSenha.type = "password";
-          btnToggleSenha.textContent = "👁";
+    if (
+      btnToggleSenha &&
+      campoSenha
+    ) {
+
+      btnToggleSenha.addEventListener(
+        "click",
+        () => {
+
+          const senhaEstaOculta =
+            campoSenha.type ===
+            "password";
+
+          campoSenha.type =
+            senhaEstaOculta
+              ? "text"
+              : "password";
+
+          btnToggleSenha.textContent =
+            senhaEstaOculta
+              ? "🙈"
+              : "👁";
+
         }
-      });
+      );
+
     }
+
+
+    const btnToggleConfirmarSenha =
+      document.getElementById(
+        "toggleConfirmarSenha"
+      );
+
+    const campoConfirmarSenha =
+      document.getElementById(
+        "confirmarSenha"
+      );
+
+    if (
+      btnToggleConfirmarSenha &&
+      campoConfirmarSenha
+    ) {
+
+      btnToggleConfirmarSenha
+        .addEventListener(
+          "click",
+          () => {
+
+            const senhaEstaOculta =
+              campoConfirmarSenha.type ===
+              "password";
+
+            campoConfirmarSenha.type =
+              senhaEstaOculta
+                ? "text"
+                : "password";
+
+            btnToggleConfirmarSenha
+              .textContent =
+                senhaEstaOculta
+                  ? "🙈"
+                  : "👁";
+
+          }
+        );
+
+    }
+
 
     const anoAtual =
-      document.getElementById("ano_atual");
+      document.getElementById(
+        "ano_atual"
+      );
 
     if (anoAtual) {
+
       anoAtual.textContent =
         new Date().getFullYear();
+
     }
+
   </script>
+
 </body>
+
 </html>
