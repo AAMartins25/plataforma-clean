@@ -120,7 +120,12 @@
 
     <div id="area_atendimento_clean" style="display:none;margin-top:15px;">
       <div style="display:flex;gap:18px;flex-wrap:wrap;">
-        <a class="btn" href="login.html?next=meus-dados.html">
+
+        <a
+          class="btn"
+          href="#"
+          onclick="abrirMeusDados(); return false;"
+        >
           Atualizar meus dados / ver meu histórico de compras
         </a>
 
@@ -255,6 +260,23 @@
         }, 300);
       }
     }
+  }
+
+  function abrirMeusDados() {
+    const token =
+      localStorage.getItem(
+        "access_token"
+      );
+
+    if (token) {
+      window.location.href =
+        "meus-dados.html";
+
+      return;
+    }
+
+    window.location.href =
+      "login.html?next=meus-dados.html";
   }
 
   iniciarPaginaInicial();
