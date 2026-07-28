@@ -2130,6 +2130,8 @@ def me(
         "id": usuario.id,
         "nome": usuario.nome,
         "email": usuario.email,
+        "cpf": usuario.cpf,
+        "telefone": usuario.telefone,
         "ativo": usuario.ativo,
         "is_admin": usuario.is_admin,
         "perfil_inicial": usuario.perfil_inicial,

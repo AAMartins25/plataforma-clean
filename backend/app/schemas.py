@@ -170,6 +170,8 @@ class UsuarioResponse(BaseModel):
     id: int
     nome: str
     email: EmailStr
+    cpf: str
+    telefone: str
     ativo: bool
     is_admin: bool
 

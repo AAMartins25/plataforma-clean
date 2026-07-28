@@ -56,13 +56,35 @@
       "
     >
       <a
+        id="btnVoltarLogin"
+        class="btn"
+        href="index.html?atendimento=aberto"
+        title="Voltar"
+        style="display:none;"
+      >
+        ⇦
+      </a>
+
+      <a
         class="btn"
         href="index.html"
         title="Início"
       >
         ⌂
       </a>
+
+      <a
+        id="btnSairLogin"
+        class="btn"
+        href="#"
+        onclick="sairComConfirmacao(); return false;"
+        title="Sair"
+        style="display:none;"
+      >
+        ⎋
+      </a>
     </nav>
+
   </header>
 
   <main class="container">
@@ -207,7 +229,10 @@
         ></div>
       </div>
 
-      <div style="margin-top:24px;">
+      <div
+        id="areaNaoPossuoCadastro"
+        style="margin-top:24px;"
+      >
         <a
           class="btn"
           href="register.html"
@@ -382,6 +407,49 @@
 
         msg.style.color =
           "#8a1f1f";
+      }
+    }
+
+    const parametrosLogin =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const destinoLogin =
+      parametrosLogin.get("next") || "";
+
+    const veioDeMeusDados =
+      destinoLogin === "meus-dados.html";
+
+    const btnVoltarLogin =
+      document.getElementById(
+        "btnVoltarLogin"
+      );
+
+    const btnSairLogin =
+      document.getElementById(
+        "btnSairLogin"
+      );
+
+    const areaNaoPossuoCadastro =
+      document.getElementById(
+        "areaNaoPossuoCadastro"
+      );
+
+    if (veioDeMeusDados) {
+      if (btnVoltarLogin) {
+        btnVoltarLogin.style.display =
+          "inline-block";
+      }
+
+      if (btnSairLogin) {
+        btnSairLogin.style.display =
+          "inline-block";
+      }
+
+      if (areaNaoPossuoCadastro) {
+        areaNaoPossuoCadastro.style.display =
+          "none";
       }
     }
 
