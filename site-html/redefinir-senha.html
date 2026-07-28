@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Redefinir senha</title>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body>
+
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        🔐 Redefinir senha
+      </h1>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="card">
+
+      <h2>
+        Criar nova senha
+      </h2>
+
+      <form
+        id="formRedefinirSenha"
+        class="list"
+        novalidate
+      >
+
+        <div class="assunto">
+
+          <label for="novaSenha">
+            <b>Nova senha</b>
+          </label>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="novaSenha"
+              type="password"
+              required
+              placeholder="Informe a nova senha"
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleNovaSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+              "
+            >
+              👁
+            </button>
+          </div>
+
+        </div>
+
+        <div class="assunto">
+
+          <label for="confirmarNovaSenha">
+            <b>Confirmar nova senha</b>
+          </label>
+
+          <div
+            style="
+              position:relative;
+              width:100%;
+            "
+          >
+            <input
+              id="confirmarNovaSenha"
+              type="password"
+              required
+              placeholder="Repita a nova senha"
+              style="
+                width:100%;
+                padding:12px;
+                padding-right:48px;
+                border:1px solid #ddd;
+                border-radius:6px;
+              "
+            >
+
+            <button
+              type="button"
+              id="toggleConfirmarNovaSenha"
+              title="Mostrar ou ocultar senha"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:none;
+                cursor:pointer;
+              "
+            >
+              👁
+            </button>
+          </div>
+
+        </div>
+
+        <button
+          type="submit"
+          class="btn"
+        >
+          Redefinir senha
+        </button>
+
+        <div
+          id="msg"
+          style="margin-top:10px;"
+        ></div>
+
+      </form>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/redefinir-senha.js"></script>
+
+  <script>
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
+    function configurarToggle(
+      botaoId,
+      campoId
+    ) {
+      const botao =
+        document.getElementById(
+          botaoId
+        );
+
+      const campo =
+        document.getElementById(
+          campoId
+        );
+
+      if (!botao || !campo) {
+        return;
+      }
+
+      botao.addEventListener(
+        "click",
+        () => {
+          const oculto =
+            campo.type === "password";
+
+          campo.type =
+            oculto
+              ? "text"
+              : "password";
+
+          botao.textContent =
+            oculto
+              ? "🙈"
+              : "👁";
+        }
+      );
+    }
+
+    configurarToggle(
+      "toggleNovaSenha",
+      "novaSenha"
+    );
+
+    configurarToggle(
+      "toggleConfirmarNovaSenha",
+      "confirmarNovaSenha"
+    );
+  </script>
+
+</body>
+
+</html>

@@ -42,7 +42,10 @@ from app.models import (
     TokenRecuperacaoSenha
 )
 from app.schemas import AcessoCursoCreate, AcessoCursoResponse
-from app.schemas import RecuperarSenhaRequest
+from app.schemas import (
+    RecuperarSenhaRequest,
+    RedefinirSenhaRequest
+)
 from app.models import Pagamento, DemonstracaoCurso
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
@@ -3231,6 +3234,79 @@ def recuperar_senha(
         "ok": True,
         "message": (
             "Verifique seu e-mail para redefinir sua senha!"
+        )
+    }
+
+@app.post("/redefinir-senha")
+def redefinir_senha(
+    dados: RedefinirSenhaRequest,
+    db: Session = Depends(get_db)
+):
+    token_hash = hashlib.sha256(
+        dados.token.encode("utf-8")
+    ).hexdigest()
+
+    registro_token = (
+        db.query(TokenRecuperacaoSenha)
+        .filter(
+            TokenRecuperacaoSenha.token_hash == token_hash
+        )
+        .first()
+    )
+
+    if not registro_token:
+        raise HTTPException(
+            status_code=400,
+            detail="Link de redefinição inválido."
+        )
+
+    if registro_token.usado:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Este link de redefinição já foi utilizado."
+            )
+        )
+
+    if registro_token.expira_em < datetime.utcnow():
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Este link de redefinição expirou. "
+                "Solicite uma nova recuperação de senha."
+            )
+        )
+
+    usuario = (
+        db.query(Usuario)
+        .filter(
+            Usuario.id == registro_token.usuario_id
+        )
+        .first()
+    )
+
+    if not usuario:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não encontrado."
+        )
+
+    usuario.senha_hash = hash_senha(
+        dados.nova_senha
+    )
+
+    usuario.tentativas_login = 0
+    usuario.bloqueado_login = False
+
+    registro_token.usado = True
+    registro_token.usado_em = datetime.utcnow()
+
+    db.commit()
+
+    return {
+        "ok": True,
+        "message": (
+            "Senha redefinida com sucesso!"
         )
     }
 
