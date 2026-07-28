@@ -2025,8 +2025,9 @@ def login(
         raise HTTPException(
             status_code=403,
             detail=(
-                "Usuário bloqueado após várias tentativas "
-                "incorretas de login."
+                "Usuário bloqueado. "
+                "Vá em Recuperar ou atualizar minha senha "
+                "para redefinir sua senha (desbloquear seu acesso)."
             )
         )
 
@@ -2046,8 +2047,9 @@ def login(
             raise HTTPException(
                 status_code=403,
                 detail=(
-                    "Usuário bloqueado após 6 tentativas "
-                    "incorretas de login."
+                    "Usuário bloqueado. "
+                    "Vá em Recuperar ou atualizar minha senha "
+                    "para redefinir sua senha (desbloquear seu acesso)."
                 )
             )
 
@@ -2060,12 +2062,11 @@ def login(
         raise HTTPException(
             status_code=401,
             detail=(
-                f"Senha incorreta. "
-                f"Restam {tentativas_restantes} "
-                f"tentativa(s) antes do bloqueio."
+                "Senha incorreta. "
+                "O acesso poderá ser bloqueado. "
+                f"Restam {tentativas_restantes} tentativa(s)."
             )
         )
-
     if usuario.tentativas_login != 0:
         usuario.tentativas_login = 0
         db.commit()

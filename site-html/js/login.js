@@ -11,6 +11,46 @@
     msg.style.background = ok ? "#e7f7ee" : "#fde8e8";
   }
 
+  function showErroLogin(text) {
+    msg.textContent = "";
+    msg.style.padding = "10px";
+    msg.style.borderRadius = "6px";
+    msg.style.border = "1px solid #ddd";
+    msg.style.background = "#fde8e8";
+
+    const trechoNegrito =
+      "Recuperar ou atualizar minha senha";
+
+    if (text.includes(trechoNegrito)) {
+      const partes =
+        text.split(trechoNegrito);
+
+      msg.appendChild(
+        document.createTextNode(
+          partes[0]
+        )
+      );
+
+      const strong =
+        document.createElement("strong");
+
+      strong.textContent =
+        trechoNegrito;
+
+      msg.appendChild(strong);
+
+      msg.appendChild(
+        document.createTextNode(
+          partes[1] || ""
+        )
+      );
+
+      return;
+    }
+
+    msg.textContent = text;
+  }
+
   async function redirectDepoisDoLogin() {
     // 1) Redirect explícito recebido pela URL
     const nextUrl =
@@ -245,8 +285,25 @@
       });
 
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || `Erro HTTP ${res.status}`);
+        let mensagemErro =
+          `Erro HTTP ${res.status}`;
+
+        try {
+          const dataErro =
+            await res.json();
+
+          if (dataErro?.detail) {
+            mensagemErro =
+              dataErro.detail;
+          }
+
+        } catch {
+          // Mantém a mensagem padrão.
+        }
+
+        throw new Error(
+          mensagemErro
+        );
       }
 
       const data = await res.json();
@@ -260,7 +317,10 @@
       }, 200);
 
     } catch (err) {
-      show("Erro no login: " + err.message, false);
+      showErroLogin(
+        err.message ||
+        "Não foi possível realizar o login."
+      );
     }
   });
 })();
