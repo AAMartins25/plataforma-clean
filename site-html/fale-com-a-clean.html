@@ -8,13 +8,70 @@
 </head>
 
 <body>
-  <header style="padding-top:10px;padding-bottom:5px;">
-    <div style="margin-top:20px;">
-      <h1 style="margin-bottom:-5px;">💬 Falar com a Clean</h1>
+  <header
+    style="
+      padding-top:8px;
+      padding-bottom:24px;
+      position:relative;
+    "
+  >
+    <div
+      style="
+        margin-top:32px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      "
+    >
+      <h1
+        style="
+          margin:-6px 0 0 0;
+          font-size:1.55rem;
+          text-align:center;
+        "
+      >
+        💬 Falar com a Clean
+      </h1>
     </div>
 
-    <nav style="margin-top:4px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <a class="btn" href="index.html">Início</a>
+    <nav
+      style="
+        position:absolute;
+        right:24px;
+        top:22px;
+        display:flex;
+        gap:10px;
+        align-items:center;
+      "
+    >
+      <a
+        class="btn"
+        href="index.html?atendimento=aberto"
+        title="Voltar"
+        style="font-weight:normal;"
+      >
+        ⇦
+      </a>
+
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        id="btnSairFaleClean"
+        class="btn"
+        href="#"
+        onclick="sairComConfirmacao(); return false;"
+        title="Sair"
+        style="display:none; font-weight:normal;"
+      >
+        ⎋
+      </a>
+
     </nav>
   </header>
 
@@ -37,13 +94,32 @@
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
   <script src="js/app.js"></script>
 
   <script>
     const area = document.getElementById("areaAtendimento");
+
+    const btnSairFaleClean =
+      document.getElementById(
+        "btnSairFaleClean"
+      );
+
+    const tokenFaleClean =
+      localStorage.getItem(
+        "access_token"
+      );
+
+    if (btnSairFaleClean) {
+      btnSairFaleClean.style.display =
+        tokenFaleClean
+          ? "inline-block"
+          : "none";
+    }
 
     let atendimentoAtual = null;
 
@@ -128,24 +204,41 @@
 
       atendimentoAtual = "nao-aluno";
       destacarBotao("nao-aluno");
+
       area.innerHTML = `
         <div class="assunto">
-          <p>Escolha um assunto para falar conosco pelo WhatsApp:</p>
+          <p>Mande para o nosso WhatsApp:</p>
 
           <div class="list">
-            <a class="btn" href="https://wa.me/5500000000000?text=Quero%20um%20curso%20espec%C3%ADfico" target="_blank">
+            <a
+              class="btn"
+              href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20um%20curso%20espec%C3%ADfico."
+              target="_blank"
+            >
               Quero um curso específico
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=Quais%20cursos%20est%C3%A3o%20dispon%C3%ADveis" target="_blank">
+            <a
+              class="btn"
+              href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20saber%20quais%20cursos%20est%C3%A3o%20dispon%C3%ADveis."
+              target="_blank"
+            >
               Quais cursos estão disponíveis
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=Quanto%20tempo%20acesso%20o%20curso" target="_blank">
-              Quanto tempo acesso o curso
+            <a
+              class="btn"
+              href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20saber%20por%20quanto%20tempo%20terei%20acesso%20ao%20curso."
+              target="_blank"
+            >
+              Por quanto tempo acesso o curso
             </a>
 
-            <a class="btn" href="https://wa.me/5500000000000?text=D%C3%BAvidas%20em%20geral" target="_blank">
+            <a
+              class="btn"
+              href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%0AGostaria%20de%20saber%20o%20seguinte%3A%0A"
+              target="_blank"
+            >
               Dúvidas em geral
             </a>
           </div>
@@ -268,6 +361,16 @@
           </div>
         `;
       }
+    }
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
     }
   </script>
 </body>

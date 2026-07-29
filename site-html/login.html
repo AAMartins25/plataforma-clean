@@ -60,7 +60,7 @@
         class="btn"
         href="index.html?atendimento=aberto"
         title="Voltar"
-        style="display:none;"
+        style="display:none; font-weight:normal;"
       >
         ⇦
       </a>
@@ -79,7 +79,7 @@
         href="#"
         onclick="sairComConfirmacao(); return false;"
         title="Sair"
-        style="display:none;"
+        style="display:none; font-weight:normal;"
       >
         ⎋
       </a>
@@ -421,6 +421,18 @@
     const veioDeMeusDados =
       destinoLogin === "meus-dados.html";
 
+    const veioDeFalarComCleanAluno =
+      destinoLogin ===
+      "fale-com-a-clean.html?tipo=aluno";
+
+    const veioDeReembolso =
+      destinoLogin === "reembolso.html";
+
+    const loginRestritoAUsuarioCadastrado =
+      veioDeMeusDados ||
+      veioDeFalarComCleanAluno ||
+      veioDeReembolso;
+
     const btnVoltarLogin =
       document.getElementById(
         "btnVoltarLogin"
@@ -436,15 +448,30 @@
         "areaNaoPossuoCadastro"
       );
 
-    if (veioDeMeusDados) {
+    if (loginRestritoAUsuarioCadastrado) {
       if (btnVoltarLogin) {
         btnVoltarLogin.style.display =
           "inline-block";
+
+        if (veioDeFalarComCleanAluno) {
+          btnVoltarLogin.href =
+            "fale-com-a-clean.html";
+        } else {
+          btnVoltarLogin.href =
+            "index.html?atendimento=aberto";
+        }
       }
 
       if (btnSairLogin) {
+        const token =
+          localStorage.getItem(
+            "access_token"
+          );
+
         btnSairLogin.style.display =
-          "inline-block";
+          token
+            ? "inline-block"
+            : "none";
       }
 
       if (areaNaoPossuoCadastro) {

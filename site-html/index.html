@@ -26,7 +26,7 @@
           color:#7d9068;
           letter-spacing:0.5px;
       ">
-          Estudos
+          Resumo de Alta Performance para Concursos
       </span>
     </h1>
   </div>
@@ -133,9 +133,14 @@
           Falar com a Clean
         </a>
 
-        <a class="btn" href="login.html?next=reembolso.html">
+        <a
+          class="btn"
+          href="#"
+          onclick="abrirReembolso(); return false;"
+        >
           Solicitar reembolso
         </a>
+
       </div>
     </div>
   </div>
@@ -277,6 +282,23 @@
 
     window.location.href =
       "login.html?next=meus-dados.html";
+  }
+
+  function abrirReembolso() {
+    const token =
+      localStorage.getItem(
+        "access_token"
+      );
+
+    if (token) {
+      window.location.href =
+        "reembolso.html";
+
+      return;
+    }
+
+    window.location.href =
+      "login.html?next=reembolso.html";
   }
 
   iniciarPaginaInicial();
