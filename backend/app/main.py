@@ -3763,79 +3763,82 @@ def concluir_bateria_aluno(
             detail=f"Questões não respondidas: {questoes_nao_respondidas}"
         )
 
-    tentativa = TentativaBateria(
-        usuario_id=usuario_atual.id,
-        bateria_id=dados.bateria_id,
-        status="EM_ANDAMENTO",
-        percentual_acerto=0,
-        concluida_em=datetime.utcnow(),
-        ativo=True
-    )
-
-    db.add(tentativa)
-    db.commit()
-    db.refresh(tentativa)
-
-    total_acertos = 0
-
-    for q in questoes:
-        resposta = respostas_por_questao[q.id]
-
-        marcada = (resposta.resposta_marcada or "").strip().upper()
-        gabarito = (q.gabarito or "").strip().upper()
-
-        pulou = marcada in ("NAO_SEI", "NAO TENHO CERTEZA OU NAO SEI", "PULOU")
-        acertou = (marcada == gabarito) and not pulou
-
-        if acertou:
-            total_acertos += 1
-
-        db.add(RespostaAlunoQuestao(
-            tentativa_id=tentativa.id,
+    try:
+        tentativa = TentativaBateria(
             usuario_id=usuario_atual.id,
             bateria_id=dados.bateria_id,
-            questao_id=q.id,
-            resposta_marcada=marcada,
-            gabarito=gabarito,
-            acertou=acertou,
-            pulou=pulou,
-            rever=resposta.rever,
-            dificuldade=resposta.dificuldade
-        ))
+            status="EM_ANDAMENTO",
+            percentual_acerto=0,
+            concluida_em=datetime.utcnow(),
+            ativo=True
+        )
 
-    tem_certo_errado = any(q.tipo == "CERTO_ERRADO" for q in questoes)
+        db.add(tentativa)
+        db.flush()
 
-    if tem_certo_errado:
-        total_erros = 0
+        total_acertos = 0
 
         for q in questoes:
             resposta = respostas_por_questao[q.id]
+
             marcada = (resposta.resposta_marcada or "").strip().upper()
             gabarito = (q.gabarito or "").strip().upper()
 
             pulou = marcada in ("NAO_SEI", "NAO TENHO CERTEZA OU NAO SEI", "PULOU")
+            acertou = (marcada == gabarito) and not pulou
 
-            if not pulou and marcada != gabarito:
-                total_erros += 1
+            if acertou:
+                total_acertos += 1
 
-        pontuacao_liquida = total_acertos - total_erros
-        percentual = round((pontuacao_liquida / len(questoes)) * 100)
+            db.add(RespostaAlunoQuestao(
+                tentativa_id=tentativa.id,
+                usuario_id=usuario_atual.id,
+                bateria_id=dados.bateria_id,
+                questao_id=q.id,
+                resposta_marcada=marcada,
+                gabarito=gabarito,
+                acertou=acertou,
+                pulou=pulou,
+                rever=resposta.rever,
+                dificuldade=resposta.dificuldade
+            ))
 
-    else:
-        percentual = round((total_acertos / len(questoes)) * 100)
+        tem_certo_errado = any(q.tipo == "CERTO_ERRADO" for q in questoes)
 
-    tentativa.percentual_acerto = percentual
+        if tem_certo_errado:
+            total_erros = 0
 
-    db.commit()
-    db.refresh(tentativa)
+            for q in questoes:
+                resposta = respostas_por_questao[q.id]
+                marcada = (resposta.resposta_marcada or "").strip().upper()
+                gabarito = (q.gabarito or "").strip().upper()
 
-    return {
-        "id": tentativa.id,
-        "usuario_id": tentativa.usuario_id,
-        "bateria_id": tentativa.bateria_id,
-        "status": tentativa.status,
-        "percentual_acerto": tentativa.percentual_acerto
-    }
+                pulou = marcada in ("NAO_SEI", "NAO TENHO CERTEZA OU NAO SEI", "PULOU")
+
+                if not pulou and marcada != gabarito:
+                    total_erros += 1
+
+            pontuacao_liquida = total_acertos - total_erros
+            percentual = round((pontuacao_liquida / len(questoes)) * 100)
+
+        else:
+            percentual = round((total_acertos / len(questoes)) * 100)
+
+        tentativa.percentual_acerto = percentual
+
+        db.commit()
+        db.refresh(tentativa)
+
+        return {
+            "id": tentativa.id,
+            "usuario_id": tentativa.usuario_id,
+            "bateria_id": tentativa.bateria_id,
+            "status": tentativa.status,
+            "percentual_acerto": tentativa.percentual_acerto
+        }
+    except Exception:
+        db.rollback()
+        raise
 
 @app.delete("/baterias/{bateria_id}")
 def excluir_bateria(
