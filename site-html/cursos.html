@@ -6,20 +6,13 @@
     <title>Cursos</title>
     <link rel="stylesheet" href="css/style.css"/>
   </head>
-  <body data-page="cursos">
-   <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+  <body class="cursos-page" data-page="cursos">
+   <header class="cursos-header">
       <div style="text-align:center; margin-top:8px;">
         <h1 style="margin:0;">🎓 Meus Cursos</h1>
       </div>
 
-      <div style="
-        position:absolute;
-        right:24px;
-        top:22px;
-        display:flex;
-        gap:10px;
-        align-items:center;
-      ">
+      <div class="cursos-header-acoes">
         <a
           id="btnVoltarMinhaArea"
           class="btn"
@@ -52,11 +45,8 @@
 
     <main class="container" id="conteudo">
       <div class="card" id="card_cursos_ativos">
-        <h2 id="titulo_cursos" style="
-            font-size:1.4rem;
-            font-weight:500;
-        ">
-            Ativo
+        <h2 id="titulo_cursos" class="cursos-status-titulo">
+          Ativo
         </h2>
         <div id="lista" class="list"></div>
       </div>
@@ -66,13 +56,13 @@
           onclick="alternarCursosExpirados()"
           style="cursor:pointer;"
         >
-          <h2 style="font-weight:normal;">Cursos com acesso expirado</h2>
+          <h2 class="cursos-status-titulo">
+            Cursos com acesso expirado
+          </h2>
         </div>
 
         <div id="lista_expirados" class="list" style="display:none;"></div>
       </div>
-
-      <div class="card" style="padding:0;height:0;"></div>
 
     </main>
 

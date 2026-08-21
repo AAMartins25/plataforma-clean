@@ -849,9 +849,13 @@ async function pageCursos() {
         cardExpirados.style.display = "block";
 
         listaExpirados.innerHTML = expirados.map(c => `
-          <div class="disciplina" style="padding:15px 14px;">
+          <div class="disciplina" style="padding:7px 14px;">
             <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
-              <div style="font-size:1.05rem;font-weight:bold;">
+              <div style="
+                font-size:1.05rem;
+                font-weight:bold;
+                padding-left:9px;
+              ">
                 ${escapeHtml(c.nome_curso)}
               </div>
 
@@ -921,7 +925,11 @@ async function pageCursos() {
       div.innerHTML = `
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
           <div style="flex:1; min-width:0;">
-            <div style="font-size:1.05rem;font-weight:bold;">
+            <div style="
+              font-size:1.05rem;
+              font-weight:bold;
+              padding-left:9px;
+            ">
               ${escapeHtml(a.nome_curso)}
             </div>
           </div>
@@ -1031,122 +1039,102 @@ async function pageDisciplinas() {
   }
 
   if (!cursoId) {
-    showError("conteudo", new Error("Faltou curso_id na URL. Volte e clique no curso novamente."));
+    showError(
+      "conteudo",
+      new Error(
+        "Faltou curso_id na URL. Volte e clique no curso novamente."
+      )
+    );
     return;
   }
 
   try {
-    const disciplinas = await apiGetAuth(`/cursos/${cursoId}/disciplinas-proprias`);
-    const lista = document.getElementById("lista");
+    const disciplinas =
+      await apiGetAuth(
+        `/cursos/${cursoId}/disciplinas-proprias`
+      );
+
+    const lista =
+      document.getElementById("lista");
 
     lista.innerHTML = "";
 
     for (const d of disciplinas) {
-      const prog = await calcularProgressoDisciplina(d.id);
+      const prog =
+        await calcularProgressoDisciplina(d.id);
 
-      const div = document.createElement("div");
-      div.className = "disciplina";
-      div.style.padding = "5px 12px";
+      const div =
+        document.createElement("div");
 
-      div.style.opacity =
-        d.bloqueada ? "0.55" : "1";
+      div.className =
+        "disciplina disciplina-curso-card";
+
+      if (d.bloqueada) {
+        div.classList.add("disciplina-bloqueada");
+      }
 
       div.innerHTML = `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:12px;
-          flex-wrap:wrap;
-        ">
+        <div class="disciplina-curso-topo">
 
-          <div style="flex:1; min-width:240px;">
-            <div style="font-weight:bold;">
-              ${escapeHtml(d.nome)}
-            </div>
+          <div class="disciplina-curso-nome">
+            ${escapeHtml(d.nome)}
           </div>
 
-          <div>
-            ${
-              d.bloqueada
-                ? `
-                  <span
-                    class="btn"
-                    style="
-                      opacity:.75;
-                      cursor:default;
-                    "
-                    title="Disponível no acesso completo"
-                  >
-                    Abrir
-                  </span>
-                `
-                : `
-                  <a
-                    class="btn"
-                    href="javascript:void(0)"
-                    onclick="
-                      localStorage.setItem(
-                        'voltar_para_curso',
-                        'curso.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
-                      );
+          ${
+            d.bloqueada
+              ? `
+                <span
+                  class="btn disciplina-curso-btn disciplina-curso-btn-bloqueado"
+                  title="Disponível no acesso completo"
+                >
+                  Abrir
+                </span>
+              `
+              : `
+                <a
+                  class="btn disciplina-curso-btn"
+                  href="javascript:void(0)"
+                  onclick="
+                    localStorage.setItem(
+                      'voltar_para_curso',
+                      'curso.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
+                    );
 
-                      localStorage.setItem(
-                        'voltar_para_disciplinas',
-                        'disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
-                      );
+                    localStorage.setItem(
+                      'voltar_para_disciplinas',
+                      'disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
+                    );
 
-                      window.location.href='assuntos.html?curso_id=${encodeURIComponent(cursoId)}&disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}';
-                    "
-                  >
-                    Abrir
-                  </a>
-                `
-            }
-          </div>
+                    window.location.href='assuntos.html?curso_id=${encodeURIComponent(cursoId)}&disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}';
+                  "
+                >
+                  Abrir
+                </a>
+              `
+          }
 
         </div>
 
         <div
+          class="disciplina-progresso"
           title="Quanto já estudei desta disciplina"
-          style="
-            margin-top:14px;
-            display:flex;
-            align-items:center;
-            gap:12px;
-            cursor:default;
-          "
         >
-
-          <div style="
-            flex:1;
-            height:6px;
-            background:#d1d5db;
-            border-radius:999px;
-            overflow:hidden;
-          ">
-            <div style="
-              width:${prog.percentual}%;
-              height:100%;
-              background:${prog.percentual > 0 ? '#9ca3af' : '#d1d5db'};
-            "></div>
+          <div class="disciplina-progresso-trilho">
+            <div
+              class="disciplina-progresso-preenchimento"
+              style="width:${prog.percentual}%;"
+            ></div>
           </div>
 
-          <div style="
-            font-size:0.9rem;
-            color:#4b5563;
-            font-weight:bold;
-            min-width:38px;
-            text-align:right;
-          ">
+          <div class="disciplina-progresso-percentual">
             ${prog.percentual}%
           </div>
-
         </div>
       `;
 
       lista.appendChild(div);
     }
+
   } catch (err) {
     showError("conteudo", err);
   }
@@ -1158,21 +1146,29 @@ async function calcularProgressoAssunto(assuntoId) {
 
     let pastaTeoria = null;
 
+    /* Usa primeiro a pasta própria, como ocorre em Direitos Humanos */
     try {
-      const pastas = await apiGet(`/assuntos/${assuntoId}/pastas`);
-      pastaTeoria = pastas.find(p => p.tipo === "TEORIA");
-    } catch {
-      pastaTeoria = null;
+      const pastaPropria = await apiGetAuth(
+        `/assuntos-proprios/${assuntoId}/pasta-teoria`
+      );
+
+      if (pastaPropria && pastaPropria.id) {
+        pastaTeoria = pastaPropria;
+      }
+    } catch (e) {
+      console.warn("Não encontrou pasta própria do assunto:", e);
     }
 
-    if (!pastaTeoria || pastaTeoria.id === 10) {
+    /* Se não houver pasta própria, usa a estrutura antiga */
+    if (!pastaTeoria) {
       try {
-        const pastaPropria = await apiGetAuth(`/assuntos-proprios/${assuntoId}/pasta-teoria`);
-        if (pastaPropria && pastaPropria.id) {
-          pastaTeoria = pastaPropria;
-        }
-      } catch (e) {
-        console.warn("Não encontrou pasta própria do assunto:", e);
+        const pastas = await apiGet(`/assuntos/${assuntoId}/pastas`);
+
+        pastaTeoria =
+          (pastas || []).find(p => p.tipo === "TEORIA") || null;
+
+      } catch {
+        pastaTeoria = null;
       }
     }
 
@@ -1254,8 +1250,11 @@ async function pageAssuntos() {
   const disciplinaNome = qs("disciplina_nome") || "";
   const cursoNome = qs("curso_nome") || "";
 
-  const tituloCurso = document.getElementById("titulo_curso");
-  const cardDisciplina = document.getElementById("card_disciplina_titulo");
+  const tituloCurso =
+    document.getElementById("titulo_curso");
+
+  const cardDisciplina =
+    document.getElementById("card_disciplina_titulo");
 
   if (tituloCurso) {
     tituloCurso.innerText = cursoNome
@@ -1270,7 +1269,12 @@ async function pageAssuntos() {
   }
 
   if (!disciplinaId) {
-    showError("conteudo", new Error("Faltou disciplina_id na URL. Volte e clique na disciplina novamente."));
+    showError(
+      "conteudo",
+      new Error(
+        "Faltou disciplina_id na URL. Volte e clique na disciplina novamente."
+      )
+    );
     return;
   }
 
@@ -1278,80 +1282,73 @@ async function pageAssuntos() {
     let assuntos;
 
     try {
-      assuntos = await apiGetAuth(`/disciplinas-proprias/${disciplinaId}/assuntos-proprios`);
+      assuntos = await apiGetAuth(
+        `/disciplinas-proprias/${disciplinaId}/assuntos-proprios`
+      );
     } catch (e1) {
-      assuntos = await apiGet(`/disciplinas/${disciplinaId}/assunto`);
+      assuntos = await apiGet(
+        `/disciplinas/${disciplinaId}/assunto`
+      );
     }
 
-    const lista = document.getElementById("lista");
+    const lista =
+      document.getElementById("lista");
+
     lista.innerHTML = "";
 
     for (const a of assuntos) {
-      const prog = await calcularProgressoAssunto(a.id);
+      const prog =
+        await calcularProgressoAssunto(a.id);
 
-      const div = document.createElement("div");
-      div.className = "disciplina";
-      div.style.padding = "6px 14px";
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "disciplina assunto-curso-card";
 
       div.innerHTML = `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:12px;
-          flex-wrap:wrap;
-        ">
-          <div style="flex:1; min-width:240px;">
-            <div style="font-weight:bold;">
-              ${escapeHtml(a.nome)}
-            </div>
+        <div class="assunto-curso-topo">
+
+          <div class="assunto-curso-nome">
+            ${escapeHtml(a.nome)}
           </div>
 
-          <a class="btn"
+          <a
+            class="btn assunto-curso-btn"
             href="javascript:void(0)"
-            onclick="abrirAssuntoDireto(${a.id}, '${encodeURIComponent(a.nome)}', '${encodeURIComponent(disciplinaNome)}')">
+            onclick="abrirAssuntoDireto(
+              ${a.id},
+              '${encodeURIComponent(a.nome)}',
+              '${encodeURIComponent(disciplinaNome)}'
+            )"
+          >
             Abrir
           </a>
+
         </div>
 
         <div
-          title=" Quanto já estudei deste assunto"
-          style="
-            margin-top:6px;
-            display:flex;
-            align-items:center;
-            gap:8px;
-            cursor:default;
-          "
+          class="assunto-progresso"
+          title="Quanto já estudei deste assunto"
         >
-          <div style="
-            flex:1;
-            height:5px;
-            background:#d1d5db;
-            border-radius:999px;
-            overflow:hidden;
-          ">
-            <div style="
-              width:${prog.percentual}%;
-              height:100%;
-              background:${prog.percentual > 0 ? '#9ca3af' : '#d1d5db'};
-            "></div>
+
+          <div class="assunto-progresso-trilho">
+            <div
+              class="assunto-progresso-preenchimento"
+              style="width:${prog.percentual}%;"
+            ></div>
           </div>
 
-          <div style="
-            font-size:0.9rem;
-            color:#4b5563;
-            font-weight:bold;
-            min-width:38px;
-            text-align:right;
-          ">
+          <div class="assunto-progresso-percentual">
             ${prog.percentual}%
           </div>
+
         </div>
       `;
 
       lista.appendChild(div);
     }
+
   } catch (err) {
     showError("conteudo", err);
   }
@@ -1668,73 +1665,151 @@ function pageCurso() {
   }
 
   if (!cursoId || !acoes) {
-    if (acoes) acoes.innerHTML = "<p>Erro: curso não identificado.</p>";
+    if (acoes) {
+      acoes.innerHTML =
+        "<p>Erro: curso não identificado.</p>";
+    }
+
     return;
   }
 
   acoes.innerHTML = `
-    <div class="disciplina" style="padding:10px 14px; margin-bottom:18px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-        <div style="font-weight:bold;">📚 Disciplinas</div>
-        <a class="btn" href="disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
-      </div>
-    </div>
 
-    <div class="disciplina" style="padding:10px 14px; margin-bottom:18px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-        <div style="font-weight:bold;">📝 Questões</div>
-        <a class="btn" href="questoes-disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
-      </div>
-    </div>
+    <!-- CARD 1 -->
+    <div class="disciplina curso-acao-card">
 
-        <div class="disciplina" style="padding:10px 14px; margin-bottom:18px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-            <div style="font-weight:bold;">🔁 Assuntos importante para rever</div>
-
-            <a
-              class="btn"
-              href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
-            >
-              Abrir
-            </a>
-          </div>
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Disciplinas a serem estudadas para o cargo"
+        >
+          📚 Disciplinas
         </div>
 
-        <div class="disciplina" style="padding:10px 14px; margin-bottom:18px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-            <div style="font-weight:bold;">🚨 Questões diferenciadas (que errei, marquei como difícil, que marquei para rever)</div>
-
-            <a
-              class="btn"
-              href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
-            >
-              Abrir
-            </a>
-          </div>
-        </div>
-
-    <div class="disciplina" style="padding:10px 14px; margin-bottom:18px;">
-      <div style="display:flex;flex-direction:column;gap:2px;">
-
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <div style="font-weight:bold;">📝 Anotações que fiz nas questões </div>
-          <a class="btn" href="minhas-anotacoes.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-          <div style="font-weight:bold;">💬 Mensagens que enviei ao prof</div>
-          <a class="btn" href="mensagens-prof.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
-        </div>
-
+        <a
+          class="btn curso-acao-btn"
+          href="disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
       </div>
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Questões. Treinar, treinar"
+        >
+          📝 Questões
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="questoes-disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
+      </div>
+
     </div>
 
-    <div class="disciplina" style="padding:10px 14px; margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-        <div style="font-weight:bold;">📊 Acessar meu desempenho </div>
-        <a class="btn" href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}">Abrir</a>
+
+    <!-- CARD 2 -->
+    <div class="disciplina curso-acao-card">
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
+        >
+          🔁 Revisões programadas
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
       </div>
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Questões que errei ou que marquei como difícil ou que assinalei para rever"
+        >
+          🚨 Questões diferenciadas
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
+      </div>
+
     </div>
+
+
+    <!-- CARD 3 -->
+    <div class="disciplina curso-acao-card">
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Anotações que fiz para mim enquanto revisava questões."
+        >
+          📝 Anotações
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="minhas-anotacoes.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
+      </div>
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Mensagens que enviei ao professor enquanto revisava as questões"
+        >
+          💬 Mensagens ao prof
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="mensagens-prof.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
+      </div>
+
+    </div>
+
+
+    <!-- CARD 4 -->
+    <div class="disciplina curso-acao-card curso-acao-card-unico">
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Como estou na foto"
+        >
+          📊 Meu desempenho
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+        >
+          Abrir
+        </a>
+      </div>
+
+    </div>
+
   `;
 }
 
@@ -2344,18 +2419,14 @@ function renderizarCursosPublicos() {
   el.style.gap = "4px 90px";
 
   el.innerHTML = cursosVisiveis.map(c => `
-    <div class="curso-linha" style="
-      padding:8px 10px;
-      border:1px solid #ddd;
-      border-radius:8px;
-    ">
-      <a
-        href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
-        style="font-weight:bold; text-decoration:none; color:inherit;"
-      >
+    <a
+      class="curso-linha curso-publico-card"
+      href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
+    >
+      <span class="curso-publico-nome">
         ${escapeHtml(c.nome)}
-      </a>
-    </div>
+      </span>
+    </a>
   `).join("") || "<p>Nenhum curso encontrado.</p>";
 
   if (maisBox) {
@@ -2487,16 +2558,15 @@ async function pageQuestoesDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
 
-  const titulo =
-    document.getElementById("titulo_curso");
+  const tituloCursoNome =
+    document.getElementById("titulo_curso_nome");
 
   const lista =
     document.getElementById("lista");
 
-  if (titulo) {
-    titulo.innerText = cursoNome
-      ? `📝 Questões - ${cursoNome}`
-      : "📝 Questões";
+  if (tituloCursoNome) {
+    tituloCursoNome.innerText =
+      cursoNome || "Curso";
   }
 
   if (!cursoId || !lista) {
@@ -2529,21 +2599,16 @@ async function pageQuestoesDisciplinas() {
       const div =
         document.createElement("div");
 
-      div.className = "disciplina";
-      div.style.padding = "10px 14px";
-      div.style.opacity =
-        d.bloqueada ? "0.55" : "1";
+      div.className = "disciplina questoes-disciplina-card";
+
+      if (d.bloqueada) {
+        div.classList.add("questoes-disciplina-bloqueada");
+      }
 
       div.innerHTML = `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:12px;
-          flex-wrap:wrap;
-        ">
+        <div class="questoes-disciplina-linha">
 
-          <div style="font-weight:bold;">
+          <div class="questoes-disciplina-nome">
             ${escapeHtml(d.nome)}
           </div>
 
@@ -2551,11 +2616,7 @@ async function pageQuestoesDisciplinas() {
             d.bloqueada
               ? `
                 <span
-                  class="btn"
-                  style="
-                    opacity:.75;
-                    cursor:default;
-                  "
+                  class="btn questoes-disciplina-btn questoes-disciplina-btn-bloqueado"
                   title="Disponível no acesso completo"
                 >
                   Abrir
@@ -2563,7 +2624,7 @@ async function pageQuestoesDisciplinas() {
               `
               : `
                 <a
-                  class="btn"
+                  class="btn questoes-disciplina-btn"
                   href="questoes-assuntos.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(d.id)}&disciplina_nome=${encodeURIComponent(d.nome)}"
                 >
                   Abrir
@@ -2594,20 +2655,40 @@ async function pageQuestoesAssuntos() {
   const disciplinaId = qs("disciplina_id");
   const disciplinaNome = qs("disciplina_nome") || "";
 
-  const tituloCurso = document.getElementById("titulo_curso");
-  const tituloDisciplina = document.getElementById("titulo_disciplina");
-  const lista = document.getElementById("lista");
+  const tituloCursoNome =
+    document.getElementById("titulo_curso_nome");
 
-  if (tituloCurso) {
-    tituloCurso.innerText = cursoNome ? `📝 ${cursoNome}` : "📝 Questões";
+  const nomeDisciplinaCard =
+    document.getElementById("nome_disciplina_card");
+
+  const lista =
+    document.getElementById("lista");
+
+  /*
+    Cabeçalho:
+    Guarda Municipal Porto Velho 2026
+    📝 Questões
+  */
+  if (tituloCursoNome) {
+    tituloCursoNome.innerText =
+      cursoNome || "Curso";
   }
 
-  if (tituloDisciplina) {
-    tituloDisciplina.innerText = disciplinaNome;
+  /*
+    Card:
+    Disciplina: Direitos Humanos
+  */
+  if (nomeDisciplinaCard) {
+    nomeDisciplinaCard.innerText =
+      disciplinaNome || "Disciplina";
   }
 
   if (!disciplinaId || !lista) {
-    if (lista) lista.innerHTML = "<p>Disciplina não identificada.</p>";
+    if (lista) {
+      lista.innerHTML =
+        "<p>Disciplina não identificada.</p>";
+    }
+
     return;
   }
 
@@ -2619,33 +2700,33 @@ async function pageQuestoesAssuntos() {
     lista.innerHTML = "";
 
     if (!assuntos || assuntos.length === 0) {
-      lista.innerHTML = "<p>Nenhum assunto encontrado para esta disciplina.</p>";
+      lista.innerHTML =
+        "<p>Nenhum assunto encontrado para esta disciplina.</p>";
+
       return;
     }
 
     assuntos.forEach(a => {
-      const div = document.createElement("div");
-      div.className = "disciplina";
-      div.style.padding = "10px 14px";
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "assunto questoes-assunto-card";
 
       div.innerHTML = `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:12px;
-          flex-wrap:wrap;
-        ">
-          <div style="font-weight:bold;">
+        <div class="questoes-assunto-linha">
+
+          <div class="questoes-assunto-nome">
             ${escapeHtml(a.nome)}
           </div>
 
           <a
-            class="btn"
+            class="btn questoes-assunto-btn"
             href="questoes-pratica.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(disciplinaId)}&disciplina_nome=${encodeURIComponent(disciplinaNome)}&assunto_id=${encodeURIComponent(a.id)}&assunto_nome=${encodeURIComponent(a.nome)}"
           >
             Abrir
           </a>
+
         </div>
       `;
 
@@ -2654,7 +2735,9 @@ async function pageQuestoesAssuntos() {
 
   } catch (err) {
     console.error(err);
-    lista.innerHTML = "<p>Erro ao carregar assuntos.</p>";
+
+    lista.innerHTML =
+      "<p>Erro ao carregar assuntos.</p>";
   }
 }
 
@@ -2664,15 +2747,26 @@ let filtrosQuestoesDisponiveis = null;
 let idsQuestoesSessaoPratica = null;
 
 async function pageQuestoesPratica() {
-  const cursoNome = qs("curso_nome") || "";
-  const assuntoId = qs("assunto_id");
-  const assuntoNome = qs("assunto_nome") || "";
-  const area = document.getElementById("area_questao");
+  const cursoNome =
+    qs("curso_nome") || "";
 
-  document.getElementById("titulo_curso").innerText = cursoNome;
-  document.getElementById("titulo_assunto").innerText = assuntoNome;
+  const assuntoId =
+    qs("assunto_id");
 
-  if (!assuntoId || !area) return;
+  const area =
+    document.getElementById("area_questao");
+
+  const tituloCursoNome =
+    document.getElementById("titulo_curso_nome");
+
+  if (tituloCursoNome) {
+    tituloCursoNome.innerText =
+      cursoNome || "Curso";
+  }
+
+  if (!assuntoId || !area) {
+    return;
+  }
 
   await carregarFiltrosQuestoesPratica();
   await carregarProximaQuestaoPratica();
@@ -2704,28 +2798,54 @@ async function carregarProximaQuestaoPratica() {
 
     if (tipo === "CERTO_ERRADO") {
       opcoesRespostaHtml = `
-        <label style="display:block;margin-bottom:6px;">
-          <input type="radio" name="resposta_aluno" value="C">
-          CERTO
+        <label class="questoes-pratica-alternativa">
+          <input
+            type="radio"
+            name="resposta_aluno"
+            value="C"
+          >
+
+          <span>CERTO</span>
         </label>
 
-        <label style="display:block;margin-bottom:6px;">
-          <input type="radio" name="resposta_aluno" value="E">
-          ERRADO
+        <label class="questoes-pratica-alternativa">
+          <input
+            type="radio"
+            name="resposta_aluno"
+            value="E"
+          >
+
+          <span>ERRADO</span>
         </label>
 
-        <label style="display:block;margin-bottom:6px;">
-          <input type="radio" name="resposta_aluno" value="NAO_SEI">
-          Não sei e prefiro não marcar
+        <label
+          class="questoes-pratica-alternativa"
+          style="margin-top:10px;"
+        >
+          <input
+            type="radio"
+            name="resposta_aluno"
+            value="NAO_SEI"
+          >
+
+          <span>Não sei e prefiro não marcar</span>
         </label>
       `;
     }
 
     if (tipo === "MULTIPLA") {
       opcoesRespostaHtml = alternativas.map(alt => `
-        <label style="display:block;margin-bottom:8px;">
-          <input type="radio" name="resposta_aluno" value="${escapeHtml(alt.letra)}">
-          <strong>${escapeHtml(alt.letra)})</strong> ${escapeHtml(alt.texto)}
+        <label class="questoes-pratica-alternativa">
+          <input
+            type="radio"
+            name="resposta_aluno"
+            value="${escapeHtml(alt.letra)}"
+          >
+
+          <span>
+            <strong>${escapeHtml(alt.letra)})</strong>
+            ${escapeHtml(alt.texto)}
+          </span>
         </label>
       `).join("");
     }
@@ -2733,79 +2853,112 @@ async function carregarProximaQuestaoPratica() {
     area.innerHTML = `
       ${montarFiltrosQuestoesPraticaHtml()}
 
-      <div class="card">
-        <h2>Questão ${dados.numero_questao}</h2>
+      <div class="card questoes-pratica-questao-card">
 
-        <div style="margin-top:12px;">
+        <h2 class="questoes-pratica-numero">
+          Questão ${dados.numero_questao}
+        </h2>
+
+        <div class="questoes-pratica-enunciado">
           ${questaoPraticaAtual.enunciado}
         </div>
 
-        <div style="
-          margin-top:18px;
-          display:flex;
-          justify-content:space-between;
-          gap:16px;
-          align-items:flex-start;
-          flex-wrap:wrap;
-        ">
-          <div>
-            ${tipo === "CERTO_ERRADO" ? `<div style="font-weight:bold;margin-bottom:8px;">Marque sua resposta:</div>` : ""}
+        <div class="questoes-pratica-respostas-bloco">
+
+          <div class="questoes-pratica-alternativas">
+
+            ${
+              tipo === "CERTO_ERRADO"
+                ? `
+                  <div class="questoes-pratica-orientacao">
+                    Marque sua resposta:
+                  </div>
+                `
+                : ""
+            }
+
             ${opcoesRespostaHtml}
+
           </div>
 
-          <div style="margin-top:${tipo === "MULTIPLA" ? "118px" : "52px"};">
+          <div class="questoes-pratica-rever">
             <label>
-              <input type="checkbox" id="rever_questao">
+              <input
+                type="checkbox"
+                id="rever_questao"
+              >
+
               Rever esta questão
             </label>
           </div>
+
         </div>
 
-        <div style="margin-top:18px;">
-          <div style="font-weight:bold;margin-bottom:8px;">
+        <div class="questoes-pratica-dificuldade">
+
+          <div class="questoes-pratica-dificuldade-titulo">
             Considero esta questão:
           </div>
 
-          <div style="
-            display:flex;
-            gap:30px;
-            align-items:center;
-            flex-wrap:wrap;
-          ">
+          <div class="questoes-pratica-dificuldade-opcoes">
+
             <label>
-              <input type="radio" name="dificuldade_questao" value="FACIL">
+              <input
+                type="radio"
+                name="dificuldade_questao"
+                value="FACIL"
+              >
               Fácil
             </label>
 
             <label>
-              <input type="radio" name="dificuldade_questao" value="MEDIA">
+              <input
+                type="radio"
+                name="dificuldade_questao"
+                value="MEDIA"
+              >
               Média
             </label>
 
             <label>
-              <input type="radio" name="dificuldade_questao" value="DIFICIL">
+              <input
+                type="radio"
+                name="dificuldade_questao"
+                value="DIFICIL"
+              >
               Difícil
             </label>
+
           </div>
+
         </div>
 
-        <div id="mensagem_questao" style="margin-top:12px;"></div>
+        <div
+          id="mensagem_questao"
+          class="questoes-pratica-mensagem"
+        ></div>
 
-        <div style="
-          margin-top:18px;
-          display:flex;
-          gap:48px;
-          flex-wrap:wrap;
-          align-items:center;
-        ">
-          <button class="btn" onclick="responderQuestaoPratica()">
+        <div
+          id="questoes_pratica_acoes_iniciais"
+          class="questoes-pratica-acoes"
+        >
+
+          <button
+            class="btn questoes-pratica-btn questoes-pratica-btn-responder"
+            onclick="responderQuestaoPratica()"
+          >
             Responder
           </button>
 
-          <button class="btn" onclick="continuarDepoisQuestoesPratica()">
+          <button
+            class="btn questoes-pratica-btn"
+            onclick="continuarDepoisQuestoesPratica()"
+          >
             Continuar depois
           </button>
+
         </div>
+
       </div>
     `;
 
@@ -2875,15 +3028,22 @@ async function responderQuestaoPratica() {
         : ""
     }
 
-    <div style="
-      margin-top:18px;
-      display:flex;
-      gap:36px;
-      flex-wrap:wrap;
-      align-items:center;
-    ">
-      <button id="btn_proxima_questao" class="btn" onclick="carregarProximaQuestaoPratica()">Próxima</button>
-      <button class="btn" onclick="continuarDepoisQuestoesPratica()">Continuar depois</button>
+    <div class="questoes-pratica-acoes">
+      <button
+        id="btn_proxima_questao"
+        class="btn questoes-pratica-btn"
+        style="min-width:123px;"
+        onclick="carregarProximaQuestaoPratica()"
+      >
+        Próxima
+      </button>
+
+      <button
+        class="btn questoes-pratica-btn"
+        onclick="continuarDepoisQuestoesPratica()"
+      >
+        Continuar depois
+      </button>
     </div>
   `;
 
@@ -2895,30 +3055,52 @@ async function responderQuestaoPratica() {
     document.getElementById("btn_proxima_questao")?.focus();
   }, 0);
 
-  const btnResponder = document.querySelector("button[onclick='responderQuestaoPratica()']");
-  if (btnResponder) btnResponder.style.display = "none";
-}
+  const acoesIniciais =
+    document.getElementById(
+      "questoes_pratica_acoes_iniciais"
+    );
 
-function destacarAlternativasErro(respostaAluno, gabarito) {
-  const opcoes = document.querySelectorAll("input[name='resposta_aluno']");
+  if (acoesIniciais) {
+    acoesIniciais.style.display = "none";
+  }
 
-  opcoes.forEach(input => {
-    const label = input.closest("label");
-    if (!label) return;
+  } // fecha responderQuestaoPratica
 
-    const valor = input.value;
+  function destacarAlternativasErro(respostaAluno, gabarito) {
+    const opcoes =
+      document.querySelectorAll(
+        "input[name='resposta_aluno']"
+      );
 
-    if (valor === gabarito) {
-      label.style.color = "#16a34a";
-      label.style.fontWeight = "bold";
-    }
+    opcoes.forEach(input => {
+      const label =
+        input.closest("label");
 
-    if (valor === respostaAluno && valor !== gabarito) {
-      label.style.color = "#dc2626";
-      label.style.fontWeight = "bold";
-    }
-  });
-}
+      if (!label) return;
+
+      const valor =
+        input.value;
+
+      if (valor === gabarito) {
+        label.style.color =
+          "#16a34a";
+
+        label.style.fontWeight =
+          "bold";
+      }
+
+      if (
+        valor === respostaAluno &&
+        valor !== gabarito
+      ) {
+        label.style.color =
+          "#dc2626";
+
+        label.style.fontWeight =
+          "bold";
+      }
+    });
+  }
 
 function mensagemAcertoAleatoria() {
   const opcoes = ["Isso", "Boa", "Exato"];
@@ -2954,6 +3136,12 @@ async function carregarFiltrosQuestoesPratica() {
 }
 
 function montarFiltrosQuestoesPraticaHtml() {
+  const disciplinaNome =
+    qs("disciplina_nome") || "";
+
+  const assuntoNome =
+    qs("assunto_nome") || "";
+
   const filtros = [
     { chave: "TODAS", label: "Todas" },
     { chave: "DIFICIL", label: "Difíceis" },
@@ -2964,49 +3152,71 @@ function montarFiltrosQuestoesPraticaHtml() {
   ];
 
   return `
-    <div class="card" style="
-      margin-bottom:23px;
-      padding-top:10px;
-      padding-bottom:10px;
-      display:flex;
-      align-items:center;
-    ">
-      <h2 style="margin:0;">Questões</h2>
+    <div class="card questoes-pratica-identificacao-card">
+
+      <div class="questoes-pratica-identificacao-linha">
+        <strong>Disciplina:</strong>
+        <span>${escapeHtml(disciplinaNome || "Disciplina")}</span>
+      </div>
+
+      <div class="questoes-pratica-identificacao-linha">
+        <strong>Assunto:</strong>
+        <span>${escapeHtml(assuntoNome || "Assunto")}</span>
+      </div>
+
     </div>
 
-    <div class="card" style="margin-bottom:25px;">
+    <div class="card questoes-pratica-filtros-card">
 
-      <div style="
-        margin-top:12px;
-        display:flex;
-        gap:14px;
-        flex-wrap:wrap;
-        align-items:center;
-      ">
+      <div class="questoes-pratica-filtros">
+
         ${filtros.map(f => {
-          const info = filtrosQuestoesDisponiveis?.[f.chave];
-          const habilitado = f.chave === "TODAS" || info?.habilitado;
-          const marcado = filtrosQuestoesPratica.includes(f.chave);
+          const info =
+            filtrosQuestoesDisponiveis?.[f.chave];
+
+          const habilitado =
+            f.chave === "TODAS" ||
+            info?.habilitado;
+
+          const marcado =
+            filtrosQuestoesPratica.includes(
+              f.chave
+            );
 
           return `
             <label
-              title="${habilitado ? "" : "Ainda não há questão neste filtro"}"
-              style="
-                opacity:${habilitado ? "1" : "0.45"};
-                cursor:pointer;
-                user-select:none;
+              class="
+                questoes-pratica-filtro
+                ${
+                  habilitado
+                    ? ""
+                    : "questoes-pratica-filtro-indisponivel"
+                }
               "
+              title="${
+                habilitado
+                  ? ""
+                  : "Ainda não há questão neste filtro"
+              }"
             >
               <input
                 type="checkbox"
                 ${marcado ? "checked" : ""}
-                onclick="alternarFiltroQuestoesPratica('${f.chave}', ${habilitado})"
+                onclick="
+                  alternarFiltroQuestoesPratica(
+                    '${f.chave}',
+                    ${habilitado}
+                  )
+                "
               >
+
               ${f.label}
             </label>
           `;
         }).join("")}
+
       </div>
+
     </div>
   `;
 }

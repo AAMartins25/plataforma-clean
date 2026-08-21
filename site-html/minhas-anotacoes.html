@@ -8,67 +8,106 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body
+  class="minhas-anotacoes-page"
+  data-page="minhas-anotacoes"
+>
 
-<header>
-  <h1>📝 Minhas anotações</h1>
+<header class="minhas-anotacoes-header">
 
-  <nav style="
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
-  ">
-    <a class="btn" href="javascript:history.back()">Voltar</a>
+  <div class="minhas-anotacoes-header-identificacao">
+
+    <h1 id="titulo_curso_minhas_anotacoes"></h1>
+
+    <h2>
+      📝 Anotações
+    </h2>
+
+  </div>
+
+  <nav class="minhas-anotacoes-header-acoes">
 
     <a
-      href="javascript:void(0)"
       class="btn"
-      onclick="logout()"
+      href="javascript:history.back()"
+      title="Voltar"
+      aria-label="Voltar"
     >
-      Sair
+      ⇦
     </a>
+
+    <a
+      class="btn"
+      href="index.html"
+      title="Início"
+      aria-label="Início"
+    >
+      ⌂
+    </a>
+
+    <a
+      class="btn"
+      href="javascript:void(0)"
+      onclick="logout()"
+      title="Sair"
+      aria-label="Sair"
+    >
+      ⎋
+    </a>
+
   </nav>
+
 </header>
 
 <main class="container">
 
-  <div class="card">
+  <div class="card minhas-anotacoes-escolha-card">
 
-    <h2>Filtros</h2>
+    <h2 class="minhas-anotacoes-escolha-titulo">
+      Escolha
+    </h2>
 
-    <div style="
-      display:flex;
-      gap:20px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    ">
+    <div class="minhas-anotacoes-filtros">
 
-      <div>
-        <label><b>Disciplina</b></label>
-        <br>
+      <div class="minhas-anotacoes-filtro-grupo">
 
-        <select id="filtro_disciplina">
+        <label for="filtro_disciplina">
+          Disciplina
+        </label>
+
+        <select
+          id="filtro_disciplina"
+          class="minhas-anotacoes-select"
+        >
         </select>
+
       </div>
 
-      <div>
-        <label><b>Assunto</b></label>
-        <br>
+      <div class="minhas-anotacoes-filtro-grupo">
 
-        <select id="filtro_assunto">
+        <label for="filtro_assunto">
+          Assunto
+        </label>
+
+        <select
+          id="filtro_assunto"
+          class="minhas-anotacoes-select"
+        >
         </select>
+
       </div>
 
     </div>
 
   </div>
 
-  <div class="card">
+  <div class="card minhas-anotacoes-total-card">
 
-    <h2 id="total_anotacoes">
-      Total: 0 anotação(ões)
+    <h2
+      id="total_anotacoes"
+      class="minhas-anotacoes-total-titulo"
+    >
+      Total: 0 anotações
     </h2>
 
   </div>
@@ -80,7 +119,9 @@
 </main>
 
 <footer>
-  <p>© 2026 - Plataforma Quality Estudos</p>
+  <p>
+    © <span id="ano_atual"></span> - Quality Estudos
+  </p>
 </footer>
 
 <script>
@@ -89,6 +130,19 @@ const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let anotacoes = [];
+
+const tituloCursoMinhasAnotacoes =
+  document.getElementById(
+    "titulo_curso_minhas_anotacoes"
+  );
+
+if (tituloCursoMinhasAnotacoes) {
+  tituloCursoMinhasAnotacoes.innerText =
+    new URLSearchParams(
+      window.location.search
+    ).get("curso_nome") ||
+    "Curso";
+}
 
 function logout() {
 
@@ -133,6 +187,99 @@ async function apiGet(path) {
   }
 
   return await res.json();
+}
+
+async function exibirNomeUsuarioLogadoAnotacoes() {
+  const token = getToken();
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    const me = await apiGet("/me");
+
+    if (!me || !me.nome) {
+      return;
+    }
+
+    const partesNome = String(me.nome)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (partesNome.length === 0) {
+      return;
+    }
+
+    const primeiroNome =
+      partesNome[0];
+
+    const ultimoNome =
+      partesNome.length > 1
+        ? partesNome[partesNome.length - 1]
+        : "";
+
+    const nomeCompletoResumido =
+      ultimoNome
+        ? `${primeiroNome} ${ultimoNome}`
+        : primeiroNome;
+
+    const identificacao =
+      document.createElement("div");
+
+    identificacao.id =
+      "nomeUsuarioLogadoGlobal";
+
+    identificacao.textContent =
+      primeiroNome.toUpperCase();
+
+    identificacao.title =
+      nomeCompletoResumido.toUpperCase();
+
+    identificacao.style.position =
+      "fixed";
+
+    identificacao.style.top =
+      "9px";
+
+    identificacao.style.right =
+      "47px";
+
+    identificacao.style.zIndex =
+      "9999";
+
+    identificacao.style.fontSize =
+      "0.68rem";
+
+    identificacao.style.fontWeight =
+      "600";
+
+    identificacao.style.letterSpacing =
+      "0.4px";
+
+    identificacao.style.color =
+      "#4b5563";
+
+    identificacao.style.opacity =
+      "0.78";
+
+    identificacao.style.cursor =
+      "default";
+
+    identificacao.style.whiteSpace =
+      "nowrap";
+
+    document.body.appendChild(
+      identificacao
+    );
+
+  } catch (err) {
+    console.warn(
+      "Não foi possível exibir o nome do aluno:",
+      err
+    );
+  }
 }
 
 async function carregarAnotacoes() {
@@ -263,7 +410,6 @@ function preencherFiltroAssuntos() {
 }
 
 function renderizarAnotacoes() {
-
   const disciplinaId =
     document.getElementById(
       "filtro_disciplina"
@@ -277,34 +423,33 @@ function renderizarAnotacoes() {
   let dados = [...anotacoes];
 
   if (disciplinaId) {
-
     dados = dados.filter(
       a =>
-      String(a.disciplina_id)
-      === disciplinaId
+        String(a.disciplina_id) ===
+        disciplinaId
     );
   }
 
   if (assuntoId) {
-
     dados = dados.filter(
       a =>
-      String(a.assunto_id)
-      === assuntoId
+        String(a.assunto_id) ===
+        assuntoId
     );
   }
 
   document.getElementById(
     "total_anotacoes"
   ).innerText =
-    `Total: ${dados.length} anotação(ões)`;
+    dados.length === 1
+      ? "Total: 1 anotação"
+      : `Total: ${dados.length} anotações`;
 
   if (!dados.length) {
-
     document.getElementById(
       "area_anotacoes"
     ).innerHTML = `
-      <div class="card">
+      <div class="card minhas-anotacoes-vazio-card">
         Nenhuma anotação encontrada.
       </div>
     `;
@@ -318,45 +463,35 @@ function renderizarAnotacoes() {
   let assuntoAtual = null;
 
   dados.forEach(a => {
+    const mudouGrupo =
+      disciplinaAtual !==
+        a.disciplina_id ||
+      assuntoAtual !==
+        a.assunto_id;
 
-    if (
-      disciplinaAtual
-      !== a.disciplina_id
-    ) {
-
+    if (mudouGrupo) {
       disciplinaAtual =
         a.disciplina_id;
-
-      assuntoAtual = null;
-
-      html += `
-        <div class="card">
-          <h2>
-            ${esc(a.disciplina_nome)}
-          </h2>
-        </div>
-      `;
-    }
-
-    if (
-      assuntoAtual
-      !== a.assunto_id
-    ) {
 
       assuntoAtual =
         a.assunto_id;
 
       html += `
-        <div class="card">
-          <h3>
+        <div class="card minhas-anotacoes-identificacao-card">
+
+          <h2 class="minhas-anotacoes-disciplina-titulo">
+            ${esc(a.disciplina_nome)}
+          </h2>
+
+          <div class="minhas-anotacoes-assunto-titulo">
             ${esc(a.assunto_nome)}
-          </h3>
+          </div>
+
         </div>
       `;
     }
 
     html += montarCardAnotacao(a);
-
   });
 
   document.getElementById(
@@ -377,7 +512,9 @@ function textoJustificado(extra = "") {
 }
 
 function montarCardAnotacao(a) {
-  const ehCertoErrado = a.tipo === "CERTO_ERRADO" || a.tipo_questao === "CERTO_ERRADO";
+  const ehCertoErrado =
+    a.tipo === "CERTO_ERRADO" ||
+    a.tipo_questao === "CERTO_ERRADO";
 
   const respostaCorretaCE =
     a.gabarito === "C"
@@ -392,17 +529,15 @@ function montarCardAnotacao(a) {
     a.resposta_texto ||
     "";
 
-  const enunciadoHtml = ehCertoErrado
-    ? `${esc(a.enunciado)} (${respostaCorretaCE})`
-    : esc(a.enunciado);
+  const enunciadoHtml =
+    ehCertoErrado
+      ? `${esc(a.enunciado)} (${respostaCorretaCE})`
+      : esc(a.enunciado);
 
   return `
-    <div class="card">
+    <div class="card minhas-anotacoes-anotacao-card">
 
-      <div style="
-        font-weight:bold;
-        ${textoJustificado()}
-      ">
+      <div class="minhas-anotacoes-enunciado">
         ${enunciadoHtml}
       </div>
 
@@ -410,59 +545,60 @@ function montarCardAnotacao(a) {
         ehCertoErrado
           ? ""
           : `
-            <div style="
-              margin-top:14px;
-              font-weight:normal;
-            ">
-              Resposta:
-            </div>
+            <div class="minhas-anotacoes-resposta">
 
-            <div style="
-              margin-top:4px;
-              ${textoJustificado()}
-            ">
-              ${esc(textoResposta)}
+              <strong>Resposta:</strong>
+
+              <div class="minhas-anotacoes-resposta-texto">
+                ${esc(textoResposta)}
+              </div>
+
             </div>
           `
       }
 
-      <div style="
-        margin-top:24px;
-        ${textoJustificado()}
-      ">
-        ${esc(a.comentario || "")}
+      <div class="minhas-anotacoes-comentario">
+
+        <strong>Comentário:</strong>
+
+        <div class="minhas-anotacoes-comentario-texto">
+          ${esc(
+            a.comentario ||
+            "Comentário não cadastrado."
+          )}
+        </div>
+
       </div>
 
       <div
         id="box_anotacao_${a.anotacao_id}"
-        style="
-          margin-top:20px;
-          padding:19px 10px;
-          background:#fffdf1;
-          border-radius:6px;
-          white-space:normal;
-          text-align:justify;
-          text-indent:0;
-          line-height:1.6;
-        "
+        class="minhas-anotacoes-bloco-aluno"
       >
-        ${esc(a.anotacao)}
+        <div class="minhas-anotacoes-bloco-aluno-titulo">
+          Minha anotação:
+        </div>
+
+        <div class="minhas-anotacoes-bloco-aluno-texto">
+          ${esc(a.anotacao)}
+        </div>
       </div>
 
-      <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+      <div class="minhas-anotacoes-acoes">
+
         <button
-          class="btn"
+          class="btn minhas-anotacoes-btn minhas-anotacoes-btn-editar"
           onclick="editarAnotacao(${a.anotacao_id})"
         >
           Editar
         </button>
 
         <button
-          class="btn"
+          class="btn minhas-anotacoes-btn minhas-anotacoes-btn-excluir"
           onclick="excluirAnotacao(${a.anotacao_id})"
         >
           Excluir
         </button>
+
       </div>
 
     </div>
@@ -470,29 +606,40 @@ function montarCardAnotacao(a) {
 }
 
 function editarAnotacao(id) {
-  const anotacao = anotacoes.find(a => a.anotacao_id === id);
-  if (!anotacao) return;
+  const anotacao =
+    anotacoes.find(
+      a => a.anotacao_id === id
+    );
 
-  const box = document.getElementById(`box_anotacao_${id}`);
-  if (!box) return;
+  if (!anotacao) {
+    return;
+  }
+
+  const box =
+    document.getElementById(
+      `box_anotacao_${id}`
+    );
+
+  if (!box) {
+    return;
+  }
 
   box.innerHTML = `
+    <div class="minhas-anotacoes-bloco-aluno-titulo">
+      Editar minha anotação:
+    </div>
+
     <textarea
       id="texto_edicao_${id}"
-      style="
-        width:100%;
-        min-height:100px;
-        padding:12px;
-        border:1px solid #ddd;
-        border-radius:6px;
-      "
+      class="minhas-anotacoes-textarea-edicao"
       oninput="mostrarSalvar(${id})"
     >${esc(anotacao.anotacao)}</textarea>
 
-    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="minhas-anotacoes-edicao-acoes">
+
       <button
         id="btn_salvar_${id}"
-        class="btn"
+        class="btn minhas-anotacoes-btn"
         style="display:none;"
         onclick="salvarEdicaoAnotacao(${id})"
       >
@@ -500,11 +647,12 @@ function editarAnotacao(id) {
       </button>
 
       <button
-        class="btn"
+        class="btn minhas-anotacoes-btn"
         onclick="renderizarAnotacoes()"
       >
         Cancelar
       </button>
+
     </div>
   `;
 }
@@ -615,6 +763,17 @@ async function apiDelete(path) {
   return true;
 }
 
+const anoAtual =
+  document.getElementById(
+    "ano_atual"
+  );
+
+if (anoAtual) {
+  anoAtual.textContent =
+    new Date().getFullYear();
+}
+
+exibirNomeUsuarioLogadoAnotacoes();
 carregarAnotacoes();
 
 </script>

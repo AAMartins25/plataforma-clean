@@ -16,74 +16,111 @@
 
     .menu-estudo-lateral {
       position: absolute;
+
       left: 100%;
-      margin-left: 22px;
-      top: 118px;
+      margin-left: 28px;
+
+      top: 1px;
+
       display: flex;
       flex-direction: column;
-      gap: 10px;
+
+      gap: 9px;
+
       z-index: 50;
     }
 
+
     .botao-estudo-lateral {
-      width: 39px;
+      width: 42px;
       min-height: 102px;
-      border-radius: 600px;
-      border: 1px solid #8b8b8b;
+
+      padding: 8px 4px;
+
+      border-radius: 16px;
+
+      border:
+        1px solid rgba(31, 78, 121, 0.18);
+
       background: #ffffff;
+
       color: #003b7a;
+
       font-weight: 600;
+
       cursor: pointer;
 
       display: flex;
       flex-direction: column;
+
       align-items: center;
       justify-content: center;
+
       gap: 1px;
 
       font-family: inherit;
       font-size: 0.78rem;
       line-height: 1;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+
+      box-shadow:
+        0 2px 6px rgba(31, 78, 121, 0.07);
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
     }
+
 
     .botao-estudo-lateral:hover {
-      background: #f4f8ff;
+      background: #f8fafc;
+
+      border-color:
+        rgba(31, 78, 121, 0.30);
+
+      box-shadow:
+        0 3px 8px rgba(31, 78, 121, 0.10);
+
+      transform: translateX(1px);
     }
+
 
     .botao-estudo-lateral.ativo {
-      background: #d9ecff;
-      border-color: #6ca8ff;
-      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+      background: #edf5ff;
+
+      border-color: #9fc4ee;
+
+      box-shadow:
+        0 2px 7px rgba(31, 78, 121, 0.09);
     }
+
 
     .icone-menu-lateral {
-      font-size: 1.1rem;
-      margin-bottom: 4px;
-    }
+      font-size: 1.05rem;
 
-    .menu-estudo-lateral.menu-questoes {
-      top: 3px;
+      margin-bottom: 5px;
     }
 
   </style>
 </head>
 
-<body>
-  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+<body class="teoria-page">
+  <header class="teoria-header">
 
-    <div style="margin-top:0;">
-      <h1 id="titulo_disciplina" style="margin-bottom:0;"></h1>
+    <div class="teoria-header-identificacao">
+      <h1 id="titulo_disciplina"></h1>
+
+      <div id="titulo_assunto_header"></div>
     </div>
 
-    <div style="
-      position:absolute;
-      right:24px;
-      top:22px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    ">
+    <div
+      id="nome_aluno_logado"
+      class="teoria-aluno"
+    >
+    </div>
+
+    <div class="teoria-header-acoes">
       <a
         class="btn"
         href="javascript:void(0)"
@@ -121,14 +158,8 @@
 
     <div id="area_estudo" class="area-estudo">
 
-      <div class="card" style="padding-top:18px; padding-bottom:10px; margin-bottom:10px;">
-        <h2 id="card_assunto_titulo"
-          style="
-            font-weight:400;
-            font-size:1.1rem;
-            margin:-2px 0 0 0;
-          ">
-        </h2>
+      <div class="card teoria-assunto-faixa">
+        <h2 id="card_assunto_titulo"></h2>
       </div>
 
       <div id="lista_aulas" style="display:none;"></div>
@@ -179,43 +210,12 @@
           <span>e</span>
           <span>s</span>
         </button>
+      
       </div>
 
     </div>
 
   </main>
-
-  <div id="menu_estudo_lateral" class="menu-estudo-lateral" style="display:none;">
-    <button id="btn_teoria" class="botao-estudo-lateral" onclick="abrirSecaoTeoria(aulaAtualId)" title="Texto">
-      <span class="icone-menu-lateral">📖</span>
-      <span>T</span>
-      <span>e</span>
-      <span>x</span>
-      <span>t</span>
-      <span>o</span>
-    </button>
-
-    <button id="btn_video" class="botao-estudo-lateral" onclick="abrirSecaoVideo(aulaAtualId)" title="Vídeo">
-      <span class="icone-menu-lateral">🎥</span>
-      <span>V</span>
-      <span>í</span>
-      <span>d</span>
-      <span>e</span>
-      <span>o</span>
-    </button>
-
-    <button id="btn_questoes" class="botao-estudo-lateral" onclick="abrirSecaoQuestoes(aulaAtualId)" title="Questões">
-      <span class="icone-menu-lateral">🏁</span>
-      <span>Q</span>
-      <span>u</span>
-      <span>e</span>
-      <span>s</span>
-      <span>t</span>
-      <span>õ</span>
-      <span>e</span>
-      <span>s</span>
-    </button>
-  </div>
 
   <footer style="margin-top:4px;">
     <p>© <span id="ano_atual"></span> - Quality Estudos</p>
@@ -299,6 +299,62 @@
       return res.json();
     }
 
+    async function carregarNomeAlunoLogado() {
+      const elemento =
+        document.getElementById("nome_aluno_logado");
+
+      if (!elemento) {
+        return;
+      }
+
+      try {
+        const me = await apiGet("/me");
+
+        const nomeCompleto = String(
+          me?.nome ||
+          me?.nome_completo ||
+          ""
+        ).trim();
+
+        if (nomeCompleto) {
+          const partes = nomeCompleto
+            .split(/\s+/)
+            .filter(Boolean);
+
+          const primeiroNome = partes[0];
+
+          const ultimoSobrenome =
+            partes.length > 1
+              ? partes[partes.length - 1]
+              : "";
+
+          elemento.textContent = primeiroNome;
+
+          elemento.title =
+            ultimoSobrenome
+              ? `${primeiroNome} ${ultimoSobrenome}`
+              : primeiroNome;
+
+          return;
+        }
+
+        /* fallback caso /me não devolva nome */
+        const email = String(me?.email || "").trim();
+
+        elemento.textContent = email;
+        elemento.title = email;
+
+      } catch (err) {
+        console.error(
+          "Erro ao carregar usuário logado:",
+          err
+        );
+
+        elemento.textContent = "";
+        elemento.removeAttribute("title");
+      }
+    }
+
     async function apiPost(path, body = {}) {
       const token = getToken();
 
@@ -375,16 +431,6 @@
 
       if (botoes[secao]) {
         botoes[secao].classList.add("ativo");
-      }
-
-      const menu = document.getElementById("menu_estudo_lateral");
-
-      if (menu) {
-        if (secao === "questoes") {
-          menu.classList.add("menu-questoes");
-        } else {
-          menu.classList.remove("menu-questoes");
-        }
       }
     }
 
@@ -582,12 +628,24 @@
       const assuntoNome = qs("assunto_nome") || "";
       const abrir = qs("abrir");
 
-      const tituloDisciplina = document.getElementById("titulo_disciplina");
-      const cardAssuntoTitulo = document.getElementById("card_assunto_titulo");
+      const tituloDisciplina =
+        document.getElementById("titulo_disciplina");
+
+      const tituloAssuntoHeader =
+        document.getElementById("titulo_assunto_header");
+
+      const cardAssuntoTitulo =
+        document.getElementById("card_assunto_titulo");
+      
       if (tituloDisciplina) {
         tituloDisciplina.innerText = disciplinaNome
-          ? `📘 ${disciplinaNome}`
-          : "📘 Disciplina";
+          ? disciplinaNome
+          : "Disciplina";
+      }
+
+      if (tituloAssuntoHeader) {
+        tituloAssuntoHeader.innerText =
+          assuntoNome || "Assunto";
       }
 
       if (cardAssuntoTitulo) {
@@ -1044,19 +1102,27 @@
       return paginas.length ? paginas : [""];
     }
 
+    function renderizarParagrafosTeoria(texto) {
+      const paragrafos = String(texto || "")
+        .split(/\n\s*\n/)
+        .map(paragrafo => paragrafo.trim())
+        .filter(Boolean);
+
+      return paragrafos
+        .map(paragrafo =>
+          `<p class="teoria-paragrafo">${esc(paragrafo)}</p>`
+        )
+        .join("");
+    }
+
     function renderizarPaginaTeoria() {
       const box = document.getElementById("detalhes_aula");
       const texto = paginasTeoria[paginaTeoriaAtual] || "";
 
       box.innerHTML = `
         <div class="card" style="padding:14px 18px 18px; position:relative;">
-          <div style="
-            line-height:1.8;
-            white-space:pre-line;
-            text-indent:0;
-            text-align:justify;
-          ">
-            ${esc(texto)}
+          <div class="teoria-texto-conteudo">
+            ${renderizarParagrafosTeoria(texto)}
           </div>
 
           ${
@@ -1168,7 +1234,15 @@
 
             ${
               vids.length === 0
-                ? "<p>Nenhum vídeo cadastrado.</p>"
+                ? `
+                  <div class="video-vazio">
+                    <div class="video-vazio-icone">🎥</div>
+
+                    <div class="video-vazio-texto">
+                      Ainda não há vídeo cadastrado.
+                    </div>
+                  </div>
+                `
                 : vids.map(v => `
                     <div class="assunto">
                       <h3>${esc(v.titulo || "Vídeo")}</h3>
@@ -1253,27 +1327,17 @@
                 : `
                   <div class="list">
                     ${concluidas.map(b => `
-                      <div class="assunto" style="padding:12px 14px;">
-                        <div style="
-                          display:flex;
-                          justify-content:space-between;
-                          align-items:center;
-                          gap:12px;
-                          flex-wrap:wrap;
-                        ">
-                          <div style="flex:1; min-width:220px;">
-                            <div style="font-weight:700;">
+                      <div class="assunto questoes-bateria-card">
+                        <div class="questoes-bateria-linha">
+                          <div class="questoes-bateria-info">
+                            <div class="questoes-bateria-titulo">
                               ${esc(b.titulo || "Bateria de questões")}
                             </div>
 
                             ${
                               b.status_aluno === "FEITA"
                                 ? `
-                                  <div style="
-                                    margin-top:6px;
-                                    font-size:0.86rem;
-                                    color:#4b5563;
-                                  ">
+                                  <div class="questoes-bateria-desempenho">
                                     Desempenho: ${b.percentual_acerto}%
                                   </div>
                                 `
@@ -1281,22 +1345,11 @@
                             }
                           </div>
 
-                          <div style="
-                            display:flex;
-                            align-items:center;
-                            gap:8px;
-                            flex-wrap:wrap;
-                            justify-content:flex-end;
-                          ">
+                          <div class="questoes-bateria-acoes">
                             ${
                               b.status_aluno === "EM_ANDAMENTO"
                                 ? `
-                                  <span style="
-                                    padding:4px 10px;
-                                    border:1px solid #8a5a00;
-                                    border-radius:999px;
-                                    font-size:0.82rem;
-                                  ">
+                                  <span class="questoes-status-andamento">
                                     EM ANDAMENTO
                                   </span>
                                 `
@@ -1306,14 +1359,7 @@
                             ${
                               b.status_aluno === "FEITA"
                                 ? `
-                                  <span style="
-                                    padding:4px 10px;
-                                    border:1px solid #2f5e46;
-                                    border-radius:999px;
-                                    font-size:0.82rem;
-                                    position:relative;
-                                    top:6.5px;
-                                  ">
+                                  <span class="questoes-status-feita">
                                     FEITA
                                   </span>
                                 `
@@ -1324,20 +1370,9 @@
                               b.status_aluno === "FEITA"
                                 ? `
                                   <a
-                                    class="btn"
+                                    class="btn questoes-btn-visualizar"
                                     onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
                                     href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&modo=visualizar&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
-                                    style="
-                                      min-width:112px;
-                                      height:40px;
-                                      padding:0 14px;
-                                      display:inline-flex;
-                                      align-items:center;
-                                      justify-content:center;
-                                      font-weight:700;
-                                      font-size:0.8rem;
-                                      font-family:inherit;
-                                    "
                                   >
                                     visualizar
                                   </a>
@@ -1345,40 +1380,18 @@
                                 : b.status_aluno === "EM_ANDAMENTO"
                                   ? `
                                     <a
-                                      class="btn"
+                                      class="btn questoes-btn-continuar"
                                       onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
                                       href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
-                                      style="
-                                        min-width:132px;
-                                        height:40px;
-                                        padding:0 14px;
-                                        display:inline-flex;
-                                        align-items:center;
-                                        justify-content:center;
-                                        font-weight:700;
-                                        font-size:0.9rem;
-                                        font-family:inherit;
-                                      "
                                     >
                                       continuar
                                     </a>
                                   `
                                   : `
                                     <a
-                                      class="btn"
+                                      class="btn questoes-btn-fazer"
                                       onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
                                       href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
-                                      style="
-                                        min-width:112px;
-                                        height:40px;
-                                        padding:0 14px;
-                                        display:inline-flex;
-                                        align-items:center;
-                                        justify-content:center;
-                                        font-weight:700;
-                                        font-size:0.9rem;
-                                        font-family:inherit;
-                                      "
                                     >
                                       fazer
                                     </a>
@@ -1389,22 +1402,9 @@
                               b.status_aluno === "FEITA" || b.status_aluno === "EM_ANDAMENTO"
                                 ? `
                                   <button
-                                    class="btn"
+                                    class="btn questoes-btn-refazer"
                                     type="button"
                                     onclick="limparRefazerSprint(${b.id})"
-                                    style="
-                                      min-width:126px;
-                                      height:40px;
-                                      padding:0 14px;
-                                      border:none;
-                                      box-shadow:none;
-                                      display:inline-flex;
-                                      align-items:center;
-                                      justify-content:center;
-                                      font-weight:700;
-                                      font-size:0.9rem;
-                                      font-family:inherit;
-                                    "
                                   >
                                     limpar e refazer
                                   </button>
@@ -1443,6 +1443,8 @@
     }
 
     window.proximaPaginaTeoria = proximaPaginaTeoria;
+
+    carregarNomeAlunoLogado();
 
   </script>
 </body>

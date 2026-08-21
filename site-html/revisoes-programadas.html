@@ -7,68 +7,136 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 
-<body>
-<header>
-  <h1>🔁 Assuntos que precisa rever</h1>
+<body class="revisoes-programadas-page">
+<header class="revisoes-programadas-header">
 
-  <nav style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
+  <div class="revisoes-programadas-header-identificacao">
+
+    <h1 id="titulo_curso"></h1>
+
+    <h2>
+      🔁 Minhas revisões
+    </h2>
+
+  </div>
+
+  <nav class="revisoes-programadas-header-acoes">
+
     <a
       class="btn"
       href="javascript:void(0)"
       onclick="voltarParaCurso()"
+      title="Voltar"
+      aria-label="Voltar"
     >
-      Voltar
+      ⇦
     </a>
-    <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
+
+    <a
+      class="btn"
+      href="index.html"
+      title="Início"
+      aria-label="Início"
+    >
+      ⌂
+    </a>
+
+    <a
+      class="btn"
+      href="javascript:void(0)"
+      onclick="logout()"
+      title="Sair"
+      aria-label="Sair"
+    >
+      ⎋
+    </a>
+
   </nav>
+
 </header>
 
 <main class="container">
 
-  <div class="card">
-    <h2 id="nome_curso">📘 Carregando curso...</h2>
-  </div>
+  <div class="card revisoes-programadas-card">
 
-  <div class="card">
-    <div id="qtd_hoje" style="font-weight:bold; margin-bottom:10px;">
-        Revisões para hoje: 0
+    <div
+      id="qtd_hoje"
+      class="revisoes-programadas-titulo"
+    >
+      Revisões para hoje: 0
     </div>
 
-    <button class="btn" onclick="alternarLista('lista_revisoes_hoje')">
-        Revisões para hoje
+    <button
+      class="btn revisoes-programadas-btn"
+      onclick="alternarLista('lista_revisoes_hoje')"
+    >
+      Acessar revisões
     </button>
 
-    <div id="lista_revisoes_hoje" class="list" style="display:none; margin-top:14px;"></div>
+    <div
+      id="lista_revisoes_hoje"
+      class="list revisoes-programadas-lista"
+      style="display:none;"
+    ></div>
+
   </div>
 
-  <div class="card">
-    <div id="qtd_atrasadas" style="font-weight:bold; margin-bottom:10px;">
+
+  <div class="card revisoes-programadas-card">
+
+    <div
+      id="qtd_atrasadas"
+      class="revisoes-programadas-titulo"
+    >
       Revisões atrasadas: 0
     </div>
 
-    <button class="btn" onclick="alternarLista('lista_revisoes_atrasadas')">
-      Revisões atrasadas
+    <button
+      class="btn revisoes-programadas-btn"
+      onclick="alternarLista('lista_revisoes_atrasadas')"
+    >
+      Acessar atrasadas
     </button>
 
-    <div id="lista_revisoes_atrasadas" class="list" style="display:none; margin-top:14px;"></div>
+    <div
+      id="lista_revisoes_atrasadas"
+      class="list revisoes-programadas-lista"
+      style="display:none;"
+    ></div>
+
   </div>
 
-  <div class="card">
-    <div id="qtd_proximas" style="font-weight:bold; margin-bottom:10px;">
-      Próxima(s) revisão(ões): 0
+
+  <div class="card revisoes-programadas-card">
+
+    <div
+      id="qtd_proximas"
+      class="revisoes-programadas-titulo"
+    >
+      Próximas revisões: 0
     </div>
 
-    <button class="btn" onclick="alternarLista('lista_revisoes_proximas')">
-      Próxima(s) revisão(ões)
+    <button
+      class="btn revisoes-programadas-btn"
+      onclick="alternarLista('lista_revisoes_proximas')"
+    >
+      Visualizar as próximas revisões
     </button>
 
-    <div id="lista_revisoes_proximas" class="list" style="display:none; margin-top:14px;"></div>
+    <div
+      id="lista_revisoes_proximas"
+      class="list revisoes-programadas-lista"
+      style="display:none;"
+    ></div>
+
   </div>
 
 </main>
 
 <footer>
-  <p>© 2026 - Plataforma Quality Estudos</p>
+  <p>
+    © <span id="ano_atual"></span> - Quality Estudos
+  </p>
 </footer>
 
 <script>
@@ -108,6 +176,180 @@ async function apiGet(path) {
   }
 
   return res.json();
+}
+
+async function exibirNomeUsuarioLogadoRevisoes() {
+  const token = getToken();
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    const me = await apiGet("/me");
+
+    if (!me || !me.nome) {
+      return;
+    }
+
+    const partesNome = String(me.nome)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (partesNome.length === 0) {
+      return;
+    }
+
+    const primeiroNome =
+      partesNome[0];
+
+    const ultimoNome =
+      partesNome.length > 1
+        ? partesNome[partesNome.length - 1]
+        : "";
+
+    const nomeTooltip =
+      ultimoNome
+        ? `${primeiroNome} ${ultimoNome}`
+        : primeiroNome;
+
+    let identificacao =
+      document.getElementById(
+        "nomeUsuarioLogadoGlobal"
+      );
+
+    if (!identificacao) {
+      identificacao =
+        document.createElement("div");
+
+      identificacao.id =
+        "nomeUsuarioLogadoGlobal";
+
+      identificacao.style.position =
+        "fixed";
+
+      identificacao.style.top =
+        "9px";
+
+      identificacao.style.right =
+        "47px";
+
+      identificacao.style.zIndex =
+        "9999";
+
+      identificacao.style.fontSize =
+        "0.68rem";
+
+      identificacao.style.fontWeight =
+        "600";
+
+      identificacao.style.letterSpacing =
+        "0.4px";
+
+      identificacao.style.color =
+        "#4b5563";
+
+      identificacao.style.opacity =
+        "0.78";
+
+      identificacao.style.cursor =
+        "default";
+
+      identificacao.style.userSelect =
+        "none";
+
+      identificacao.style.whiteSpace =
+        "nowrap";
+
+      document.body.appendChild(
+        identificacao
+      );
+    }
+
+    identificacao.textContent =
+      primeiroNome.toUpperCase();
+
+    const tooltip =
+      document.createElement("div");
+
+    tooltip.textContent =
+      nomeTooltip.toUpperCase();
+
+    tooltip.style.position =
+      "absolute";
+
+    tooltip.style.right =
+      "calc(100% + 8px)";
+
+    tooltip.style.top =
+      "50%";
+
+    tooltip.style.transform =
+      "translateY(-50%)";
+
+    tooltip.style.padding =
+      "0";
+
+    tooltip.style.background =
+      "transparent";
+
+    tooltip.style.color =
+      "#4b5563";
+
+    tooltip.style.fontSize =
+      "0.68rem";
+
+    tooltip.style.fontWeight =
+      "500";
+
+    tooltip.style.whiteSpace =
+      "nowrap";
+
+    tooltip.style.opacity =
+      "0";
+
+    tooltip.style.visibility =
+      "hidden";
+
+    tooltip.style.pointerEvents =
+      "none";
+
+    tooltip.style.transition =
+      "opacity 0.15s";
+
+    identificacao.appendChild(
+      tooltip
+    );
+
+    identificacao.addEventListener(
+      "mouseenter",
+      () => {
+        tooltip.style.opacity =
+          "1";
+
+        tooltip.style.visibility =
+          "visible";
+      }
+    );
+
+    identificacao.addEventListener(
+      "mouseleave",
+      () => {
+        tooltip.style.opacity =
+          "0";
+
+        tooltip.style.visibility =
+          "hidden";
+      }
+    );
+
+  } catch (err) {
+    console.warn(
+      "Não foi possível exibir o nome do aluno:",
+      err
+    );
+  }
 }
 
 function hojeISO() {
@@ -198,12 +440,24 @@ async function carregarRevisoesProgramadas() {
 
     const cursoAtual = await carregarCursoAtual();
 
+    const tituloCurso =
+      document.getElementById(
+        "titulo_curso"
+      );
+
     if (!cursoAtual) {
-      document.getElementById("nome_curso").innerText = "📘 Nenhum curso disponível";
+      if (tituloCurso) {
+        tituloCurso.innerText =
+          "Nenhum curso disponível";
+      }
+
       return;
     }
 
-    document.getElementById("nome_curso").innerText = `📘 ${cursoAtual.nome_curso}`;
+    if (tituloCurso) {
+      tituloCurso.innerText =
+        cursoAtual.nome_curso;
+    }
 
     const hoje = hojeISO();
     const hojeRevisoes = [];
@@ -259,7 +513,7 @@ async function carregarRevisoesProgramadas() {
       `Revisões atrasadas: ${atrasadas.length}`;
 
     document.getElementById("qtd_proximas").innerText =
-      `Próxima(s) revisão(ões): ${proximas.length}`;
+      `Próximas revisões: ${proximas.length}`;
 
     document.getElementById("lista_revisoes_hoje").innerHTML =
       hojeRevisoes.length === 0
@@ -351,6 +605,17 @@ async function carregarRevisoesProgramadas() {
   }
 }
 
+const anoAtual =
+  document.getElementById(
+    "ano_atual"
+  );
+
+if (anoAtual) {
+  anoAtual.textContent =
+    new Date().getFullYear();
+}
+
+exibirNomeUsuarioLogadoRevisoes();
 carregarRevisoesProgramadas();
 </script>
 

@@ -7,65 +7,138 @@
 
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body
+  class="questoes-criticas-page"
+  data-page="questoes-criticas"
+>
 
-<header>
-  <h1>Questões críticas</h1>
+<header class="questoes-criticas-header">
 
-  <div>
-    <a class="btn" href="javascript:history.back()">Voltar</a>
-    <a class="btn" href="#" onclick="logout()">Sair</a>
+  <div class="questoes-criticas-header-identificacao">
+
+    <h1 id="titulo_curso_questoes_criticas"></h1>
+
+    <h2>
+      🚨 Questões diferenciadas
+    </h2>
+
   </div>
+
+  <nav class="questoes-criticas-header-acoes">
+
+    <a
+      class="btn"
+      href="javascript:history.back()"
+      title="Voltar"
+      aria-label="Voltar"
+    >
+      ⇦
+    </a>
+
+    <a
+      class="btn"
+      href="#"
+      onclick="irParaInicio('index.html'); return false;"
+      title="Início"
+      aria-label="Início"
+    >
+      ⌂
+    </a>
+
+    <a
+      class="btn"
+      href="#"
+      onclick="sairComConfirmacao(); return false;"
+      title="Sair"
+      aria-label="Sair"
+    >
+      ⎋
+    </a>
+
+  </nav>
+
 </header>
 
 <main class="container">
 
-  <div class="card">
-    <h2>Filtros</h2>
+  <div class="card questoes-criticas-escolha-card">
 
-    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+    <h2 class="questoes-criticas-escolha-titulo">
+      Escolha
+    </h2>
 
-      <div>
-        <label><b>Disciplina</b></label><br>
+    <div class="questoes-criticas-filtros">
 
-        <select id="filtroDisciplina"
+      <div class="questoes-criticas-filtro-grupo">
+
+        <label for="filtroDisciplina">
+          Disciplina
+        </label>
+
+        <select
+          id="filtroDisciplina"
+          class="questoes-criticas-select"
           onchange="aplicarFiltros()"
-          style="padding:10px; min-width:260px;">
+        >
         </select>
+
       </div>
 
-      <div>
-        <label><b>Questões</b></label><br>
+      <div class="questoes-criticas-filtro-grupo">
 
-        <select id="filtroTipo"
+        <label for="filtroTipo">
+          Questões
+        </label>
+
+        <select
+          id="filtroTipo"
+          class="questoes-criticas-select"
           onchange="aplicarFiltros()"
-          style="padding:10px; min-width:260px;">
+        >
+          <option value="TODAS">
+            TODAS
+          </option>
 
-          <option value="TODAS">TODAS</option>
-          <option value="ERRO">Só as que errei</option>
-          <option value="DIFICIL">As difíceis</option>
-          <option value="REVER">As que marquei para rever</option>
+          <option value="ERRO">
+            Só as que errei
+          </option>
 
+          <option value="DIFICIL">
+            As difíceis
+          </option>
+
+          <option value="REVER">
+            As que marquei para rever
+          </option>
         </select>
+
       </div>
 
     </div>
+
   </div>
 
   <div id="area_questoes"></div>
 
   <div id="area_relatorio"></div>
 
-  <div class="card" style="text-align:center;">
-    <a class="btn" href="javascript:history.back()">
+  <div class="card questoes-criticas-voltar-card">
+
+    <a
+      class="btn questoes-criticas-btn-voltar"
+      href="javascript:history.back()"
+    >
       Voltar
     </a>
+
   </div>
 
 </main>
 
 <footer>
-  © 2026 - Plataforma Quality Estudos
+  <p>
+    © <span id="ano_atual"></span> - Quality Estudos
+  </p>
 </footer>
 
 <script src="js/app.js"></script>
@@ -73,6 +146,17 @@
 <script>
 
 let questoesCriticas = [];
+
+const tituloCursoQuestoesCriticas =
+  document.getElementById(
+    "titulo_curso_questoes_criticas"
+  );
+
+if (tituloCursoQuestoesCriticas) {
+  tituloCursoQuestoesCriticas.innerText =
+    qs("curso_nome") ||
+    "Curso";
+}
 
 function esc(s) {
   return String(s ?? "")
@@ -205,13 +289,15 @@ function renderizarQuestoes(lista) {
   );
 
   let html = `
-    <div class="card">
-      <h2>Total: ${listaOrdenada.length} questão(ões)</h2>
+    <div class="card questoes-criticas-total-card">
+
+      <h2 class="questoes-criticas-total-titulo">
+        Total: ${listaOrdenada.length} 
+      </h2>
+
     </div>
   `;
 
-  let disciplinaAtual = null;
-  let assuntoAtual = null;
   let questaoNumero = 1;
 
   const disciplinas = [];
@@ -247,30 +333,22 @@ function renderizarQuestoes(lista) {
   });
 
   disciplinas.forEach(disciplina => {
-    if (disciplinaSelecionada === "TODAS" && disciplinaAtual !== disciplina.id) {
-      disciplinaAtual = disciplina.id;
-
-      html += `
-        <div class="card" style="padding-bottom:12px;">
-          <h2 style="margin:0; font-size:1.45rem;">
-            ${esc(disciplina.nome || "")}
-          </h2>
-        </div>
-      `;
-    }
 
     disciplina.assuntos.forEach(assunto => {
-      if (assuntoAtual !== assunto.id) {
-        assuntoAtual = assunto.id;
 
-        html += `
-          <div class="card" style="padding-bottom:12px;">
-            <h3 style="margin:0; font-size:1.15rem;">
-              ${esc(assunto.nome || "")}
-            </h3>
+      html += `
+        <div class="card questoes-criticas-identificacao-card">
+
+          <h2 class="questoes-criticas-disciplina-titulo">
+            ${esc(disciplina.nome || "")}
+          </h2>
+
+          <div class="questoes-criticas-assunto-titulo">
+            ${esc(assunto.nome || "")}
           </div>
-        `;
-      }
+
+        </div>
+      `;
 
       const jaRenderizadas = new Set();
 
@@ -313,9 +391,10 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
   let marcador = "";
 
   if (tipoGrupo === "ERRO") {
-    marcador = q.qtd_erros > 1
-      ? `${q.qtd_erros}❌`
-      : "❌";
+    marcador =
+      q.qtd_erros > 1
+        ? `${q.qtd_erros}❌`
+        : "❌";
   }
 
   if (tipoGrupo === "DIFICIL") {
@@ -326,57 +405,74 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
     marcador = "R";
   }
 
-  const corMarcador = tipoGrupo === "ERRO"
-    ? "#9a5a16"
-    : "#9a6a00";
+  const classeMarcador =
+    tipoGrupo === "ERRO"
+      ? "questoes-criticas-marcador-erro"
+      : "questoes-criticas-marcador-outro";
 
   return `
-    <div class="card">
-      <h3 style="margin-top:0; font-size:1rem;">
+    <div class="card questoes-criticas-questao-card">
+
+      <h3 class="questoes-criticas-questao-numero">
         Questão ${numero}
       </h3>
 
-      <div style="white-space:pre-wrap; margin-top:8px;">
+      <div class="questoes-criticas-enunciado">
         ${esc(q.enunciado)}
       </div>
 
-      <div style="margin-top:14px;">
-        <p><b>Gabarito:</b> ${esc(traduzResposta(q.gabarito))}</p>
+      <div class="questoes-criticas-gabarito">
+        <strong>Gabarito:</strong>
+        ${esc(traduzResposta(q.gabarito))}
       </div>
 
-      <div style="white-space:pre-wrap; margin-top:6px;">
-        ${esc(q.comentario || "Comentário não cadastrado.")}
+      <div class="questoes-criticas-comentario">
+
+        <strong>Comentário:</strong>
+
+        <div class="questoes-criticas-comentario-texto">
+          ${esc(
+            q.comentario ||
+            "Comentário não cadastrado."
+          )}
+        </div>
+
       </div>
 
-      <div style="
-        margin-top:16px;
-        display:flex;
-        justify-content:space-between;
-        align-items:flex-end;
-        gap:10px;
-      ">
-        <div style="
-          font-size:.95rem;
-          font-weight:bold;
-          color:${corMarcador};
-        ">
+      <div class="questoes-criticas-rodape-questao">
+
+        <div
+          class="
+            questoes-criticas-marcador
+            ${classeMarcador}
+          "
+        >
           ${marcador}
         </div>
 
-        <div style="
-          text-align:right;
-          font-size:.72rem;
-          opacity:.75;
-        ">
-          Sua resposta: ${esc(traduzResposta(q.resposta_marcada))}
+        <div class="questoes-criticas-resposta-aluno">
+          Sua resposta:
+          ${esc(
+            traduzResposta(
+              q.resposta_marcada
+            )
+          )}
         </div>
+
       </div>
+
     </div>
   `;
 }
 
-function renderizarMiniRelatorio(lista, disciplinaSelecionada) {
-  const area = document.getElementById("area_relatorio");
+function renderizarMiniRelatorio(
+  lista,
+  disciplinaSelecionada
+) {
+  const area =
+    document.getElementById(
+      "area_relatorio"
+    );
 
   if (!lista.length) {
     area.innerHTML = "";
@@ -386,7 +482,10 @@ function renderizarMiniRelatorio(lista, disciplinaSelecionada) {
   const disciplinas = [];
 
   lista.forEach(q => {
-    let disciplina = disciplinas.find(d => d.id === q.disciplina_id);
+    let disciplina =
+      disciplinas.find(
+        d => d.id === q.disciplina_id
+      );
 
     if (!disciplina) {
       disciplina = {
@@ -399,7 +498,10 @@ function renderizarMiniRelatorio(lista, disciplinaSelecionada) {
       disciplinas.push(disciplina);
     }
 
-    let assunto = disciplina.assuntos.find(a => a.id === q.assunto_id);
+    let assunto =
+      disciplina.assuntos.find(
+        a => a.id === q.assunto_id
+      );
 
     if (!assunto) {
       assunto = {
@@ -411,114 +513,154 @@ function renderizarMiniRelatorio(lista, disciplinaSelecionada) {
         paraRever: 0
       };
 
-      disciplina.assuntos.push(assunto);
+      disciplina.assuntos.push(
+        assunto
+      );
     }
 
-    if (q.erro) assunto.erros += 1;
-    if (q.dificil) assunto.dificeis += 1;
-    if (q.para_rever) assunto.paraRever += 1;
+    if (q.erro) {
+      assunto.erros += 1;
+    }
+
+    if (q.dificil) {
+      assunto.dificeis += 1;
+    }
+
+    if (q.para_rever) {
+      assunto.paraRever += 1;
+    }
   });
 
-  disciplinas.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+  disciplinas.sort(
+    (a, b) =>
+      (a.ordem ?? 0) -
+      (b.ordem ?? 0)
+  );
 
   disciplinas.forEach(d => {
-    d.assuntos.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+    d.assuntos.sort(
+      (a, b) =>
+        (a.ordem ?? 0) -
+        (b.ordem ?? 0)
+    );
   });
 
-  const tituloRelatorio =
-    disciplinaSelecionada === "TODAS"
-      ? "Relatório geral das disciplinas"
-      : `Relatório da Disciplina (${esc(disciplinas[0]?.nome || "")})`;
-
   let html = `
-    <div class="card">
-      <h2>${tituloRelatorio}</h2>
+    <div class="card questoes-criticas-relatorio-titulo-card">
+
+      <h2 class="questoes-criticas-relatorio-titulo">
+        Relatório geral da(s) disciplina(s)
+      </h2>
+
+    </div>
   `;
 
-  disciplinas.forEach(disciplina => {
-    if (disciplinaSelecionada === "TODAS") {
+  disciplinas.forEach(
+    disciplina => {
+
+      const assuntosComRegistro =
+        disciplina.assuntos.filter(
+          assunto =>
+            assunto.erros > 0 ||
+            assunto.dificeis > 0 ||
+            assunto.paraRever > 0
+        );
+
+      if (
+        assuntosComRegistro.length === 0
+      ) {
+        return;
+      }
+
       html += `
-        <div style="margin-top:24px;">
-          <h3 style="
-            margin:0 0 12px 0;
-            font-size:1.15rem;
-            text-transform:uppercase;
-          ">
-            ${esc(disciplina.nome || "")}
+        <div class="card questoes-criticas-relatorio-conteudo-card">
+
+          <h3 class="questoes-criticas-relatorio-disciplina">
+            ${esc(
+              disciplina.nome || ""
+            )}
           </h3>
       `;
-    } else {
-      html += `
-        <div style="margin-top:12px;">
-      `;
-    }
 
-    html += `
-      <div style="
-        font-weight:bold;
-        margin-bottom:12px;
-      ">
-        Assunto:
-      </div>
-    `;
+      assuntosComRegistro.forEach(
+        assunto => {
 
-    disciplina.assuntos.forEach(assunto => {
-      const temRegistro =
-        assunto.erros > 0 ||
-        assunto.dificeis > 0 ||
-        assunto.paraRever > 0;
+          html += `
+            <div class="questoes-criticas-relatorio-assunto">
 
-      if (!temRegistro) return;
+              <div class="questoes-criticas-relatorio-assunto-nome">
+                ${esc(
+                  assunto.nome || ""
+                )}
+              </div>
 
-      html += `
-        <div style="margin-top:16px;">
-          <div style="
-            font-weight:bold;
-            margin-bottom:6px;
-          ">
-            ${esc(assunto.nome || "")}
-          </div>
-      `;
+              <div class="questoes-criticas-relatorio-totais">
+          `;
 
-      if (assunto.erros > 0) {
-        html += `
-          <div>
-            ${assunto.erros} erro${assunto.erros > 1 ? "s" : ""}
-          </div>
-        `;
-      }
+          if (assunto.erros > 0) {
+            html += `
+              <div>
+                ${assunto.erros}
+                ${
+                  assunto.erros === 1
+                    ? "questão respondida incorretamente"
+                    : "questões respondidas incorretamente"
+                }
+              </div>
+            `;
+          }
 
-      if (assunto.dificeis > 0) {
-        html += `
-          <div>
-            ${assunto.dificeis} ${assunto.dificeis > 1 ? "difíceis" : "difícil"}
-          </div>
-        `;
-      }
+          if (assunto.dificeis > 0) {
+            html += `
+              <div>
+                ${assunto.dificeis}
+                ${
+                  assunto.dificeis === 1
+                    ? "questão difícil"
+                    : "questões difíceis"
+                }
+              </div>
+            `;
+          }
 
-      if (assunto.paraRever > 0) {
-        html += `
-          <div>
-            ${assunto.paraRever} para rever
-          </div>
-        `;
-      }
+          if (assunto.paraRever > 0) {
+            html += `
+              <div>
+                ${assunto.paraRever}
+                ${
+                  assunto.paraRever === 1
+                    ? "marcada para rever"
+                    : "marcadas para rever"
+                }
+              </div>
+            `;
+          }
+
+          html += `
+              </div>
+
+            </div>
+          `;
+        }
+      );
 
       html += `
         </div>
       `;
-    });
-
-    html += `
-      </div>
-    `;
-  });
-
-  html += `
-    </div>
-  `;
+    }
+  );
 
   area.innerHTML = html;
+}
+
+const anoAtual =
+  document.getElementById(
+    "ano_atual"
+  );
+
+if (anoAtual) {
+  anoAtual.textContent =
+    new Date().getFullYear();
 }
 
 carregarQuestoesCriticas();

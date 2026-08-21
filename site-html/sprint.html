@@ -8,28 +8,28 @@
   </head>
 
   <body>
-    <header style="padding-top:22px;padding-bottom:24px; position:relative;">
-      <div style="margin-top:0;">
-        <h1
-          id="titulo_bateria"
-          style="
-            margin-bottom:0;
-            font-weight:400;
-            font-size:1.45rem;
-            line-height:2.1;
-          ">
-        </h1>
+    <header class="sprint-header">
+
+      <div class="sprint-header-identificacao">
+        <h1 id="titulo_bateria"></h1>
+        <div id="subtitulo_bateria"></div>
       </div>
 
-      <div style="
-        position:absolute;
-        right:24px;
-        top:22px;
-        display:flex;
-        gap:10px;
-        align-items:center;
-      ">
-        <a class="btn" href="javascript:void(0)" onclick="voltarParaListaQuestoes()" title="Voltar">⇦</a>
+      <div
+        id="nome_aluno_logado"
+        class="sprint-aluno"
+      ></div>
+
+      <div class="sprint-header-acoes">
+
+        <a
+          class="btn"
+          href="javascript:void(0)"
+          onclick="voltarParaListaQuestoes()"
+          title="Voltar"
+        >
+          ⇦
+        </a>
 
         <a
           class="btn"
@@ -43,8 +43,17 @@
           ⌂
         </a>
 
-        <a class="btn" href="javascript:void(0)" onclick="confirmarSairSprint()" title="Sair">⎋</a>
+        <a
+          class="btn"
+          href="javascript:void(0)"
+          onclick="confirmarSairSprint()"
+          title="Sair"
+        >
+          ⎋
+        </a>
+
       </div>
+
     </header>
 
     <main class="container">
@@ -99,8 +108,17 @@
         const titulo = qsLocal("titulo") || "Bateria de questões";
         const assuntoNome = qsLocal("assunto_nome") || "";
 
-        document.getElementById("titulo_bateria").innerText =
-          assuntoNome ? `${assuntoNome} - Parte I` : titulo;
+        const tituloBateria = document.getElementById("titulo_bateria");
+        const subtituloBateria = document.getElementById("subtitulo_bateria");
+
+        if (tituloBateria) {
+          tituloBateria.innerText =
+            assuntoNome || "Questões";
+        }
+
+        if (subtituloBateria) {
+          subtituloBateria.innerText = titulo;
+        }
 
         if (!bateriaId) {
           document.getElementById("area_questoes").innerHTML = `
@@ -198,27 +216,14 @@
           const ehCertoErrado = q.tipo_questao === "CERTO_ERRADO" || q.tipo === "CERTO_ERRADO";
 
           html += `
-            <div class="card" id="questao_${q.id}" style="padding:26px;">
+            <div class="card sprint-questao-card" id="questao_${q.id}">
               <div style="margin-bottom:6px;">
-                <h3 style="
-                  margin:0;
-                  font-size:1.25rem;
-                  color:#174a84;
-                ">
+                <h3 class="sprint-questao-titulo">
                   Questão ${idx + 1} de ${total}
                 </h3>
               </div>
 
-              <div style="
-                white-space:pre-line;
-                margin-top:4px;
-                font-size:1.05rem;
-                line-height:1.6;
-                text-indent:0;
-                margin-left:0;
-                padding-left:0;
-                text-align:justify;
-              ">
+              <div class="sprint-questao-enunciado">
                 ${escLocal(q.enunciado)}
               </div>
 
@@ -273,7 +278,7 @@
                         <label
                           class="assunto alternativa-opcao"
                           id="alt_${q.id}_${a.letra}"
-                          style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 16px; margin-top:10px; line-height:1.5; transition:.15s;"
+                          style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 14px; margin-top:8px; line-height:1.45; transition:.15s;"
                         >
                           <input
                             type="radio"
@@ -281,7 +286,7 @@
                             value="${escLocal(a.letra)}"
                             onchange="marcarAlternativaVisual(${q.id}, '${a.letra}'); resetarBotaoResponder(${q.id});"
                             ${respostasAluno[q.id] === a.letra ? "checked" : ""}
-                            style="margin-right:16px;"
+                            style="margin-right:12px;"
                           />
                           <b>${escLocal(a.letra)})</b> ${escLocal(a.texto)}
                         </label>
@@ -294,29 +299,56 @@
                 ehCertoErrado
                   ? ``
                   : `
-                    <div class="card" style="margin-top:22px; padding:18px;">
-                      <p><b>Essa questão para você, neste momento, foi:</b></p>
+                    <div class="card sprint-dificuldade-card">
+                      <div class="sprint-dificuldade-linha">
 
-                      <label id="dif_${q.id}_FACIL" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; margin-right:10px; font-size:.92rem;">
-                        <input type="radio" name="dificuldade_${q.id}" value="FACIL"
-                          ${dificuldadesAluno[q.id] === "FACIL" ? "checked" : ""}
-                          onchange="marcarDificuldadeVisual(${q.id}, 'FACIL'); resetarBotaoResponder(${q.id});">
-                        FÁCIL
-                      </label>
+                        <span class="sprint-dificuldade-texto">
+                          Essa questão para você, neste momento, foi:
+                        </span>
 
-                      <label id="dif_${q.id}_MEDIA" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; margin-right:10px; font-size:.92rem;">
-                        <input type="radio" name="dificuldade_${q.id}" value="MEDIA"
-                          ${dificuldadesAluno[q.id] === "MEDIA" ? "checked" : ""}
-                          onchange="marcarDificuldadeVisual(${q.id}, 'MEDIA'); resetarBotaoResponder(${q.id});">
-                        MÉDIA
-                      </label>
+                        <label
+                          id="dif_${q.id}_FACIL"
+                          class="sprint-dificuldade-opcao"
+                        >
+                          <input
+                            type="radio"
+                            name="dificuldade_${q.id}"
+                            value="FACIL"
+                            ${dificuldadesAluno[q.id] === "FACIL" ? "checked" : ""}
+                            onchange="marcarDificuldadeVisual(${q.id}, 'FACIL'); resetarBotaoResponder(${q.id});"
+                          >
+                          FÁCIL
+                        </label>
 
-                      <label id="dif_${q.id}_DIFICIL" style="display:inline-block; padding:6px 12px; border:1px solid #ddd; border-radius:999px; cursor:pointer; font-size:.92rem;">
-                        <input type="radio" name="dificuldade_${q.id}" value="DIFICIL"
-                          ${dificuldadesAluno[q.id] === "DIFICIL" ? "checked" : ""}
-                          onchange="marcarDificuldadeVisual(${q.id}, 'DIFICIL'); resetarBotaoResponder(${q.id});">
-                        DIFÍCIL
-                      </label>
+                        <label
+                          id="dif_${q.id}_MEDIA"
+                          class="sprint-dificuldade-opcao"
+                        >
+                          <input
+                            type="radio"
+                            name="dificuldade_${q.id}"
+                            value="MEDIA"
+                            ${dificuldadesAluno[q.id] === "MEDIA" ? "checked" : ""}
+                            onchange="marcarDificuldadeVisual(${q.id}, 'MEDIA'); resetarBotaoResponder(${q.id});"
+                          >
+                          MÉDIA
+                        </label>
+
+                        <label
+                          id="dif_${q.id}_DIFICIL"
+                          class="sprint-dificuldade-opcao"
+                        >
+                          <input
+                            type="radio"
+                            name="dificuldade_${q.id}"
+                            value="DIFICIL"
+                            ${dificuldadesAluno[q.id] === "DIFICIL" ? "checked" : ""}
+                            onchange="marcarDificuldadeVisual(${q.id}, 'DIFICIL'); resetarBotaoResponder(${q.id});"
+                          >
+                          DIFÍCIL
+                        </label>
+
+                      </div>
                     </div>
                   `
               }
@@ -324,7 +356,7 @@
               <div style="margin-top:18px;">
                 <button
                   id="btnResponder_${q.id}"
-                  class="btn"
+                  class="btn sprint-btn-responder"
                   onclick="responderQuestaoLista(${q.id}, ${idx})"
                 >
                   Responder
@@ -611,15 +643,23 @@
           localStorage.setItem("voltar_para_questoes_forcar_atualizacao", "1");
 
           document.getElementById("area_questoes").innerHTML = `
-            <div class="card">
-              <h2>Bateria de questões concluída!</h2>
+            <div class="card sprint-conclusao-card">
+              <h2 class="sprint-conclusao-titulo">
+                Bateria de questões concluída!
+              </h2>
 
-              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-                <button class="btn" onclick="revisarAgora()">
+              <div class="sprint-conclusao-acoes">
+                <button
+                  class="btn sprint-conclusao-btn"
+                  onclick="revisarAgora()"
+                >
                   Revisar agora
                 </button>
 
-                <button class="btn" onclick="voltarParaListaQuestoes()">
+                <button
+                  class="btn sprint-conclusao-btn"
+                  onclick="voltarParaListaQuestoes()"
+                >
                   Revisar depois
                 </button>
               </div>
@@ -633,11 +673,7 @@
       }
       
       function revisarAgora() {
-        let html = `
-          <div class="card" style="padding-top:10px; padding-bottom:10px;">
-            <h2 style="margin:0; font-size:1.15rem;">Revisão</h2>
-          </div>
-        `;
+        let html = ``;
 
         questoes.forEach((q, idx) => {
           const respostaAluno = respostasAluno[q.id];
@@ -651,68 +687,47 @@
               : "Não tenho certeza ou não sei";
 
           html += `
-            <div class="card" style="padding-top:10px; padding-bottom:6px; margin-bottom:8px;">
-              <h2 style="
-                font-size:1.15rem;
-                margin-top:0;
-                margin-bottom:6px;
-              ">
+            <div class="card sprint-revisao-questao-card">
+              <h2 class="sprint-revisao-questao-titulo">
                 Questão ${idx + 1}
               </h2>
 
-              <div style="
-                white-space:normal;
-                margin-top:15px;
-                text-align:justify;
-                text-indent:0;
-                margin-left:0;
-                padding-left:0;
-                line-height:1.6;
-              ">
+              <div class="sprint-revisao-enunciado">
                 ${escLocal(q.enunciado)}
               </div>
 
-              <div class="list" style="margin-top:14px;">
+              <div class="list sprint-revisao-alternativas">
                 ${(q.alternativas || []).map(a => {
                   const ehCorreta = a.letra === q.gabarito;
                   const ehMarcadaErrada = a.letra === respostaAluno && !acertou;
 
-                  let estilo = "";
+                  let classeEstado = "";
 
                   if (ehCorreta) {
-                    estilo = `
-                      background:#e7f7ee;
-                      border-color:#2f5e46;
-                      font-weight:bold;
-                    `;
+                    classeEstado = "sprint-revisao-alternativa-correta";
                   }
 
                   if (ehMarcadaErrada) {
-                    estilo = `
-                      background:#fff3e6;
-                      border-color:#9a5a16;
-                      color:#9a5a16;
-                      font-weight:bold;
-                    `;
+                    classeEstado = "sprint-revisao-alternativa-errada";
                   }
 
                   return `
-                    <div class="assunto" style="${estilo}">
+                    <div class="assunto sprint-revisao-alternativa ${classeEstado}">
                       <b>${escLocal(a.letra)})</b> ${escLocal(a.texto)}
                     </div>
                   `;
                 }).join("")}
               </div>
 
-              <div style="margin-top:6px;">
+              <div class="sprint-revisao-resultado">
                 ${
                   ehCertoErrado
                     ? `
-                      <div style="
-                        color:${acertou ? "#2f5e46" : "#9a5a16"};
-                        font-weight:bold;
-                        font-size:1.05rem;
-                      ">
+                      <div class="${
+                        acertou
+                          ? "sprint-revisao-acerto"
+                          : "sprint-revisao-erro"
+                      }">
                         ${
                           acertou
                             ? `Você: ${respostaTexto}`
@@ -720,31 +735,23 @@
                         }
                       </div>
 
-                      <div style="margin-top:3px;">
+                      <div class="sprint-revisao-gabarito">
                         Gabarito: ${gabaritoTexto}
                       </div>
                     `
                     : (
                         acertou
                           ? `
-                            <div style="
-                              color:#2f5e46;
-                              font-weight:bold;
-                              font-size:1.05rem;
-                            ">
+                            <div class="sprint-revisao-acerto">
                               ✅ Certo!
                             </div>
                           `
                           : `
-                            <div style="
-                              color:#9a5a16;
-                              font-weight:bold;
-                              font-size:1.05rem;
-                            ">
+                            <div class="sprint-revisao-erro">
                               ❌ Não foi desta vez.
                             </div>
 
-                            <div style="margin-top:6px;">
+                            <div class="sprint-revisao-gabarito">
                               Gabarito: ${escLocal(q.gabarito || "-")}
                             </div>
                           `
@@ -752,18 +759,10 @@
                 }
               </div>
 
-              <div style="margin-top:18px;">
+              <div class="sprint-revisao-comentario">
                 <b>Comentário:</b>
 
-                <div style="
-                  margin-top:6px;
-                  white-space:normal;
-                  text-align:justify;
-                  text-indent:0;
-                  margin-left:0;
-                  padding-left:0;
-                  line-height:1.6;
-                ">
+                <div class="sprint-revisao-comentario-texto">
                   ${escLocal(q.comentario || "Comentário não cadastrado.")}
                 </div>
               </div>
@@ -803,21 +802,20 @@
                         style="
                           width:100%;
                           min-height:100px;
+
+                          margin-top:11px;
+
                           padding:12px;
+
                           border:1px solid #ddd;
                           border-radius:6px;
                         "
                       ></textarea>
 
-                      <div style="
-                        margin-top:12px;
-                        display:flex;
-                        gap:10px;
-                        flex-wrap:wrap;
-                      ">
+                      <div class="sprint-revisao-anotacao-acoes">
                         <button
                           id="btn_salvar_mim_${q.id}"
-                          class="btn"
+                          class="btn sprint-revisao-btn-acao"
                           onclick="salvarAnotacaoParaMim(${q.id})"
                         >
                           Salvar para mim
@@ -846,7 +844,7 @@
 
                         <button
                           id="btn_enviar_prof_${q.id}"
-                          class="btn"
+                          class="btn sprint-revisao-btn-acao"
                           onclick="salvarEnviarProf(${q.id})"
                         >
                           Enviar ao prof
@@ -881,17 +879,27 @@
         });
 
         html += `
-          <div class="card">
+          <div class="card sprint-revisao-finalizar-card">
             ${
               modo === "visualizar"
                 ? `
-                  <button class="btn" onclick="voltarParaListaQuestoes()">
-                    Fechar
-                  </button>
+                  <div class="sprint-visualizar-fechar">
+                      <button
+                          class="btn sprint-revisao-btn-finalizar"
+                          onclick="voltarParaListaQuestoes()"
+                      >
+                          Fechar
+                      </button>
+                  </div>
                 `
                 : `
-                  <button id="btnFinalizarRevisao" class="btn" onclick="finalizarRevisao()">
-                    Finalizar revisão e voltar
+                  <button
+                      id="btnFinalizarRevisao"
+                      class="btn sprint-revisao-btn-finalizar"
+                      onclick="finalizarRevisao()"
+                      style="margin-left:25px;"
+                  >
+                      Finalizar revisão e voltar
                   </button>
                 `
             }

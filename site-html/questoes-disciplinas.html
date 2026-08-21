@@ -17,33 +17,35 @@
   >
 </head>
 
-<body data-page="questoes-disciplinas">
+<body
+  class="questoes-disciplinas-page"
+  data-page="questoes-disciplinas"
+>
 
   <header
     style="
-      padding-top:8px;
-      padding-bottom:24px;
+      padding-top:4px;
+      padding-bottom:19px;
       position:relative;
     "
   >
     <div
       style="
-        margin-top:32px;
+        margin-top:19px;
         display:flex;
         justify-content:center;
         align-items:center;
       "
     >
-      <h1
-        id="titulo_curso"
-        style="
-          margin:-6px 0 0 0;
-          font-size:1.55rem;
-          text-align:center;
-        "
-      >
-        📝 Questões
-      </h1>
+      <div class="questoes-header-identificacao">
+
+        <h1 id="titulo_curso_nome"></h1>
+
+        <h2 id="titulo_modulo_questoes">
+          📝 Questões
+        </h2>
+
+      </div>
     </div>
 
     <nav
@@ -58,7 +60,7 @@
     >
       <a
         id="btnVoltarQuestoesCurso"
-        class="btn"
+        class="btn questoes-header-btn questoes-header-btn-secundario"
         href="#"
         title="Voltar"
       >
@@ -66,7 +68,7 @@
       </a>
 
       <a
-        class="btn"
+        class="btn questoes-header-btn"
         href="#"
         onclick="irParaInicio('index.html'); return false;"
         title="Início"
@@ -75,7 +77,7 @@
       </a>
 
       <a
-        class="btn"
+        class="btn questoes-header-btn questoes-header-btn-secundario"
         href="#"
         onclick="sairComConfirmacao(); return false;"
         title="Sair"
@@ -91,8 +93,12 @@
   >
     <div class="card">
 
-      <h2>
+      <h2 class="questoes-disciplinas-titulo">
         Disciplinas
+
+        <span class="questoes-disciplinas-subtitulo">
+          em ordem de prioridade para o concurso
+        </span>
       </h2>
 
       <div

@@ -295,3 +295,5627 @@ footer {
 .btn-area:hover{
   background:#6C9D78;
 }
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Página inicial - piloto visual
+   ========================================================= */
+
+.home-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* CONTEÚDO PRINCIPAL */
+
+.home-page .container {
+  max-width: 920px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+
+/* CARDS */
+
+.home-page .card {
+  position: relative;
+
+  border-top: 4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  padding: 22px 26px 27px;
+
+  margin-bottom: 24px;
+
+  border-left: 1px solid rgba(31, 78, 121, 0.05);
+  border-right: 1px solid rgba(31, 78, 121, 0.05);
+  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+/* Somente cards que tenham interação ganham
+   sensação leve de profundidade */
+
+.home-page .card:hover {
+  box-shadow:
+    0 8px 24px rgba(31, 78, 121, 0.09);
+}
+
+
+/* TÍTULOS */
+
+.home-page h2 {
+  font-size: 1.12rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+
+  margin-bottom: 16px;
+}
+
+
+/* BLOCOS INTERNOS */
+
+.home-page .assunto {
+  border-color:
+    rgba(31, 78, 121, 0.14);
+
+  border-radius: 9px;
+
+  background:
+    #ffffff;
+}
+
+
+/* BOTÕES */
+
+.home-page .btn {
+  border: 1px solid
+    rgba(31, 78, 121, 0.12);
+
+  border-radius: 8px;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+
+  box-shadow:
+    0 1px 2px rgba(31, 78, 121, 0.04);
+}
+
+
+.home-page .btn:hover {
+  background-color: #f8e66f;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.10);
+}
+
+
+/* CAMPOS */
+
+.home-page input,
+.home-page textarea,
+.home-page select {
+  font-family: inherit;
+
+  border-radius: 7px !important;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.home-page input:focus,
+.home-page textarea:focus,
+.home-page select:focus {
+  outline: none;
+
+  border-color:
+    rgba(31, 78, 121, 0.55) !important;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(31, 78, 121, 0.08);
+}
+
+
+/* RODAPÉ */
+
+.home-page footer {
+  opacity: 0.88;
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Cabeçalho da Home
+   ========================================================= */
+
+.home-page .home-header {
+  position: relative;
+
+  padding: 24px 24px 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+/* MARCA */
+
+.home-page .home-brand {
+  text-align: center;
+}
+
+
+.home-page .home-brand-title {
+  margin: 0;
+
+  color: var(--azul);
+
+  font-size: 2rem;
+
+  font-weight: 750;
+
+  line-height: 1;
+
+  letter-spacing: -0.035em;
+}
+
+
+.home-page .home-brand-subtitle {
+  margin-top: 7px;
+
+  color: #697b63;
+
+  font-size: 0.82rem;
+
+  font-weight: 500;
+
+  letter-spacing: 0.02em;
+}
+
+
+/* NAVEGAÇÃO */
+
+.home-page .home-nav {
+  position: relative;
+
+  min-height: 44px;
+
+  margin-top: 10px;
+}
+
+
+.home-page .home-nav-center {
+  display: flex;
+
+  justify-content: center;
+}
+
+
+.home-page .home-nav-actions {
+  position: absolute;
+
+  right: 0;
+
+  top: 0;
+
+  display: flex;
+
+  gap: 8px;
+}
+
+
+/* BOTÕES DE ÍCONE DO TOPO */
+
+.home-page .home-icon-btn {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 38px;
+
+  height: 38px;
+
+  margin-top: 0;
+
+  padding: 0;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  box-shadow: none;
+
+  font-size: 1rem;
+
+  font-weight: normal;
+
+  backdrop-filter: blur(3px);
+}
+
+
+.home-page .home-icon-btn:hover {
+  background:
+    rgba(255, 255, 255, 0.55);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.08);
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Hierarquia visual da Home
+   ========================================================= */
+
+.home-page .card > h2,
+.home-page .card > div > h2 {
+  color: var(--azul);
+
+  font-size: 1.18rem;
+
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  letter-spacing: -0.015em;
+}
+
+
+.home-page .assunto h3 {
+  color: var(--azul);
+
+  font-size: 1rem;
+
+  font-weight: 700;
+
+  line-height: 1.4;
+}
+
+
+.home-page p {
+  font-size: 0.94rem;
+}
+
+
+/* Texto secundário */
+
+.home-page .assunto p {
+  color: #405c75;
+}
+
+
+/* Curso disponível */
+
+.home-page .curso-nome {
+  font-size: 0.98rem;
+
+  font-weight: 650;
+
+  color: var(--azul);
+}
+
+.home-page .curso-linha .btn {
+  min-width: 0;
+
+  padding: 9px 14px;
+
+  background: #ffffff;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.18);
+
+  border-radius: 8px;
+
+  color: var(--azul);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+}
+
+
+.home-page .curso-linha .btn:hover {
+  background: var(--amarelo);
+
+  border-color:
+    rgba(31, 78, 121, 0.16);
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Cursos públicos - Home
+   ========================================================= */
+
+.home-page .curso-publico-card {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 14px;
+
+  min-width: 250px;
+
+  padding: 12px 14px;
+
+  margin: 0;
+
+  background: #ffffff;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 10px;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  box-shadow:
+    0 2px 8px rgba(31, 78, 121, 0.05);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+
+.home-page .curso-publico-card:hover {
+  color: var(--azul);
+
+  text-decoration: none;
+
+  border-color:
+    rgba(31, 78, 121, 0.28);
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 14px rgba(31, 78, 121, 0.09);
+}
+
+
+.home-page .curso-publico-nome {
+  font-size: 0.96rem;
+
+  font-weight: 650;
+
+  line-height: 1.35;
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Chamada "Não há o curso que gostaria?"
+   ========================================================= */
+
+.home-page .home-curso-nao-encontrado {
+  padding: 10px 16px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfcfe 100%
+    );
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  border-radius: 7px;
+}
+
+
+.home-page .home-curso-nao-encontrado h3 {
+  margin-bottom: 8px;
+
+  font-size: 1rem;
+
+  font-weight: 700;
+}
+
+
+.home-page .home-curso-nao-encontrado p {
+  margin-top: 6px !important;
+}
+
+.home-page .home-curso-nao-encontrado strong {
+  display: inline-block;
+
+  margin-top: 4px;
+
+  font-weight: 650;
+
+  transition:
+    transform 0.15s ease;
+}
+
+.home-page .home-curso-nao-encontrado strong:hover {
+  transform: translateX(2px);
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Vídeos da Home
+   ========================================================= */
+
+.home-page .home-video-placeholder {
+  height: 180px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfcfe 0%,
+      #f6f8fb 100%
+    );
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  border-radius: 9px;
+
+  color: #52677b;
+
+  font-size: 0.9rem;
+}
+
+
+.home-page .home-video-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+
+  background: #2e7d32;
+  color: #ffffff;
+
+  font-size: 0.9rem;
+
+  box-shadow:
+    0 3px 10px rgba(31, 78, 121, 0.08);
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Atendimento - Home
+   ========================================================= */
+
+.home-page .home-atendimento-card {
+  padding-top: 18px;
+}
+
+
+.home-page .home-atendimento-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+
+.home-page .home-atendimento-header h2 {
+  margin: 0;
+}
+
+
+.home-page .home-atendimento-conteudo {
+  margin-top: 18px;
+
+  padding-top: 16px;
+
+  border-top:
+    1px solid rgba(31, 78, 121, 0.08);
+}
+
+/* =========================================================
+   QUALITY CLEAN 2.0
+   Como funciona - Home
+   ========================================================= */
+
+.home-page .home-como-funciona-header {
+  display: flex;
+  align-items: center;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+
+.home-page .home-como-funciona-header h2 {
+  margin: 0;
+}
+
+
+.home-page .home-como-funciona-conteudo {
+  margin-top: 18px;
+  padding-top: 16px;
+
+  border-top:
+    1px solid rgba(31, 78, 121, 0.08);
+}
+
+/* Nome da marca no topo da Home */
+.home-page header h1 {
+  color: #2e7d32 !important;
+}
+
+/* Localizar - Home */
+.home-page .home-localizar {
+  margin-top: 34px;
+}
+
+/* =========================================================
+   LOGIN - maquiagem visual
+   ========================================================= */
+
+.login-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.login-page .container {
+  max-width: 760px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+.login-page .card {
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  padding: 24px 28px 28px;
+
+  box-shadow:
+    0 6px 20px rgba(31, 78, 121, 0.07);
+
+  border-left: 1px solid rgba(31, 78, 121, 0.05);
+  border-right: 1px solid rgba(31, 78, 121, 0.05);
+  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+}
+
+.login-page .card h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: 18px;
+}
+
+.login-page label {
+  font-size: 0.94rem;
+}
+
+.login-page input {
+  font-family: inherit;
+
+  border-radius: 8px !important;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.login-page input:focus {
+  outline: none;
+
+  border-color:
+    rgba(31, 78, 121, 0.50) !important;
+
+  box-shadow:
+    0 0 0 3px rgba(31, 78, 121, 0.08);
+}
+
+.login-page .btn {
+  border-radius: 8px;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.login-page .btn:hover {
+  background-color: #f8e66f;
+  color: var(--azul);
+  text-decoration: none;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.10);
+}
+
+.login-page footer {
+  opacity: 0.88;
+}
+
+/* =========================================================
+   LOGIN - hierarquia de ações
+   ========================================================= */
+
+.login-page #formLogin .btn {
+  width: 100%;
+
+  margin-top: 6px;
+
+  padding: 11px 18px;
+
+  background: var(--amarelo);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.16);
+
+  font-weight: 700;
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.06);
+}
+
+
+.login-page #formLogin .btn:hover {
+  background: #f8e66f;
+
+  box-shadow:
+    0 5px 12px rgba(31, 78, 121, 0.10);
+}
+
+
+/* Recuperação de senha */
+
+.login-page .assunto {
+  margin-top: 26px !important;
+
+  padding: 16px 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #fbfcfe 100%
+    );
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  border-radius: 9px;
+}
+
+
+.login-page .assunto h3 {
+  font-size: 1rem;
+
+  margin-bottom: 12px;
+
+  color: var(--azul);
+}
+
+
+/* Não possuo cadastro */
+
+.login-page #areaNaoPossuoCadastro {
+  margin-top: 20px !important;
+}
+
+
+.login-page #areaNaoPossuoCadastro .btn {
+  height: auto !important;
+
+  padding: 10px 18px;
+
+  background: #ffffff;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.16);
+
+  color: var(--azul);
+
+  box-shadow: none;
+}
+
+
+.login-page #areaNaoPossuoCadastro .btn:hover {
+  background: #f8fafc;
+
+  border-color:
+    rgba(31, 78, 121, 0.28);
+
+  transform: translateY(-1px);
+}
+
+.login-page .assunto .btn {
+  border: none;
+}
+
+/* =========================================================
+   MEUS CURSOS - maquiagem visual
+   ========================================================= */
+
+.cursos-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.cursos-page .container {
+  max-width: 920px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+.cursos-page .card {
+  border-top: 4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  padding: 22px 26px 26px;
+
+  margin-bottom: 24px;
+
+  border-left: 1px solid rgba(31, 78, 121, 0.05);
+  border-right: 1px solid rgba(31, 78, 121, 0.05);
+  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.cursos-page #titulo_cursos {
+  margin-bottom: 18px;
+
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+
+  color: var(--azul);
+}
+
+.cursos-page #lista .btn {
+  margin-top: 0;
+
+  padding: 9px 16px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.cursos-page #lista .btn:hover {
+  background: #f8e66f;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.09);
+}
+
+/* Linha do curso ativo - Meus Cursos */
+.cursos-page #lista .curso-linha {
+  padding: 7px 14px;
+}
+
+.cursos-page #lista .btn {
+  margin-top: 0;
+
+  padding: 7px 15px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+/* Títulos das seções - Meus Cursos */
+.cursos-page .cursos-status-titulo {
+  margin: 0 0 18px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--azul);
+}
+
+/* Espaçamento entre os cursos - Meus Cursos */
+.cursos-page #lista .disciplina + .disciplina,
+.cursos-page #lista_expirados .disciplina + .disciplina {
+  margin-top: 7px;
+}
+
+/* =========================================================
+   MEUS CURSOS - cabeçalho
+   ========================================================= */
+
+.cursos-page .cursos-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+.cursos-page .cursos-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.cursos-page .cursos-header-acoes .btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  margin-top: 0;
+  padding: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  font-weight: normal;
+
+  box-shadow: none;
+}
+
+
+.cursos-page .cursos-header-acoes .btn:hover {
+  background:
+    rgba(255, 255, 255, 0.55);
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+}
+
+/* Alinhamento do título dos cursos expirados */
+.cursos-page #card_cursos_expirados .cursos-status-titulo {
+  margin-left: 24px;
+}
+
+/* =========================================================
+   CURSO - maquiagem visual
+   ========================================================= */
+
+.curso-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+.curso-page .container {
+  max-width: 920px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+
+.curso-page .card {
+  border-top: 4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  padding: 22px 26px 26px;
+
+  margin-bottom: 24px;
+
+  border-left: 1px solid rgba(31, 78, 121, 0.05);
+  border-right: 1px solid rgba(31, 78, 121, 0.05);
+  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+
+.curso-page .curso-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+.curso-page .curso-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.curso-page .curso-header-acoes .btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  margin-top: 0;
+  padding: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  font-weight: normal;
+
+  box-shadow: none;
+}
+
+
+.curso-page .curso-header-acoes .btn:hover {
+  background:
+    rgba(255, 255, 255, 0.55);
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   CURSO - cards de ações
+   ========================================================= */
+
+.curso-page .curso-acao-card {
+  padding: 9px 14px;
+
+  margin-bottom: 18px;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+}
+
+
+.curso-page .curso-acao-linha {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 44px;
+}
+
+
+.curso-page .curso-acao-linha + .curso-acao-linha {
+  margin-top: 14px;
+}
+
+
+.curso-page .curso-acao-titulo {
+  flex: 1;
+
+  min-width: 0;
+
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  color: var(--azul);
+}
+
+
+.curso-page .curso-acao-btn {
+  flex: 0 0 auto;
+
+  margin-top: 0;
+
+  padding: 8px 15px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+}
+
+.curso-page .curso-acao-btn:hover {
+  background: #f8e66f;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.09);
+}
+
+
+.curso-page .curso-acao-card-unico {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   CURSO - mensagens suspensas
+   ========================================================= */
+
+.curso-page .curso-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: default;
+}
+
+.curso-page .curso-tooltip::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+
+  left: 210px;
+  top: 50%;
+
+  width: max-content;
+  max-width: 320px;
+
+  padding: 8px 10px;
+
+  background: #ffffff;
+  color: #405c75;
+
+  border: 1px solid rgba(31, 78, 121, 0.16);
+  border-radius: 8px;
+
+  box-shadow:
+    0 6px 18px rgba(31, 78, 121, 0.10);
+
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+
+  white-space: normal;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform: translateY(-50%) translateX(-4px);
+
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s ease;
+
+  z-index: 20;
+
+  pointer-events: none;
+}
+
+.curso-page .curso-tooltip::before {
+  content: "";
+
+  position: absolute;
+
+  left: 205px;
+  top: 50%;
+
+  width: 9px;
+  height: 9px;
+
+  background: #ffffff;
+
+  border-left: 1px solid rgba(31, 78, 121, 0.16);
+  border-bottom: 1px solid rgba(31, 78, 121, 0.16);
+
+  transform:
+    translateY(-50%)
+    rotate(45deg);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+
+  z-index: 21;
+
+  pointer-events: none;
+}
+
+.curso-page .curso-tooltip:hover::after,
+.curso-page .curso-tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.curso-page .curso-tooltip:hover::after {
+  transform:
+    translateY(-50%)
+    translateX(0);
+}
+
+/* =========================================================
+   DISCIPLINAS - maquiagem visual
+   ========================================================= */
+
+.disciplinas-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+.disciplinas-page .container {
+  max-width: 920px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+
+.disciplinas-page .disciplinas-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+.disciplinas-page .disciplinas-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.disciplinas-page .disciplinas-header-acoes .btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  margin-top: 0;
+  padding: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  font-weight: normal;
+
+  box-shadow: none;
+}
+
+
+.disciplinas-page .disciplinas-intro-card {
+  padding: 15px 22px;
+
+  margin-bottom: 14px;
+
+  border-top: 4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+
+.disciplinas-page .disciplinas-intro-card h2 {
+  margin: 0;
+
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+
+.disciplinas-page .disciplinas-subtitulo {
+  margin-left: 4px;
+
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  color: #607286;
+}
+
+
+.disciplinas-page #lista {
+  gap: 12px;
+}
+
+
+.disciplinas-page .disciplina-curso-card {
+  padding: 14px 16px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+
+.disciplinas-page .disciplina-curso-topo {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.disciplinas-page .disciplina-curso-nome {
+  flex: 1;
+
+  min-width: 0;
+
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+
+.disciplinas-page .disciplina-curso-btn {
+  flex: 0 0 auto;
+
+  margin-top: 0;
+
+  padding: 8px 15px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+}
+
+
+.disciplinas-page .disciplina-progresso {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 12px;
+}
+
+
+.disciplinas-page .disciplina-progresso-trilho {
+  flex: 1;
+
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e5e9ee;
+}
+
+
+.disciplinas-page .disciplina-progresso-preenchimento {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: #aebdca;
+
+  transition: width 0.25s ease;
+}
+
+
+.disciplinas-page .disciplina-progresso-percentual {
+  min-width: 42px;
+
+  text-align: right;
+
+  font-size: 0.84rem;
+  font-weight: 700;
+
+  color: #52677b;
+}
+
+
+.disciplinas-page .disciplina-bloqueada {
+  opacity: 0.55;
+}
+
+
+.disciplinas-page .disciplina-curso-btn-bloqueado {
+  cursor: default;
+}
+
+/* =========================================================
+   ASSUNTOS - maquiagem visual
+   ========================================================= */
+
+.assuntos-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+.assuntos-page .container {
+  max-width: 920px;
+  margin-top: 34px;
+  margin-bottom: 44px;
+}
+
+
+.assuntos-page .assuntos-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+.assuntos-page .assuntos-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.assuntos-page .assuntos-header-acoes .btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  margin-top: 0;
+  padding: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  font-weight: normal;
+
+  box-shadow: none;
+}
+
+
+.assuntos-page .assuntos-disciplina-card,
+.assuntos-page .assuntos-intro-card {
+  padding: 15px 22px;
+
+  margin-bottom: 14px;
+
+  border-top: 4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+
+.assuntos-page .assuntos-disciplina-card h2,
+.assuntos-page .assuntos-intro-card h2 {
+  margin: 0;
+
+  font-size: 1.12rem;
+
+  font-weight: 700;
+}
+
+
+.assuntos-page .assuntos-subtitulo {
+  margin-left: 4px;
+
+  font-size: 0.88rem;
+
+  font-weight: 500;
+
+  color: #607286;
+}
+
+
+.assuntos-page #lista {
+  gap: 12px;
+}
+
+
+.assuntos-page .assunto-curso-card {
+  padding: 7px 12px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+
+.assuntos-page .assunto-curso-topo {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 34px;
+}
+
+
+.assuntos-page .assunto-curso-nome {
+  flex: 1;
+
+  min-width: 0;
+
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+
+.assuntos-page .assunto-curso-btn {
+  flex: 0 0 auto;
+
+  margin-top: 0;
+
+  padding: 6px 13px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+}
+
+
+.assuntos-page .assunto-progresso {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 5px;
+}
+
+
+.assuntos-page .assunto-progresso-trilho {
+  flex: 1;
+
+  height: 6px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e5e9ee;
+}
+
+
+.assuntos-page .assunto-progresso-preenchimento {
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: #aebdca;
+
+  transition: width 0.25s ease;
+}
+
+
+.assuntos-page .assunto-progresso-percentual {
+  min-width: 42px;
+
+  text-align: right;
+
+  font-size: 0.84rem;
+
+  font-weight: 700;
+
+  color: #52677b;
+}
+
+/* =========================================================
+   TEORIA - cabeçalho
+   ========================================================= */
+
+.teoria-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+.teoria-page .teoria-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+
+.teoria-page .teoria-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.teoria-page .teoria-header-acoes .btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  margin-top: 0;
+  padding: 0;
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 255, 255, 0.28);
+
+  border:
+    1px solid rgba(31, 78, 121, 0.10);
+
+  font-weight: normal;
+
+  box-shadow: none;
+}
+
+
+.teoria-page .teoria-aluno {
+  position: absolute;
+
+  right: 24px;
+  top: 7px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  color: #667085;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   TEORIA - identificação da disciplina e assunto
+   ========================================================= */
+
+.teoria-page .teoria-header-identificacao {
+  text-align: center;
+  line-height: 1.2;
+}
+
+.teoria-page .teoria-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.65rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.teoria-page #titulo_assunto_header {
+  margin-top: 7px;
+
+  font-size: 1.08rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Faixa com "Assunto - Parte I" */
+
+.teoria-page .teoria-assunto-faixa {
+  min-height: 52px;
+
+  padding: 0 36px;
+
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+
+  position: relative;
+
+  border-top-color: #dbe2f0;
+}
+
+.teoria-page .teoria-assunto-faixa h2 {
+  position: relative;
+  top: -3px;
+}
+
+.teoria-page .teoria-assunto-faixa h2 {
+  margin: 0;
+
+  font-size: 1rem;
+  font-weight: 500;
+
+  text-align: left;
+
+  color: var(--azul);
+}
+
+/* =========================================================
+   TEORIA - ÁREA DE QUESTÕES
+   ========================================================= */
+
+.teoria-page .questoes-bateria-card {
+  padding: 11px 13px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.teoria-page .questoes-bateria-linha {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+.teoria-page .questoes-bateria-info {
+  flex: 1;
+
+  min-width: 220px;
+}
+
+.teoria-page .questoes-bateria-titulo {
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.teoria-page .questoes-bateria-desempenho {
+  margin-top: 5px;
+
+  font-size: 0.84rem;
+
+  color: #5b6775;
+}
+
+.teoria-page .questoes-bateria-acoes {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  justify-content: flex-end;
+}
+
+/* =========================================================
+   TEORIA - AÇÕES DAS BATERIAS
+   ========================================================= */
+
+.teoria-page .questoes-status-feita {
+  height: 28px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #72a987;
+  border-radius: 999px;
+
+  background: #e2f3e7;
+
+  font-size: 0.76rem;
+  font-weight: 500;
+
+  color: #285c3d;
+
+  margin: 0;
+}
+
+
+.teoria-page .questoes-status-andamento {
+  height: 28px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d8bd7a;
+  border-radius: 999px;
+
+  background: #fffdf6;
+
+  font-size: 0.76rem;
+  font-weight: 500;
+
+  color: #6f531d;
+
+  margin: 0;
+}
+
+
+.teoria-page .questoes-btn-visualizar {
+  min-width: 100px;
+  height: 36px;
+
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+
+.teoria-page .questoes-btn-refazer {
+  min-width: 118px;
+  height: 36px;
+
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  margin: 0;
+
+  background: #fff8cc;
+
+  border: 1px solid #eadf9a;
+
+  box-shadow: none;
+
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+
+.teoria-page .questoes-btn-fazer:hover,
+.teoria-page .questoes-btn-continuar:hover,
+.teoria-page .questoes-btn-visualizar:hover,
+.teoria-page .questoes-btn-refazer:hover {
+  background: #fff3ae;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  border-color: #eadf9a;
+
+  box-shadow: none;
+
+  transform: none;
+}
+
+.teoria-page .questoes-status-feita,
+.teoria-page .questoes-status-andamento {
+  height: 28px;
+
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border-radius: 999px;
+
+  font-size: 0.76rem;
+  font-weight: 500;
+
+  margin: 0;
+}
+
+.teoria-page .questoes-btn-continuar {
+  min-width: 100px;
+  height: 36px;
+
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.teoria-page .questoes-btn-fazer,
+.teoria-page .questoes-btn-continuar,
+.teoria-page .questoes-btn-visualizar,
+.teoria-page .questoes-btn-refazer {
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  margin: 0;
+}
+
+.teoria-page .questoes-btn-fazer,
+.teoria-page .questoes-btn-continuar,
+.teoria-page .questoes-btn-visualizar {
+  min-width: 100px;
+  padding: 0 14px;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* =========================================================
+   TEORIA - ÁREA DE VÍDEO
+   ========================================================= */
+
+.teoria-page .video-vazio {
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 16px;
+}
+
+.teoria-page .video-vazio-icone {
+  font-size: 1.25rem;
+}
+
+.teoria-page .video-vazio-texto {
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  color: #4b5f73;
+}
+
+/* =========================================================
+   TEORIA - TEXTO E PARÁGRAFOS
+   ========================================================= */
+
+.teoria-page .teoria-texto-conteudo {
+  line-height: 1.8;
+  text-indent: 0;
+  text-align: justify;
+}
+
+.teoria-page .teoria-paragrafo {
+  margin: 0 0 18.5px 0;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.teoria-page .teoria-paragrafo:last-child {
+  margin-bottom: 0;
+}
+
+/* Margens internas da área de leitura da teoria */
+.teoria-page .teoria-texto-conteudo {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* =========================================================
+   SPRINT - CABEÇALHO
+   ========================================================= */
+
+.sprint-header {
+  position: relative;
+
+  padding: 22px 24px 24px;
+
+  background: var(--amarelo);
+
+  color: var(--azul);
+}
+
+.sprint-header-identificacao {
+  text-align: center;
+
+  line-height: 1.2;
+}
+
+.sprint-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.40rem;
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+.sprint-header #subtitulo_bateria {
+  margin-top: 7px;
+
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+.sprint-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 47px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.sprint-header-acoes .btn {
+  margin-top: 0;
+}
+
+/* =========================================================
+   SPRINT - BOTÕES DO CABEÇALHO
+   ========================================================= */
+
+.sprint-header-acoes .btn {
+  width: 36px;
+  height: 36px;
+
+  min-width: 36px;
+  padding: 0;
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  color: var(--azul);
+
+  border: 1px solid rgba(0, 59, 115, 0.14);
+  border-radius: 10px;
+
+  box-shadow: none;
+
+  font-weight: 400;
+  text-decoration: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.sprint-header-acoes .btn:hover,
+.sprint-header-acoes .btn:focus,
+.sprint-header-acoes .btn:active {
+  background: rgba(255, 255, 255, 0.20);
+  color: var(--azul);
+
+  border-color: rgba(0, 59, 115, 0.20);
+
+  box-shadow: none;
+  transform: none;
+
+  text-decoration: none;
+}
+
+/* =========================================================
+   SPRINT - QUESTÃO
+   ========================================================= */
+
+.sprint-questao-titulo {
+  margin: 0;
+
+  font-size: 1.08rem;
+  font-weight: 700;
+
+  color: #174a84;
+}
+
+.sprint-questao-enunciado {
+  margin-top: 7.5px;
+  margin-bottom: 18px;
+
+  white-space: pre-line;
+
+  font-size: 1rem;
+  line-height: 1.75;
+
+  text-align: justify;
+}
+
+.sprint-questao-card {
+  padding: 24px 28px 28px;
+}
+
+.sprint-dificuldade-card {
+  margin-top: 22px;
+  padding: 14px 16px;
+}
+
+.sprint-dificuldade-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sprint-dificuldade-texto {
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.sprint-dificuldade-opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 5px 10px;
+
+  border: 1px solid #ddd;
+  border-radius: 999px;
+
+  cursor: pointer;
+
+  font-size: 0.92rem;
+
+  transform: translateY(-3px);
+}
+
+.sprint-btn-responder {
+  min-width: 112px;
+  height: 40px;
+
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  border: 1px solid #e2c95f;
+  box-shadow: none;
+}
+
+.sprint-btn-responder:hover {
+  background: #fff3a6;
+  border-color: #d8bd4f;
+  color: var(--azul);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Tela exibida após concluir as 10 questões */
+.sprint-conclusao-card {
+  min-height: 135px;
+
+  padding: 28px 30px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sprint-conclusao-titulo {
+
+    font-size: 1.45rem;
+
+    margin-bottom: 4px;
+}
+
+/* Botões Revisar agora / Revisar depois */
+.sprint-conclusao-acoes {
+  margin-top: 24px;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  flex-wrap: wrap;
+}
+
+.sprint-conclusao-btn {
+  min-width: 118px;
+  min-height: 40px;
+
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-width: 1px;
+  border-color: #e2c85b;
+}
+
+.sprint-conclusao-btn:hover {
+  background: #ffe67a;
+
+  border-color: #d8bf55;
+
+  color: var(--azul);
+
+  transition: .15s ease;
+}
+
+.sprint-conclusao-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* =========================================================
+   TELA DE REVISÃO DA BATERIA
+   Primeira etapa: estrutura e conteúdo
+========================================================= */
+
+/* Faixa superior "Revisão" */
+.sprint-revisao-faixa {
+  min-height: 52px;
+
+  padding: 0 28px;
+
+  display: flex;
+  align-items: center;
+}
+
+.sprint-revisao-faixa-titulo {
+  margin: 0;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+
+/* Card individual de cada questão */
+.sprint-revisao-questao-card {
+  padding: 22px 28px 20px;
+
+  margin-bottom: 10px;
+}
+
+
+/* Número da questão */
+.sprint-revisao-questao-titulo {
+  margin: 0;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+
+/* Enunciado */
+.sprint-revisao-enunciado {
+  margin-top: 20px;
+  margin-bottom: 10.5px;
+
+  white-space: normal;
+
+  font-size: 1rem;
+  line-height: 1.68;
+
+  color: #123f6d;
+
+  text-align: justify;
+  text-indent: 0;
+}
+
+
+/* Lista de alternativas */
+.sprint-revisao-alternativas {
+  margin-top: 0;
+}
+
+
+/* Alternativa padrão */
+.sprint-revisao-alternativa {
+  min-height: 48px;
+
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+
+  margin-top: 9px;
+
+  line-height: 1.45;
+
+  border: 1px solid #d7dce2;
+  border-radius: 7px;
+
+  box-shadow: none;
+}
+
+
+/* Alternativa correta */
+.sprint-revisao-alternativa-correta {
+  background: #e7f7ee;
+
+  border-color: #2f5e46;
+
+  font-weight: 700;
+}
+
+
+/* Alternativa marcada incorretamente */
+.sprint-revisao-alternativa-errada {
+  background: #fff3e6;
+
+  border-color: #9a5a16;
+
+  color: #9a5a16;
+
+  font-weight: 700;
+}
+
+
+/* Resultado da questão */
+.sprint-revisao-resultado {
+  margin-top: 18px;
+}
+
+.sprint-revisao-acerto,
+.sprint-revisao-erro {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sprint-revisao-acerto {
+  color: #2f5e46;
+}
+
+.sprint-revisao-erro {
+  color: #9a5a16;
+}
+
+
+/* Gabarito */
+.sprint-revisao-gabarito {
+  margin-top: 7px;
+
+  line-height: 1.5;
+}
+
+
+/* Comentário */
+.sprint-revisao-comentario {
+  margin-top: 22px;
+}
+
+.sprint-revisao-comentario-texto {
+  margin-top: 7px;
+
+  white-space: normal;
+
+  line-height: 1.65;
+
+  color: #234d75;
+
+  text-align: justify;
+  text-indent: 0;
+}
+
+.sprint-revisao-alternativa b {
+  margin-right: 7px;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   REVISÃO - BOTÕES
+========================================================= */
+
+.sprint-revisao-anotacao-acoes{
+    margin-top:12px;
+
+    display:flex;
+    align-items:center;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+}
+
+
+/* Botões da anotação */
+
+.sprint-revisao-btn-acao {
+  min-height: 40px;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d8bf56;
+  box-shadow: none;
+
+  transition:
+    background-color .15s ease,
+    border-color .15s ease,
+    color .15s ease;
+}
+
+.sprint-revisao-btn-acao:hover{
+
+    background:#f6df72;
+
+    border-color:#d8bf56;
+
+    color:var(--azul);
+
+    transform:none;
+
+    box-shadow:none;
+}
+
+.sprint-revisao-btn-acao:focus{
+
+    outline:none;
+
+    box-shadow:none;
+}
+
+
+
+/* Card final */
+
+.sprint-revisao-finalizar-card{
+
+    padding:22px 28px;
+
+}
+
+
+
+/* Botão finalizar */
+
+.sprint-revisao-btn-finalizar {
+  margin-left: 18px;
+
+  min-height: 42px;
+  padding: 0 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d8bf56;
+  box-shadow: none;
+
+  transition:
+    background-color .15s ease,
+    border-color .15s ease,
+    color .15s ease;
+}
+
+.sprint-revisao-btn-finalizar:hover{
+
+    background:#f6df72;
+
+    border-color:#d8bf56;
+
+    color:var(--azul);
+
+    transform:none;
+
+    box-shadow:none;
+}
+
+.sprint-revisao-btn-finalizar:focus{
+
+    outline:none;
+
+    box-shadow:none;
+}
+
+.sprint-visualizar-fechar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70px;
+}
+
+.questoes-disciplinas-page .container {
+  margin-top: 40px;
+}
+
+.questoes-disciplinas-page .questoes-header-btn {
+  font-weight: 500;
+}
+
+.questoes-disciplinas-page .questoes-header-btn-secundario {
+  font-weight: 400;
+}
+
+.questoes-disciplinas-page .disciplina-curso-nome {
+  padding-left: 8px;
+}
+
+.questoes-disciplinas-page .disciplina-curso-card {
+  padding: 9px 14px;
+}
+
+.questoes-disciplinas-page .disciplina-curso-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.questoes-disciplinas-page .disciplina-curso-btn {
+  margin-top: 0;
+  align-self: center;
+}
+
+/* =========================================================
+   QUESTÕES - LISTA DE DISCIPLINAS
+========================================================= */
+
+.questoes-disciplinas-page .questoes-disciplina-card {
+  padding: 12px 10px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.questoes-disciplinas-page .questoes-disciplina-linha {
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.questoes-disciplinas-page .questoes-disciplina-nome {
+  flex: 1;
+
+  min-width: 0;
+
+  padding-left: 8px;
+
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-disciplinas-page .questoes-disciplina-btn {
+  flex: 0 0 auto;
+
+  margin-top: 0;
+
+  padding: 7px 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+}
+
+.questoes-disciplinas-page .questoes-disciplina-bloqueada {
+  opacity: 0.55;
+}
+
+.questoes-disciplinas-page .questoes-disciplina-btn-bloqueado {
+  cursor: default;
+}
+
+/* Cabeçalho da tela Questões - Disciplinas */
+.questoes-disciplinas-page .questoes-header-identificacao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.questoes-disciplinas-page #titulo_curso_nome {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-disciplinas-page #titulo_modulo_questoes {
+  margin: 9px 0 0 0;
+
+  font-size: 1.43rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+.questoes-disciplinas-page .questoes-disciplina-btn:hover {
+  background: #f8e66f;
+
+  color: var(--azul);
+
+  border-color:
+    rgba(31, 78, 121, 0.16);
+
+  text-decoration: none;
+
+  transform: none;
+
+  box-shadow:
+    0 3px 8px rgba(31, 78, 121, 0.08);
+}
+
+.questoes-disciplinas-page #lista .questoes-disciplina-btn:hover {
+  background: #f8e66f;
+
+  color: var(--azul);
+
+  border-color:
+    rgba(31, 78, 121, 0.16);
+
+  text-decoration: none;
+
+  transform: none;
+
+  box-shadow:
+    0 3px 8px rgba(31, 78, 121, 0.08);
+}
+
+.questoes-disciplinas-page .questoes-disciplinas-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  margin-bottom: 16px;
+
+  font-size: 1.26rem;
+}
+
+.questoes-disciplinas-page .questoes-disciplinas-subtitulo {
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  color: #607286;
+}
+
+/* =========================================================
+   QUESTÕES - LISTA DE ASSUNTOS
+========================================================= */
+
+.questoes-assuntos-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* Cabeçalho */
+
+.questoes-assuntos-page .questoes-assuntos-header-identificacao {
+  margin-top: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.questoes-assuntos-page #titulo_curso_nome {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-assuntos-page .questoes-assuntos-modulo {
+  margin: 9px 0 0;
+
+  font-size: 1.18rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Conteúdo principal */
+
+.questoes-assuntos-page .container {
+  max-width: 900px;
+
+  margin-top: 40px;
+  margin-bottom: 44px;
+}
+
+
+/* Card com o nome da disciplina */
+
+.questoes-assuntos-page .questoes-assuntos-disciplina-card {
+  padding: 15px 22px;
+
+  margin-bottom: 8px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-assuntos-page .questoes-assuntos-disciplina-card h2 {
+  margin: 0;
+
+  font-size: 1.12rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-assuntos-page #nome_disciplina_card {
+  font-weight: 700;
+}
+
+
+/* Card da lista de assuntos */
+
+.questoes-assuntos-page .questoes-assuntos-lista-card {
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  padding: 18px 22px 22px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-assuntos-page .questoes-assuntos-titulo {
+  margin-bottom: 16px;
+
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  font-size: 1.0rem;
+  font-weight: 700;
+
+  color: var(--azul);
+  position: relative;
+  top: 2px;
+}
+
+.questoes-assuntos-page .questoes-assuntos-subtitulo {
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  color: #607286;
+}
+
+
+/* Lista */
+
+.questoes-assuntos-page #lista {
+  gap: 12px;
+}
+
+
+/* Card individual do assunto */
+
+.questoes-assuntos-page .questoes-assunto-card {
+  padding: 8px 10px;
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.questoes-assuntos-page .questoes-assunto-linha {
+  min-height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+
+/* Nome do assunto: hierarquicamente abaixo da disciplina */
+
+.questoes-assuntos-page .questoes-assunto-nome {
+  flex: 1;
+
+  min-width: 0;
+
+  padding-left: 8px;
+
+  font-size: 0.85rem;
+
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+
+/* Botão Abrir */
+
+.questoes-assuntos-page .questoes-assunto-btn {
+  flex: 0 0 auto;
+
+  margin-top: 0;
+  padding: 7px 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 2px 6px rgba(31, 78, 121, 0.05);
+}
+
+.questoes-assuntos-page #lista .questoes-assunto-btn:hover {
+  background: #f8e66f;
+
+  color: var(--azul);
+
+  border-color:
+    rgba(31, 78, 121, 0.16);
+
+  text-decoration: none;
+
+  transform: none;
+
+  box-shadow:
+    0 3px 8px rgba(31, 78, 121, 0.08);
+}
+
+/* =========================================================
+   QUESTÕES - ASSUNTOS
+   Ações do cabeçalho
+========================================================= */
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes {
+  position: absolute;
+
+  right: 43px;
+  top: 44px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin-top: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+
+  opacity: 0.72;
+}
+
+/* =========================================================
+   QUESTÕES PRÁTICAS - TELA DO ALUNO
+========================================================= */
+
+.questoes-pratica-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* Cabeçalho */
+
+.questoes-pratica-page .questoes-pratica-header-identificacao {
+  margin-top: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.questoes-pratica-page #titulo_curso_nome {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-pratica-page .questoes-pratica-modulo {
+  margin: 9px 0 0;
+
+  font-size: 1.18rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Botões do cabeçalho */
+
+.questoes-pratica-page .questoes-pratica-header-acoes {
+  position: absolute;
+
+  right: 43px;
+  top: 44px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.questoes-pratica-page .questoes-pratica-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin-top: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.questoes-pratica-page .questoes-pratica-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+
+  opacity: 0.72;
+}
+
+
+/* Conteúdo */
+
+.questoes-pratica-page .container {
+  max-width: 900px;
+
+  margin-top: 32px;
+  margin-bottom: 44px;
+}
+
+
+/* Card Disciplina / Assunto */
+
+.questoes-pratica-page .questoes-pratica-identificacao-card {
+  padding: 13px 22px;
+
+  margin-bottom: 16px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-pratica-page .questoes-pratica-identificacao-linha {
+  line-height: 1.45;
+
+  font-size: 0.96rem;
+
+  color: var(--azul);
+}
+
+.questoes-pratica-page
+.questoes-pratica-identificacao-linha
++
+.questoes-pratica-identificacao-linha {
+  margin-top: 5px;
+}
+
+
+/* Filtros */
+
+.questoes-pratica-page .questoes-pratica-filtros-card {
+  padding: 11px 20px;
+
+  margin-bottom: 18px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-pratica-page .questoes-pratica-filtros {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+.questoes-pratica-page .questoes-pratica-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  font-size: 0.84rem;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+.questoes-pratica-page .questoes-pratica-filtro-indisponivel {
+  opacity: 0.42;
+
+  cursor: default;
+}
+
+
+/* Card da questão */
+
+.questoes-pratica-page .questoes-pratica-questao-card {
+  padding: 20px 24px 22px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-pratica-page .questoes-pratica-numero {
+  margin: 0;
+
+  font-size: 1.04rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-pratica-page .questoes-pratica-enunciado {
+  margin-top: 18px;
+
+  font-size: 0.98rem;
+  line-height: 1.65;
+
+  color: #123f6d;
+
+  text-align: justify;
+}
+
+
+/* Respostas */
+
+.questoes-pratica-page .questoes-pratica-respostas-bloco {
+  margin-top: 15px;
+}
+
+.questoes-pratica-page .questoes-pratica-alternativas {
+  display: flex;
+  flex-direction: column;
+
+  gap: 13px;
+}
+
+.questoes-pratica-page .questoes-pratica-orientacao {
+  margin-bottom: 2px;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.questoes-pratica-page .questoes-pratica-alternativa {
+  min-height: 44px;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.18);
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font-size: 0.9rem;
+  line-height: 1.4;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.questoes-pratica-page .questoes-pratica-alternativa:hover {
+  background: #fbfcfe;
+
+  border-color:
+    rgba(31, 78, 121, 0.30);
+}
+
+.questoes-pratica-page .questoes-pratica-alternativa input {
+  flex: 0 0 auto;
+}
+
+
+/* Rever */
+
+.questoes-pratica-page .questoes-pratica-rever {
+  margin-top: 10px;
+
+  display: flex;
+  justify-content: flex-end;
+
+  font-size: 0.9rem;
+}
+
+.questoes-pratica-page .questoes-pratica-rever label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+
+/* Classificação — mantém a posição atual */
+
+.questoes-pratica-page .questoes-pratica-dificuldade {
+  margin-top: 5px;
+}
+
+.questoes-pratica-page .questoes-pratica-dificuldade-titulo {
+  margin-bottom: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.questoes-pratica-page .questoes-pratica-dificuldade-opcoes {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+
+  flex-wrap: wrap;
+}
+
+.questoes-pratica-page
+.questoes-pratica-dificuldade-opcoes
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  font-size: 0.88rem;
+}
+
+
+/* Mensagem */
+
+.questoes-pratica-page .questoes-pratica-mensagem {
+  margin-top: 12px;
+
+  line-height: 1.55;
+}
+
+
+/* Ações */
+
+.questoes-pratica-page .questoes-pratica-acoes {
+  margin-top: 29px;
+
+  display: flex;
+  align-items: center;
+  gap: 26px;
+
+  flex-wrap: wrap;
+}
+
+.questoes-pratica-page .questoes-pratica-btn {
+  min-height: 38px;
+
+  margin-top: 0;
+  padding: 0 15px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.questoes-pratica-page .questoes-pratica-btn:hover {
+  background: #f8e66f;
+
+  border-color: #d8bf56;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+.questoes-pratica-page .questoes-pratica-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.questoes-pratica-page .questoes-pratica-btn-responder {
+  min-width: 128px;
+}
+
+.questoes-pratica-page .questoes-pratica-rever input {
+  width: 15px;
+  height: 15px;
+}
+
+.questoes-pratica-page
+.questoes-pratica-dificuldade-opcoes
+label {
+
+  min-width: 68px;
+  min-height: 30px;
+
+  padding: 4px 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  border: 1px solid rgba(31,78,121,.16);
+  border-radius: 6px;
+
+  background: #fff;
+
+  font-size: .86rem;
+
+  cursor: pointer;
+}
+
+.questoes-pratica-page
+.questoes-pratica-dificuldade-opcoes
+label:hover {
+  background: #fbfcfe;
+
+  border-color:
+    rgba(31, 78, 121, 0.30);
+}
+
+/* =========================================================
+   ASSUNTOS IMPORTANTES - REVISÕES PROGRAMADAS
+========================================================= */
+
+.revisoes-programadas-page {
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #f9fafb 100%
+    );
+}
+
+
+/* Cabeçalho */
+
+.revisoes-programadas-page
+.revisoes-programadas-header {
+  position: relative;
+
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-header-identificacao {
+  margin-top: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-header-identificacao h2 {
+  margin: 11px 0 0;
+
+  font-size: 1.31rem;
+  font-weight: 500;
+
+  color: #36597b;
+}
+
+
+/* Ações do cabeçalho */
+
+.revisoes-programadas-page
+.revisoes-programadas-header-acoes {
+  position: absolute;
+
+  right: 38px;
+  top: 45px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-header-acoes
+.btn {
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  box-shadow: none;
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-header-acoes
+.btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Conteúdo */
+
+.revisoes-programadas-page
+.container {
+  max-width: 900px;
+
+  margin-top: 32px;
+  margin-bottom: 44px;
+}
+
+
+/* Cards */
+
+.revisoes-programadas-page
+.revisoes-programadas-card {
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px
+    rgba(31, 78, 121, 0.06);
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-titulo {
+  margin-bottom: 14px;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Botões principais */
+
+.revisoes-programadas-page
+.revisoes-programadas-btn {
+  width: 238px;
+  min-height: 38px;
+
+  margin-top: 0;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+
+  border:
+    1px solid #e2c85b;
+
+  border-radius: 7px;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.revisoes-programadas-page
+.revisoes-programadas-btn:hover {
+  background: #f8e66f;
+
+  border-color: #d8bf56;
+
+  color: var(--azul);
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Listas internas */
+
+.revisoes-programadas-page
+.revisoes-programadas-lista {
+  margin-top: 14px;
+}
+
+/* =========================================================
+   QUESTÕES DIFERENCIADAS — ESCOLHA E IDENTIFICAÇÃO
+========================================================= */
+
+
+/* Card Escolha */
+
+.questoes-criticas-page
+.questoes-criticas-escolha-card {
+  padding: 15px 20px 17px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 14px rgba(31, 78, 121, 0.06);
+}
+
+.questoes-criticas-page
+.questoes-criticas-escolha-titulo {
+  margin: 0 0 14px;
+
+  font-size: 1.02rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Conjunto dos filtros */
+
+.questoes-criticas-page
+.questoes-criticas-filtros {
+  display: flex;
+  align-items: flex-end;
+
+  column-gap: 34px;
+  row-gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+
+/* Cada filtro */
+
+.questoes-criticas-page
+.questoes-criticas-filtro-grupo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-filtro-grupo label {
+  font-size: 1.0rem;
+  font-weight: 600;
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-filtro-grupo label {
+  font-size: 0.80rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-select {
+  width: 205px;
+  min-height: 34px;
+
+  padding: 5px 9px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.24);
+
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.82rem;
+}
+
+
+/* Card Total */
+
+.questoes-criticas-page
+.questoes-criticas-total-card {
+  padding: 13px 20px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-total-titulo {
+  margin: 0;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Card da disciplina */
+
+.questoes-criticas-page
+.questoes-criticas-disciplina-card {
+  padding: 12px 20px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-disciplina-titulo {
+  margin: 0;
+
+  font-size: 1.02rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-assunto-titulo {
+  margin: 0;
+
+  font-size: 0.90rem;
+  font-weight: 500;
+
+  color: var(--azul);
+}
+
+/* =========================================================
+   QUESTÕES DIFERENCIADAS — AJUSTES DA PARTE SUPERIOR
+========================================================= */
+
+
+/* Voltar, Início e Sair no canto direito */
+
+.questoes-criticas-page
+.questoes-criticas-header {
+  position: relative;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-acoes {
+  position: absolute;
+
+  right: 38px;
+  top: 39px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Título Escolha */
+
+.questoes-criticas-page
+.questoes-criticas-escolha-titulo {
+  margin: 0 0 23px;
+
+  font-size: 1.05rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Distância entre Disciplina e Questões */
+
+.questoes-criticas-page
+.questoes-criticas-filtros {
+  display: flex;
+  align-items: flex-end;
+
+  column-gap: 38px;
+  row-gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+
+/* Comprimento das caixas de seleção */
+
+.questoes-criticas-page
+.questoes-criticas-select {
+  width: 320px;
+  min-height: 29px;
+
+  padding: 4px 10px;
+
+  border: 1px solid rgba(31, 78, 121, 0.24);
+  border-radius: 5px;
+
+  background: #ffffff;
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.84rem;
+}
+
+
+/* Aproximar assunto da respectiva disciplina */
+
+.questoes-criticas-page
+.questoes-criticas-assunto-card {
+  margin-top: -8px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-identificacao-card {
+  padding: 12px 20px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-identificacao-card
+.questoes-criticas-disciplina-titulo {
+  margin: 0;
+
+  font-size: 1.02rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-identificacao-card
+.questoes-criticas-assunto-titulo {
+  margin-top: 7px;
+
+  font-size: 0.90rem;
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-header {
+  position: relative;
+
+  padding-top: 4px;
+  padding-bottom: 9px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao {
+  margin-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao h1 {
+  margin: 0;
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao h2 {
+  margin: 5px 0 10px;
+
+  font-size: 1.24rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+.questoes-criticas-page
+.questoes-criticas-total-titulo {
+  margin: 0;
+
+  text-align: right;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+/* =========================================================
+   QUESTÕES DIFERENCIADAS — CARDS DAS QUESTÕES
+========================================================= */
+
+.questoes-criticas-page
+.questoes-criticas-questao-card {
+  padding: 18px 22px 16px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.06);
+}
+
+
+/* Número da questão */
+
+.questoes-criticas-page
+.questoes-criticas-questao-numero {
+  margin: 0;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Enunciado */
+
+.questoes-criticas-page
+.questoes-criticas-enunciado {
+  margin-top: 16px;
+
+  white-space: normal;
+
+  font-size: 0.92rem;
+  line-height: 1.60;
+
+  color: var(--azul);
+
+  text-align: justify;
+}
+
+
+/* Gabarito */
+
+.questoes-criticas-page
+.questoes-criticas-gabarito {
+  margin-top: 18px;
+
+  font-size: 0.90rem;
+  line-height: 1.45;
+
+  color: var(--azul);
+}
+
+
+/* Comentário */
+
+.questoes-criticas-page
+.questoes-criticas-comentario {
+  margin-top: 22px;
+
+  white-space: normal;
+
+  font-size: 0.90rem;
+  line-height: 1.60;
+
+  color: var(--azul);
+
+  text-align: justify;
+}
+
+.questoes-criticas-page
+.questoes-criticas-comentario strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 0.91rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-comentario-texto {
+  line-height: 1.60;
+
+  text-align: justify;
+}
+
+/* Rodapé do card */
+
+.questoes-criticas-page
+.questoes-criticas-rodape-questao {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+
+/* Marcador */
+
+.questoes-criticas-page
+.questoes-criticas-marcador {
+  font-size: 0.90rem;
+  font-weight: 600;
+}
+
+.questoes-criticas-page
+.questoes-criticas-marcador-erro {
+  color: #9a5a16;
+}
+
+.questoes-criticas-page
+.questoes-criticas-marcador-outro {
+  color: #9a6a00;
+}
+
+
+/* Resposta do aluno */
+
+.questoes-criticas-page
+.questoes-criticas-resposta-aluno {
+  text-align: right;
+
+  font-size: 0.78rem;
+
+  color: #536b82;
+
+  opacity: 0.88;
+}
+
+/* =========================================================
+   QUESTÕES DIFERENCIADAS — RELATÓRIO E FINAL DA PÁGINA
+========================================================= */
+
+
+/* Card exclusivo do título */
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-titulo-card {
+  margin-top: 45px;
+  padding: 14px 20px;
+
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-titulo {
+  margin: 0;
+
+  font-size: 1.12rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Card com disciplina e assuntos */
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-conteudo-card {
+
+  margin-top: 4px;
+
+  padding: 16px 20px;
+
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-disciplina {
+  margin: 0;
+
+  font-size: 1.02rem;
+  font-weight: 600;
+
+  color: var(--azul);
+
+  text-transform: none;
+}
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-assunto {
+    margin-top: 3px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-assunto-nome {
+    font-size: 0.84rem;
+    font-weight: 400;
+    color: var(--azul);
+
+    line-height: 1.25;
+}
+
+.questoes-criticas-page
+.questoes-criticas-relatorio-totais {
+  margin-top: 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  font-size: 0.88rem;
+  line-height: 1.45;
+
+  color: var(--azul);
+}
+
+
+/* Card e botão Voltar */
+
+.questoes-criticas-page
+.questoes-criticas-voltar-card {
+  min-height: 68px;
+
+  padding: 14px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.05);
+}
+
+.questoes-criticas-page
+.questoes-criticas-btn-voltar {
+  min-width: 100px;
+  min-height: 38px;
+
+  margin: 0;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+
+  border:
+    1px solid #e2c85b;
+
+  border-radius: 7px;
+
+  color: var(--azul);
+
+  font-size: 0.86rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.questoes-criticas-page
+.questoes-criticas-btn-voltar:hover {
+  background: #f8e66f;
+  border-color: #d8bf56;
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+.questoes-criticas-page
+.questoes-criticas-btn-voltar {
+  text-decoration: none;
+}
+
+
+/* Rodapé */
+
+.questoes-criticas-page
+footer {
+  margin-top: 34px;
+
+  text-align: center;
+}
+
+.questoes-criticas-page
+footer p {
+  margin: 0;
+
+  font-size: 0.82rem;
+
+  color: #6b4a32;
+}
+
+/* =========================================================
+   MINHAS ANOTAÇÕES — PARTE SUPERIOR
+========================================================= */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header {
+  position: relative;
+
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-identificacao {
+  margin-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-identificacao h2 {
+  margin: 7px 0 0;
+
+  font-size: 1.24rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Botões superiores */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-acoes {
+  position: absolute;
+
+  right: 38px;
+  top: 43px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Escolha */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-escolha-card {
+  padding: 15px 20px 17px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-escolha-titulo {
+  margin: 0 0 22px;
+
+  font-size: 1.10rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-filtros {
+  display: flex;
+  align-items: flex-end;
+
+  column-gap: 38px;
+  row-gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-filtro-grupo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-filtro-grupo label {
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-select {
+  width: 300px;
+  min-height: 32px;
+
+  padding: 4px 10px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.24);
+
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.84rem;
+}
+
+
+/* Total */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-total-card {
+  padding: 13px 20px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-total-titulo {
+  margin: 0;
+
+  text-align: right;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+/* Identificação da disciplina e do assunto */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-identificacao-card {
+  padding: 12px 20px;
+
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.05);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-disciplina-titulo {
+  margin: 0;
+
+  font-size: 1.08rem;   /* antes 1.02rem */
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-assunto-titulo {
+  margin-top: 4px;
+
+  font-size: 0.98rem;   /* antes 0.84rem */
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+/* Cards das anotações */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-anotacao-card {
+  padding: 18px 22px;
+
+  border-top:
+    4px solid var(--amarelo);
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px
+    rgba(31, 78, 121, 0.06);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-enunciado {
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  line-height: 1.6;
+
+  text-align: justify;
+
+  color: var(--azul);
+}
+
+
+/* Resposta */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-resposta {
+  margin-top: 18px;
+
+  font-size: 0.90rem;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-resposta strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-weight: 600;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-resposta-texto {
+  line-height: 1.6;
+
+  text-align: justify;
+}
+
+
+/* Comentário */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-comentario {
+  margin-top: 22px;
+
+  font-size: 0.90rem;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-comentario strong {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-weight: 600;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-comentario-texto {
+  line-height: 1.6;
+
+  text-align: justify;
+}
+
+
+/* Anotação do aluno */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-bloco-aluno {
+  margin-top: 20px;
+
+  padding: 14px 16px;
+
+  background: #fffdf1;
+
+  border:
+    1px solid rgba(226, 200, 91, 0.35);
+
+  border-radius: 7px;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-bloco-aluno-titulo {
+  margin-bottom: 8px;
+
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-bloco-aluno-texto {
+  font-size: 0.88rem;
+  line-height: 1.55;
+
+  text-align: justify;
+
+  color: var(--azul);
+}
+
+/* Ações */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-acoes {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  flex-wrap: wrap;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-btn {
+  min-width: 92px;
+  min-height: 36px;
+
+  margin: 0;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+
+  border:
+    1px solid #e2c85b;
+
+  border-radius: 7px;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-btn:hover {
+  background: #f8e66f;
+  border-color: #d8bf56;
+
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Estado de edição */
+
+.minhas-anotacoes-page
+.minhas-anotacoes-textarea-edicao {
+  width: 100%;
+  min-height: 105px;
+
+  padding: 12px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.22);
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+
+  resize: vertical;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-textarea-edicao:focus {
+  outline: none;
+
+  border-color:
+    rgba(31, 78, 121, 0.48);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(31, 78, 121, 0.06);
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-edicao-acoes {
+  margin-top: 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   MENSAGENS AO PROF — PARTE SUPERIOR
+========================================================= */
+
+.mensagens-prof-page
+.mensagens-prof-header {
+  position: relative;
+
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-header-identificacao {
+  margin-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.mensagens-prof-page
+.mensagens-prof-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-header-identificacao h2 {
+  margin: 7px 0 0;
+
+  font-size: 1.24rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Botões superiores */
+
+.mensagens-prof-page
+.mensagens-prof-header-acoes {
+  position: absolute;
+
+  right: 38px;
+  top: 37px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.mensagens-prof-page
+.mensagens-prof-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Card Escolha */
+
+.mensagens-prof-page
+.mensagens-prof-escolha-card {
+  padding: 15px 20px 17px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-escolha-titulo {
+  margin: 0 0 22px;
+
+  font-size: 1.10rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-filtros {
+  display: flex;
+  align-items: flex-end;
+
+  column-gap: 38px;
+  row-gap: 14px;
+
+  flex-wrap: wrap;
+}
+
+.mensagens-prof-page
+.mensagens-prof-filtro-grupo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-filtro-grupo label {
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-select {
+  width: 300px;
+  min-height: 32px;
+
+  padding: 4px 10px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.24);
+
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-size: 0.84rem;
+}
+
+
+/* Total */
+
+.mensagens-prof-page
+.mensagens-prof-total-card {
+  padding: 13px 20px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-total-titulo {
+  margin: 0;
+
+  text-align: right;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-identificacao-card {
+  padding: 12px 20px;
+
+  border-top: 4px solid var(--amarelo);
+  border-radius: 10px;
+
+  box-shadow:
+    0 4px 12px rgba(31, 78, 121, 0.05);
+}
+
+.mensagens-prof-page
+.mensagens-prof-disciplina-titulo {
+  margin: 0;
+
+  font-size: 1.10rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-assunto-titulo {
+  margin-top: 4px;
+
+  font-size: 0.92rem;
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+/* Enunciado da conversa */
+
+.mensagens-prof-page
+.mensagens-prof-enunciado {
+  font-size: 0.92rem;
+  font-weight: 520;
+
+  line-height: 1.6;
+  text-align: justify;
+
+  color: var(--azul);
+}
+
+
+/* Comentário */
+
+.mensagens-prof-page
+.mensagens-prof-comentario {
+  margin-top: 20px;
+
+  font-size: 0.90rem;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-comentario strong {
+  display: block;
+
+  margin-bottom: 9px;
+
+  font-size: 0.86rem;
+  font-weight: 550;
+
+  color: var(--azul);
+}
+
+.mensagens-prof-page
+.mensagens-prof-comentario-texto {
+  line-height: 1.6;
+
+  text-align: justify;
+}
+
+/* Mensagens da conversa */
+
+.mensagens-prof-page
+.mensagens-prof-mensagem {
+  margin-top: 12px;
+
+  padding: 11px 11px;
+
+  border-radius: 6px;
+
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+
+/* Mensagem do aluno */
+
+.mensagens-prof-page
+.mensagens-prof-mensagem-aluno {
+  background: #fffdf1;
+
+  border-left:
+    4px solid #e6d85a;
+}
+
+
+/* Mensagem do professor */
+
+.mensagens-prof-page
+.mensagens-prof-mensagem-prof {
+  background: #eef6ff;
+
+  border-left:
+    4px solid #7aa7d9;
+}
+
+
+/* Identificação Eu / Prof */
+
+.mensagens-prof-page
+.mensagens-prof-mensagem-autor {
+  margin-bottom: 5px;
+
+  font-size: 0.73rem;
+  font-weight: 550;
+
+  opacity: 0.8;
+}
+
+
+/* Texto */
+
+.mensagens-prof-page
+.mensagens-prof-mensagem-texto {
+  margin: -1.5rem 0 0 56px;
+  padding: 0;
+
+  white-space: pre-line;
+
+  text-align: justify;
+  text-justify: inter-word;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   MEU DESEMPENHO
+========================================================= */
+
+.dashboard-aluno-page
+.dashboard-aluno-header {
+  position: relative;
+
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-header-identificacao {
+  margin-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-header-identificacao h1 {
+  margin: 0;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-header-identificacao h2 {
+  margin: 7px 0 0;
+
+  font-size: 1.24rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+
+/* Nome do aluno */
+
+.dashboard-aluno-nome {
+  position: fixed;
+
+  top: 9px;
+  right: 47px;
+
+  z-index: 9999;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  letter-spacing: 0.4px;
+
+  color: #4b5563;
+
+  opacity: 0.78;
+
+  cursor: default;
+
+  white-space: nowrap;
+}
+
+.dashboard-aluno-nome-tooltip {
+  position: absolute;
+
+  right: calc(100% + 8px);
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  letter-spacing: 0.2px;
+
+  color: #4b5563;
+
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition: opacity 0.15s ease;
+}
+
+.dashboard-aluno-nome:hover
+.dashboard-aluno-nome-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* Ações do cabeçalho */
+
+.dashboard-aluno-page
+.dashboard-aluno-header-acoes {
+  position: absolute;
+
+  right: 38px;
+  top: 37px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-header-acoes .btn {
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-header-acoes .btn:hover {
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  text-decoration: none;
+
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* Card principal */
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplinas-card {
+  padding: 18px 24px;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplinas-header {
+  display: flex;
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplinas-header h2 {
+  margin: 0;
+
+  font-size: 1.10rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-lista-disciplinas {
+  margin-top: 22px;
+}
+
+
+/* Disciplina */
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-card {
+  margin-bottom: 11px;
+
+  padding: 12px 14px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.14);
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow: none;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-card:last-child {
+  margin-bottom: 0;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  cursor: pointer;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-nome {
+  padding-left: 8px;
+
+  font-size: 0.94rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+
+/* Assuntos */
+
+.dashboard-aluno-page
+.dashboard-aluno-assuntos {
+  margin-top: 10px;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-assunto-card {
+  margin-top: 8px;
+
+  margin-left: 8px;
+
+  padding: 9px 12px;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.12);
+
+  border-radius: 7px;
+
+  background: #ffffff;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-assunto-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-assunto-nome {
+  padding-left: 10px;
+
+  font-size: 0.84rem;
+  font-weight: 400;
+
+  color: var(--azul);
+}
+
+
+/* Nota */
+
+.dashboard-aluno-page
+.dashboard-aluno-assunto-nota {
+  min-width: 32px;
+
+  text-align: right;
+
+  font-size: 0.90rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+
+.dashboard-aluno-page
+.dashboard-aluno-nota-baixa {
+  color: #b84a3a;
+}
+
+/* Nota da disciplina */
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-nota {
+  min-width: 42px;
+
+  text-align: right;
+
+  font-size: 0.90rem;
+  font-weight: 600;
+
+  color: var(--azul);
+}
+/* Nota baixa da disciplina */
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-nota.dashboard-aluno-nota-baixa {
+  color: #b84a3a;
+}
+
+
+/* Nota ainda não calculada */
+
+.dashboard-aluno-page
+.dashboard-aluno-nota-pendente {
+  position: relative;
+
+  cursor: default;
+}
+
+
+/* "nota" pendente da disciplina:
+   mais escuro */
+
+.dashboard-aluno-page
+.dashboard-aluno-disciplina-nota.dashboard-aluno-nota-pendente {
+  font-weight: 500;
+
+  color: #234f78;
+
+  opacity: 0.95;
+}
+
+
+/* "nota" pendente do assunto:
+   mais claro */
+
+.dashboard-aluno-page
+.dashboard-aluno-assunto-nota.dashboard-aluno-nota-pendente {
+  font-weight: 400;
+
+  color: #71869a;
+
+  opacity: 0.78;
+}
+
+
+/* Mensagem suspensa da nota */
+
+.dashboard-aluno-page
+.dashboard-aluno-nota-pendente::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+
+  right: 0;
+  bottom: calc(100% + 8px);
+
+  width: 285px;
+
+  padding: 8px 10px;
+
+  background: #ffffff;
+
+  border:
+    1px solid rgba(31, 78, 121, 0.18);
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.10);
+
+  color: #4b5563;
+
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.4;
+
+  text-align: left;
+
+  white-space: normal;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  z-index: 9999;
+
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+}
+
+
+/* Exibir a mensagem ao passar o mouse */
+
+.dashboard-aluno-page
+.dashboard-aluno-nota-pendente:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sem assuntos */
+
+.dashboard-aluno-page
+.dashboard-aluno-sem-assuntos {
+  margin: 8px 0 2px 28px;
+
+  font-size: 0.80rem;
+
+  color: var(--azul);
+
+  opacity: 0.82;
+}

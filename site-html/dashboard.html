@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,67 +8,86 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 
-<body>
-  <header>
-    <h1 id="titulo_topo">📊 Carregando curso...</h1>
+<body
+  class="dashboard-aluno-page"
+  data-page="dashboard"
+>
+  <header class="dashboard-aluno-header">
 
-    <nav style="
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    ">
+    <div class="dashboard-aluno-header-identificacao">
+
+      <h1 id="titulo_curso_dashboard"></h1>
+
+      <h2>
+        📊 Meu desempenho
+      </h2>
+
+    </div>
+
+    <nav class="dashboard-aluno-header-acoes">
+
       <a
         class="btn"
         href="javascript:void(0)"
         onclick="voltarParaCurso()"
+        title="Voltar"
+        aria-label="Voltar"
       >
-        Voltar
+        ⇦
       </a>
 
-      <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
+      <a
+        class="btn"
+        href="index.html"
+        title="Início"
+        aria-label="Início"
+      >
+        ⌂
+      </a>
+
+      <a
+        class="btn"
+        href="javascript:void(0)"
+        onclick="logout()"
+        title="Sair"
+        aria-label="Sair"
+      >
+        ⎋
+      </a>
+
     </nav>
+
   </header>
 
   <main class="container">
 
-    <div class="card" style="padding:19px 28px;">
+    <div class="card dashboard-aluno-disciplinas-card">
+
       <div
+        class="dashboard-aluno-disciplinas-header"
         onclick="alternarLista('lista_disciplinas')"
-        style="
-          display:flex;
-          justify-content:flex-start;
-          align-items:center;
-          cursor:pointer;
-        "
       >
-        <h2 style="margin:1px 0 0 0;">
+        <h2>
           📚 Desempenho nas disciplinas
         </h2>
       </div>
 
       <div
         id="lista_disciplinas"
-        class="list"
-        style="display:block; margin-top:28px;"
+        class="list dashboard-aluno-lista-disciplinas"
+        style="display:block;"
       >
-        <p>Carregando disciplinas...</p>
+        <p>Carregando as disciplinas...</p>
       </div>
-    </div>
 
-    <div class="card" style="
-        min-height:8px;
-        padding:0;
-        margin-top:-3px;
-        background:#fff;
-    ">
     </div>
 
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>
+      © <span id="ano_atual"></span> - Quality Estudos
+    </p>
   </footer>
 
   <script>
@@ -218,17 +238,32 @@
 
     async function carregarDashboard() {
       try {
-        await apiGet("/me");
 
-        const cursoAtual = await carregarCursoAtual();
+        const me = await apiGet("/me");
+
+        exibirNomeUsuarioDashboard(me);
+
+        const cursoAtual =
+          await carregarCursoAtual();
+
+        const tituloCurso =
+          document.getElementById(
+            "titulo_curso_dashboard"
+          );
 
         if (!cursoAtual) {
-          document.getElementById("titulo_topo").innerText = "📘 Nenhum curso disponível";
+          if (tituloCurso) {
+            tituloCurso.innerText =
+              "Nenhum curso disponível";
+          }
+
           return;
         }
 
-        document.getElementById("titulo_topo").innerText =
-          `📘 ${cursoAtual.nome_curso}`;
+        if (tituloCurso) {
+          tituloCurso.innerText =
+            cursoAtual.nome_curso;
+        }
 
         const disciplinas = await carregarDisciplinasDoCurso(cursoAtual.curso_id);
 
@@ -237,51 +272,78 @@
         let htmlDisciplinas = "";
 
         for (const disciplina of disciplinas) {
-          const assuntos = await carregarAssuntosDaDisciplina(disciplina.id);
 
-          let totalAssuntosDisciplina = assuntos.length;
-          let assuntosConcluidosDisciplina = 0;
-          let htmlAssuntos = "";
+          const assuntos =
+            await carregarAssuntosDaDisciplina(
+              disciplina.id
+            );
+
+        let totalAssuntosDisciplina =
+          assuntos.length;
+
+        let assuntosConcluidosDisciplina = 0;
+
+        let htmlAssuntos = "";
+
+        const notasAssuntosDisciplina = [];
 
           for (const assunto of assuntos) {
             
-            const notaAssunto = await calcularNotaAssunto(assunto.id);
+            const notaAssunto = 
+              await calcularNotaAssunto(
+                assunto.id
+              );
+            
+            if (notaAssunto !== null) {
+              notasAssuntosDisciplina.push(
+                notaAssunto
+              );
+            }
 
             htmlAssuntos += `
-              <div style="
-                padding:10px 12px;
-                border:1px solid #ddd;
-                border-radius:8px;
-                margin-top:10px;
-              ">
-                <div style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:center;
-                  gap:12px;
-                  flex-wrap:wrap;
-                ">
-                  <div style="
-                    font-weight:normal;
-                    font-size:0.92rem;
-                    margin-left:28px;
-                  ">
+              <div class="dashboard-aluno-assunto-card">
+
+                <div class="dashboard-aluno-assunto-linha">
+
+                  <div class="dashboard-aluno-assunto-nome">
                     ${esc(assunto.nome)}
                   </div>
 
-                  <div
-                    title="Desempenho nas questões deste assunto"
-                    style="
-                      font-weight:bold;
-                      color:${notaAssunto !== null && notaAssunto <= 5 ? '#d32f2f' : '#003b7a'};
-                    "
-                  >
-                    ${notaAssunto !== null ? String(notaAssunto).replace(".", ",") : ""}
-                  </div>
+                  ${
+                    notaAssunto !== null
+                      ? `
+                        <div
+                          class="
+                            dashboard-aluno-assunto-nota
+                            ${
+                              notaAssunto <= 5
+                                ? "dashboard-aluno-nota-baixa"
+                                : ""
+                            }
+                          "
+                        >
+                          ${notaAssunto.toFixed(1).replace(".", ",")}
+                        </div>
+                      `
+                      : `
+                        <div
+                          class="
+                            dashboard-aluno-assunto-nota
+                            dashboard-aluno-nota-pendente
+                          "
+                          data-tooltip="A nota do assunto aparecerá aqui quando todas as baterias de questões do assunto tiverem sido concluídas."
+                        >
+                          nota
+                        </div>
+                      `
+                  }
+
                 </div>
+
               </div>
             `;
           }
+
 
           totalAssuntosCurso += totalAssuntosDisciplina;
           assuntosConcluidosCurso += assuntosConcluidosDisciplina;
@@ -292,38 +354,94 @@
 
           const idListaAssuntos = `assuntos_disciplina_${disciplina.id}`;
 
+          const quantidadeAssuntosComNota =
+            notasAssuntosDisciplina.length;
+
+          const minimoAssuntosComNota =
+            Math.ceil(
+              totalAssuntosDisciplina * 0.5
+            );
+
+          let notaDisciplina = null;
+
+          if (
+            totalAssuntosDisciplina > 0 &&
+            quantidadeAssuntosComNota >=
+              minimoAssuntosComNota
+          ) {
+            const somaNotas =
+              notasAssuntosDisciplina.reduce(
+                (soma, nota) => soma + nota,
+                0
+              );
+
+            notaDisciplina =
+              somaNotas /
+              quantidadeAssuntosComNota;
+
+            notaDisciplina =
+              Number(
+                notaDisciplina.toFixed(1)
+              );
+          }
+
           htmlDisciplinas += `
-            <div class="disciplina">
+            <div class="disciplina dashboard-aluno-disciplina-card">
+
               <div
+                class="dashboard-aluno-disciplina-linha"
                 onclick="alternarLista('${idListaAssuntos}')"
-                style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:center;
-                  gap:12px;
-                  flex-wrap:wrap;
-                  cursor:pointer;
-                "
               >
-                <div style="font-weight:bold;">
+
+                <div class="dashboard-aluno-disciplina-nome">
                   ${esc(disciplina.nome)}
                 </div>
 
+                ${
+                  notaDisciplina !== null
+                    ? `
+                      <div
+                        class="
+                          dashboard-aluno-disciplina-nota
+                          ${
+                            notaDisciplina <= 5
+                              ? "dashboard-aluno-nota-baixa"
+                              : ""
+                          }
+                        "
+                      >
+                        ${notaDisciplina.toFixed(1).replace(".", ",")}
+                      </div>
+                    `
+                    : `
+                      <div
+                        class="
+                          dashboard-aluno-disciplina-nota
+                          dashboard-aluno-nota-pendente
+                        "
+                        data-tooltip="A nota da disciplina aparecerá aqui quando pelo menos metade dos assuntos dela já tiverem nota."
+                      >
+                        nota
+                      </div>
+                    `
+                }
+
               </div>
 
-              <div id="${idListaAssuntos}" style="display:none; margin-top:12px;">
+              <div
+                id="${idListaAssuntos}"
+                class="dashboard-aluno-assuntos"
+                style="display:none;"
+              >
                 ${
                   htmlAssuntos || `
-                    <p style="
-                      margin-left:68px;
-                      font-size:0.9rem;
-                      opacity:.85;
-                    ">
+                    <p class="dashboard-aluno-sem-assuntos">
                       Não há assuntos nesta disciplina
                     </p>
                   `
                 }
               </div>
+
             </div>
           `;
         }
@@ -341,7 +459,76 @@
       }
     }
 
+    function exibirNomeUsuarioDashboard(me) {
+      if (!me || !me.nome) {
+        return;
+      }
+
+      const partesNome =
+        String(me.nome)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+      if (!partesNome.length) {
+        return;
+      }
+
+      const primeiroNome =
+        partesNome[0];
+
+      const ultimoNome =
+        partesNome.length > 1
+          ? partesNome[partesNome.length - 1]
+          : "";
+
+      const nomeResumido =
+        ultimoNome
+          ? `${primeiroNome} ${ultimoNome}`
+          : primeiroNome;
+
+      const identificacao =
+        document.createElement("div");
+
+      identificacao.id =
+        "nomeUsuarioLogadoGlobal";
+
+      identificacao.textContent =
+        primeiroNome.toUpperCase();
+
+      identificacao.className =
+        "dashboard-aluno-nome";
+
+      const tooltip =
+        document.createElement("div");
+
+      tooltip.className =
+        "dashboard-aluno-nome-tooltip";
+
+      tooltip.textContent =
+        nomeResumido.toUpperCase();
+
+      identificacao.appendChild(
+        tooltip
+      );
+
+      document.body.appendChild(
+        identificacao
+      );
+    }
+
+    const anoAtual =
+      document.getElementById(
+        "ano_atual"
+      );
+
+    if (anoAtual) {
+      anoAtual.textContent =
+        new Date().getFullYear();
+    }
+
     carregarDashboard();
+
   </script>
 </body>
 </html>

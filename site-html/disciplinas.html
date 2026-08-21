@@ -7,20 +7,13 @@
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 
-<body data-page="disciplinas">
-  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
+<body class="disciplinas-page" data-page="disciplinas">
+  <header class="disciplinas-header">
     <div style="margin-top:0;">
       <h1 id="titulo_pagina" style="margin-bottom:1px;">📚 Disciplinas</h1>
     </div>
 
-    <div style="
-      position:absolute;
-      right:24px;
-      top:22px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    ">
+    <div class="disciplinas-header-acoes">
       <a
         id="btnVoltarCurso"
         class="btn"
@@ -54,9 +47,12 @@
   </header>
 
   <main class="container" id="conteudo">
-    <div class="card" style="padding-top:18px; padding-bottom:10px; margin-bottom:10px;">
-      <h2 style="font-weight:500;font-size:1.25rem;margin:0;">
-        Disciplinas (em ordem de prioridade)
+    <div class="card disciplinas-intro-card">
+      <h2>
+        Disciplinas
+        <span class="disciplinas-subtitulo">
+          em ordem de prioridade
+        </span>
       </h2>
     </div>
 
@@ -64,7 +60,6 @@
       <div id="lista" class="list"></div>
     </div>
 
-    <div class="card" style="padding:0;height:0px;"></div>
   </main>
 
   <footer>

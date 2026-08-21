@@ -6,48 +6,63 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body class="home-page">
 
-<header style="padding:25px 0 12px; position:relative;">
-  <div style="text-align:center;">
-    <h1 style="margin:0;color:#0f4c92;font-weight:700;line-height:1.05;">
-      <span style="display:inline-flex;align-items:flex-start;gap:8px;font-size:2.5rem;">
-        Quality
-      </span>
+<header class="home-header">
 
-      <br>
-
-      <span style="
-          display:block;
-          margin-top:2px;
-          font-size:1.2rem;
-          font-family:inherit;
-          font-weight:500;
-          color:#7d9068;
-          letter-spacing:0.5px;
-      ">
-          Resumo de Alta Performance para Concursos
-      </span>
+  <div class="home-brand">
+    <h1 class="home-brand-title">
+      Resumo Concursos
     </h1>
+
+    <p class="home-brand-subtitle">
+      Só o que interessa
+    </p>
   </div>
 
-  <nav style="position:relative;margin-top:8px;margin-bottom:4px;min-height:36px;">
-    <div style="text-align:center;">
-      <a href="#" class="btn" onclick="entrarEEstudar(); return false;" title="Entre / Faça cadastro" style="font-size: 19px;">
+  <nav class="home-nav">
+
+    <div class="home-nav-center">
+      <a
+        href="#"
+        class="btn home-icon-btn"
+        onclick="entrarEEstudar(); return false;"
+        title="Entre / Faça cadastro"
+        aria-label="Entre ou faça cadastro"
+      >
         👤
       </a>
     </div>
 
-    <div style="position:absolute;right:20px;top:0;display:flex;gap:10px;">
-      <a id="btnVoltarHome" href="#" class="btn" onclick="voltarDaPaginaInicial(); return false;" title="Voltar" style="display:none;">
+    <div class="home-nav-actions">
+
+      <a
+        id="btnVoltarHome"
+        href="#"
+        class="btn home-icon-btn"
+        onclick="voltarDaPaginaInicial(); return false;"
+        title="Voltar"
+        aria-label="Voltar"
+        style="display:none;"
+      >
         ⇦
       </a>
 
-      <a id="btnSairHome" href="#" class="btn" onclick="sairComConfirmacao(); return false;" title="Sair">
+      <a
+        id="btnSairHome"
+        href="#"
+        class="btn home-icon-btn"
+        onclick="sairComConfirmacao(); return false;"
+        title="Sair"
+        aria-label="Sair"
+      >
         ⎋
       </a>
+
     </div>
+
   </nav>
+
 </header>
 
 <main class="container">
@@ -60,7 +75,16 @@
     <div id="area_cursos_disponiveis" style="display:block;">
       <div id="lista-cursos-publicos" class="list" style="margin-top:15px;"></div>
 
-      <div style="display:flex;align-items:center;gap:14px;margin:18px 0 10px;flex-wrap:wrap;">
+      <div
+        class="home-localizar"
+        style="
+          display:flex;
+          align-items:center;
+          gap:14px;
+          margin-bottom:10px;
+          flex-wrap:wrap;
+        "
+      >
         <label style="font-weight:bold;white-space:nowrap;">
           🔎 Localizar
         </label>
@@ -68,58 +92,99 @@
         <input
           id="buscaCurso"
           type="text"
-          placeholder="Digite uma palavra referente ao cargo que deseja encontrar"
+          placeholder="Digite palavra(s) chave"
           oninput="renderizarCursosPublicos()"
-          style="padding:6px;border:1px solid #ddd;border-radius:1px;width:542px;font-style:italic;"
+          style="
+            padding:6px;
+            border:1px solid #ddd;
+            border-radius:1px;
+            width:542px;
+            font-style:italic;
+          "
         >
       </div>
 
-      <div class="assunto" style="margin-top:18px;">
-        <h3>📝 Não há o curso que gostaria?</h3>
-
-        <p style="margin-top:12px;">
-          Fale agora conosco. Prepararemos o curso que você deseja.
-        </p>
-
-        <p style="margin-top:10px;">
-          <strong style="color:#25D366;">
-            👉 Chame agora no WhatsApp!
+      <div class="assunto home-curso-nao-encontrado" style="margin-top:18px;">
+        <h3 style="margin:0;">
+          📝 Não encontrou o preparatório que gostaria?
+          <strong style="color:#2ad167;">
+            👉 Chame no WhatsApp!
           </strong>
-        </p>
+        </h3>
       </div>
 
       <div id="mais-cursos-box" style="margin-top:12px;"></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>📊 Como funciona a plataforma. A garantia de qualidade</h2>
+  <div class="card home-como-funciona-card">
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-top:14px;">
-      <div class="assunto">
-        <h3>▶️ Como funciona</h3>
-        <div style="height:180px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-          Vídeo 1
+    <div
+      class="home-como-funciona-header"
+      onclick="alternarLista('area_como_funciona')"
+    >
+      <h2>📊 Como funciona a plataforma. A garantia de qualidade</h2>
+    </div>
+
+    <div
+      id="area_como_funciona"
+      class="home-como-funciona-conteudo"
+      style="display:none;"
+    >
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+          gap:16px;
+        "
+      >
+
+        <div class="assunto">
+          <h3>▶️ Como funciona</h3>
+
+          <div class="home-video-placeholder">
+            <span class="home-video-play">▶</span>
+            <span>Vídeo 1</span>
+          </div>
         </div>
+
+        <div class="assunto">
+          <h3>💰 Seu dinheiro de volta</h3>
+
+          <div class="home-video-placeholder">
+            <span class="home-video-play">▶</span>
+            <span>Vídeo 2</span>
+          </div>
+        </div>
+
       </div>
 
-      <div class="assunto">
-        <h3>💰 Seu dinheiro de volta</h3>
-        <div style="height:180px;border:1px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-          Vídeo 2
-        </div>
-      </div><div id="area_cursos_disponiveis" style="display:none;">
     </div>
+
   </div>
-
   
-  <div class="card">
-    <div onclick="alternarLista('area_atendimento_clean')" style="cursor:pointer;">
-      <h2>🔗 Atendimento </h2>
+  <div class="card home-atendimento-card">
+
+    <div
+      class="home-atendimento-header"
+      onclick="alternarLista('area_atendimento_clean')"
+    >
+      <h2>🔗 Atendimento</h2>
     </div>
 
-    <div id="area_atendimento_clean" style="display:none;margin-top:15px;">
-      <div style="display:flex;gap:18px;flex-wrap:wrap;">
+    <div
+      id="area_atendimento_clean"
+      class="home-atendimento-conteudo"
+      style="display:none;"
+    >
+      <div
+        style="
+          display:flex;
+          gap:18px;
+          flex-wrap:wrap;
+        "
+      >
 
         <a
           class="btn"
@@ -129,7 +194,10 @@
           Atualizar meus dados / ver meu histórico de compras
         </a>
 
-        <a class="btn" href="fale-com-a-clean.html">
+        <a
+          class="btn"
+          href="fale-com-a-clean.html"
+        >
           Falar com a Clean
         </a>
 
@@ -143,18 +211,64 @@
 
       </div>
     </div>
+
   </div>
 
   <div class="card" style="text-align:center;">
-    <h2>🏁 Acelere!</h2>
 
-    <div style="display:flex;align-items:center;justify-content:center;gap:22px;margin:22px 0 8px;">
-      <span style="font-size:2.4rem;transform:scaleX(-1);">🏎️</span>
+    <div
+      style="
+        display:inline-flex;
+        flex-direction:column;
+        align-items:center;
+      "
+    >
 
-      <span style="font-size:2rem;color:#999;letter-spacing:8px;">...</span>
+      <h2
+        style="
+          margin-bottom:0;
+          position:relative;
+          left:-8px;
+        "
+      >
+        🏁 Acelere!
+      </h2>
 
-      <span style="font-size:2.5rem;">🏁</span>
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:22px;
+          margin:22px 0 8px;
+        "
+      >
+        <span
+          style="
+            font-size:2.4rem;
+            transform:scaleX(-1);
+          "
+        >
+          🏎️
+        </span>
+
+        <span
+          style="
+            font-size:2rem;
+            color:#999;
+            letter-spacing:8px;
+          "
+        >
+          ...
+        </span>
+
+        <span style="font-size:2.5rem;">
+          🏁
+        </span>
+      </div>
+
     </div>
+
   </div>
 
 </main>
@@ -264,6 +378,25 @@
           });
         }, 300);
       }
+
+      // O parâmetro serve apenas para abrir
+      // o Atendimento nesta chegada.
+      // Depois, remove-o da URL para que
+      // um novo acesso à Home comece fechado.
+      const urlAtual =
+        new URL(window.location.href);
+
+      urlAtual.searchParams.delete(
+        "atendimento"
+      );
+
+      window.history.replaceState(
+        {},
+        "",
+        urlAtual.pathname +
+          urlAtual.search +
+          urlAtual.hash
+      );
     }
   }
 

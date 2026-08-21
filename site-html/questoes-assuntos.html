@@ -17,60 +17,30 @@
   >
 </head>
 
-<body data-page="questoes-assuntos">
+<body
+  class="questoes-assuntos-page"
+  data-page="questoes-assuntos"
+>
 
   <header
     style="
-      padding-top:8px;
-      padding-bottom:24px;
+      padding-top:4px;
+      padding-bottom:16.5px;
       position:relative;
     "
   >
 
-    <div
-      style="
-        margin-top:32px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        text-align:center;
-      "
-    >
+    <div class="questoes-assuntos-header-identificacao">
 
-      <h1
-        id="titulo_curso"
-        style="
-          margin:-6px 0 0 0;
-          font-size:1.55rem;
-          text-align:center;
-        "
-      >
-      </h1>
+      <h1 id="titulo_curso_nome"></h1>
 
-      <h2
-        id="titulo_disciplina"
-        style="
-          margin:4px 0 0 0;
-          font-size:1.05rem;
-          text-align:center;
-        "
-      >
+      <h2 class="questoes-assuntos-modulo">
+        📝 Questões
       </h2>
 
     </div>
 
-
-    <nav
-      style="
-        position:absolute;
-        right:24px;
-        top:58px;
-        display:flex;
-        gap:10px;
-        align-items:center;
-      "
-    >
+    <nav class="questoes-assuntos-header-acoes">
 
       <a
         id="btnVoltarQuestoesDisciplinas"
@@ -108,17 +78,27 @@
     id="conteudo"
   >
 
-    <div class="card">
-
+    <div class="card questoes-assuntos-disciplina-card">
       <h2>
+        Disciplina:
+        <span id="nome_disciplina_card"></span>
+      </h2>
+    </div>
+
+    <div class="card questoes-assuntos-lista-card">
+
+      <h2 class="questoes-assuntos-titulo">
         Assuntos
+
+        <span class="questoes-assuntos-subtitulo">
+          em ordem de prioridade para o concurso
+        </span>
       </h2>
 
       <div
         id="lista"
         class="list"
-      >
-      </div>
+      ></div>
 
     </div>
 

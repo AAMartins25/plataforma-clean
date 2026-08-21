@@ -8,53 +8,106 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body
+  class="mensagens-prof-page"
+  data-page="mensagens-prof"
+>
 
-<header>
-  <h1>💬 Mensagens ao prof</h1>
+<header class="mensagens-prof-header">
 
-  <nav style="
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
-  ">
-    <a class="btn" href="javascript:history.back()">Voltar</a>
+  <div class="mensagens-prof-header-identificacao">
 
-    <a href="javascript:void(0)" class="btn" onclick="logout()">
-      Sair
+    <h1 id="titulo_curso_mensagens_prof"></h1>
+
+    <h2>
+      💬 Mensagens ao prof
+    </h2>
+
+  </div>
+
+  <nav class="mensagens-prof-header-acoes">
+
+    <a
+      class="btn"
+      href="javascript:history.back()"
+      title="Voltar"
+      aria-label="Voltar"
+    >
+      ⇦
     </a>
+
+    <a
+      class="btn"
+      href="index.html"
+      title="Início"
+      aria-label="Início"
+    >
+      ⌂
+    </a>
+
+    <a
+      class="btn"
+      href="javascript:void(0)"
+      onclick="logout()"
+      title="Sair"
+      aria-label="Sair"
+    >
+      ⎋
+    </a>
+
   </nav>
+
 </header>
 
 <main class="container">
 
-  <div class="card">
-    <h2>Filtros</h2>
+  <div class="card mensagens-prof-escolha-card">
 
-    <div style="
-      display:flex;
-      gap:20px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    ">
-      <div>
-        <label><b>Disciplina</b></label><br>
-        <select id="filtro_disciplina"></select>
+    <h2 class="mensagens-prof-escolha-titulo">
+      Escolha
+    </h2>
+
+    <div class="mensagens-prof-filtros">
+
+      <div class="mensagens-prof-filtro-grupo">
+
+        <label for="filtro_disciplina">
+          Disciplina
+        </label>
+
+        <select
+          id="filtro_disciplina"
+          class="mensagens-prof-select"
+        ></select>
+
       </div>
 
-      <div>
-        <label><b>Assunto</b></label><br>
-        <select id="filtro_assunto"></select>
+      <div class="mensagens-prof-filtro-grupo">
+
+        <label for="filtro_assunto">
+          Assunto
+        </label>
+
+        <select
+          id="filtro_assunto"
+          class="mensagens-prof-select"
+        ></select>
+
       </div>
+
     </div>
+
   </div>
 
-  <div class="card">
-    <h2 id="total_mensagens">
-      Total: 0 conversa(s)
+  <div class="card mensagens-prof-total-card">
+
+    <h2
+      id="total_mensagens"
+      class="mensagens-prof-total-titulo"
+    >
+      Total: 0 conversas
     </h2>
+
   </div>
 
   <div id="area_mensagens"></div>
@@ -62,7 +115,7 @@
 </main>
 
 <footer>
-  <p>© 2026 - Plataforma Quality Estudos</p>
+  <p>© <span id="anoAtual"></span> - Quality Estudos</p>
 </footer>
 
 <script>
@@ -70,6 +123,19 @@ const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let conversas = [];
+
+const tituloCursoMensagensProf =
+  document.getElementById(
+    "titulo_curso_mensagens_prof"
+  );
+
+if (tituloCursoMensagensProf) {
+  tituloCursoMensagensProf.innerText =
+    new URLSearchParams(
+      window.location.search
+    ).get("curso_nome") ||
+    "Curso";
+}
 
 function logout() {
   localStorage.removeItem("access_token");
@@ -103,6 +169,157 @@ async function apiGet(path) {
   }
 
   return await res.json();
+}
+
+async function exibirNomeUsuarioLogadoMensagens() {
+  const token = getToken();
+
+  if (!token) return;
+
+  try {
+    const me = await apiGet("/me");
+
+    if (!me || !me.nome) return;
+
+    const partesNome = String(me.nome)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (!partesNome.length) return;
+
+    const primeiroNome = partesNome[0];
+
+    const ultimoNome =
+      partesNome.length > 1
+        ? partesNome[partesNome.length - 1]
+        : "";
+
+    const nomeResumido =
+      ultimoNome
+        ? `${primeiroNome} ${ultimoNome}`
+        : primeiroNome;
+
+    const identificacao =
+      document.createElement("div");
+
+    identificacao.id =
+      "nomeUsuarioLogadoGlobal";
+
+    identificacao.textContent =
+      primeiroNome.toUpperCase();
+
+    identificacao.style.position =
+      "fixed";
+
+    identificacao.style.top =
+      "9px";
+
+    identificacao.style.right =
+      "47px";
+
+    identificacao.style.zIndex =
+      "9999";
+
+    identificacao.style.fontSize =
+      "0.68rem";
+
+    identificacao.style.fontWeight =
+      "600";
+
+    identificacao.style.letterSpacing =
+      "0.4px";
+
+    identificacao.style.color =
+      "#4b5563";
+
+    identificacao.style.opacity =
+      "0.78";
+
+    identificacao.style.cursor =
+      "default";
+
+    identificacao.style.whiteSpace =
+      "nowrap";
+
+    const tooltip =
+      document.createElement("div");
+
+    tooltip.textContent =
+      nomeResumido.toUpperCase();
+
+    tooltip.style.position =
+      "absolute";
+
+    tooltip.style.right =
+      "calc(100% + 8px)";
+
+    tooltip.style.top =
+      "50%";
+
+    tooltip.style.transform =
+      "translateY(-50%)";
+
+    tooltip.style.fontSize =
+      "0.68rem";
+
+    tooltip.style.fontWeight =
+      "600";
+
+    tooltip.style.letterSpacing =
+      "0.2px";
+
+    tooltip.style.color =
+      "#4b5563";
+
+    tooltip.style.whiteSpace =
+      "nowrap";
+
+    tooltip.style.opacity =
+      "0";
+
+    tooltip.style.visibility =
+      "hidden";
+
+    tooltip.style.pointerEvents =
+      "none";
+
+    tooltip.style.transition =
+      "opacity 0.15s ease";
+
+    identificacao.style.position =
+      "fixed";
+
+    identificacao.appendChild(
+      tooltip
+    );
+
+    identificacao.addEventListener(
+      "mouseenter",
+      () => {
+        tooltip.style.opacity = "1";
+        tooltip.style.visibility = "visible";
+      }
+    );
+
+    identificacao.addEventListener(
+      "mouseleave",
+      () => {
+        tooltip.style.opacity = "0";
+        tooltip.style.visibility = "hidden";
+      }
+    );
+
+    document.body.appendChild(
+      identificacao
+    );
+
+  } catch (err) {
+    console.warn(
+      "Não foi possível exibir o nome do aluno:",
+      err
+    );
+  }
 }
 
 async function apiPost(path, body) {
@@ -242,8 +459,12 @@ function renderizarConversas() {
     );
   }
 
-  document.getElementById("total_mensagens").innerText =
-    `Total: ${dados.length} conversa(s)`;
+  document.getElementById(
+    "total_mensagens"
+  ).innerText =
+    dados.length === 1
+      ? "Total: 1 conversa"
+      : `Total: ${dados.length} conversas`;
 
   if (!dados.length) {
     document.getElementById("area_mensagens").innerHTML = `
@@ -259,26 +480,28 @@ function renderizarConversas() {
   let assuntoAtual = null;
 
   dados.forEach(c => {
-    if (disciplinaAtual !== c.disciplina_id) {
-      disciplinaAtual = c.disciplina_id;
-      assuntoAtual = null;
+    const mudouGrupo =
+    disciplinaAtual !== c.disciplina_id ||
+    assuntoAtual !== c.assunto_id;
 
-      html += `
-        <div class="card">
-          <h2>${esc(c.disciplina_nome)}</h2>
+  if (mudouGrupo) {
+    disciplinaAtual = c.disciplina_id;
+    assuntoAtual = c.assunto_id;
+
+    html += `
+      <div class="card mensagens-prof-identificacao-card">
+
+        <h2 class="mensagens-prof-disciplina-titulo">
+          ${esc(c.disciplina_nome)}
+        </h2>
+
+        <div class="mensagens-prof-assunto-titulo">
+          ${esc(c.assunto_nome)}
         </div>
-      `;
-    }
 
-    if (assuntoAtual !== c.assunto_id) {
-      assuntoAtual = c.assunto_id;
-
-      html += `
-        <div class="card">
-          <h3>${esc(c.assunto_nome)}</h3>
-        </div>
-      `;
-    }
+      </div>
+    `;
+  }
 
     html += montarCardConversa(c);
   });
@@ -325,37 +548,25 @@ function montarCardConversa(c) {
   return `
     <div class="card">
 
-      <div style="
-        font-weight:bold;
-        white-space:normal;
-        margin-bottom:4px;
-        text-align:justify;
-        text-indent:0;
-      ">
+      <div class="mensagens-prof-enunciado">
         ${
           ehCertoErrado
             ? `${esc(c.enunciado)} (${respostaCorreta})`
-            : `${esc(c.enunciado)}`
+            : `${esc(c.enunciado)} (Gab. ${esc(respostaCorreta)})`
         }
       </div>
 
-      ${
-        ehCertoErrado
-          ? ""
-          : `
-            <div style="margin-top:10px;">
-              ${esc(respostaCorreta)}
-            </div>
-          `
-      }
+      <div class="mensagens-prof-comentario">
 
-      <div style="
-        margin-top:12px;
-        white-space:normal;
-        text-align:justify;
-        text-indent:0;
-      ">
-        ${esc(c.comentario || "")}
+        <strong>Comentário:</strong>
+
+        <div class="mensagens-prof-comentario-texto">
+          ${esc(
+            c.comentario ||
+            "Comentário não cadastrado."
+          )}
+        </div>
+
       </div>
 
       <div style="margin-top:18px;">
@@ -397,25 +608,21 @@ function montarMensagens(c) {
     const ehAluno = m.autor === "ALUNO";
 
     return `
-      <div style="
-        margin-top:12px;
-        padding:12px;
-        border-radius:6px;
-        background:${ehAluno ? "#fffdf1" : "#eef6ff"};
-        border-left:4px solid ${ehAluno ? "#e6d85a" : "#7aa7d9"};
+      <div class="
+        mensagens-prof-mensagem
+        ${
+          ehAluno
+            ? "mensagens-prof-mensagem-aluno"
+            : "mensagens-prof-mensagem-prof"
+        }
       ">
-        <div style="
-            font-size:0.74rem;
-            font-weight:500;
-            opacity:0.90;
-            margin-bottom:2px;
-        ">
-            ${ehAluno ? "Eu" : "Prof"}
+
+        <div class="mensagens-prof-mensagem-autor">
+          ${ehAluno ? "Eu" : "Prof"}
         </div>
 
-        <div style="white-space:pre-wrap;">
-          ${esc(m.texto)}
-        </div>
+        <div class="mensagens-prof-mensagem-texto">${esc(m.texto).trim()}</div>
+
       </div>
     `;
   }).join("");
@@ -511,7 +718,12 @@ async function enviarNovaMensagem(conversaId) {
   }
 }
 
+document.getElementById("anoAtual").textContent =
+  new Date().getFullYear();
+
+exibirNomeUsuarioLogadoMensagens();
 carregarMensagens();
+
 </script>
 
 </body>
