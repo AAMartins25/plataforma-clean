@@ -19,7 +19,7 @@
     <h1 id="titulo_curso_questoes_criticas"></h1>
 
     <h2>
-      🚨 Questões diferenciadas
+      Questões diferenciadas
     </h2>
 
   </div>
@@ -63,10 +63,6 @@
 
   <div class="card questoes-criticas-escolha-card">
 
-    <h2 class="questoes-criticas-escolha-titulo">
-      Escolha
-    </h2>
-
     <div class="questoes-criticas-filtros">
 
       <div class="questoes-criticas-filtro-grupo">
@@ -78,8 +74,26 @@
         <select
           id="filtroDisciplina"
           class="questoes-criticas-select"
+          onchange="preencherFiltroAssuntos(); aplicarFiltros();"
+        >
+        </select>
+
+      </div>
+
+      <div class="questoes-criticas-filtro-grupo">
+
+        <label for="filtroAssunto">
+          Assunto
+        </label>
+
+        <select
+          id="filtroAssunto"
+          class="questoes-criticas-select"
           onchange="aplicarFiltros()"
         >
+          <option value="TODOS">
+            TODOS
+          </option>
         </select>
 
       </div>
@@ -165,9 +179,13 @@ function esc(s) {
     .replaceAll(">", "&gt;");
 }
 
-function traduzResposta(v) {
-  if (v === "C") return "CERTO";
-  if (v === "E") return "ERRADO";
+function traduzResposta(v, tipoQuestao) {
+
+  if (tipoQuestao === "CERTO_ERRADO") {
+    if (v === "C") return "CERTO";
+    if (v === "E") return "ERRADO";
+  }
+
   return v || "-";
 }
 
@@ -178,7 +196,23 @@ async function carregarQuestoesCriticas() {
     questoesCriticas =
       await apiGetAuth("/me/questoes-criticas");
 
+    console.log(
+      "QUESTÕES CRÍTICAS RECEBIDAS:",
+      questoesCriticas
+    );
+
+    console.log(
+      "PRIMEIRA QUESTÃO:",
+      questoesCriticas[0]
+    );
+
+    console.log(
+      "ALTERNATIVAS DA PRIMEIRA QUESTÃO:",
+      questoesCriticas[0]?.alternativas
+    );
+
     preencherFiltroDisciplinas();
+    preencherFiltroAssuntos();
 
     aplicarFiltros();
 
@@ -230,6 +264,60 @@ function preencherFiltroDisciplinas() {
     select.innerHTML += `
       <option value="${d.id}">
         ${esc(d.nome)}
+      </option>
+    `;
+  });
+}
+
+function preencherFiltroAssuntos() {
+
+  const selectAssunto =
+    document.getElementById("filtroAssunto");
+
+  const disciplinaSelecionada =
+    document.getElementById("filtroDisciplina").value;
+
+  let lista = [...questoesCriticas];
+
+  if (disciplinaSelecionada !== "TODAS") {
+    lista = lista.filter(
+      q =>
+        String(q.disciplina_id) ===
+        String(disciplinaSelecionada)
+    );
+  }
+
+  const assuntos = [];
+
+  lista.forEach(q => {
+
+    if (
+      !assuntos.some(
+        a => String(a.id) === String(q.assunto_id)
+      )
+    ) {
+      assuntos.push({
+        id: q.assunto_id,
+        nome: q.assunto_nome,
+        ordem: q.assunto_ordem
+      });
+    }
+
+  });
+
+  assuntos.sort(
+    (a, b) =>
+      (a.ordem ?? 0) - (b.ordem ?? 0)
+  );
+
+  selectAssunto.innerHTML = `
+    <option value="TODOS">TODOS</option>
+  `;
+
+  assuntos.forEach(a => {
+    selectAssunto.innerHTML += `
+      <option value="${a.id}">
+        ${esc(a.nome)}
       </option>
     `;
   });
@@ -292,7 +380,7 @@ function renderizarQuestoes(lista) {
     <div class="card questoes-criticas-total-card">
 
       <h2 class="questoes-criticas-total-titulo">
-        Total: ${listaOrdenada.length} 
+        Total de questões: ${listaOrdenada.length}
       </h2>
 
     </div>
@@ -388,27 +476,63 @@ function renderizarQuestoes(lista) {
 }
 
 function montarCardQuestaoCritica(q, numero, tipoGrupo) {
-  let marcador = "";
 
-  if (tipoGrupo === "ERRO") {
-    marcador =
-      q.qtd_erros > 1
-        ? `${q.qtd_erros}❌`
-        : "❌";
+  const tipoQuestao =
+    q.tipo_questao ||
+    q.tipo ||
+    "";
+
+  const alternativas =
+    Array.isArray(q.alternativas)
+      ? q.alternativas
+      : [];
+
+  const ehMultipla =
+    alternativas.length > 0 ||
+    tipoQuestao === "MULTIPLA" ||
+    tipoQuestao === "MULTIPLA_ESCOLHA";
+
+  const alternativasHtml =
+    ehMultipla && alternativas.length
+      ? `
+        <div class="questoes-criticas-alternativas">
+          ${alternativas.map(a => `
+            <div class="questoes-criticas-alternativa">
+              <span class="questoes-criticas-alternativa-letra">
+                ${esc(a.letra)})
+              </span>
+
+              <span>
+                ${esc(a.texto)}
+              </span>
+            </div>
+          `).join("")}
+        </div>
+      `
+      : "";
+
+  const marcacoes = [];
+
+  if (q.erro) {
+    marcacoes.push("Errei.");
   }
 
-  if (tipoGrupo === "DIFICIL") {
-    marcador = "D";
+  if (q.dificil) {
+    marcacoes.push("Marquei como 'Difícil'.");
   }
 
-  if (tipoGrupo === "REVER") {
-    marcador = "R";
+  if (q.para_rever) {
+    marcacoes.push("Marquei 'para rever'.");
   }
 
-  const classeMarcador =
-    tipoGrupo === "ERRO"
-      ? "questoes-criticas-marcador-erro"
-      : "questoes-criticas-marcador-outro";
+  const marcacoesHtml =
+    marcacoes.length
+      ? `
+        <div class="questoes-criticas-marcacoes">
+          ${marcacoes.join(" ")}
+        </div>
+      `
+      : "";
 
   return `
     <div class="card questoes-criticas-questao-card">
@@ -421,14 +545,15 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
         ${esc(q.enunciado)}
       </div>
 
-      <div class="questoes-criticas-gabarito">
-        <strong>Gabarito:</strong>
-        ${esc(traduzResposta(q.gabarito))}
-      </div>
+      ${alternativasHtml}
+
+      ${marcacoesHtml}
 
       <div class="questoes-criticas-comentario">
 
-        <strong>Comentário:</strong>
+        <div class="questoes-criticas-comentario-label">
+          Comentário:
+        </div>
 
         <div class="questoes-criticas-comentario-texto">
           ${esc(
@@ -441,22 +566,30 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
 
       <div class="questoes-criticas-rodape-questao">
 
-        <div
-          class="
-            questoes-criticas-marcador
-            ${classeMarcador}
-          "
-        >
-          ${marcador}
-        </div>
+        <div></div>
 
-        <div class="questoes-criticas-resposta-aluno">
-          Sua resposta:
-          ${esc(
-            traduzResposta(
-              q.resposta_marcada
-            )
-          )}
+        <div class="questoes-criticas-respostas-rodape">
+
+          <div class="questoes-criticas-gabarito-rodape">
+            Gabarito:
+            ${esc(
+              traduzResposta(
+                q.gabarito,
+                q.tipo_questao || q.tipo
+              )
+            )}
+          </div>
+
+          <div class="questoes-criticas-resposta-aluno">
+            Sua resposta:
+            ${esc(
+              traduzResposta(
+                q.resposta_marcada,
+                q.tipo_questao || q.tipo
+              )
+            )}
+          </div>
+
         </div>
 
       </div>

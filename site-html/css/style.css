@@ -1759,53 +1759,47 @@ footer {
     0 2px 6px rgba(31, 78, 121, 0.05);
 }
 
+.disciplinas-page .disciplina-curso-btn:hover {
+  background: #f8e66f;
+  color: var(--azul);
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(31, 78, 121, 0.09);
+}
 
 .disciplinas-page .disciplina-progresso {
   display: flex;
-
   align-items: center;
-
   gap: 12px;
-
   margin-top: 12px;
 }
 
-
 .disciplinas-page .disciplina-progresso-trilho {
   flex: 1;
-
   height: 6px;
-
   overflow: hidden;
-
   border-radius: 999px;
-
   background: #e5e9ee;
 }
 
-
 .disciplinas-page .disciplina-progresso-preenchimento {
   height: 100%;
-
   border-radius: 999px;
-
-  background: #aebdca;
-
+  background: #b9e3f5; /* azul-céu bem claro */
   transition: width 0.25s ease;
 }
 
-
 .disciplinas-page .disciplina-progresso-percentual {
   min-width: 42px;
-
   text-align: right;
-
   font-size: 0.84rem;
   font-weight: 700;
-
-  color: #52677b;
+  color: #52677b; /* neutro para 0% */
 }
 
+.disciplinas-page .disciplina-progresso-percentual.com-progresso {
+  color: #86c9e8; /* azul-céu claro quando > 0 */
+}
 
 .disciplinas-page .disciplina-bloqueada {
   opacity: 0.55;
@@ -1993,6 +1987,13 @@ footer {
     0 2px 6px rgba(31, 78, 121, 0.05);
 }
 
+.assuntos-page .assunto-curso-btn:hover {
+  background: #f8e66f;
+  color: var(--azul);
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(31, 78, 121, 0.09);
+}
 
 .assuntos-page .assunto-progresso {
   display: flex;
@@ -2020,25 +2021,22 @@ footer {
 
 .assuntos-page .assunto-progresso-preenchimento {
   height: 100%;
-
   border-radius: 999px;
-
-  background: #aebdca;
-
+  background: #b9e3f5;
   transition: width 0.25s ease;
 }
 
 
 .assuntos-page .assunto-progresso-percentual {
   min-width: 42px;
-
   text-align: right;
-
   font-size: 0.84rem;
-
   font-weight: 700;
-
   color: #52677b;
+}
+
+.assuntos-page .assunto-progresso-percentual.com-progresso {
+  color: #86c9e8;
 }
 
 /* =========================================================
@@ -2065,8 +2063,9 @@ footer {
 
 .teoria-page .teoria-header {
   position: relative;
-
-  padding: 22px 24px 24px;
+  padding-top: 26px;
+  padding-bottom: 33px;
+  min-height: 0;
 
   background:
     linear-gradient(
@@ -2082,39 +2081,50 @@ footer {
 
 .teoria-page .teoria-header-acoes {
   position: absolute;
-
   right: 24px;
   top: 38px;
-
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 17px;
 }
 
 
 .teoria-page .teoria-header-acoes .btn {
-  display: inline-flex;
+  width: auto;
+  height: auto;
 
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 
-  margin-top: 0;
-  padding: 0;
+  color: var(--azul);
 
-  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 400;
 
-  background:
-    rgba(255, 255, 255, 0.28);
-
-  border:
-    1px solid rgba(31, 78, 121, 0.10);
-
-  font-weight: normal;
-
+  text-decoration: none;
   box-shadow: none;
+}
+
+.teoria-page .teoria-header-acoes .btn:hover,
+.teoria-page .teoria-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+
+  color: var(--azul);
+
+  text-decoration: none;
+  transform: none;
+  box-shadow: none;
+
+  opacity: 0.72;
 }
 
 
@@ -2478,7 +2488,10 @@ footer {
 .sprint-header {
   position: relative;
 
-  padding: 22px 24px 24px;
+  padding-top: 25px;
+  padding-bottom: 30px;
+  padding-left: 24px;
+  padding-right: 24px;
 
   background: var(--amarelo);
 
@@ -2494,7 +2507,7 @@ footer {
 .sprint-header-identificacao h1 {
   margin: 0;
 
-  font-size: 1.40rem;
+  font-size: 1.27rem;
   font-weight: 400;
 
   color: var(--azul);
@@ -2509,20 +2522,36 @@ footer {
   color: #405c75;
 }
 
-.sprint-header-acoes {
+.sprint-header-direita {
   position: absolute;
-
   right: 24px;
-  top: 47px;
+  top: 6px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.sprint-aluno {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #667085;
+
+  white-space: nowrap;
+  text-align: right;
+
+  position: relative;
+  left: 10px;
+}
+
+.sprint-header-acoes {
+  position: static;
+
+  margin-top: 35px;
 
   display: flex;
   align-items: center;
-
-  gap: 10px;
-}
-
-.sprint-header-acoes .btn {
-  margin-top: 0;
+  gap: 17px;
 }
 
 /* =========================================================
@@ -2530,10 +2559,10 @@ footer {
    ========================================================= */
 
 .sprint-header-acoes .btn {
-  width: 36px;
-  height: 36px;
+  width: auto;
+  height: auto;
+  min-width: 0;
 
-  min-width: 36px;
   padding: 0;
   margin: 0;
 
@@ -2542,33 +2571,31 @@ footer {
   justify-content: center;
 
   background: transparent;
+  border: none;
+  border-radius: 0;
+
   color: var(--azul);
 
-  border: 1px solid rgba(0, 59, 115, 0.14);
-  border-radius: 10px;
-
-  box-shadow: none;
-
+  font-size: 0.88rem;
   font-weight: 400;
-  text-decoration: none;
 
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+  text-decoration: none;
+  box-shadow: none;
 }
 
 .sprint-header-acoes .btn:hover,
 .sprint-header-acoes .btn:focus,
 .sprint-header-acoes .btn:active {
-  background: rgba(255, 255, 255, 0.20);
+  background: transparent;
+  border: none;
+
   color: var(--azul);
 
-  border-color: rgba(0, 59, 115, 0.20);
-
-  box-shadow: none;
-  transform: none;
-
   text-decoration: none;
+  transform: none;
+  box-shadow: none;
+
+  opacity: 0.72;
 }
 
 /* =========================================================
@@ -2601,7 +2628,7 @@ footer {
 }
 
 .sprint-dificuldade-card {
-  margin-top: 22px;
+  margin-top: 10px;
   padding: 14px 16px;
 }
 
@@ -2613,25 +2640,43 @@ footer {
 }
 
 .sprint-dificuldade-texto {
+  display: block;
+  margin-bottom: 10px;
   font-weight: 700;
-  margin-right: 2px;
+}
+
+.sprint-dificuldade-opcoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .sprint-dificuldade-opcao {
+  width: 90px;
+  min-height: 28px;
+
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 
-  padding: 5px 10px;
+  padding: 3px 7px;
 
-  border: 1px solid #ddd;
-  border-radius: 999px;
+  border: 1px solid rgba(31, 78, 121, 0.28);
+  border-radius: 25px;
+
+  background: #ffffff;
+
+  color: var(--azul);
 
   cursor: pointer;
 
-  font-size: 0.92rem;
+  box-sizing: border-box;
+}
 
-  transform: translateY(-3px);
+.sprint-dificuldade-opcao input {
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .sprint-btn-responder {
@@ -2716,6 +2761,49 @@ footer {
 .sprint-conclusao-btn:focus {
   outline: none;
   box-shadow: none;
+}
+
+#btnConcluirBateriaAluno {
+  background: var(--amarelo);
+  color: var(--azul);
+
+  border: 1px solid rgba(31, 78, 121, 0.16);
+  border-radius: 6px;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+#btnConcluirBateriaAluno:hover {
+  background: #f8e66f;
+  color: var(--azul);
+
+  text-decoration: none;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.09);
+}
+
+.sprint-conclusao-acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+}
+
+.sprint-conclusao-btn {
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 /* =========================================================
@@ -2937,10 +3025,8 @@ footer {
 
 /* Card final */
 
-.sprint-revisao-finalizar-card{
-
-    padding:22px 28px;
-
+.sprint-revisao-finalizar-card {
+  padding: 12px 20px;
 }
 
 
@@ -2966,17 +3052,18 @@ footer {
     color .15s ease;
 }
 
-.sprint-revisao-btn-finalizar:hover{
+.sprint-revisao-btn-finalizar:hover {
+  background: #f8e66f;
+  border-color: rgba(31, 78, 121, 0.16);
 
-    background:#f6df72;
+  color: var(--azul);
 
-    border-color:#d8bf56;
+  text-decoration: none;
 
-    color:var(--azul);
+  transform: translateY(-1px);
 
-    transform:none;
-
-    box-shadow:none;
+  box-shadow:
+    0 4px 10px rgba(31, 78, 121, 0.09);
 }
 
 .sprint-revisao-btn-finalizar:focus{
@@ -2987,22 +3074,54 @@ footer {
 }
 
 .sprint-visualizar-fechar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
 }
 
 .questoes-disciplinas-page .container {
   margin-top: 40px;
 }
 
-.questoes-disciplinas-page .questoes-header-btn {
-  font-weight: 500;
-}
-
 .questoes-disciplinas-page .questoes-header-btn-secundario {
   font-weight: 400;
+}
+
+.questoes-disciplinas-page .questoes-header-btn {
+  width: auto;
+  min-width: 0;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.questoes-disciplinas-page .questoes-header-btn:hover,
+.questoes-disciplinas-page .questoes-header-btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  text-decoration: none;
+  transform: none;
+
+  opacity: 0.72;
 }
 
 .questoes-disciplinas-page .disciplina-curso-nome {
@@ -3096,16 +3215,16 @@ footer {
 .questoes-disciplinas-page #titulo_curso_nome {
   margin: 0;
 
-  font-size: 1.55rem;
+  font-size: 1.36rem;
   font-weight: 700;
 
   color: var(--azul);
 }
 
 .questoes-disciplinas-page #titulo_modulo_questoes {
-  margin: 9px 0 0 0;
+  margin: 4px 0 0 0;
 
-  font-size: 1.43rem;
+  font-size: 1.35rem;
   font-weight: 500;
 
   color: #405c75;
@@ -3185,7 +3304,7 @@ footer {
 /* Cabeçalho */
 
 .questoes-assuntos-page .questoes-assuntos-header-identificacao {
-  margin-top: 18px;
+  margin-top: 11px;
 
   display: flex;
   flex-direction: column;
@@ -3689,6 +3808,10 @@ footer {
     background-color 0.15s ease;
 }
 
+.questoes-pratica-page .questoes-pratica-nao-sei {
+  border-radius: 16px;
+}
+
 .questoes-pratica-page .questoes-pratica-alternativa:hover {
   background: #fbfcfe;
 
@@ -3747,9 +3870,13 @@ label {
   align-items: center;
   gap: 4px;
 
+  padding: 4px 10px;
+
+  border: 1px solid rgba(31, 78, 121, 0.28);
+  border-radius: 999px;
+
   font-size: 0.88rem;
 }
-
 
 /* Mensagem */
 
@@ -3830,7 +3957,6 @@ label {
 .questoes-pratica-page
 .questoes-pratica-dificuldade-opcoes
 label {
-
   min-width: 68px;
   min-height: 30px;
 
@@ -3842,7 +3968,7 @@ label {
   gap: 5px;
 
   border: 1px solid rgba(31,78,121,.16);
-  border-radius: 6px;
+  border-radius: 999px;
 
   background: #fff;
 
@@ -3880,13 +4006,15 @@ label:hover {
 .revisoes-programadas-header {
   position: relative;
 
-  padding-top: 4px;
-  padding-bottom: 16px;
+  padding-top: 11px;
+  padding-bottom: 17px;
+
+  min-height: 0;
 }
 
 .revisoes-programadas-page
 .revisoes-programadas-header-identificacao {
-  margin-top: 18px;
+  margin-top: 2px;
 
   display: flex;
   flex-direction: column;
@@ -3899,7 +4027,7 @@ label:hover {
 .revisoes-programadas-header-identificacao h1 {
   margin: 0;
 
-  font-size: 1.55rem;
+  font-size: 1.45rem;
   font-weight: 700;
 
   color: var(--azul);
@@ -3907,12 +4035,14 @@ label:hover {
 
 .revisoes-programadas-page
 .revisoes-programadas-header-identificacao h2 {
-  margin: 11px 0 0;
+  margin: 0;
 
-  font-size: 1.31rem;
+  font-size: 1.21rem;
   font-weight: 500;
+  line-height: 1.1;
 
   color: #36597b;
+  transform: translateY(2px);
 }
 
 
@@ -4000,7 +4130,7 @@ label:hover {
   margin-bottom: 14px;
 
   font-size: 0.98rem;
-  font-weight: 600;
+  font-weight: 400;
 
   color: var(--azul);
 }
@@ -4010,7 +4140,7 @@ label:hover {
 
 .revisoes-programadas-page
 .revisoes-programadas-btn {
-  width: 238px;
+  width: 179px;
   min-height: 38px;
 
   margin-top: 0;
@@ -4021,23 +4151,16 @@ label:hover {
   justify-content: center;
 
   background: var(--amarelo);
-
-  border:
-    1px solid #e2c85b;
-
+  border: 1px solid #e2c85b;
   border-radius: 7px;
 
   color: var(--azul);
 
   font-family: inherit;
   font-size: 0.86rem;
-  font-weight: 600;
+  font-weight: 400;
 
   box-shadow: none;
-
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
 }
 
 .revisoes-programadas-page
@@ -4215,24 +4338,82 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-header {
+
   position: relative;
+
+  padding-top: 11px;
+  padding-bottom: 17px;
+
+  min-height: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao {
+
+  margin-top: 2px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao h1 {
+
+  margin: 0;
+
+  font-size: 1.40rem;
+  font-weight: 700;
+  line-height: 1.1;
+
+  color: var(--azul);
+
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-identificacao h2 {
+  margin: 11px 0 0;
+
+  font-size: 1.16rem;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #36597b;
 }
 
 .questoes-criticas-page
 .questoes-criticas-header-acoes {
+
   position: absolute;
 
   right: 38px;
-  top: 39px;
+  top: 45px;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+
+  gap: 26px;
+
 }
 
 .questoes-criticas-page
 .questoes-criticas-header-acoes .btn {
+
   width: auto;
+  min-width: 0;
   height: auto;
 
   margin: 0;
@@ -4255,6 +4436,26 @@ label:hover {
   text-decoration: none;
 
   box-shadow: none;
+
+}
+
+.questoes-criticas-page
+.questoes-criticas-header-acoes .btn:hover,
+
+.questoes-criticas-page
+.questoes-criticas-header-acoes .btn:focus {
+
+  background: transparent;
+
+  color: var(--azul);
+
+  opacity: 0.72;
+
+  text-decoration: none;
+  transform: none;
+
+  box-shadow: none;
+
 }
 
 .questoes-criticas-page
@@ -4303,7 +4504,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-select {
-  width: 320px;
+  width: 180px;
   min-height: 29px;
 
   padding: 4px 10px;
@@ -4328,7 +4529,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-identificacao-card {
-  padding: 12px 20px;
+  padding: 16px 20px 12px;
 
   border-top: 4px solid var(--amarelo);
   border-radius: 10px;
@@ -4363,8 +4564,8 @@ label:hover {
 .questoes-criticas-header {
   position: relative;
 
-  padding-top: 4px;
-  padding-bottom: 9px;
+  padding-top: 6px;
+  padding-bottom: 21.5px;
 }
 
 .questoes-criticas-page
@@ -4381,16 +4582,6 @@ label:hover {
 .questoes-criticas-page
 .questoes-criticas-header-identificacao h1 {
   margin: 0;
-}
-
-.questoes-criticas-page
-.questoes-criticas-header-identificacao h2 {
-  margin: 5px 0 10px;
-
-  font-size: 1.24rem;
-  font-weight: 500;
-
-  color: #405c75;
 }
 
 .questoes-criticas-page
@@ -4542,6 +4733,36 @@ label:hover {
 
   color: #536b82;
 
+  opacity: 0.88;
+}
+
+.questoes-criticas-page
+.questoes-criticas-respostas-rodape {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  gap: 0px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-respostas-rodape {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+
+  line-height: 1;
+}
+
+.questoes-criticas-page
+.questoes-criticas-gabarito-rodape {
+  text-align: right;
+
+  font-size: 0.78rem;
+  font-weight: 400;
+
+  color: #536b82;
   opacity: 0.88;
 }
 
@@ -5918,4 +6139,594 @@ footer p {
   color: var(--azul);
 
   opacity: 0.82;
+}
+
+/* =====================================================
+   HOME - AJUSTES DO CABEÇALHO
+===================================================== */
+
+.home-page .home-header {
+  padding-top: 10px;
+  padding-bottom: 3px;
+  min-height: 0;
+}
+
+.home-page .home-brand-title {
+  font-size: 1.45rem;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.home-page .home-icon-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.home-page .home-icon-btn:hover,
+.home-page .home-icon-btn:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+.home-page .home-icon-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 1.15rem;
+}
+
+/* =====================================================
+   LOGIN - CABEÇALHO MAIS COMPACTO
+===================================================== */
+
+.login-page header {
+  padding-top: 11px;
+  padding-bottom: 23px;
+  min-height: 0;
+}
+
+.login-page header h1 {
+  margin: 0;
+}
+
+/* =====================================================
+   MEUS CURSOS - CABEÇALHO
+===================================================== */
+
+.cursos-page .cursos-header {
+  padding-top: 26px;
+  padding-bottom: 30px;
+  min-height: 0;
+}
+
+.cursos-page .cursos-header > div:first-child {
+  margin-top: 0 !important;
+}
+
+.cursos-page .cursos-header h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  line-height: 1.1;
+}
+
+.cursos-page .cursos-header-acoes .btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.cursos-page .cursos-header-acoes .btn:hover,
+.cursos-page .cursos-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.cursos-page #card_cursos_expirados .cursos-status-titulo {
+  font-weight: normal;
+}
+
+/* =====================================================
+   CURSO - CABEÇALHO
+===================================================== */
+
+.curso-page .curso-header {
+  padding-top: 25px;
+  padding-bottom: 33px;
+  min-height: 0;
+}
+
+.curso-page .curso-header-titulo {
+  margin-top: 0;
+  text-align: center;
+}
+
+.curso-page .curso-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.curso-page .curso-header-acoes .btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.curso-page .curso-header-acoes .btn:hover,
+.curso-page .curso-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.curso-page main.container {
+  margin-top: 18px;
+}
+
+/* =====================================================
+   DISCIPLINAS - PADRONIZAÇÃO
+===================================================== */
+
+.disciplinas-page .disciplinas-header {
+  padding-top: 28px;
+  padding-bottom: 34px;
+  min-height: 0;
+}
+
+.disciplinas-page .disciplinas-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.disciplinas-page .disciplinas-header-acoes .btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.disciplinas-page .disciplinas-header-acoes .btn:hover,
+.disciplinas-page .disciplinas-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--azul);
+  text-decoration: none;
+  transform: none;
+  opacity: 0.72;
+}
+
+/* Cards das disciplinas mais compactos */
+.disciplinas-page .disciplina-curso-card {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  min-height: 0;
+}
+
+.disciplinas-page .disciplina-curso-topo {
+  min-height: 0;
+}
+
+.disciplinas-page .disciplina-progresso {
+  margin-top: 8px;
+}
+
+/* =====================================================
+   ASSUNTOS - PADRONIZAÇÃO
+===================================================== */
+
+.assuntos-page .assuntos-header {
+  padding-top: 28px;
+  padding-bottom: 34px;
+  min-height: 0;
+}
+
+.assuntos-page .assuntos-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.assuntos-page .assuntos-header-acoes .btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.assuntos-page .assuntos-header-acoes .btn:hover,
+.assuntos-page .assuntos-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--azul);
+  text-decoration: none;
+  transform: none;
+  opacity: 0.72;
+}
+
+.assuntos-page .assuntos-header-acoes .btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.assuntos-page .assuntos-header-acoes .btn:hover,
+.assuntos-page .assuntos-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* =====================================================
+   TEORIA - IDENTIFICAÇÃO CENTRALIZADA
+===================================================== */
+
+.teoria-page .teoria-header-identificacao {
+  width: max-content;
+  max-width: calc(100% - 220px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.teoria-page .teoria-header-disciplina #titulo_disciplina {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.teoria-page .teoria-header-assunto #titulo_assunto_header {
+  font-size: 0.95rem;
+  font-weight: 400;
+  display: block;
+  margin-top: 3px;
+}
+
+.questoes-disciplinas-page .questoes-disciplinas-header {
+  position: relative;
+
+  padding-top: 11px;
+  padding-bottom: 26px;
+
+  min-height: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+.questoes-disciplinas-page .questoes-disciplinas-header-acoes {
+  position: absolute;
+  right: 24px;
+  top: 44px;
+
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.questoes-assuntos-page .questoes-assuntos-header {
+  position: relative;
+
+  padding-top: 11px;
+  padding-bottom: 23px;
+
+  min-height: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 50px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 26px;
+}
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes .btn {
+  width: auto;
+  min-width: 0;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.questoes-assuntos-page .questoes-assuntos-header-acoes .btn:hover,
+.questoes-assuntos-page .questoes-assuntos-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  text-decoration: none;
+  transform: none;
+
+  opacity: 0.72;
+}
+
+.questoes-assuntos-page #titulo_curso_nome {
+  margin: 0;
+
+  font-size: 1.35rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-assuntos-page .questoes-assuntos-modulo {
+  margin: 7px 0 0 0;
+
+  font-size: 1.22rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+/* =========================================================
+   PADRÃO TIPOGRÁFICO — QUESTÕES: DISCIPLINAS / ASSUNTOS
+   ========================================================= */
+
+/* Títulos: Disciplinas / Disciplina / Assuntos */
+.questoes-disciplinas-page .questoes-disciplinas-titulo,
+.questoes-assuntos-page .questoes-assuntos-disciplina-card h2,
+.questoes-assuntos-page .questoes-assuntos-titulo {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Subtítulos: em ordem de prioridade para o concurso */
+.questoes-disciplinas-page .questoes-disciplinas-subtitulo,
+.questoes-assuntos-page .questoes-assuntos-subtitulo {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+/* Nomes das disciplinas / nomes dos assuntos */
+.questoes-disciplinas-page .questoes-disciplina-nome,
+.questoes-assuntos-page .questoes-assunto-nome {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+/* Botões Abrir */
+.questoes-disciplinas-page .questoes-disciplina-btn,
+.questoes-assuntos-page .questoes-assunto-btn {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+/* =========================================================
+   QUESTÕES PRÁTICA — CABEÇALHO
+   ========================================================= */
+
+.questoes-pratica-page .questoes-pratica-header {
+  position: relative;
+
+  padding-top: 10px;
+  padding-bottom: 23px;
+
+  min-height: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdee8a 0%,
+      #fff19a 100%
+    );
+
+  border-bottom:
+    1px solid rgba(31, 78, 121, 0.06);
+}
+
+.questoes-pratica-page .questoes-pratica-header-identificacao {
+  margin-top: 6px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+}
+
+.questoes-pratica-page #titulo_curso_nome {
+  margin: 0;
+
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+
+  color: var(--azul);
+}
+
+.questoes-pratica-page .questoes-pratica-modulo {
+  margin: 3px 0 0 0;
+
+  font-family: inherit;
+  font-size: 1.12rem;
+  font-weight: 500;
+
+  color: #405c75;
+}
+
+.questoes-pratica-page .questoes-pratica-header-acoes {
+  position: absolute;
+
+  right: 24px;
+  top: 44px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 26px;
+}
+
+.questoes-pratica-page .questoes-pratica-header-acoes .btn {
+  width: auto;
+  min-width: 0;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  font-family: inherit;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.questoes-pratica-page .questoes-pratica-header-acoes .btn:hover,
+.questoes-pratica-page .questoes-pratica-header-acoes .btn:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  color: var(--azul);
+
+  text-decoration: none;
+  transform: none;
+
+  opacity: 0.72;
+}
+
+/* Questões prática — largura da área principal */
+.questoes-pratica-page main.container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.questoes-criticas-page
+#filtroDisciplina option {
+  font-weight: 600;
+}
+
+.questoes-criticas-page
+#filtroAssunto option,
+.questoes-criticas-page
+#filtroTipo option {
+  font-weight: 400;
+}
+
+/* =========================================================
+   QUESTÕES DIFERENCIADAS — 3 FILTROS NA MESMA LINHA
+   ========================================================= */
+
+.questoes-criticas-page .questoes-criticas-filtros {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 23px;
+  flex-wrap: nowrap;
+}
+
+.questoes-criticas-page .questoes-criticas-filtro-grupo {
+  width: 200px;
+  flex: 0 0 200px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.questoes-criticas-page .questoes-criticas-select {
+  width: 205px;
+  min-height: 25px;
+  padding: 2px 10px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-alternativas {
+  margin-top: 14px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.questoes-criticas-page
+.questoes-criticas-alternativa {
+  padding: 7px 10px;
+
+  border: 1px solid rgba(31, 78, 121, 0.16);
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font-size: 0.88rem;
+  line-height: 1.4;
+
+  color: var(--azul);
+}
+
+.questoes-criticas-page
+.questoes-criticas-alternativa-letra {
+  font-weight: 500;
+}
+
+.questoes-criticas-page
+.questoes-criticas-marcacoes {
+  margin-top: 14px;
+
+  font-size: 0.86rem;
+  font-weight: 400;
+
+  color: #536b82;
+}
+
+.questoes-criticas-page
+.questoes-criticas-comentario-label {
+  margin-bottom: 5px;
+
+  font-weight: 400;
 }

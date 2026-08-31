@@ -4242,8 +4242,23 @@ def listar_questoes_criticas(
                 "assunto_ordem": assunto.ordem,
 
                 "questao_ordem": questao.ordem,
+                "tipo": questao.tipo,
+                "tipo_questao": questao.tipo_questao,
                 "enunciado": questao.enunciado,
                 "comentario": questao.comentario,
+
+                "alternativas": [
+                    {
+                        "letra": alternativa.letra,
+                        "texto": alternativa.texto
+                    }
+                    for alternativa in (
+                        db.query(Alternativa)
+                        .filter(Alternativa.questao_id == questao.id)
+                        .order_by(Alternativa.letra.asc())
+                        .all()
+                    )
+                ],
 
                 "resposta_marcada": resposta.resposta_marcada,
                 "gabarito": resposta.gabarito,
