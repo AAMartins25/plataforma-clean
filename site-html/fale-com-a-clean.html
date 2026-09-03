@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fale com a Clean</title>
+  <title>Fale com a Quality</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 
@@ -26,11 +26,12 @@
       <h1
         style="
           margin:-6px 0 0 0;
-          font-size:1.55rem;
+          font-size:1.5rem;
           text-align:center;
+          transform:translateY(-5px);
         "
       >
-        💬 Falar com a Clean
+        Falar com a Quality
       </h1>
     </div>
 
@@ -38,7 +39,7 @@
       style="
         position:absolute;
         right:24px;
-        top:22px;
+        top:29px;
         display:flex;
         gap:10px;
         align-items:center;
@@ -85,8 +86,21 @@
         margin-bottom:16px;
         justify-content:center;
       ">
-        <button id="btnAluno" class="btn" onclick="mostrarAluno()">ALUNO</button>
-        <button id="btnNaoAluno" class="btn" onclick="mostrarNaoAluno()">NÃO ALUNO</button>
+        <button
+          id="btnAluno"
+          class="btn fale-clean-btn-tipo"
+          onclick="mostrarAluno()"
+        >
+          ALUNO
+        </button>
+
+        <button
+          id="btnNaoAluno"
+          class="btn fale-clean-btn-tipo"
+          onclick="mostrarNaoAluno()"
+        >
+          NÃO ALUNO
+        </button>
       </div>
 
       <div id="areaAtendimento"></div>
@@ -124,14 +138,22 @@
     let atendimentoAtual = null;
 
     function destacarBotao(tipo) {
-      const btnAluno = document.getElementById("btnAluno");
-      const btnNaoAluno = document.getElementById("btnNaoAluno");
 
-      btnAluno.style.border = tipo === "aluno" ? "3px solid #1F4E79" : "";
-      btnNaoAluno.style.border = tipo === "nao-aluno" ? "3px solid #1F4E79" : "";
+      const btnAluno =
+        document.getElementById("btnAluno");
 
-      btnAluno.style.boxShadow = tipo === "aluno" ? "0 0 0 3px rgba(31,78,121,.15)" : "";
-      btnNaoAluno.style.boxShadow = tipo === "nao-aluno" ? "0 0 0 3px rgba(31,78,121,.15)" : "";
+      const btnNaoAluno =
+        document.getElementById("btnNaoAluno");
+
+      btnAluno.classList.toggle(
+        "fale-clean-btn-tipo-ativo",
+        tipo === "aluno"
+      );
+
+      btnNaoAluno.classList.toggle(
+        "fale-clean-btn-tipo-ativo",
+        tipo === "nao-aluno"
+      );
     }
 
     function getToken() {
@@ -157,10 +179,15 @@
       }
 
       area.innerHTML = `
+
         <div class="assunto">
-          <h3>Escreva sua mensagem</h3>
+
+          <div class="fale-clean-form-titulo">
+            Escreva sua mensagem
+          </div>
 
           <label><b>Assunto</b></label>
+
           <input
             id="assuntoAluno"
             type="text"
@@ -169,20 +196,34 @@
           >
 
           <label><b>Mensagem</b></label>
+
           <textarea
             id="mensagemAluno"
             placeholder="Descreva sua dúvida ou solicitação"
             style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px; margin-top:6px;"
           ></textarea>
 
-          <button id="btnEnviarMensagemAluno" class="btn" style="margin-top:12px;" onclick="enviarMensagemAluno()">
+          <button
+            id="btnEnviarMensagemAluno"
+            class="btn fale-clean-btn-acao"
+            onclick="enviarMensagemAluno()"
+          >
             Enviar mensagem
           </button>
 
           <div id="msgAluno" style="margin-top:10px;"></div>
 
-          <button class="btn" type="button" onclick="toggleHistoricoAtendimentos()">
-            Atendimentos anteriores
+        </div>
+
+
+        <div class="assunto fale-clean-mensagens-anteriores">
+
+          <button
+            class="btn fale-clean-btn-acao"
+            type="button"
+            onclick="toggleHistoricoAtendimentos()"
+          >
+            Mensagens anteriores
           </button>
 
           <div
@@ -190,7 +231,9 @@
             class="list"
             style="display:none; margin:14px 0;"
           ></div>
+
         </div>
+
       `;
     }
 
@@ -206,12 +249,14 @@
       destacarBotao("nao-aluno");
 
       area.innerHTML = `
-        <div class="assunto">
-          <p>Mande para o nosso WhatsApp:</p>
+        <div class="assunto fale-clean-whatsapp-area">
+          <p class="fale-clean-whatsapp-titulo">
+            Atendimento no WhatsApp. Escolha uma opção
+          </p>
 
           <div class="list">
             <a
-              class="btn"
+              class="btn fale-clean-btn-whatsapp"
               href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20um%20curso%20espec%C3%ADfico."
               target="_blank"
             >
@@ -219,7 +264,7 @@
             </a>
 
             <a
-              class="btn"
+              class="btn fale-clean-btn-whatsapp"
               href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20saber%20quais%20cursos%20est%C3%A3o%20dispon%C3%ADveis."
               target="_blank"
             >
@@ -227,7 +272,7 @@
             </a>
 
             <a
-              class="btn"
+              class="btn fale-clean-btn-whatsapp"
               href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%20Gostaria%20de%20saber%20por%20quanto%20tempo%20terei%20acesso%20ao%20curso."
               target="_blank"
             >
@@ -235,7 +280,7 @@
             </a>
 
             <a
-              class="btn"
+              class="btn fale-clean-btn-whatsapp"
               href="https://wa.me/5597991892699?text=Oi%2C%20Quality%21%0AGostaria%20de%20saber%20o%20seguinte%3A%0A"
               target="_blank"
             >
@@ -319,15 +364,14 @@
       }
 
       box.style.display = "block";
-      box.innerHTML = "<p>Carregando atendimentos anteriores...</p>";
 
       try {
         const dados = await apiGetAuth("/me/atendimentos");
 
         if (!dados || dados.length === 0) {
           box.innerHTML = `
-            <div class="assunto">
-              Ainda não há atendimentos realizados.
+            <div class="fale-clean-sem-historico">
+              Não há atendimento anterior
             </div>
           `;
           return;

@@ -17,7 +17,7 @@
   >
     <div
       style="
-        margin-top:32px;
+        margin-top:21px;
         display:flex;
         justify-content:center;
         align-items:center;
@@ -30,7 +30,7 @@
           text-align:center;
         "
       >
-        👤 Meus dados
+        Meus dados e Histórico de compras
       </h1>
     </div>
 
@@ -38,9 +38,9 @@
       style="
         position:absolute;
         right:24px;
-        top:22px;
+        top:32px;
         display:flex;
-        gap:10px;
+        gap:22px;
         align-items:center;
       "
     >
@@ -73,7 +73,9 @@
 
   <main class="container">
     <div class="card">
-      <h2>Meu cadastro / atualizar</h2>
+      <h2 class="meus-dados-titulo-card">
+        Meu cadastro / atualizar
+      </h2>
 
       <div id="msg" style="margin:10px 0;"></div>
 
@@ -107,7 +109,10 @@
             style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
         </div>
 
-        <button class="btn" type="submit">
+        <button
+          class="btn meus-dados-btn-atualizar"
+          type="submit"
+        >
           Atualizar
         </button>
 
@@ -116,6 +121,7 @@
 
     <div class="card">
       <h2
+        class="meus-dados-titulo-card"
         onclick="mostrarHistoricoCompras()"
         style="
           cursor:pointer;

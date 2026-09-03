@@ -20,7 +20,7 @@
     <h1 id="titulo_curso_mensagens_prof"></h1>
 
     <h2>
-      💬 Mensagens ao prof
+      Mensagens ao prof
     </h2>
 
   </div>
@@ -62,10 +62,6 @@
 <main class="container">
 
   <div class="card mensagens-prof-escolha-card">
-
-    <h2 class="mensagens-prof-escolha-titulo">
-      Escolha
-    </h2>
 
     <div class="mensagens-prof-filtros">
 
@@ -111,6 +107,26 @@
   </div>
 
   <div id="area_mensagens"></div>
+
+  <div class="card mensagens-prof-navegacao-final">
+
+    <button
+      type="button"
+      class="btn mensagens-prof-btn-final"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+    >
+      Voltar ao topo
+    </button>
+
+    <button
+      type="button"
+      class="btn mensagens-prof-btn-final"
+      onclick="history.back()"
+    >
+      Voltar
+    </button>
+
+  </div>
 
 </main>
 
@@ -462,9 +478,7 @@ function renderizarConversas() {
   document.getElementById(
     "total_mensagens"
   ).innerText =
-    dados.length === 1
-      ? "Total: 1 conversa"
-      : `Total: ${dados.length} conversas`;
+    `Total: ${dados.length}`;
 
   if (!dados.length) {
     document.getElementById("area_mensagens").innerHTML = `
@@ -648,7 +662,9 @@ function montarAreaNovaMensagem(conversaId) {
       background:#f8f8f8;
       border-radius:6px;
     ">
-      <h3>Responder ao professor</h3>
+      <h3 class="mensagens-prof-responder-titulo">
+        Responder ao professor
+      </h3>
 
       <textarea
         id="nova_msg_${conversaId}"
@@ -664,7 +680,7 @@ function montarAreaNovaMensagem(conversaId) {
 
       <div style="margin-top:12px;">
         <button
-          class="btn"
+          class="btn mensagens-prof-btn-enviar"
           onclick="enviarNovaMensagem(${conversaId})"
         >
           Enviar ao prof.

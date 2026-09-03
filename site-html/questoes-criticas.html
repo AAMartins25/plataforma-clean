@@ -134,9 +134,15 @@
 
   <div id="area_questoes"></div>
 
-  <div id="area_relatorio"></div>
-
   <div class="card questoes-criticas-voltar-card">
+
+    <button
+      type="button"
+      class="btn questoes-criticas-btn-voltar"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+    >
+      Voltar ao topo
+    </button>
 
     <a
       class="btn questoes-criticas-btn-voltar"
@@ -380,7 +386,7 @@ function renderizarQuestoes(lista) {
     <div class="card questoes-criticas-total-card">
 
       <h2 class="questoes-criticas-total-titulo">
-        Total de questões: ${listaOrdenada.length}
+        Total: ${listaOrdenada.length}
       </h2>
 
     </div>
@@ -492,24 +498,45 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
     tipoQuestao === "MULTIPLA" ||
     tipoQuestao === "MULTIPLA_ESCOLHA";
 
-  const alternativasHtml =
-    ehMultipla && alternativas.length
-      ? `
-        <div class="questoes-criticas-alternativas">
-          ${alternativas.map(a => `
-            <div class="questoes-criticas-alternativa">
-              <span class="questoes-criticas-alternativa-letra">
-                ${esc(a.letra)})
-              </span>
+  const ehCertoErrado =
+    q.tipo === "CERTO_ERRADO" ||
+    q.tipo === "CERTO/ERRADO" ||
+    q.tipo_questao === "CERTO_ERRADO" ||
+    q.tipo_questao === "CERTO/ERRADO";
 
-              <span>
-                ${esc(a.texto)}
-              </span>
-            </div>
-          `).join("")}
+  let alternativasHtml = "";
+
+  if (ehMultipla && alternativas.length > 0) {
+    alternativasHtml = `
+      <div class="questoes-criticas-alternativas">
+        ${alternativas.map(a => `
+          <div class="questoes-criticas-alternativa">
+            <span class="questoes-criticas-alternativa-letra">
+              ${esc(a.letra)})
+            </span>
+
+            <span>
+              ${esc(a.texto)}
+            </span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  if (ehCertoErrado) {
+    alternativasHtml = `
+      <div class="questoes-criticas-alternativas">
+        <div class="questoes-criticas-alternativa">
+          CERTO
         </div>
-      `
-      : "";
+
+        <div class="questoes-criticas-alternativa">
+          ERRADO
+        </div>
+      </div>
+    `;
+  }
 
   const marcacoes = [];
 
@@ -581,7 +608,7 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
           </div>
 
           <div class="questoes-criticas-resposta-aluno">
-            Sua resposta:
+            Sua resposta foi:
             ${esc(
               traduzResposta(
                 q.resposta_marcada,
@@ -607,183 +634,9 @@ function renderizarMiniRelatorio(
       "area_relatorio"
     );
 
-  if (!lista.length) {
+  if (area) {
     area.innerHTML = "";
-    return;
   }
-
-  const disciplinas = [];
-
-  lista.forEach(q => {
-    let disciplina =
-      disciplinas.find(
-        d => d.id === q.disciplina_id
-      );
-
-    if (!disciplina) {
-      disciplina = {
-        id: q.disciplina_id,
-        nome: q.disciplina_nome,
-        ordem: q.disciplina_ordem,
-        assuntos: []
-      };
-
-      disciplinas.push(disciplina);
-    }
-
-    let assunto =
-      disciplina.assuntos.find(
-        a => a.id === q.assunto_id
-      );
-
-    if (!assunto) {
-      assunto = {
-        id: q.assunto_id,
-        nome: q.assunto_nome,
-        ordem: q.assunto_ordem,
-        erros: 0,
-        dificeis: 0,
-        paraRever: 0
-      };
-
-      disciplina.assuntos.push(
-        assunto
-      );
-    }
-
-    if (q.erro) {
-      assunto.erros += 1;
-    }
-
-    if (q.dificil) {
-      assunto.dificeis += 1;
-    }
-
-    if (q.para_rever) {
-      assunto.paraRever += 1;
-    }
-  });
-
-  disciplinas.sort(
-    (a, b) =>
-      (a.ordem ?? 0) -
-      (b.ordem ?? 0)
-  );
-
-  disciplinas.forEach(d => {
-    d.assuntos.sort(
-      (a, b) =>
-        (a.ordem ?? 0) -
-        (b.ordem ?? 0)
-    );
-  });
-
-  let html = `
-    <div class="card questoes-criticas-relatorio-titulo-card">
-
-      <h2 class="questoes-criticas-relatorio-titulo">
-        Relatório geral da(s) disciplina(s)
-      </h2>
-
-    </div>
-  `;
-
-  disciplinas.forEach(
-    disciplina => {
-
-      const assuntosComRegistro =
-        disciplina.assuntos.filter(
-          assunto =>
-            assunto.erros > 0 ||
-            assunto.dificeis > 0 ||
-            assunto.paraRever > 0
-        );
-
-      if (
-        assuntosComRegistro.length === 0
-      ) {
-        return;
-      }
-
-      html += `
-        <div class="card questoes-criticas-relatorio-conteudo-card">
-
-          <h3 class="questoes-criticas-relatorio-disciplina">
-            ${esc(
-              disciplina.nome || ""
-            )}
-          </h3>
-      `;
-
-      assuntosComRegistro.forEach(
-        assunto => {
-
-          html += `
-            <div class="questoes-criticas-relatorio-assunto">
-
-              <div class="questoes-criticas-relatorio-assunto-nome">
-                ${esc(
-                  assunto.nome || ""
-                )}
-              </div>
-
-              <div class="questoes-criticas-relatorio-totais">
-          `;
-
-          if (assunto.erros > 0) {
-            html += `
-              <div>
-                ${assunto.erros}
-                ${
-                  assunto.erros === 1
-                    ? "questão respondida incorretamente"
-                    : "questões respondidas incorretamente"
-                }
-              </div>
-            `;
-          }
-
-          if (assunto.dificeis > 0) {
-            html += `
-              <div>
-                ${assunto.dificeis}
-                ${
-                  assunto.dificeis === 1
-                    ? "questão difícil"
-                    : "questões difíceis"
-                }
-              </div>
-            `;
-          }
-
-          if (assunto.paraRever > 0) {
-            html += `
-              <div>
-                ${assunto.paraRever}
-                ${
-                  assunto.paraRever === 1
-                    ? "marcada para rever"
-                    : "marcadas para rever"
-                }
-              </div>
-            `;
-          }
-
-          html += `
-              </div>
-
-            </div>
-          `;
-        }
-      );
-
-      html += `
-        </div>
-      `;
-    }
-  );
-
-  area.innerHTML = html;
 }
 
 const anoAtual =

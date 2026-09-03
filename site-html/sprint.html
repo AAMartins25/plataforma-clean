@@ -15,42 +15,46 @@
         <div id="subtitulo_bateria"></div>
       </div>
 
-      <div
-        id="nome_aluno_logado"
-        class="sprint-aluno"
-      ></div>
+      <div class="sprint-header-direita">
 
-      <div class="sprint-header-acoes">
+        <div
+          id="nome_aluno_logado"
+          class="sprint-aluno"
+        ></div>
 
-        <a
-          class="btn"
-          href="javascript:void(0)"
-          onclick="voltarParaListaQuestoes()"
-          title="Voltar"
-        >
-          ⇦
-        </a>
+        <div class="sprint-header-acoes">
 
-        <a
-          class="btn"
-          href="javascript:void(0)"
-          onclick="
-            localStorage.setItem('pagina_antes_inicio', window.location.href);
-            window.location.replace('index.html');
-          "
-          title="Página inicial"
-        >
-          ⌂
-        </a>
+          <a
+            class="btn"
+            href="javascript:void(0)"
+            onclick="voltarParaListaQuestoes()"
+            title="Voltar"
+          >
+            ⇦
+          </a>
 
-        <a
-          class="btn"
-          href="javascript:void(0)"
-          onclick="confirmarSairSprint()"
-          title="Sair"
-        >
-          ⎋
-        </a>
+          <a
+            class="btn"
+            href="javascript:void(0)"
+            onclick="
+              localStorage.setItem('pagina_antes_inicio', window.location.href);
+              window.location.replace('index.html');
+            "
+            title="Página inicial"
+          >
+            ⌂
+          </a>
+
+          <a
+            class="btn"
+            href="javascript:void(0)"
+            onclick="confirmarSairSprint()"
+            title="Sair"
+          >
+            ⎋
+          </a>
+
+        </div>
 
       </div>
 
@@ -65,7 +69,7 @@
     </div>
 
     <footer style="margin-top:4px;">
-      <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+      <p>© <span id="ano_atual"></span> - Quality</p>
     </footer>
 
     <script src="js/app.js"></script>
@@ -300,11 +304,12 @@
                   ? ``
                   : `
                     <div class="card sprint-dificuldade-card">
-                      <div class="sprint-dificuldade-linha">
 
-                        <span class="sprint-dificuldade-texto">
-                          Essa questão para você, neste momento, foi:
-                        </span>
+                      <div class="sprint-dificuldade-texto">
+                        Essa questão para você, neste momento, foi:
+                      </div>
+
+                      <div class="sprint-dificuldade-opcoes">
 
                         <label
                           id="dif_${q.id}_FACIL"
@@ -349,6 +354,7 @@
                         </label>
 
                       </div>
+
                     </div>
                   `
               }
@@ -368,15 +374,25 @@
 
         html += `
           <div class="card" id="boxConcluirBateria">
-            <h3 style="margin-top:0;">Finalizar bateria</h3>
 
-            <button
-              id="btnConcluirBateriaAluno"
-              class="btn"
-              onclick="concluirBateriaAluno()"
-            >
-              Concluir bateria
-            </button>
+            <div class="sprint-conclusao-acoes">
+
+              <button
+                class="btn sprint-conclusao-btn"
+                onclick="concluirBateriaAluno('agora')"
+              >
+                Revisar agora
+              </button>
+
+              <button
+                class="btn sprint-conclusao-btn"
+                onclick="concluirBateriaAluno('depois')"
+              >
+                Revisar depois
+              </button>
+
+            </div>
+
           </div>
         `;
 
@@ -591,7 +607,7 @@
         });
       }
 
-      async function concluirBateriaAluno() {
+      async function concluirBateriaAluno(destino) {
         const questoesNaoRespondidas = questoes
           .filter(q => !respostasAluno[q.id])
           .map(q => q.ordem);
@@ -610,16 +626,6 @@
             `Responda todas para concluir a bateria.`
           );
           return;
-        }
-
-        const btnConcluir = document.getElementById("btnConcluirBateriaAluno");
-
-        if (btnConcluir) {
-          btnConcluir.textContent = "Bateria concluída";
-          btnConcluir.style.background = "#dff3e6";
-          btnConcluir.style.color = "#2f5e46";
-          btnConcluir.style.borderColor = "#2f5e46";
-          btnConcluir.disabled = true;
         }
 
         const payload = {
@@ -642,29 +648,12 @@
 
           localStorage.setItem("voltar_para_questoes_forcar_atualizacao", "1");
 
-          document.getElementById("area_questoes").innerHTML = `
-            <div class="card sprint-conclusao-card">
-              <h2 class="sprint-conclusao-titulo">
-                Bateria de questões concluída!
-              </h2>
+          if (destino === "agora") {
+            revisarAgora();
+            return;
+          }
 
-              <div class="sprint-conclusao-acoes">
-                <button
-                  class="btn sprint-conclusao-btn"
-                  onclick="revisarAgora()"
-                >
-                  Revisar agora
-                </button>
-
-                <button
-                  class="btn sprint-conclusao-btn"
-                  onclick="voltarParaListaQuestoes()"
-                >
-                  Revisar depois
-                </button>
-              </div>
-            </div>
-          `;
+          voltarParaListaQuestoes();
 
         } catch (err) {
           console.error(err);
@@ -748,7 +737,7 @@
                           `
                           : `
                             <div class="sprint-revisao-erro">
-                              ❌ Não foi desta vez.
+                              Não foi desta vez
                             </div>
 
                             <div class="sprint-revisao-gabarito">
@@ -760,7 +749,7 @@
               </div>
 
               <div class="sprint-revisao-comentario">
-                <b>Comentário:</b>
+                Comentário:
 
                 <div class="sprint-revisao-comentario-texto">
                   ${escLocal(q.comentario || "Comentário não cadastrado.")}
@@ -794,7 +783,7 @@
                   ? ""
                   : `
                     <div class="card" style="margin-top:16px;">
-                      <h3>Minha anotação sobre esta questão</h3>
+                      <h3>Fazer anotação / enviar mensagem ao professor</h3>
 
                       <textarea
                         id="anotacao_${q.id}"
@@ -897,7 +886,7 @@
                       id="btnFinalizarRevisao"
                       class="btn sprint-revisao-btn-finalizar"
                       onclick="finalizarRevisao()"
-                      style="margin-left:25px;"
+                      style="display:block; margin-left:auto; margin-right:25px;"
                   >
                       Finalizar revisão e voltar
                   </button>

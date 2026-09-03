@@ -1034,8 +1034,8 @@ async function pageDisciplinas() {
 
   if (titulo) {
     titulo.innerText = cursoNome
-      ? `📘 ${cursoNome}`
-      : "📚 Disciplinas";
+      ? cursoNome
+      : "Disciplinas";
   }
 
   if (!cursoId) {
@@ -1126,7 +1126,11 @@ async function pageDisciplinas() {
             ></div>
           </div>
 
-          <div class="disciplina-progresso-percentual">
+          <div
+            class="disciplina-progresso-percentual ${
+              prog.percentual > 0 ? "com-progresso" : ""
+            }"
+          >
             ${prog.percentual}%
           </div>
         </div>
@@ -1258,8 +1262,8 @@ async function pageAssuntos() {
 
   if (tituloCurso) {
     tituloCurso.innerText = cursoNome
-      ? `📘 ${cursoNome}`
-      : "📘 Curso";
+      ? cursoNome
+      : "Curso";
   }
 
   if (cardDisciplina) {
@@ -1339,7 +1343,11 @@ async function pageAssuntos() {
             ></div>
           </div>
 
-          <div class="assunto-progresso-percentual">
+          <div
+            class="assunto-progresso-percentual ${
+              prog.percentual > 0 ? "com-progresso" : ""
+            }"
+          >
             ${prog.percentual}%
           </div>
 
@@ -1721,7 +1729,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
         >
-          🔁 Revisões programadas
+          🔁 Revisões
         </div>
 
         <a
@@ -1884,6 +1892,33 @@ function alternarDisciplinaCursoInfo(id) {
   renderizarEstruturaCursoInfo();
 }
 
+let opcaoAcessoSelecionadaCursoInfo = null;
+
+function alternarOpcaoAcessoCursoInfo(input) {
+
+  const valorAtual =
+    input.value;
+
+  if (
+    opcaoAcessoSelecionadaCursoInfo ===
+    valorAtual
+  ) {
+
+    input.checked = false;
+
+    opcaoAcessoSelecionadaCursoInfo =
+      null;
+
+  } else {
+
+    opcaoAcessoSelecionadaCursoInfo =
+      valorAtual;
+
+  }
+
+  controlarAvisoDemoCursoInfo();
+}
+
 function controlarAvisoDemoCursoInfo() {
   const selecionado =
     document.querySelector(
@@ -1984,7 +2019,7 @@ function renderizarEstruturaCursoInfo() {
   }
 
   estrutura.innerHTML = disciplinas.map(d => `
-    <div class="disciplina" style="padding:10px 14px;">
+    <div class="disciplina curso-info-disciplina">
       <div
         onclick="alternarDisciplinaCursoInfo(${d.id})"
         style="font-weight:bold;cursor:pointer;"
@@ -2000,7 +2035,7 @@ function renderizarEstruturaCursoInfo() {
                 (d.assuntos || []).length === 0
                   ? `<p style="opacity:.75;">Nenhum assunto cadastrado.</p>`
                   : d.assuntos.map(a => `
-                      <div class="assunto" style="padding:8px 12px;">
+                      <div class="curso-info-assunto">
                         ${escapeHtml(a.nome)}
                       </div>
                     `).join("")
@@ -2017,17 +2052,19 @@ function renderizarOpcoesAcessoCursoInfo() {
   const box = document.getElementById("opcoes_acesso");
   if (!box || !dadosCursoInfo) return;
 
+  opcaoAcessoSelecionadaCursoInfo = null;
+
   const tempos = dadosCursoInfo.tempos_acesso || [];
 
   const pagas = tempos.map(t => `
-    <label class="assunto" style="display:block;cursor:pointer;">
+    <label class="assunto curso-info-opcao-acesso">
       <input
         type="radio"
         name="tipo_acesso"
         value="tempo_${t.id}"
         data-tempo-id="${t.id}"
         data-valor-cents="${t.valor_cents}"
-        onchange="controlarAvisoDemoCursoInfo()"
+        onclick="alternarOpcaoAcessoCursoInfo(this)"
         style="margin-right:10px;"
       />
       ${t.meses} meses (${formatarValorCursoInfo(t.valor_cents)})
@@ -2035,15 +2072,15 @@ function renderizarOpcoesAcessoCursoInfo() {
   `).join("");
 
   box.innerHTML = `
-    <label class="assunto" style="display:block;cursor:pointer;">
+    <label class="assunto curso-info-opcao-acesso">
       <input
         type="radio"
         name="tipo_acesso"
         value="demo"
-        onchange="controlarAvisoDemoCursoInfo()"
+        onclick="alternarOpcaoAcessoCursoInfo(this)"
         style="margin-right:10px;"
       />
-      Acesso gratuito (teste)
+      Teste (acesso gratuito)
     </label>
 
     ${pagas}
@@ -2819,7 +2856,7 @@ async function carregarProximaQuestaoPratica() {
         </label>
 
         <label
-          class="questoes-pratica-alternativa"
+          class="questoes-pratica-alternativa questoes-pratica-nao-sei"
           style="margin-top:10px;"
         >
           <input
@@ -3013,18 +3050,33 @@ async function responderQuestaoPratica() {
     ? `<div style="color:#b45309;font-weight:bold;">Registrado para revisar depois.</div>`
     : acertou
       ? `<div style="color:#16a34a;font-weight:bold;">${mensagemAcertoAleatoria()} ✓</div>`
-      : `<div style="color:#dc2626;font-weight:bold;">Não desta vez</div>`;
+      : `<div style="color:#dc2626;font-weight:bold;">Não foi desta vez.</div>`;
+
+  const tipoQuestao =
+    questaoPraticaAtual?.tipo_questao ||
+    questaoPraticaAtual?.tipo ||
+    "";
+
+  let gabaritoExibido = gabarito;
+
+  if (tipoQuestao === "CERTO_ERRADO") {
+    if (gabarito === "C") {
+      gabaritoExibido = "CERTO";
+    } else if (gabarito === "E") {
+      gabaritoExibido = "ERRADO";
+    }
+  }
 
   mensagem.innerHTML = `
     ${resultadoHtml}
 
     <div style="margin-top:12px;">
-      <strong>Gabarito:</strong> ${escapeHtml(gabarito)}
+      Gabarito: ${escapeHtml(gabaritoExibido)}
     </div>
 
     ${
       questaoPraticaAtual.comentario
-        ? `<div style="margin-top:10px;"><strong>Comentário:</strong><br>${questaoPraticaAtual.comentario}</div>`
+        ? `<div style="margin-top:10px;">Comentário:<br>${questaoPraticaAtual.comentario}</div>`
         : ""
     }
 

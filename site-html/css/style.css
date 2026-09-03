@@ -323,7 +323,7 @@ footer {
 
 .home-page .container {
   max-width: 920px;
-  margin-top: 34px;
+  margin-top: 23px;
   margin-bottom: 44px;
 }
 
@@ -876,11 +876,11 @@ footer {
 .home-page .home-como-funciona-header {
   display: flex;
   align-items: center;
-
+  justify-content: center;
+  text-align: center;
   cursor: pointer;
   user-select: none;
 }
-
 
 .home-page .home-como-funciona-header h2 {
   margin: 0;
@@ -3655,7 +3655,7 @@ footer {
 .questoes-pratica-page .container {
   max-width: 900px;
 
-  margin-top: 32px;
+  margin-top: 22px;
   margin-bottom: 44px;
 }
 
@@ -4106,7 +4106,7 @@ label:hover {
 .container {
   max-width: 900px;
 
-  margin-top: 32px;
+  margin-top: 23px;
   margin-bottom: 44px;
 }
 
@@ -4660,7 +4660,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-comentario {
-  margin-top: 22px;
+  margin-top: 18px;
 
   white-space: normal;
 
@@ -4879,6 +4879,7 @@ label:hover {
   box-shadow:
     0 4px 12px
     rgba(31, 78, 121, 0.05);
+  gap: 16px;
 }
 
 .questoes-criticas-page
@@ -4955,9 +4956,8 @@ footer p {
 .minhas-anotacoes-page
 .minhas-anotacoes-header {
   position: relative;
-
   padding-top: 4px;
-  padding-bottom: 16px;
+  padding-bottom: 18px;
 }
 
 .minhas-anotacoes-page
@@ -5095,19 +5095,14 @@ footer p {
 .minhas-anotacoes-page
 .minhas-anotacoes-select {
   width: 300px;
-  min-height: 32px;
-
-  padding: 4px 10px;
-
+  height: 28px;
+  min-height: 28px;
+  padding: 2px 10px;
   border:
     1px solid rgba(31, 78, 121, 0.24);
-
   border-radius: 5px;
-
   background: #ffffff;
-
   color: var(--azul);
-
   font-family: inherit;
   font-size: 0.84rem;
 }
@@ -5201,10 +5196,8 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-resposta {
-  margin-top: 18px;
-
+  margin-top: 6px;
   font-size: 0.90rem;
-
   color: var(--azul);
 }
 
@@ -5229,10 +5222,8 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-comentario {
-  margin-top: 22px;
-
+  margin-top: 8px;
   font-size: 0.90rem;
-
   color: var(--azul);
 }
 
@@ -5257,15 +5248,11 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-bloco-aluno {
-  margin-top: 20px;
-
+  margin-top: 17px;
   padding: 14px 16px;
-
   background: #fffdf1;
-
   border:
     1px solid rgba(226, 200, 91, 0.35);
-
   border-radius: 7px;
 }
 
@@ -5293,12 +5280,10 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-acoes {
-  margin-top: 18px;
-
+  margin-top: 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-
   flex-wrap: wrap;
 }
 
@@ -5423,7 +5408,7 @@ footer p {
 .mensagens-prof-header-identificacao h1 {
   margin: 0;
 
-  font-size: 1.55rem;
+  font-size: 1.47rem;
   font-weight: 700;
 
   color: var(--azul);
@@ -5433,7 +5418,7 @@ footer p {
 .mensagens-prof-header-identificacao h2 {
   margin: 7px 0 0;
 
-  font-size: 1.24rem;
+  font-size: 1.28rem;
   font-weight: 500;
 
   color: #405c75;
@@ -5473,12 +5458,14 @@ footer p {
 
   color: var(--azul);
 
-  font-size: 0.82rem;
+  font-size: 0.90rem;
   font-weight: 400;
 
   text-decoration: none;
 
   box-shadow: none;
+
+  transform: translateY(1px);
 }
 
 .mensagens-prof-page
@@ -5747,7 +5734,7 @@ footer p {
 .dashboard-aluno-header-identificacao h1 {
   margin: 0;
 
-  font-size: 1.55rem;
+  font-size: 1.43rem;
   font-weight: 700;
 
   color: var(--azul);
@@ -6001,13 +5988,10 @@ footer p {
 .dashboard-aluno-page
 .dashboard-aluno-assunto-nota {
   min-width: 32px;
-
   text-align: right;
-
   font-size: 0.90rem;
   font-weight: 600;
-
-  color: var(--azul);
+  color: #2e7d32;
 }
 
 .dashboard-aluno-page
@@ -6020,14 +6004,12 @@ footer p {
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-nota {
   min-width: 42px;
-
   text-align: right;
-
   font-size: 0.90rem;
   font-weight: 600;
-
-  color: var(--azul);
+  color: #2e7d32;
 }
+
 /* Nota baixa da disciplina */
 
 .dashboard-aluno-page
@@ -6729,4 +6711,679 @@ footer p {
   margin-bottom: 5px;
 
   font-weight: 400;
+}
+
+.questoes-criticas-page .questoes-criticas-alternativas {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.questoes-criticas-page .questoes-criticas-alternativa {
+  padding: 2px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--azul);
+}
+
+.questoes-criticas-page .questoes-criticas-alternativa-letra {
+  font-weight: 400;
+}
+
+.questoes-criticas-page
+.questoes-criticas-questao-card
+.questoes-criticas-comentario
+.questoes-criticas-comentario-label {
+  display: block !important;
+  margin-top: 14px !important;
+  margin-bottom: 8px !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--azul) !important;
+  line-height: 1.2 !important;
+}
+
+.questoes-criticas-page
+.questoes-criticas-questao-card
+.questoes-criticas-comentario
+.questoes-criticas-comentario-texto {
+  display: block !important;
+  margin-top: 0 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.55 !important;
+  color: var(--azul) !important;
+}
+
+.questoes-criticas-page .questoes-criticas-gabarito-rodape,
+.questoes-criticas-page .questoes-criticas-resposta-aluno {
+  font-size: 0.62rem !important;
+}
+
+.questoes-criticas-page .questoes-criticas-questao-numero {
+  font-size: 0.85rem !important;
+  font-weight: 600;
+}
+
+.questoes-criticas-page .questoes-criticas-marcacoes {
+  margin-top: 10px !important;
+  text-align: right !important;
+  font-size: 0.72rem !important;
+  font-weight: 400 !important;
+  line-height: 1.3 !important;
+  color: #6b7f92 !important;
+}
+
+.questoes-criticas-page .questoes-criticas-total-titulo {
+  font-size: 0.79rem !important;
+  font-weight: 550 !important;
+}
+
+.minhas-anotacoes-page
+.minhas-anotacoes-navegacao-final {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 26px;
+}
+
+/* =========================================================
+   MENSAGENS AO PROF — NAVEGAÇÃO FINAL
+========================================================= */
+
+.mensagens-prof-page
+.mensagens-prof-navegacao-final {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 19px;
+  margin-top: 26px;
+}
+
+.mensagens-prof-page
+.mensagens-prof-btn-final {
+  min-width: 120px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+}
+
+.mensagens-prof-page
+.mensagens-prof-btn-final:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.mensagens-prof-page
+.mensagens-prof-btn-enviar {
+  min-width: 120px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.mensagens-prof-page
+.mensagens-prof-btn-enviar:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.mensagens-prof-page
+.mensagens-prof-responder-titulo {
+  margin: 0 0 10px;
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--azul);
+}
+
+.home-page
+.home-como-funciona-header-secundario {
+  margin-top: 10px;
+}
+
+/* =========================================================
+   FALE COM A CLEAN — AÇÕES DO CABEÇALHO
+   ========================================================= */
+
+body:has(#btnSairFaleClean) header nav .btn {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--azul);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+body:has(#btnSairFaleClean) header nav .btn:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+body:has(#btnSairFaleClean) header nav {
+  gap: 23px !important;
+}
+
+/* =========================================================
+   FALE COM A CLEAN — BOTÕES ALUNO / NÃO ALUNO
+   ========================================================= */
+
+.fale-clean-btn-tipo {
+  min-width: 120px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff9d6;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.fale-clean-btn-tipo.fale-clean-btn-tipo-ativo {
+  background: var(--amarelo);
+  border-color: #e2c85b;
+  box-shadow: none;
+}
+
+.fale-clean-btn-tipo:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.fale-clean-form-titulo {
+  margin: 0 0 18px;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--azul);
+}
+
+.fale-clean-btn-acao {
+  min-height: 36px;
+  margin: 12px 0 0;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.fale-clean-btn-acao:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.fale-clean-mensagens-anteriores {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 75px;
+  padding: 12px 16px;
+  margin-top: 16px;
+}
+
+.fale-clean-mensagens-anteriores
+#historicoAtendimentos {
+  width: auto;
+  align-self: flex-end;
+  margin-top: 8px !important;
+}
+
+.fale-clean-sem-historico {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--azul);
+  font-size: 0.84rem;
+  text-align: right;
+}
+
+.fale-clean-mensagens-anteriores
+.fale-clean-btn-acao {
+  margin-top: 0;
+}
+
+#assuntoAluno:focus,
+#mensagemAluno:focus {
+  outline: none;
+  border-color: var(--azul) !important;
+  box-shadow: 0 0 0 1px rgba(31, 78, 121, 0.10);
+}
+
+.fale-clean-btn-whatsapp {
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.fale-clean-btn-whatsapp:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.fale-clean-whatsapp-titulo {
+  margin: 0 0 13px;
+}
+
+.fale-clean-whatsapp-area {
+  width: 88%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-page
+.home-cursos-disponiveis-card {
+  margin-bottom: 17px;
+}
+
+.home-page
+.home-localizar-card {
+  margin-bottom: 39px;
+}
+
+.home-page
+.home-como-funciona-card {
+  margin-bottom: 39px;
+}
+
+.home-page
+.home-brand {
+  padding-top: 5px;
+}
+
+.home-page
+.home-brand-resumao {
+  font-size: 1.285rem;
+  font-weight: 700;
+}
+
+.home-page
+.home-brand-a {
+  position: relative;
+  display: inline-block;
+}
+
+.home-page
+.home-brand-til {
+  position: absolute;
+  left: 50%;
+  top: -0.32em;
+  transform: translateX(-50%);
+  color: var(--azul);
+  font-size: 0.72em;
+  font-weight: 700;
+}
+
+.home-page
+.home-brand-concursos {
+  margin-top: 3px;
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+}
+
+.home-page
+.home-brand-r {
+  font-size: 1.22em;
+}
+
+.home-page
+.home-atendimento-btn {
+  min-height: 50px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body:has(#formMeusDados) header nav .btn {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--azul);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-decoration: none;
+  box-shadow: none;
+  transform: translateY(4px);
+}
+
+body:has(#formMeusDados) header nav .btn:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+body:has(#formMeusDados) header nav {
+  gap: 22px !important;
+}
+
+.meus-dados-btn-atualizar {
+  width: 100%;
+  min-height: 41px;
+  margin: 14px 0 0;
+  padding: 0 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.meus-dados-btn-atualizar:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+.meus-dados-titulo-card {
+  font-size: 1.28rem;
+}
+
+body:has(#listaReembolsos) header nav .btn {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+body:has(#listaReembolsos) header nav .btn:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+body:has(#listaReembolsos) header nav {
+  gap: 23px !important;
+}
+
+.reembolso-btn-solicitados {
+  min-width: 190px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.reembolso-btn-solicitados:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+body[data-page="curso-info"] header .btn {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  color: var(--azul);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-decoration: none;
+
+  box-shadow: none;
+}
+
+body[data-page="curso-info"] header .btn:hover {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+body[data-page="curso-info"]
+.curso-info-opcao-acesso {
+  display: block;
+  cursor: pointer;
+  border-radius: 28px;
+  padding-top: 9.5px;
+  padding-bottom: 9.5px;
+}
+
+body[data-page="curso-info"]
+.curso-info-disciplina {
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+body[data-page="curso-info"]
+.curso-info-assunto {
+  padding: 2px 4px 5px 12px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+
+  color: var(--azul);
+  font-size: 0.965rem;
+  font-weight: 400;
+  opacity: 0.82;
+}
+
+body[data-page="curso-info"]
+.curso-info-btn-adquirir {
+  min-width: 165px;
+  min-height: 45px;
+  margin: 0;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.87rem;
+  font-weight: 600;
+
+  box-shadow: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+body[data-page="curso-info"]
+.curso-info-btn-adquirir:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
+}
+
+body[data-page="curso-info"]
+.curso-info-aviso-demo-itens {
+  margin-top: 12px;
+  margin-left: 12px;
+  line-height: 1.8;
+}
+
+body[data-page="curso-info"]
+.curso-info-aviso-demo-obrigado {
+  margin-top: 14px;
+}
+
+body[data-page="curso-info"]
+.curso-info-btn-cupom {
+  width: 165px;
+  min-height: 43px;
+  margin: 0;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--amarelo);
+  border: 1px solid #e2c85b;
+  border-radius: 7px;
+
+  color: var(--azul);
+  font-family: inherit;
+  font-size: 0.87rem;
+  font-weight: 600;
+
+  box-shadow: none;
+  position: relative;
+  top: 3px;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+body[data-page="curso-info"]
+.curso-info-btn-cupom:hover {
+  background: #f8e66f;
+  border-color: #dfc94f;
+  cursor: pointer;
 }

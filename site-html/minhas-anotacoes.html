@@ -20,7 +20,7 @@
     <h1 id="titulo_curso_minhas_anotacoes"></h1>
 
     <h2>
-      📝 Anotações
+      Minhas anotações
     </h2>
 
   </div>
@@ -63,10 +63,6 @@
 
   <div class="card minhas-anotacoes-escolha-card">
 
-    <h2 class="minhas-anotacoes-escolha-titulo">
-      Escolha
-    </h2>
-
     <div class="minhas-anotacoes-filtros">
 
       <div class="minhas-anotacoes-filtro-grupo">
@@ -101,18 +97,27 @@
 
   </div>
 
-  <div class="card minhas-anotacoes-total-card">
-
-    <h2
-      id="total_anotacoes"
-      class="minhas-anotacoes-total-titulo"
-    >
-      Total: 0 anotações
-    </h2>
+    <div id="area_anotacoes">
 
   </div>
 
-  <div id="area_anotacoes">
+  <div class="card minhas-anotacoes-navegacao-final">
+
+    <button
+      type="button"
+      class="btn minhas-anotacoes-btn"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+    >
+      Voltar ao topo
+    </button>
+
+    <button
+      type="button"
+      class="btn minhas-anotacoes-btn"
+      onclick="history.back()"
+    >
+      Voltar
+    </button>
 
   </div>
 
@@ -438,13 +443,6 @@ function renderizarAnotacoes() {
     );
   }
 
-  document.getElementById(
-    "total_anotacoes"
-  ).innerText =
-    dados.length === 1
-      ? "Total: 1 anotação"
-      : `Total: ${dados.length} anotações`;
-
   if (!dados.length) {
     document.getElementById(
       "area_anotacoes"
@@ -529,10 +527,9 @@ function montarCardAnotacao(a) {
     a.resposta_texto ||
     "";
 
-  const enunciadoHtml =
-    ehCertoErrado
-      ? `${esc(a.enunciado)} (${respostaCorretaCE})`
-      : esc(a.enunciado);
+  const enunciadoHtml = ehCertoErrado
+    ? `${esc(a.enunciado)} (Gab. ${esc(respostaCorretaCE)})`
+    : esc(a.enunciado);
 
   return `
     <div class="card minhas-anotacoes-anotacao-card">
@@ -575,7 +572,7 @@ function montarCardAnotacao(a) {
         class="minhas-anotacoes-bloco-aluno"
       >
         <div class="minhas-anotacoes-bloco-aluno-titulo">
-          Minha anotação:
+          Anotação:
         </div>
 
         <div class="minhas-anotacoes-bloco-aluno-texto">

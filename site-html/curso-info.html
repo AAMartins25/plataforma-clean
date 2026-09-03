@@ -8,12 +8,12 @@
 
 <body data-page="curso-info">
 
-  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
-    <h1 id="titulo_curso" style="margin-bottom:0;font-weight:500;font-size:1.7rem;">
+  <header style="padding-top:26px;padding-bottom:28px; position:relative;">
+    <h1 id="titulo_curso" style="margin-bottom:0;font-weight:550;font-size:1.6rem;">
       Curso
     </h1>
 
-    <div style="position:absolute;right:24px;top:22px;display:flex;gap:10px;">
+    <div style="position:absolute;right:24px;top:37px;display:flex;gap:22px;">
       <a class="btn" href="javascript:history.back()" title="Voltar">⇦</a>
       <a class="btn" href="index.html" title="Início">⌂</a>
       <a class="btn" href="#" onclick="confirmarSair(); return false;" title="Sair">⎋</a>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="card">
-      <h2 style="margin-top:0;font-size:1.2rem;">Acesso:</h2>
+      <h2 style="margin-top:0;font-size:1.2rem;">Acesso</h2>
 
       <div id="opcoes_acesso" class="list"></div>
 
@@ -83,20 +83,15 @@
               border:1px solid #ddd;
               border-radius:6px;
               text-transform:uppercase;
+              position: relative;
+              top: 3px;
             "
           />
 
           <button
             id="btnAplicarCupom"
-            class="btn"
+            class="btn curso-info-btn-cupom"
             type="button"
-            style="
-              height:38px;
-              padding:0 26px;
-              box-sizing:border-box;
-              position:relative;
-              top:-14px;
-            "
           >
             Aplicar cupom
           </button>
@@ -135,28 +130,28 @@
       <div
         id="aviso_demo"
         class="assunto"
-        style="display:none;margin-top:14px;line-height:1.8;"
+        style="display:none;margin-top:14px;"
       >
-        <b>Observe:</b><br/>
+        Observe:
 
-        • este acesso será pelo prazo de 24 horas;<br/>
-        • somente as duas primeiras disciplinas estarão disponíveis;<br/>
-        • todas as funcionalidades dessas disciplinas poderão ser utilizadas normalmente;<br/>
-        • suas respostas, anotações e outros que houver feito nesta experiência serão excluídos após expirar o prazo do acesso;<br/>
-        • caso deseje refazer esta experiência, ela estará disponível para você novamente após 30 dias;<br/>
-        Obrigado!
+        <div class="curso-info-aviso-demo-itens">
+          <div>• Este acesso será pelo prazo de 24hs;</div>
+          <div>• Somente as duas primeiras disciplinas estarão disponíveis;</div>
+          <div>• Todas as funcionalidades dessas disciplinas poderão ser utilizadas normalmente;</div>
+          <div>• Suas respostas, anotações e outros que houver feito nesta experiência serão excluídos após expirar o prazo do acesso;</div>
+          <div>• Caso deseje refazer esta experiência, ela estará disponível para você novamente após 30 dias;</div>
+        </div>
+
+        <div class="curso-info-aviso-demo-obrigado">
+          Obrigado!
+        </div>
       </div>
 
-      <div style="margin-top:18px;text-align:right;">
+      <div style="margin-top:25px;text-align:right;">
         <button
           id="btnAdquirirAgora"
-          class="btn"
+          class="btn curso-info-btn-adquirir"
           type="button"
-          style="
-            min-width:187px;
-            height:40px;
-            font-weight:700;
-          "
         >
           Adquirir agora
         </button>

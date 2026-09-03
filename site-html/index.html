@@ -11,13 +11,25 @@
 <header class="home-header">
 
   <div class="home-brand">
-    <h1 class="home-brand-title">
-      Resumo Concursos
-    </h1>
+    <h1
+      class="home-brand-title"
+      style="
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        line-height:1.05;
+      "
+    >
+      <span class="home-brand-resumao">
+        <span class="home-brand-r">R</span>ESUM<span class="home-brand-a">A<span class="home-brand-til">~</span></span>O
+      </span>
 
-    <p class="home-brand-subtitle">
-      Só o que interessa
-    </p>
+      <span class="home-brand-concursos">
+        Concursos
+      </span>
+    </h1>
   </div>
 
   <nav class="home-nav">
@@ -67,95 +79,177 @@
 
 <main class="container">
 
-  <div class="card">
-    <div onclick="alternarCursosDisponiveis()" style="cursor:pointer;">
+  <!-- =====================================================
+       CURSOS DISPONÍVEIS
+  ====================================================== -->
+
+  <div class="card home-cursos-disponiveis-card">
+
+    <div
+      onclick="alternarCursosDisponiveis()"
+      style="cursor:pointer;"
+    >
       <h2>📚 Cursos disponíveis</h2>
     </div>
 
-    <div id="area_cursos_disponiveis" style="display:block;">
-      <div id="lista-cursos-publicos" class="list" style="margin-top:15px;"></div>
+    <div
+      id="area_cursos_disponiveis"
+      style="display:block;"
+    >
 
       <div
-        class="home-localizar"
+        id="lista-cursos-publicos"
+        class="list"
+        style="margin-top:15px;"
+      ></div>
+
+      <div
+        id="mais-cursos-box"
+        style="margin-top:12px;"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOCALIZAR CURSO
+  ====================================================== -->
+
+  <div
+    class="card home-localizar-card"
+    style="
+      padding:10px 18px;
+      min-height:0;
+    "
+  >
+
+    <div
+      class="home-localizar"
+      style="
+        display:flex;
+        align-items:center;
+        gap:14px;
+        flex-wrap:wrap;
+        min-height:0;
+        margin:0;
+      "
+    >
+
+      <label
+        for="buscaCurso"
         style="
-          display:flex;
-          align-items:center;
-          gap:14px;
-          margin-bottom:10px;
-          flex-wrap:wrap;
+          font-weight:bold;
+          white-space:nowrap;
         "
       >
-        <label style="font-weight:bold;white-space:nowrap;">
-          🔎 Localizar
-        </label>
+        🔎 Localizar
+      </label>
 
-        <input
-          id="buscaCurso"
-          type="text"
-          placeholder="Digite palavra(s) chave"
-          oninput="renderizarCursosPublicos()"
-          style="
-            padding:6px;
-            border:1px solid #ddd;
-            border-radius:1px;
-            width:542px;
-            font-style:italic;
-          "
-        >
-      </div>
+      <input
+        id="buscaCurso"
+        type="text"
+        placeholder="Digite palavra(s) chave"
+        oninput="renderizarCursosPublicos()"
+        style="
+          padding:6px;
+          border:1px solid #ddd;
+          border-radius:1px;
+          width:542px;
+          max-width:100%;
+          font-style:italic;
+        "
+      >
 
-      <div class="assunto home-curso-nao-encontrado" style="margin-top:18px;">
-        <h3 style="margin:0;">
-          📝 Não encontrou o preparatório que gostaria?
-          <strong style="color:#2ad167;">
-            👉 Chame no WhatsApp!
-          </strong>
-        </h3>
-      </div>
-
-      <div id="mais-cursos-box" style="margin-top:12px;"></div>
     </div>
+
   </div>
+
+
+  <!-- =====================================================
+       NÃO ENCONTROU O PREPARATÓRIO
+  ====================================================== -->
+
+  <!-- =====================================================
+       COMO FUNCIONA
+  ====================================================== -->
 
   <div class="card home-como-funciona-card">
 
+    <!-- FUNCIONAMENTO DA PLATAFORMA -->
+
     <div
       class="home-como-funciona-header"
-      onclick="alternarLista('area_como_funciona')"
+      onclick="alternarComoFunciona('area_funcionamento_plataforma')"
     >
-      <h2>📊 Como funciona a plataforma. A garantia de qualidade</h2>
+      <h2>
+        O funcionamento da plataforma
+      </h2>
     </div>
 
     <div
-      id="area_como_funciona"
+      id="area_funcionamento_plataforma"
       class="home-como-funciona-conteudo"
       style="display:none;"
     >
 
-      <div
-        style="
-          display:grid;
-          grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
-          gap:16px;
-        "
-      >
+      <div class="assunto">
 
-        <div class="assunto">
-          <h3>▶️ Como funciona</h3>
+        <h3>
+          Como funciona
+        </h3>
 
-          <div class="home-video-placeholder">
-            <span class="home-video-play">▶</span>
-            <span>Vídeo 1</span>
-          </div>
+        <div class="home-video-placeholder">
+
+          <span class="home-video-play">
+            ▶
+          </span>
+
+          <span>
+            Vídeo 1
+          </span>
+
         </div>
 
-        <div class="assunto">
-          <h3>💰 Seu dinheiro de volta</h3>
+      </div>
 
-          <div class="home-video-placeholder">
-            <span class="home-video-play">▶</span>
-            <span>Vídeo 2</span>
-          </div>
+    </div>
+
+
+    <!-- SOLICITAÇÃO DE REEMBOLSO -->
+
+    <div
+      class="home-como-funciona-header home-como-funciona-header-secundario"
+      onclick="alternarComoFunciona('area_solicitacao_reembolso')"
+    >
+      <h2>
+        Demais informações - resumido
+      </h2>
+    </div>
+
+    <div
+      id="area_solicitacao_reembolso"
+      class="home-como-funciona-conteudo"
+      style="display:none;"
+    >
+
+      <div class="assunto">
+
+       <h3>
+        Demais informações
+      </h3>
+
+        <div class="home-video-placeholder">
+
+          <span class="home-video-play">
+            ▶
+          </span>
+
+          <span>
+            Vídeo 2
+          </span>
+
         </div>
 
       </div>
@@ -163,14 +257,23 @@
     </div>
 
   </div>
-  
+
+
+  <!-- =====================================================
+       ATENDIMENTO
+  ====================================================== -->
+
   <div class="card home-atendimento-card">
 
     <div
       class="home-atendimento-header"
       onclick="alternarLista('area_atendimento_clean')"
     >
-      <h2>🔗 Atendimento</h2>
+
+      <h2>
+        🔗 Atendimento
+      </h2>
+
     </div>
 
     <div
@@ -178,6 +281,7 @@
       class="home-atendimento-conteudo"
       style="display:none;"
     >
+
       <div
         style="
           display:flex;
@@ -187,7 +291,7 @@
       >
 
         <a
-          class="btn"
+          class="btn home-atendimento-btn"
           href="#"
           onclick="abrirMeusDados(); return false;"
         >
@@ -195,14 +299,14 @@
         </a>
 
         <a
-          class="btn"
+          class="btn home-atendimento-btn"
           href="fale-com-a-clean.html"
         >
           Falar com a Clean
         </a>
 
         <a
-          class="btn"
+          class="btn home-atendimento-btn"
           href="#"
           onclick="abrirReembolso(); return false;"
         >
@@ -210,62 +314,91 @@
         </a>
 
       </div>
+
     </div>
 
   </div>
 
-  <div class="card" style="text-align:center;">
+
+  <!-- =====================================================
+     CORRIDA
+  ====================================================== -->
+
+  <div
+    class="card"
+    style="text-align:center;"
+  >
 
     <div
       style="
-        display:inline-flex;
-        flex-direction:column;
-        align-items:center;
+        display:flex;
+        align-items:flex-end;
+        justify-content:center;
+        gap:22px;
+        margin:8px 0;
       "
     >
 
-      <h2
+      <span
         style="
-          margin-bottom:0;
+          font-size:2.4rem;
+          transform:scaleX(-1);
+          line-height:1;
+        "
+      >
+        🏎️
+      </span>
+
+      <span
+        style="
+          font-size:2rem;
+          color:#999;
+          letter-spacing:8px;
+          line-height:1;
           position:relative;
-          left:-8px;
+          top:-2px;
         "
       >
-        🏁 Acelere!
-      </h2>
+        ...
+      </span>
 
-      <div
+      <span
         style="
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:22px;
-          margin:22px 0 8px;
+          display:inline-block;
+          position:relative;
+          width:30px;
+          height:30px;
+          top:-5px;
         "
       >
-        <span
-          style="
-            font-size:2.4rem;
-            transform:scaleX(-1);
-          "
-        >
-          🏎️
-        </span>
 
         <span
           style="
-            font-size:2rem;
-            color:#999;
-            letter-spacing:8px;
+            position:absolute;
+            left:4px;
+            bottom:0;
+            width:2px;
+            height:27px;
+            background:#555;
+            border-radius:2px;
+            z-index:2;
+          "
+        ></span>
+
+        <span
+          style="
+            position:absolute;
+            left:1px;
+            top:-1px;
+            font-size:1.7rem;
+            line-height:1;
+            z-index:1;
           "
         >
-          ...
-        </span>
-
-        <span style="font-size:2.5rem;">
           🏁
         </span>
-      </div>
+
+      </span>
 
     </div>
 
@@ -273,56 +406,112 @@
 
 </main>
 
+
 <footer>
-  <p>© <span id="ano_atual"></span> • Quality Estudos</p>
+  <p>
+    © <span id="ano_atual"></span> • Quality Estudos
+  </p>
 </footer>
+
 
 <script src="js/app.js"></script>
 
 <script>
+
   (function () {
-    const btnSair = document.getElementById("btnSairHome");
-    const btnVoltar = document.getElementById("btnVoltarHome");
-    const token = localStorage.getItem("access_token");
+
+    const btnSair =
+      document.getElementById(
+        "btnSairHome"
+      );
+
+    const btnVoltar =
+      document.getElementById(
+        "btnVoltarHome"
+      );
+
+    const token =
+      localStorage.getItem(
+        "access_token"
+      );
 
     if (btnSair) {
-      btnSair.style.display = token ? "inline-block" : "none";
-    }
 
-    if (btnVoltar) {
-      btnVoltar.style.display =
-        token && localStorage.getItem("pagina_antes_inicio")
+      btnSair.style.display =
+        token
           ? "inline-block"
           : "none";
     }
+
+    if (btnVoltar) {
+
+      btnVoltar.style.display =
+        token &&
+        localStorage.getItem(
+          "pagina_antes_inicio"
+        )
+          ? "inline-block"
+          : "none";
+    }
+
   })();
 
-  const anoAtual = document.getElementById("ano_atual");
+
+  const anoAtual =
+    document.getElementById(
+      "ano_atual"
+    );
+
   if (anoAtual) {
-    anoAtual.textContent = new Date().getFullYear();
+
+    anoAtual.textContent =
+      new Date().getFullYear();
   }
+
 
   function alternarCursosDisponiveis() {
-  const area = document.getElementById("area_cursos_disponiveis");
-  const lista = document.getElementById("lista-cursos-publicos");
 
-  if (!area) return;
+    const area =
+      document.getElementById(
+        "area_cursos_disponiveis"
+      );
 
-  const estavaFechada = area.style.display === "none";
+    const lista =
+      document.getElementById(
+        "lista-cursos-publicos"
+      );
 
-  area.style.display = estavaFechada ? "block" : "none";
+    if (!area) {
+      return;
+    }
 
-  if (estavaFechada && lista) {
-    setTimeout(() => {
-      lista.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }, 100);
+    const estavaFechada =
+      area.style.display === "none";
+
+    area.style.display =
+      estavaFechada
+        ? "block"
+        : "none";
+
+    if (
+      estavaFechada &&
+      lista
+    ) {
+
+      setTimeout(() => {
+
+        lista.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      }, 100);
+    }
   }
-}
+
 
   async function iniciarPaginaInicial() {
+
     await pageHomeCursosPublico();
 
     const params =
@@ -331,11 +520,16 @@
       );
 
     const abrirCursos =
-      params.get("cursos") === "aberto";
+      params.get("cursos") ===
+      "aberto";
+
     const abrirAtendimento =
-      params.get("atendimento") === "aberto";
+      params.get("atendimento") ===
+      "aberto";
+
 
     if (abrirCursos) {
+
       const area =
         document.getElementById(
           "area_cursos_disponiveis"
@@ -347,44 +541,60 @@
         );
 
       if (area) {
+
         area.style.display =
           "block";
       }
 
       if (lista) {
+
         setTimeout(() => {
+
           lista.scrollIntoView({
             behavior: "smooth",
             block: "start"
           });
+
         }, 300);
       }
     }
 
+
     if (abrirAtendimento) {
+
       const areaAtendimento =
         document.getElementById(
           "area_atendimento_clean"
         );
 
       if (areaAtendimento) {
+
         areaAtendimento.style.display =
           "block";
 
         setTimeout(() => {
+
           areaAtendimento.scrollIntoView({
             behavior: "smooth",
             block: "center"
           });
+
         }, 300);
       }
 
-      // O parâmetro serve apenas para abrir
-      // o Atendimento nesta chegada.
-      // Depois, remove-o da URL para que
-      // um novo acesso à Home comece fechado.
+
+      /*
+        O parâmetro serve apenas para abrir
+        o Atendimento nesta chegada.
+
+        Depois, remove-o da URL para que
+        um novo acesso à Home comece fechado.
+      */
+
       const urlAtual =
-        new URL(window.location.href);
+        new URL(
+          window.location.href
+        );
 
       urlAtual.searchParams.delete(
         "atendimento"
@@ -400,13 +610,16 @@
     }
   }
 
+
   function abrirMeusDados() {
+
     const token =
       localStorage.getItem(
         "access_token"
       );
 
     if (token) {
+
       window.location.href =
         "meus-dados.html";
 
@@ -417,13 +630,16 @@
       "login.html?next=meus-dados.html";
   }
 
+
   function abrirReembolso() {
+
     const token =
       localStorage.getItem(
         "access_token"
       );
 
     if (token) {
+
       window.location.href =
         "reembolso.html";
 
@@ -434,7 +650,42 @@
       "login.html?next=reembolso.html";
   }
 
+
+  function alternarComoFunciona(idAbrir) {
+
+    const ids = [
+      "area_funcionamento_plataforma",
+      "area_solicitacao_reembolso"
+    ];
+
+    const areaClicada =
+      document.getElementById(idAbrir);
+
+    if (!areaClicada) {
+      return;
+    }
+
+    const estavaAberta =
+      areaClicada.style.display !== "none";
+
+    ids.forEach(id => {
+
+      const area =
+        document.getElementById(id);
+
+      if (area) {
+        area.style.display = "none";
+      }
+
+    });
+
+    if (!estavaAberta) {
+      areaClicada.style.display = "block";
+    }
+  }
+
   iniciarPaginaInicial();
+
 </script>
 
 </body>

@@ -36,7 +36,11 @@
   function montarAreaHistorico() {
     return `
       <div class="assunto" style="margin-top:16px;">
-        <button class="btn" type="button" onclick="toggleReembolsosSolicitados()">
+        <button
+          class="btn reembolso-btn-solicitados"
+          type="button"
+          onclick="toggleReembolsosSolicitados()"
+        >
           Reembolsos solicitados
         </button>
 
@@ -203,7 +207,7 @@
       if (!dados || dados.length === 0) {
         box.innerHTML = `
           <div class="assunto">
-            Ainda não há reembolsos solicitados.
+            Não há solicitação de reembolso.
           </div>
         `;
         return;

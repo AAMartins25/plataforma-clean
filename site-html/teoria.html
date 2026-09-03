@@ -109,9 +109,15 @@
   <header class="teoria-header">
 
     <div class="teoria-header-identificacao">
-      <h1 id="titulo_disciplina"></h1>
 
-      <div id="titulo_assunto_header"></div>
+      <div class="teoria-header-disciplina">
+        <span id="titulo_disciplina"></span>
+      </div>
+
+      <div class="teoria-header-assunto">
+        <span id="titulo_assunto_header"></span>
+      </div>
+
     </div>
 
     <div
@@ -218,7 +224,7 @@
   </main>
 
   <footer style="margin-top:4px;">
-    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+    <p>© <span id="ano_atual"></span> - Quality</p>
   </footer>
 
   <script>
@@ -638,14 +644,13 @@
         document.getElementById("card_assunto_titulo");
       
       if (tituloDisciplina) {
-        tituloDisciplina.innerText = disciplinaNome
-          ? disciplinaNome
-          : "Disciplina";
+        tituloDisciplina.innerText =
+          disciplinaNome || "";
       }
 
       if (tituloAssuntoHeader) {
         tituloAssuntoHeader.innerText =
-          assuntoNome || "Assunto";
+          assuntoNome || "";
       }
 
       if (cardAssuntoTitulo) {
