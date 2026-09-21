@@ -2371,7 +2371,7 @@ def criar_checkout_mp(
     data = resp.json()
 
     pref_id = data.get("id")
-    init_point = data.get("sandbox_init_point") or data.get("init_point")
+    init_point = data.get("init_point")
 
     if not pref_id or not init_point:
         raise HTTPException(status_code=502, detail=f"MP retornou sem pref_id/init_point: {data}")
