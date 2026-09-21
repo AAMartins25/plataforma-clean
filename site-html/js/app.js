@@ -747,7 +747,7 @@ async function comprarCurso(cursoId) {
       valor_cents: PRECO_CURSO_CENTS
     });
 
-    const url = r.sandbox_init_point || r.init_point;
+    const url = r.init_point;
     if (!url) throw new Error("Checkout não retornou init_point.");
 
     // Abre o checkout
@@ -2157,9 +2157,7 @@ async function adquirirAgoraCursoInfo() {
     localStorage.setItem("ultimo_curso_id_compra", String(dadosCursoInfo.id));
     localStorage.setItem("ultimo_checkout_curso_id", String(dadosCursoInfo.id));
 
-    const url =
-      r.sandbox_init_point ||
-      r.init_point;
+    const url = r.init_point;
 
     if (!url) {
       throw new Error(

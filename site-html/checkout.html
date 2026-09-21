@@ -213,7 +213,7 @@
         localStorage.setItem("ultimo_curso_id_compra", String(dadosCheckout.id));
         localStorage.setItem("ultimo_checkout_curso_id", String(dadosCheckout.id));
 
-        const url = r.sandbox_init_point || r.init_point;
+        const url = r.init_point;
 
         if (!url) {
           throw new Error("Checkout não retornou link de pagamento.");
