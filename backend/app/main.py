@@ -103,6 +103,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://plataforma-quality.onrender.com",
+        "https://resumaoonline.com.br",
+        "https://www.resumaoonline.com.br",
     ],
     allow_origin_regex=r"https://.*\.app\.github\.dev",
     allow_credentials=True,
