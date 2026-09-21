@@ -62,9 +62,20 @@ ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(dotenv_path=ENV_PATH, override=True)
 
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
+
 APP_BASE_URL = os.getenv(
     "APP_BASE_URL",
     "http://127.0.0.1:5500/site-html"
+)
+
+CLOUDFLARE_ACCOUNT_ID = os.getenv(
+    "CLOUDFLARE_ACCOUNT_ID",
+    ""
+)
+
+CLOUDFLARE_STREAM_API_TOKEN = os.getenv(
+    "CLOUDFLARE_STREAM_API_TOKEN",
+    ""
 )
 
 RESEND_API_KEY = os.getenv(
@@ -1079,6 +1090,26 @@ def concluir_aula(
 
 @app.post("/videos")
 def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
+    provedor = (video.provedor or "").strip().upper()
+
+    if provedor not in {"YOUTUBE", "CLOUDFLARE"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Provedor de vídeo inválido"
+        )
+
+    if provedor == "YOUTUBE" and not video.url.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Vídeo do YouTube deve possuir URL"
+        )
+
+    if provedor == "CLOUDFLARE" and not (video.cloudflare_uid or "").strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Vídeo do Cloudflare deve possuir UID"
+        )
+
     aula = db.query(Aula).filter(Aula.id == video.aula_id).first()
     if not aula:
         return {"erro": "Aula não encontrada"}
@@ -1101,6 +1132,12 @@ def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
         aula_id=video.aula_id,
         titulo=video.titulo,
         url=video.url,
+        provedor=provedor,
+        cloudflare_uid=(
+            (video.cloudflare_uid or "").strip()
+            if provedor == "CLOUDFLARE"
+            else None
+        ),
         duracao_segundos=video.duracao_segundos,
         transcricao=video.transcricao,
         ordem=video.ordem,
@@ -1115,6 +1152,8 @@ def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
         "aula_id": novo.aula_id,
         "titulo": novo.titulo,
         "url": novo.url,
+        "provedor": novo.provedor,
+        "cloudflare_uid": novo.cloudflare_uid,
         "duracao_segundos": novo.duracao_segundos,
         "transcricao": novo.transcricao,
         "ordem": novo.ordem,
@@ -1135,6 +1174,8 @@ def listar_videos_da_aula(aula_id: int, db: Session = Depends(get_db)):
             "aula_id": v.aula_id,
             "titulo": v.titulo,
             "url": v.url,
+            "provedor": v.provedor,
+            "cloudflare_uid": v.cloudflare_uid,
             "duracao_segundos": v.duracao_segundos,
             "transcricao": v.transcricao,
             "ordem": v.ordem,
@@ -1149,6 +1190,26 @@ def editar_video(
     dados: VideoCreate,
     db: Session = Depends(get_db)
 ):
+    provedor = (dados.provedor or "").strip().upper()
+
+    if provedor not in {"YOUTUBE", "CLOUDFLARE"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Provedor de vídeo inválido"
+        )
+
+    if provedor == "YOUTUBE" and not dados.url.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Vídeo do YouTube deve possuir URL"
+        )
+
+    if provedor == "CLOUDFLARE" and not (dados.cloudflare_uid or "").strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Vídeo do Cloudflare deve possuir UID"
+        )
+
     video = db.query(Video).filter(Video.id == video_id).first()
 
     if not video:
@@ -1156,6 +1217,12 @@ def editar_video(
 
     video.titulo = dados.titulo
     video.url = dados.url
+    video.provedor = provedor
+    video.cloudflare_uid = (
+        (dados.cloudflare_uid or "").strip()
+        if provedor == "CLOUDFLARE"
+        else None
+    )
     video.duracao_segundos = dados.duracao_segundos
     video.transcricao = dados.transcricao
     video.ordem = dados.ordem
@@ -1169,10 +1236,212 @@ def editar_video(
         "aula_id": video.aula_id,
         "titulo": video.titulo,
         "url": video.url,
+        "provedor": video.provedor,
+        "cloudflare_uid": video.cloudflare_uid,
         "duracao_segundos": video.duracao_segundos,
         "transcricao": video.transcricao,
         "ordem": video.ordem,
         "ativo": video.ativo
+    }
+
+@app.get("/videos/{video_id}/playback")
+def obter_playback_video(
+    video_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    video = db.query(Video).filter(
+        Video.id == video_id,
+        Video.ativo == True
+    ).first()
+
+    if not video:
+        raise HTTPException(
+            status_code=404,
+            detail="Vídeo não encontrado"
+        )
+
+    if (video.provedor or "").upper() != "CLOUDFLARE":
+        raise HTTPException(
+            status_code=400,
+            detail="Este vídeo não utiliza Cloudflare Stream"
+        )
+
+    if not video.cloudflare_uid:
+        raise HTTPException(
+            status_code=500,
+            detail="Vídeo Cloudflare sem UID configurado"
+        )
+
+    aula = db.query(Aula).filter(
+        Aula.id == video.aula_id
+    ).first()
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula do vídeo não encontrada"
+        )
+
+    pasta = db.query(Pasta).filter(
+        Pasta.id == aula.pasta_id
+    ).first()
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Vídeo não vinculado a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    curso_id = disciplina.curso_id
+
+    if not usuario.is_admin:
+        acesso = db.query(AcessoCurso).filter(
+            AcessoCurso.usuario_id == usuario.id,
+            AcessoCurso.curso_id == curso_id,
+            AcessoCurso.ativo == True
+        ).first()
+
+        if not acesso:
+            raise HTTPException(
+                status_code=403,
+                detail="Sem acesso ativo a este curso"
+            )
+
+        agora = datetime.utcnow()
+
+        if acesso.data_fim and acesso.data_fim <= agora:
+            acesso.ativo = False
+            db.commit()
+
+            raise HTTPException(
+                status_code=403,
+                detail="Acesso ao curso expirado"
+            )
+        
+        demonstracao = (
+            db.query(DemonstracaoCurso)
+            .filter(
+                DemonstracaoCurso.usuario_id == usuario.id,
+                DemonstracaoCurso.curso_id == curso_id,
+                DemonstracaoCurso.ativo == True,
+                DemonstracaoCurso.data_fim > agora
+            )
+            .order_by(DemonstracaoCurso.id.desc())
+            .first()
+        )
+
+        em_demonstracao = False
+
+        if demonstracao:
+            em_demonstracao = (
+                acesso.data_inicio == demonstracao.data_inicio
+                and acesso.data_fim == demonstracao.data_fim
+            )
+
+        if em_demonstracao:
+            disciplinas_liberadas = (
+                db.query(CursoDisciplinaPropria)
+                .filter(
+                    CursoDisciplinaPropria.curso_id == curso_id,
+                    CursoDisciplinaPropria.ativo == True
+                )
+                .order_by(
+                    CursoDisciplinaPropria.ordem.asc(),
+                    CursoDisciplinaPropria.id.asc()
+                )
+                .limit(2)
+                .all()
+            )
+
+            ids_liberados = {
+                item.id
+                for item in disciplinas_liberadas
+            }
+
+            if disciplina.id not in ids_liberados:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Esta disciplina não está disponível no acesso gratuito."
+                )
+
+    if not CLOUDFLARE_ACCOUNT_ID or not CLOUDFLARE_STREAM_API_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloudflare Stream não configurado no servidor"
+        )
+
+    endpoint_cloudflare = (
+        f"https://api.cloudflare.com/client/v4/accounts/"
+        f"{CLOUDFLARE_ACCOUNT_ID}/stream/"
+        f"{video.cloudflare_uid}/token"
+    )
+
+    try:
+        resposta = requests.post(
+            endpoint_cloudflare,
+            headers={
+                "Authorization": f"Bearer {CLOUDFLARE_STREAM_API_TOKEN}"
+            },
+            timeout=10
+        )
+    except requests.RequestException:
+        raise HTTPException(
+            status_code=502,
+            detail="Não foi possível comunicar com o Cloudflare Stream"
+        )
+
+    if not resposta.ok:
+        raise HTTPException(
+            status_code=502,
+            detail="Cloudflare Stream não conseguiu gerar o token do vídeo"
+        )
+
+    try:
+        dados_cloudflare = resposta.json()
+    except ValueError:
+        raise HTTPException(
+            status_code=502,
+            detail="Cloudflare Stream retornou uma resposta inválida"
+        )
+
+    token = (dados_cloudflare.get("result") or {}).get("token")
+
+    if not token:
+        raise HTTPException(
+            status_code=502,
+            detail="Cloudflare Stream não retornou token de reprodução"
+        )
+
+    return {
+        "video_id": video.id,
+        "token": token
     }
 
 @app.post("/baterias")
@@ -6650,6 +6919,8 @@ def duplicar_curso_inteiro(
                                     aula_id=nova_aula.id,
                                     titulo=video_origem.titulo,
                                     url=video_origem.url,
+                                    provedor=video_origem.provedor,
+                                    cloudflare_uid=video_origem.cloudflare_uid,
                                     duracao_segundos=
                                         video_origem.duracao_segundos,
                                     transcricao=
@@ -7092,6 +7363,8 @@ def copiar_disciplina_entre_cursos(
                                 aula_id=nova_aula.id,
                                 titulo=video_origem.titulo,
                                 url=video_origem.url,
+                                provedor=video_origem.provedor,
+                                cloudflare_uid=video_origem.cloudflare_uid,
                                 duracao_segundos=
                                     video_origem.duracao_segundos,
                                 transcricao=
@@ -7557,6 +7830,8 @@ def copiar_assunto_entre_disciplinas(
                             aula_id=nova_aula.id,
                             titulo=video_origem.titulo,
                             url=video_origem.url,
+                            provedor=video_origem.provedor,
+                            cloudflare_uid=video_origem.cloudflare_uid,
                             duracao_segundos=
                                 video_origem.duracao_segundos,
                             transcricao=

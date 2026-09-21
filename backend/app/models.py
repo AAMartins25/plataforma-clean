@@ -115,6 +115,8 @@ class Video(Base):
 
     titulo = Column(String(255), nullable=False)
     url = Column(Text, nullable=False)
+    provedor = Column(String(20), nullable=False, default="YOUTUBE")
+    cloudflare_uid = Column(String(255), nullable=True)
     duracao_segundos = Column(Integer, default=0)
     transcricao = Column(Text, nullable=True)
 

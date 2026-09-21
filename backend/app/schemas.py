@@ -62,18 +62,21 @@ class AulaResponse(BaseModel):
 class VideoCreate(BaseModel):
     aula_id: int
     titulo: str
-    url: str
+    url: str = ""
+    provedor: str = "YOUTUBE"
+    cloudflare_uid: str | None = None
     duracao_segundos: int = 0
     transcricao: str | None = None
     ordem: int = 1
     ativo: bool = True
-
 
 class VideoResponse(BaseModel):
     id: int
     aula_id: int
     titulo: str
     url: str
+    provedor: str
+    cloudflare_uid: str | None
     duracao_segundos: int
     transcricao: str | None
     ordem: int
