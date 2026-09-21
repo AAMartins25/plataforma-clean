@@ -828,7 +828,25 @@
       lista.innerHTML = html;  
     }
     
-    function renderVideo(url) {
+    function renderVideo(video) {
+      if (!video) return "";
+
+      const provedor = String(video.provedor || "YOUTUBE").toUpperCase();
+
+      if (provedor === "CLOUDFLARE") {
+        return `
+          <div
+            id="cloudflare-video-${video.id}"
+            class="cloudflare-video"
+            data-video-id="${video.id}"
+          >
+            <p>Carregando vídeo...</p>
+          </div>
+        `;
+      }
+
+      const url = video.url;
+
       if (!url || typeof url !== "string") return "";
 
       if (url.includes("youtube.com") || url.includes("youtu.be")) {
@@ -847,10 +865,10 @@
 
         if (videoId) {
           return `
-            <iframe 
-              width="100%" 
-              height="315" 
-              src="https://www.youtube.com/embed/${videoId}" 
+            <iframe
+              width="100%"
+              height="315"
+              src="https://www.youtube.com/embed/${videoId}"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>
@@ -860,8 +878,44 @@
       }
 
       return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Abrir vídeo</a>`;
-    }
+      }
     
+    async function carregarVideoCloudflare(videoId) {
+      const container = document.getElementById(`cloudflare-video-${videoId}`);
+
+      if (!container) return;
+
+      try {
+        const dados = await apiGet(`/videos/${videoId}/playback`);
+
+        if (!dados.token) {
+          throw new Error("Token de reprodução não recebido.");
+        }
+
+        const playerUrl =
+          "https://customer-0smemckeljtq9j98.cloudflarestream.com/" +
+          encodeURIComponent(dados.token) +
+          "/iframe";
+
+        container.innerHTML = `
+          <iframe
+            src="${playerUrl}"
+            width="100%"
+            height="315"
+            frameborder="0"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        `;
+      } catch (err) {
+        console.error("Erro ao carregar vídeo Cloudflare:", err);
+
+        container.innerHTML = `
+          <p>Não foi possível carregar este vídeo.</p>
+        `;
+      }
+    }
+
     async function abrirAula(aulaId) {
       if (aulaAtualId === aulaId) return;
       aulaAtualId = aulaId; 
@@ -984,7 +1038,7 @@
                   <div class="assunto">
                     <b>Ordem ${esc(v.ordem ?? "-")}</b><br/>
                     <span>${esc(v.titulo || "Vídeo")}</span><br/>
-                    ${renderVideo(v.url)}
+                    ${renderVideo(v)}
                   </div>
                 `).join("")}
               </div>
@@ -1020,6 +1074,10 @@
         `;
 
         box.innerHTML = html;
+
+        vids
+          .filter(v => String(v.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE")
+          .forEach(v => carregarVideoCloudflare(v.id));
 
       } catch (err) {
         box.innerHTML = renderError("Erro ao carregar aula", err.message);
@@ -1251,12 +1309,16 @@
                 : vids.map(v => `
                     <div class="assunto">
                       <h3>${esc(v.titulo || "Vídeo")}</h3>
-                      ${renderVideo(v.url)}
+                      ${renderVideo(v)}
                     </div>
                   `).join("")
             }
           </div>
         `;
+
+        vids
+          .filter(v => String(v.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE")
+          .forEach(v => carregarVideoCloudflare(v.id));
 
       } catch (err) {
         box.innerHTML = renderError("Erro ao carregar vídeos", err.message);
