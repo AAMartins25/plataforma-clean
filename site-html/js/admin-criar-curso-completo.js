@@ -19,7 +19,7 @@
   const btnDuplicarCurso = document.getElementById("btnDuplicarCurso");
   const btnExcluirCurso = document.getElementById("btnExcluirCurso");
   let assuntosDaDisciplina = [];
-  
+
   const areaAssuntos = document.getElementById("areaAssuntos");
   const assuntoNome = document.getElementById("assuntoNome");
   const tituloDisciplinaSelecionada = document.getElementById("tituloDisciplinaSelecionada");
@@ -311,7 +311,7 @@
     boxConteudo.style.display = "block";
 
     await carregarDisciplinasDoCurso();
-    
+
     await carregarConfigPublicaCurso();
 
     setTimeout(() => {
@@ -1421,7 +1421,7 @@
 
         msgConfigPublicaCurso.style.color = "#8a1f1f";
       }
-      
+
     }
 
     btnEditarConfigPublicaCurso.addEventListener("click", () => {
@@ -2180,7 +2180,7 @@
         alert("Erro ao salvar questão.");
       }
     };
-    
+
     window.concluirBateriaQuestoes = async function () {
       if (!bateriaAtualId) {
         alert("Selecione uma bateria.");
@@ -2216,7 +2216,7 @@
         alert("Erro ao concluir bateria.");
       }
     };
-    
+
     window.novaBateriaQuestoes = function () {
       btnQuestoes.click();
     };
@@ -2359,9 +2359,15 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                           <div>
                             <b>${v.titulo || "Vídeo sem título"}</b><br/>
-                            <span style="opacity:.8;">${v.url || ""}</span>
-                          </div>
 
+                            <span style="opacity:.8;">
+                              ${
+                                String(v.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE"
+                                  ? `Cloudflare Stream — UID: ${v.cloudflare_uid || "Não informado"}`
+                                  : `YouTube — ${v.url || "URL não informada"}`
+                              }
+                            </span>
+                          </div>
                           <button class="btn" type="button" onclick="abrirEditarVideo(${v.id})">
                             Abrir / editar
                           </button>
@@ -2601,7 +2607,7 @@
 
           </div>
         `;
-        
+
       } catch (err) {
         console.error(err);
         alert("Erro ao abrir texto.");
@@ -2657,6 +2663,7 @@
       abrirTeoriaAula(aulaAtual.id, aulaAtual.titulo);
     };
 
+
     window.novoResumoVideo = function () {
       boxConteudoAula.innerHTML = `
         <div class="assunto">
@@ -2668,12 +2675,36 @@
             style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
           />
 
-          <input
-            id="urlVideoAula"
-            type="text"
-            placeholder="URL do vídeo"
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
-          />
+          <label for="provedorVideoAula" style="display:block; margin-bottom:6px;">
+            Provedor do vídeo
+          </label>
+
+          <select
+            id="provedorVideoAula"
+            onchange="alternarCamposVideo()"
+            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+          >
+            <option value="YOUTUBE">YouTube</option>
+            <option value="CLOUDFLARE">Cloudflare Stream</option>
+          </select>
+
+          <div id="campoUrlVideoAula">
+            <input
+              id="urlVideoAula"
+              type="text"
+              placeholder="URL do vídeo do YouTube"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            />
+          </div>
+
+          <div id="campoCloudflareVideoAula" style="display:none;">
+            <input
+              id="uidCloudflareVideoAula"
+              type="text"
+              placeholder="UID do vídeo no Cloudflare Stream"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            />
+          </div>
 
           <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn" type="button" onclick="salvarNovoResumoVideo()">
@@ -2688,17 +2719,42 @@
       `;
     };
 
+
+    window.alternarCamposVideo = function () {
+      const provedor = document.getElementById("provedorVideoAula").value;
+
+      document.getElementById("campoUrlVideoAula").style.display =
+        provedor === "YOUTUBE" ? "block" : "none";
+
+      document.getElementById("campoCloudflareVideoAula").style.display =
+        provedor === "CLOUDFLARE" ? "block" : "none";
+    };
+
+
     window.salvarNovoResumoVideo = async function () {
       const titulo = document.getElementById("tituloVideoAula").value.trim();
-      const url = document.getElementById("urlVideoAula").value.trim();
+      const provedor = document.getElementById("provedorVideoAula").value;
+
+      const url = provedor === "YOUTUBE"
+        ? document.getElementById("urlVideoAula").value.trim()
+        : "";
+
+      const cloudflare_uid = provedor === "CLOUDFLARE"
+        ? document.getElementById("uidCloudflareVideoAula").value.trim()
+        : null;
 
       if (!titulo) {
         alert("Informe o título do vídeo.");
         return;
       }
 
-      if (!url) {
-        alert("Informe a URL do vídeo.");
+      if (provedor === "YOUTUBE" && !url) {
+        alert("Informe a URL do vídeo do YouTube.");
+        return;
+      }
+
+      if (provedor === "CLOUDFLARE" && !cloudflare_uid) {
+        alert("Informe o UID do vídeo no Cloudflare Stream.");
         return;
       }
 
@@ -2710,6 +2766,8 @@
           aula_id: aulaAtual.id,
           titulo,
           url,
+          provedor,
+          cloudflare_uid,
           duracao_segundos: 0,
           transcricao: null,
           ordem,
@@ -2730,6 +2788,7 @@
       }
     };
 
+
     window.abrirEditarVideo = async function (videoId) {
       try {
         const videos = await apiGetAuth(`/aulas/${aulaAtual.id}/videos`);
@@ -2740,6 +2799,8 @@
           return;
         }
 
+        const provedor = String(video.provedor || "YOUTUBE").toUpperCase();
+
         boxConteudoAula.innerHTML = `
           <div class="assunto">
             <h4>🎥 Editar Vídeo</h4>
@@ -2747,28 +2808,67 @@
             <input
               id="tituloVideoAula"
               type="text"
-              value="${(video.titulo || "").replace(/"/g, "&quot;")}"
               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
             />
 
-            <input
-              id="urlVideoAula"
-              type="text"
-              value="${(video.url || "").replace(/"/g, "&quot;")}"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
-            />
+            <label for="provedorVideoAula" style="display:block; margin-bottom:6px;">
+              Provedor do vídeo
+            </label>
+
+            <select
+              id="provedorVideoAula"
+              onchange="alternarCamposVideo()"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+            >
+              <option value="YOUTUBE">YouTube</option>
+              <option value="CLOUDFLARE">Cloudflare Stream</option>
+            </select>
+
+            <div id="campoUrlVideoAula">
+              <input
+                id="urlVideoAula"
+                type="text"
+                placeholder="URL do vídeo do YouTube"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              />
+            </div>
+
+            <div id="campoCloudflareVideoAula" style="display:none;">
+              <input
+                id="uidCloudflareVideoAula"
+                type="text"
+                placeholder="UID do vídeo no Cloudflare Stream"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              />
+            </div>
 
             <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn" type="button" onclick="salvarEdicaoVideo(${video.id}, ${video.ordem})">
+              <button
+                class="btn"
+                type="button"
+                onclick="salvarEdicaoVideo(${video.id}, ${video.ordem})"
+              >
                 Concluir edição de vídeo
               </button>
 
-              <button class="btn" type="button" onclick="voltarParaListaVideos()">
+              <button
+                class="btn"
+                type="button"
+                onclick="voltarParaListaVideos()"
+              >
                 Descartar alterações e voltar
               </button>
             </div>
           </div>
         `;
+
+        document.getElementById("tituloVideoAula").value = video.titulo || "";
+        document.getElementById("provedorVideoAula").value = provedor;
+        document.getElementById("urlVideoAula").value = video.url || "";
+        document.getElementById("uidCloudflareVideoAula").value =
+          video.cloudflare_uid || "";
+
+        alternarCamposVideo();
 
       } catch (err) {
         console.error(err);
@@ -2776,17 +2876,31 @@
       }
     };
 
+
     window.salvarEdicaoVideo = async function (videoId, ordem) {
       const titulo = document.getElementById("tituloVideoAula").value.trim();
-      const url = document.getElementById("urlVideoAula").value.trim();
+      const provedor = document.getElementById("provedorVideoAula").value;
+
+      const url = provedor === "YOUTUBE"
+        ? document.getElementById("urlVideoAula").value.trim()
+        : "";
+
+      const cloudflare_uid = provedor === "CLOUDFLARE"
+        ? document.getElementById("uidCloudflareVideoAula").value.trim()
+        : null;
 
       if (!titulo) {
         alert("Informe o título do vídeo.");
         return;
       }
 
-      if (!url) {
-        alert("Informe a URL do vídeo.");
+      if (provedor === "YOUTUBE" && !url) {
+        alert("Informe a URL do vídeo do YouTube.");
+        return;
+      }
+
+      if (provedor === "CLOUDFLARE" && !cloudflare_uid) {
+        alert("Informe o UID do vídeo no Cloudflare Stream.");
         return;
       }
 
@@ -2795,6 +2909,8 @@
           aula_id: aulaAtual.id,
           titulo,
           url,
+          provedor,
+          cloudflare_uid,
           duracao_segundos: 0,
           transcricao: null,
           ordem,
@@ -3016,7 +3132,7 @@
       boxConteudoAula.innerHTML = "";
 
       await carregarAssuntosDaDisciplina(disciplinaId);
-      
+
       areaAssuntos.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -3276,7 +3392,7 @@
             Bateria concluída.
           </div>
         `;
-      
+
         const card = document.getElementById(`cardQuestao_${questaoId}`);
 
         if (card) {
@@ -3323,7 +3439,7 @@
         });
       }
     };
-    
+
     carregarCursosExistentes();
 
 })();
