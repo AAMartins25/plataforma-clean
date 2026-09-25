@@ -32,3 +32,7 @@ env/
 # Sistema operacional
 # =========================
 .DS_Store
+# Configurações exclusivas do ambiente local
+backend/.env.postgres.local
+backend/docker-compose.local.yml
+proxy_local.py

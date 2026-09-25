@@ -375,7 +375,7 @@
         <div class="assunto">
 
           <label for="qAluno">
-            <b>Filtro por nome ou e-mail</b>
+            <b>Filtro por CPF, e-mail ou nome</b>
           </label>
 
           <br>
@@ -383,7 +383,7 @@
           <input
             id="qAluno"
             type="text"
-            placeholder="Ex.: aluno@email.com"
+            placeholder="Digite o CPF, e-mail ou nome"
             style="
               width:100%;
               padding:12px;
@@ -425,6 +425,47 @@
         Use a busca.
       </div>
 
+    </div>
+
+    <!-- CONCESSÃO ADMINISTRATIVA -->
+    <div class="card" id="cardConcederAcesso" hidden>
+      <h2>3) Conceder acesso</h2>
+
+      <form id="formConcederAcesso" class="list">
+        <input type="hidden" id="concessaoAlunoId">
+
+        <div class="assunto">
+          <label><b>Aluno selecionado</b></label>
+          <p id="concessaoAlunoNome"></p>
+        </div>
+
+        <div class="assunto">
+          <label for="concessaoCurso">
+            <b>Curso</b>
+          </label>
+          <select id="concessaoCurso" style="display:block; width:100%; box-sizing:border-box; min-height:40px;" required>
+            <option value="">Selecione um curso</option>
+          </select>
+        </div>
+
+        <div class="assunto">
+          <label for="concessaoDataFim">
+            <b>Data de término</b>
+          </label>
+          <input
+            type="date"
+            id="concessaoDataFim"
+            style="display:block; width:100%; box-sizing:border-box; min-height:40px;"
+            required
+          >
+        </div>
+
+        <button class="btn" type="submit">
+          Confirmar concessão
+        </button>
+
+        <div id="msgConcederAcesso"></div>
+      </form>
     </div>
 
   </main>

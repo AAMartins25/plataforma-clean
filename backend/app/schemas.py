@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 class CursoCreate(BaseModel):
     nome: str
@@ -204,6 +204,7 @@ class AcessoCursoCreate(BaseModel):
     usuario_id: int
     curso_id: int
     ativo: bool = True
+    data_fim: datetime
 
 class AcessoCursoResponse(BaseModel):
     id: int
@@ -527,3 +528,25 @@ class VendedorExistenteCreate(BaseModel):
     estado_uf: Optional[str] = None
     cidade: Optional[str] = None
 
+class ReembolsoPixManualCreate(BaseModel):
+    valor_cents: int
+    referencia_comprovante: str
+
+    @field_validator("valor_cents")
+    @classmethod
+    def validar_valor(cls, valor):
+        if valor <= 0:
+            raise ValueError("O valor do reembolso deve ser positivo")
+        return valor
+
+    @field_validator("referencia_comprovante")
+    @classmethod
+    def validar_comprovante(cls, referencia):
+        referencia = referencia.strip()
+
+        if not referencia:
+            raise ValueError(
+                "A referência do comprovante é obrigatória"
+            )
+
+        return referencia

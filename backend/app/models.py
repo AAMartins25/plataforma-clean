@@ -1,4 +1,4 @@
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, Index, text
 from sqlalchemy import Date
 from datetime import datetime 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey, Text
@@ -365,6 +365,25 @@ class AcessoCurso(Base):
     usuario = relationship("Usuario")
     curso = relationship("Curso")
 
+class ConcessaoAcessoAdmin(Base):
+    __tablename__ = "concessoes_acesso_admin"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    usuario_id = Column(
+        Integer, ForeignKey("usuarios.id"), nullable=False
+    )
+    curso_id = Column(
+        Integer, ForeignKey("cursos.id"), nullable=False
+    )
+
+    data_inicio = Column(DateTime, default=datetime.utcnow, nullable=False)
+    data_fim = Column(DateTime, nullable=True)
+    ativo = Column(Boolean, default=True, nullable=False)
+
+    usuario = relationship("Usuario")
+    curso = relationship("Curso")
+
 class Pagamento(Base):
     __tablename__ = "pagamentos"
 
@@ -424,6 +443,47 @@ class Pagamento(Base):
     tempo_acesso = relationship("TempoAcessoCurso")
     qr_code = relationship("QRCode")
     vendedor = relationship("Vendedor")
+
+class ReembolsoFinanceiro(Base):
+    __tablename__ = "reembolsos_financeiros"
+
+    __table_args__ = (
+        Index(
+            "uq_reembolsos_pagamento_ativo",
+            "pagamento_id",
+            unique=True,
+            postgresql_where=text(
+                "status IN ("
+                "'PENDENTE', "
+                "'EM_PROCESSAMENTO', "
+                "'CONFIRMADO', "
+                "'VERIFICACAO_NECESSARIA'"
+                ")"
+            ),
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    pagamento_id = Column(
+        Integer,
+        ForeignKey("pagamentos.id"),
+        nullable=False,
+        index=True
+    )
+
+    metodo = Column(String(30), nullable=False)
+    valor_cents = Column(Integer, nullable=False)
+    status = Column(String(30), nullable=False)
+
+    mp_refund_id = Column(String, nullable=True)
+    chave_idempotencia = Column(String, unique=True, nullable=True)
+    referencia_comprovante = Column(String, nullable=True)
+
+    criado_em = Column(DateTime, default=datetime.utcnow)
+    confirmado_em = Column(DateTime, nullable=True)
+
+    pagamento = relationship("Pagamento")
 
 class ProgressoAula(Base):
     __tablename__ = "progresso_aulas"
@@ -893,6 +953,44 @@ class TempoAcessoCurso(Base):
     )
 
     curso = relationship("Curso")
+
+class PeriodoAcessoPagamento(Base):
+    __tablename__ = "periodos_acesso_pagamento"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    pagamento_id = Column(
+        Integer,
+        ForeignKey("pagamentos.id"),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    usuario_id = Column(
+        Integer,
+        ForeignKey("usuarios.id"),
+        nullable=False,
+        index=True
+    )
+
+    curso_id = Column(
+        Integer,
+        ForeignKey("cursos.id"),
+        nullable=False,
+        index=True
+    )
+
+    data_inicio = Column(DateTime, nullable=False)
+    data_fim = Column(DateTime, nullable=False)
+
+    criado_em = Column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    pagamento = relationship("Pagamento")
 
 class DemonstracaoCurso(Base):
     __tablename__ = "demonstracoes_curso"

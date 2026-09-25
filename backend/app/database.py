@@ -65,4 +65,5 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # 4. Garante a criação/verificação das tabelas ao iniciar
-Base.metadata.create_all(bind=engine)
+if os.getenv("AMBIENTE_TESTE") != "1":
+    Base.metadata.create_all(bind=engine)

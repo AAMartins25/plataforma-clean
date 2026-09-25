@@ -977,6 +977,79 @@ const AdminAlunos = {
         }
       );
     }
+
+    const formConcessao =
+      document.getElementById("formConcederAcesso");
+
+    if (formConcessao) {
+      formConcessao.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const botao = formConcessao.querySelector(
+          'button[type="submit"]'
+        );
+
+        if (botao.disabled) return;
+
+        const usuarioId = Number(
+          document.getElementById("concessaoAlunoId").value
+        );
+
+        const cursoId = Number(
+          document.getElementById("concessaoCurso").value
+        );
+
+        const dataFim = document.getElementById(
+          "concessaoDataFim"
+        ).value;
+
+        const msg = document.getElementById(
+          "msgConcederAcesso"
+        );
+
+        if (!usuarioId || !cursoId || !dataFim) {
+          msg.textContent = "Preencha todos os campos.";
+          return;
+        }
+
+        // A data escolhida vale até o fim do dia, no horário local.
+        const termino = new Date(`${dataFim}T23:59:59`);
+
+        if (
+          Number.isNaN(termino.getTime()) ||
+          termino <= new Date()
+        ) {
+          msg.textContent = "Informe uma data de término futura.";
+          return;
+        }
+
+        botao.disabled = true;
+        msg.textContent = "Registrando concessão...";
+
+        try {
+          await apiPostAuth("/admin/acessos", {
+            usuario_id: usuarioId,
+            curso_id: cursoId,
+            ativo: true,
+            data_fim: termino.toISOString()
+          });
+
+          msg.textContent = "Acesso concedido com sucesso!";
+          msg.style.color = "#16803c";
+
+          // Limpa apenas o curso e a data.
+          // Mantém o aluno selecionado.
+          document.getElementById("concessaoCurso").value = "";
+          document.getElementById("concessaoDataFim").value = "";
+        } catch (erro) {
+          msg.style.color = "#b42318";
+          msg.textContent =
+            `Erro ao conceder acesso: ${erro.message}`;
+        } finally {
+          botao.disabled = false;
+        }
+      });
+    }
   },
 
   async criar() {
@@ -1296,11 +1369,55 @@ const AdminAlunos = {
                     • ativo=${esc(u.ativo)}
                     • is_admin=${esc(u.is_admin)}
                   </span>
+
+                  <br/>
+
+                  <button
+                    type="button"
+                    class="btn"
+                    data-conceder-acesso="${Number(u.id)}"
+                    style="margin-top:12px;"
+                  >
+                    Conceder acesso
+                  </button>
                 </div>
               `
             ).join("")}
           </div>
         `;
+
+        box.querySelectorAll("[data-conceder-acesso]").forEach(botao => {
+        botao.addEventListener("click", async () => {
+          const alunoId = Number(botao.dataset.concederAcesso);
+          const aluno = data.find(u => Number(u.id) === alunoId);
+
+          if (!aluno) return;
+
+          document.getElementById("concessaoAlunoId").value = aluno.id;
+          document.getElementById("concessaoAlunoNome").textContent =
+            `${aluno.nome} — CPF: ${aluno.cpf || "Não informado"} — ${aluno.email}`;
+
+          const card = document.getElementById("cardConcederAcesso");
+          const select = document.getElementById("concessaoCurso");
+
+          try {
+            const todosCursos = await apiGetAuth("/admin/cursos");
+            const cursos = (todosCursos || []).filter(c => c.ativo === true);
+
+            select.innerHTML =
+              '<option value="">Selecione um curso</option>' +
+              cursos.map(c =>
+                `<option value="${Number(c.id)}">${esc(c.nome)}</option>`
+              ).join("");
+
+            card.hidden = false;
+            card.scrollIntoView({ behavior: "smooth", block: "start" });
+          } catch (erro) {
+            document.getElementById("msgBuscarAlunos").textContent =
+              `Erro ao carregar cursos: ${erro.message}`;
+          }
+        });
+      });
       }
 
     } catch (err) {
