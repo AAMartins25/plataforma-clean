@@ -29,7 +29,7 @@ import secrets
 import string
 import random
 from app import schemas
-from app.schemas import ReembolsoPixManualCreate
+from app.schemas import (ReembolsoPixManualCreate, ContestacaoPagamentoCreate, ContestacaoDevolucaoConfirmadaCreate)
 from app import models
 from sqlalchemy import func
 from fastapi import HTTPException
@@ -53,6 +53,7 @@ from app.models import (
     DemonstracaoCurso,
     ReembolsoFinanceiro,
     PeriodoAcessoPagamento,
+    ContestacaoPagamento,
 )
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
@@ -169,13 +170,33 @@ def consultar_direitos_acesso_apos_reembolso(
     """
     agora = datetime.utcnow()
 
-    # Outras compras aprovadas que ainda não foram reembolsadas.
+    # Excluir somente contestações cujo bloqueio administrativo
+    # já foi efetivamente executado.
+    from sqlalchemy import or_, select
+
+    pagamentos_bloqueados = select(
+        ContestacaoPagamento.pagamento_id
+    ).where(
+        ContestacaoPagamento.bloqueio_executado_em.isnot(None)
+    )
+
+    pagamentos_contestados_sem_bloqueio = select(
+        ContestacaoPagamento.pagamento_id
+    ).where(
+        ContestacaoPagamento.bloqueio_executado_em.is_(None)
+    )
+
+    # Outras compras aprovadas que ainda geram direitos de acesso.
     outros_pagamentos = db.query(Pagamento).filter(
         Pagamento.usuario_id == usuario_id,
         Pagamento.curso_id == curso_id,
         Pagamento.id != pagamento_reembolsado_id,
         Pagamento.aprovado_em.isnot(None),
-        Pagamento.status != "REFUNDED",
+        or_(
+            Pagamento.status != "REFUNDED",
+            Pagamento.id.in_(pagamentos_contestados_sem_bloqueio),
+        ),
+        ~Pagamento.id.in_(pagamentos_bloqueados),
     ).all()
 
     ids_pagamentos = [p.id for p in outros_pagamentos]
@@ -10547,3 +10568,228 @@ def reativar_vendedor(
         "vendedor_id": vendedor.id,
         "ativo": vendedor.ativo
     }
+
+@app.post("/admin/contestacoes", tags=["Admin Contestações"])
+def admin_registrar_contestacao(
+    payload: ContestacaoPagamentoCreate,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(get_usuario_atual),
+):
+    if not admin.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso restrito ao administrador.",
+        )
+
+    pagamento = db.query(Pagamento).filter(
+        Pagamento.id == payload.pagamento_id
+    ).with_for_update().first()
+
+    if not pagamento:
+        raise HTTPException(
+            status_code=404,
+            detail="Pagamento não encontrado.",
+        )
+
+    if pagamento.aprovado_em is None:
+        raise HTTPException(
+            status_code=400,
+            detail="A contestação exige uma compra aprovada.",
+        )
+
+    if payload.valor_cents <= 0 or payload.valor_cents > pagamento.valor_cents:
+        raise HTTPException(
+            status_code=400,
+            detail="Valor contestado inválido.",
+        )
+
+    existente = db.query(ContestacaoPagamento).filter(
+        ContestacaoPagamento.pagamento_id == pagamento.id
+    ).first()
+
+    if existente:
+        raise HTTPException(
+            status_code=409,
+            detail="Já existe uma contestação registrada para este pagamento.",
+        )
+
+    contestacao = ContestacaoPagamento(
+        pagamento_id=pagamento.id,
+        mp_dispute_id=payload.mp_dispute_id,
+        status="ABERTA",
+        motivo=payload.motivo,
+        valor_cents=payload.valor_cents,
+    )
+
+    db.add(contestacao)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Contestação duplicada ou conflito no registro.",
+        )
+
+    db.refresh(contestacao)
+
+    return {
+        "ok": True,
+        "contestacao_id": contestacao.id,
+        "pagamento_id": pagamento.id,
+        "status": contestacao.status,
+        "mensagem": "Contestação registrada. O acesso do aluno permanece inalterado.",
+    }
+
+
+@app.post(
+    "/admin/contestacoes/{contestacao_id}/confirmar-devolucao",
+    tags=["Admin Contestações"],
+)
+def admin_confirmar_devolucao_contestacao(
+    contestacao_id: int,
+    payload: ContestacaoDevolucaoConfirmadaCreate,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(get_usuario_atual),
+):
+    if not admin.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso restrito ao administrador.",
+        )
+
+    referencia = payload.referencia_devolucao.strip()
+    if not referencia:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe a referência do comprovante da devolução.",
+        )
+
+    contestacao = (
+        db.query(ContestacaoPagamento)
+        .filter(ContestacaoPagamento.id == contestacao_id)
+        .with_for_update()
+        .first()
+    )
+
+    if not contestacao:
+        raise HTTPException(
+            status_code=404,
+            detail="Contestação não encontrada.",
+        )
+
+    if contestacao.devolucao_confirmada_em is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A devolução já foi confirmada.",
+        )
+
+    contestacao.devolucao_confirmada_em = datetime.utcnow()
+    contestacao.devolucao_confirmada_por = admin.id
+    contestacao.referencia_devolucao = referencia
+    contestacao.status = "DEVOLUCAO_CONFIRMADA"
+
+    db.commit()
+
+    return {
+        "ok": True,
+        "contestacao_id": contestacao.id,
+        "status": contestacao.status,
+        "mensagem": (
+            "Devolução registrada. "
+            "O acesso do aluno permanece inalterado."
+        ),
+    }
+
+
+@app.post(
+    "/admin/contestacoes/{contestacao_id}/bloquear-acesso",
+    tags=["Admin Contestações"],
+)
+def admin_bloquear_acesso_contestacao(
+    contestacao_id: int,
+    db: Session = Depends(get_db),
+    admin: Usuario = Depends(get_usuario_atual),
+):
+    if not admin.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso restrito ao administrador.",
+        )
+
+    try:
+        contestacao = (
+            db.query(ContestacaoPagamento)
+            .filter(ContestacaoPagamento.id == contestacao_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not contestacao:
+            raise HTTPException(
+                status_code=404,
+                detail="Contestação não encontrada.",
+            )
+
+        if contestacao.devolucao_confirmada_em is None:
+            raise HTTPException(
+                status_code=409,
+                detail="É necessário confirmar a devolução antes do bloqueio.",
+            )
+
+        if contestacao.bloqueio_executado_em is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="O bloqueio administrativo já foi executado.",
+            )
+
+        pagamento = (
+            db.query(Pagamento)
+            .filter(Pagamento.id == contestacao.pagamento_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not pagamento:
+            raise HTTPException(
+                status_code=404,
+                detail="Pagamento não encontrado.",
+            )
+
+        resultado = recalcular_acesso_apos_reembolso(
+            db=db,
+            usuario_id=pagamento.usuario_id,
+            curso_id=pagamento.curso_id,
+            pagamento_reembolsado_id=pagamento.id,
+        )
+
+        if resultado["situacao"] == "CONFERENCIA_NECESSARIA":
+            db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "mensagem": "Existem compras sem histórico. "
+                                "O acesso não foi alterado.",
+                    "pagamentos_sem_historico": resultado[
+                        "pagamentos_sem_historico"
+                    ],
+                },
+            )
+
+        contestacao.bloqueio_executado_em = datetime.utcnow()
+        contestacao.bloqueio_executado_por = admin.id
+        contestacao.status = "BLOQUEIO_EXECUTADO"
+
+        db.commit()
+
+        return {
+            "ok": True,
+            "contestacao_id": contestacao.id,
+            "situacao_acesso": resultado["situacao"],
+            "mensagem": "Bloqueio administrativo processado.",
+        }
+
+    except Exception:
+        db.rollback()
+        raise

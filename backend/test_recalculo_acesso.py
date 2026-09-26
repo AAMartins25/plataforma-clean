@@ -293,3 +293,75 @@ def test_recalculo_preserva_acesso_sem_prazo():
     assert acesso.ativo is True
     assert acesso.data_fim is None
     db.commit.assert_not_called()
+
+def test_compra_bloqueada_nao_gera_direitos_no_recalculo():
+    from sqlalchemy.dialects import postgresql
+    from app.models import ContestacaoPagamento
+
+    db = MagicMock()
+
+    db.query.return_value.filter.return_value.all.side_effect = [
+        [],  # Nenhuma outra compra válida
+        [],  # Nenhuma concessão administrativa
+        [],  # Nenhuma demonstração vigente
+    ]
+
+    resultado = consultar_direitos_acesso_apos_reembolso(
+        db=db,
+        usuario_id=2,
+        curso_id=1,
+        pagamento_reembolsado_id=1,
+    )
+
+    consulta_pagamentos = db.query.call_args_list[0]
+    assert consulta_pagamentos.args[0].__name__ == "Pagamento"
+
+    filtros = db.query.return_value.filter.call_args_list[0].args
+
+    sql_filtros = " AND ".join(
+        str(
+            filtro.compile(
+                dialect=postgresql.dialect(),
+                compile_kwargs={"literal_binds": True},
+            )
+        )
+        for filtro in filtros
+    )
+
+    assert "contestacoes_pagamento" in sql_filtros
+    assert "bloqueio_executado_em IS NOT NULL" in sql_filtros
+
+    assert resultado["requer_conferencia"] is False
+    assert resultado["maior_data_fim"] is None
+
+
+def test_filtro_preserva_contestacao_refunded_sem_bloqueio():
+    from sqlalchemy import select, or_
+    from sqlalchemy.dialects import postgresql
+    from app.models import Pagamento, ContestacaoPagamento
+
+    pagamentos_contestados_sem_bloqueio = select(
+        ContestacaoPagamento.pagamento_id
+    ).where(
+        ContestacaoPagamento.bloqueio_executado_em.is_(None)
+    )
+
+    pagamentos_bloqueados = select(
+        ContestacaoPagamento.pagamento_id
+    ).where(
+        ContestacaoPagamento.bloqueio_executado_em.isnot(None)
+    )
+
+    consulta = select(Pagamento.id).where(
+        or_(
+            Pagamento.status != "REFUNDED",
+            Pagamento.id.in_(pagamentos_contestados_sem_bloqueio),
+        ),
+        ~Pagamento.id.in_(pagamentos_bloqueados),
+    )
+
+    sql = str(consulta.compile(dialect=postgresql.dialect()))
+
+    assert "contestacoes_pagamento" in sql
+    assert "bloqueio_executado_em IS NULL" in sql
+    assert "bloqueio_executado_em IS NOT NULL" in sql

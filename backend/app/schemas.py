@@ -550,3 +550,13 @@ class ReembolsoPixManualCreate(BaseModel):
             )
 
         return referencia
+
+class ContestacaoPagamentoCreate(BaseModel):
+    pagamento_id: int
+    mp_dispute_id: Optional[str] = None
+    motivo: Optional[str] = None
+    valor_cents: int
+
+
+class ContestacaoDevolucaoConfirmadaCreate(BaseModel):
+    referencia_devolucao: str

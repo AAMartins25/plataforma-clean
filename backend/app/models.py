@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.dialects.postgresql import JSONB 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, CheckConstraint
 
 Base = declarative_base()
 
@@ -1161,3 +1161,81 @@ class CupomDesconto(Base):
     )
 
     vendedor = relationship("Vendedor")
+
+class ContestacaoPagamento(Base):
+    __tablename__ = "contestacoes_pagamento"
+
+    __table_args__ = (
+        CheckConstraint(
+            """
+            devolucao_confirmada_em IS NULL
+            OR (
+                devolucao_confirmada_por IS NOT NULL
+                AND NULLIF(BTRIM(referencia_devolucao), '') IS NOT NULL
+            )
+            """,
+            name="ck_contestacoes_confirmacao_completa",
+        ),
+        CheckConstraint(
+            "valor_cents > 0",
+            name="ck_contestacoes_valor_positivo",
+        ),
+        CheckConstraint(
+            """
+            bloqueio_executado_em IS NULL
+            OR (
+                devolucao_confirmada_em IS NOT NULL
+                AND bloqueio_executado_por IS NOT NULL
+            )
+            """,
+            name="ck_contestacoes_bloqueio_apos_devolucao",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    pagamento_id = Column(
+        Integer,
+        ForeignKey("pagamentos.id"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    mp_dispute_id = Column(String(100), unique=True, nullable=True)
+
+    status = Column(String(40), nullable=False, default="ABERTA")
+    motivo = Column(Text, nullable=True)
+    valor_cents = Column(Integer, nullable=False)
+
+    criada_em = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    devolucao_confirmada_em = Column(DateTime, nullable=True)
+
+    devolucao_confirmada_por = Column(
+        Integer,
+        ForeignKey("usuarios.id"),
+        nullable=True,
+    )
+
+    referencia_devolucao = Column(String(255), nullable=True)
+
+    bloqueio_executado_em = Column(DateTime, nullable=True)
+
+    bloqueio_executado_por = Column(
+        Integer,
+        ForeignKey("usuarios.id"),
+        nullable=True,
+    )
+
+    pagamento = relationship("Pagamento")
+
+    administrador_bloqueio = relationship(
+        "Usuario",
+        foreign_keys=[bloqueio_executado_por],
+    )
+
+    administrador_confirmacao = relationship(
+        "Usuario",
+        foreign_keys=[devolucao_confirmada_por],
+    )
