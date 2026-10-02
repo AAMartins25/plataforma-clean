@@ -242,6 +242,21 @@
       return new URLSearchParams(window.location.search).get(name);
     }
 
+    function contextoAcessoQuery() {
+      const contratacaoId = qs("contratacao_id");
+      const demonstracaoId = qs("demonstracao_id");
+
+      if (contratacaoId) {
+        return `contratacao_id=${encodeURIComponent(contratacaoId)}`;
+      }
+
+      if (demonstracaoId) {
+        return `demonstracao_id=${encodeURIComponent(demonstracaoId)}`;
+      }
+
+      return "";
+    }
+
     function esc(s) {
       return String(s ?? "")
         .replaceAll("&", "&amp;")
@@ -442,7 +457,10 @@
 
     async function getProgressoBackend(pastaId) {
       try {
-        const dados = await apiGet(`/me/progresso?pasta_id=${pastaId}`);
+        const contexto = contextoAcessoQuery();
+        const dados = await apiGet(
+          `/me/progresso?pasta_id=${pastaId}${contexto ? `&${contexto}` : ""}`
+        );
         return dados.map(p => p.aula_id);
       } catch (err) {
         console.warn("Falha ao buscar progresso no backend:", err);
@@ -609,7 +627,10 @@
       if (!pastaAtualId) return;
 
       try {
-        await apiPost(`/me/progresso/aulas/${aulaId}/concluir`);
+        const contexto = contextoAcessoQuery();
+        await apiPost(
+          `/me/progresso/aulas/${aulaId}/concluir${contexto ? `?${contexto}` : ""}`
+        );
 
         await carregarAulas();
 
@@ -1335,7 +1356,11 @@
       }
 
       try {
-        await apiPut(`/baterias/${bateriaId}/limpar-minha-sprint`, {});
+        const contexto = contextoAcessoQuery();
+        await apiPut(
+          `/baterias/${bateriaId}/limpar-minha-sprint${contexto ? `?${contexto}` : ""}`,
+          {}
+        );
 
         const urlRetorno = window.location.href.includes("abrir=questoes")
           ? window.location.href
@@ -1346,7 +1371,8 @@
         window.location.href =
           `sprint.html?bateria_id=${bateriaId}` +
           `&titulo=${encodeURIComponent("Bateria de questões")}` +
-          `&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}`;
+          `&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}` +
+          `${contexto ? `&${contexto}` : ""}`;
 
       } catch (err) {
         console.error(err);
@@ -1372,7 +1398,10 @@
       box.scrollIntoView({ behavior: "smooth" });
 
       try {
-        const baterias = await apiGet(`/aulas/${aulaId}/baterias-com-status`);
+        const contexto = contextoAcessoQuery();
+        const baterias = await apiGet(
+          `/aulas/${aulaId}/baterias-com-status${contexto ? `?${contexto}` : ""}`
+        );
 
         const concluidas = (baterias || []).filter(
           b => b.status_bateria === "CONCLUIDA" || b.status === "CONCLUIDA"
@@ -1439,7 +1468,7 @@
                                   <a
                                     class="btn questoes-btn-visualizar"
                                     onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
-                                    href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&modo=visualizar&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                    href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&modo=visualizar&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}${contexto ? `&${contexto}` : ""}"
                                   >
                                     visualizar
                                   </a>
@@ -1449,7 +1478,7 @@
                                     <a
                                       class="btn questoes-btn-continuar"
                                       onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
-                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}${contexto ? `&${contexto}` : ""}"
                                     >
                                       continuar
                                     </a>
@@ -1458,7 +1487,7 @@
                                     <a
                                       class="btn questoes-btn-fazer"
                                       onclick="localStorage.setItem('voltar_para_questoes', window.location.href + '&abrir=questoes')"
-                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}"
+                                      href="sprint.html?bateria_id=${b.id}&titulo=${encodeURIComponent(b.titulo || "Bateria de questões")}&assunto_nome=${encodeURIComponent(qs("assunto_nome") || "")}${contexto ? `&${contexto}` : ""}"
                                     >
                                       fazer
                                     </a>

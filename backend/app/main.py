@@ -1,5 +1,6 @@
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation
 from app.schemas import CursoCreate, CursoResponse, DisciplinaCreate, DisciplinaResponse, AssuntoCreate, AssuntoResponse
 from app.models import Questao, Alternativa, Comentario, QuestaoPraticaAssunto, QuestaoPraticaAlternativa
 from app.schemas import QuestaoCreate, AlternativaCreate, ComentarioGeralCreate
@@ -31,6 +32,18 @@ import random
 from app import schemas
 from app.schemas import (ReembolsoPixManualCreate, ContestacaoPagamentoCreate, ContestacaoDevolucaoConfirmadaCreate)
 from app import models
+from app.oportunidades import (
+    obter_oportunidade,
+    bloquear_oportunidade_pagamento,
+    concluir_oportunidade,
+)
+from app.contratacoes import (
+    registrar_contratacao,
+    validar_data_aprovacao_mp,
+    obter_data_aprovacao_mp,
+    registrar_ocorrencia_financeira,
+)
+from app.renovacao import renovacao_disponivel
 from sqlalchemy import func
 from fastapi import HTTPException
 import requests
@@ -58,6 +71,7 @@ from app.models import (
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
 from app.models import CursoAssuntoProprio
+from app.models import ContratacaoCurso
 from app.schemas import AulaUpdate
 
 import os
@@ -157,6 +171,73 @@ def get_usuario_atual(token: str = Depends(oauth2_scheme), db: Session = Depends
         raise HTTPException(status_code=401, detail="Usuário não encontrado/inativo")
 
     return usuario
+
+def validar_contexto_estudo(
+    db: Session,
+    usuario: Usuario,
+    curso_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+):
+    if bool(contratacao_id) == bool(demonstracao_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Informe exatamente um contexto de acesso ao curso."
+        )
+
+    agora = datetime.utcnow()
+
+    if contratacao_id:
+        contratacao = (
+            db.query(models.ContratacaoCurso)
+            .filter(
+                models.ContratacaoCurso.id == contratacao_id,
+                models.ContratacaoCurso.usuario_id == usuario.id,
+                models.ContratacaoCurso.curso_id == curso_id,
+                models.ContratacaoCurso.origem.in_(["PAGAMENTO", "ADMIN"]),
+                models.ContratacaoCurso.data_inicio <= agora,
+                or_(
+                    models.ContratacaoCurso.data_fim.is_(None),
+                    models.ContratacaoCurso.data_fim > agora,
+                ),
+            )
+            .first()
+        )
+
+        if not contratacao:
+            raise HTTPException(
+                status_code=403,
+                detail="Contratação inválida ou sem acesso ativo a este curso."
+            )
+
+        return {
+            "contratacao_id": contratacao.id,
+            "demonstracao_id": None,
+        }
+
+    demonstracao = (
+        db.query(DemonstracaoCurso)
+        .filter(
+            DemonstracaoCurso.id == demonstracao_id,
+            DemonstracaoCurso.usuario_id == usuario.id,
+            DemonstracaoCurso.curso_id == curso_id,
+            DemonstracaoCurso.ativo == True,
+            DemonstracaoCurso.data_inicio <= agora,
+            DemonstracaoCurso.data_fim > agora,
+        )
+        .first()
+    )
+
+    if not demonstracao:
+        raise HTTPException(
+            status_code=403,
+            detail="Demonstração inválida ou sem acesso ativo a este curso."
+        )
+
+    return {
+        "contratacao_id": None,
+        "demonstracao_id": demonstracao.id,
+    }
 
 def consultar_direitos_acesso_apos_reembolso(
     db: Session,
@@ -528,17 +609,105 @@ def meus_cursos(
         .all()
     )
 
-    return [
-        AcessoCursoResponse(
-            id=a.id,
-            curso_id=a.curso_id,
-            nome_curso=a.curso.nome,
-            ativo=a.ativo,
-            data_inicio=a.data_inicio,
-            data_fim=a.data_fim
+    resultado = []
+
+    for a in acessos:
+        contratacoes = (
+            db.query(models.ContratacaoCurso)
+            .filter(
+                models.ContratacaoCurso.usuario_id == usuario.id,
+                models.ContratacaoCurso.curso_id == a.curso_id,
+                models.ContratacaoCurso.data_inicio <= agora,
+                models.ContratacaoCurso.data_fim > agora,
+                models.ContratacaoCurso.origem.in_(["PAGAMENTO", "ADMIN"])
+            )
+            .order_by(models.ContratacaoCurso.data_fim.asc())
+            .all()
         )
-        for a in acessos
-    ]
+
+        contratos_resposta = []
+
+        for contrato in contratacoes:
+            pode_renovar = renovacao_disponivel(
+                contrato.data_fim, agora
+            )
+
+            if pode_renovar:
+                concluida = (
+                    db.query(models.OportunidadeCompra.id)
+                    .filter(
+                        models.OportunidadeCompra.usuario_id == usuario.id,
+                        models.OportunidadeCompra.curso_id == a.curso_id,
+                        models.OportunidadeCompra.tipo_compra == "RENOVACAO",
+                        models.OportunidadeCompra.contratacao_id == contrato.id,
+                        models.OportunidadeCompra.vencimento_original == contrato.data_fim,
+                        models.OportunidadeCompra.concluida_em.isnot(None)
+                    )
+                    .first()
+                )
+                pode_renovar = concluida is None
+
+            contratos_resposta.append({
+                "id": contrato.id,
+                "origem": contrato.origem,
+                "data_inicio": contrato.data_inicio,
+                "data_fim": contrato.data_fim,
+                "renovacao_disponivel": pode_renovar
+            })
+
+        demos = (
+            db.query(DemonstracaoCurso)
+            .filter(
+                DemonstracaoCurso.usuario_id == usuario.id,
+                DemonstracaoCurso.curso_id == a.curso_id,
+                DemonstracaoCurso.ativo == True,
+                DemonstracaoCurso.data_inicio <= agora,
+                DemonstracaoCurso.data_fim > agora
+            )
+            .order_by(DemonstracaoCurso.id.desc())
+            .all()
+        )
+
+        demonstracoes_resposta = []
+
+        for demo in demos:
+            compra_concluida = (
+                db.query(models.OportunidadeCompra.id)
+                .filter(
+                    models.OportunidadeCompra.usuario_id == usuario.id,
+                    models.OportunidadeCompra.curso_id == a.curso_id,
+                    models.OportunidadeCompra.tipo_compra == "NOVA",
+                    models.OportunidadeCompra.demonstracao_id == demo.id,
+                    models.OportunidadeCompra.concluida_em.isnot(None)
+                )
+                .first()
+            )
+
+            demonstracoes_resposta.append({
+                "id": demo.id,
+                "data_inicio": demo.data_inicio,
+                "data_fim": demo.data_fim,
+                "aquisicao_disponivel": compra_concluida is None
+            })
+
+        resultado.append(
+            AcessoCursoResponse(
+                id=a.id,
+                curso_id=a.curso_id,
+                nome_curso=a.curso.nome,
+                ativo=a.ativo,
+                data_inicio=a.data_inicio,
+                data_fim=a.data_fim,
+                renovacao_disponivel=any(
+                    c["renovacao_disponivel"]
+                    for c in contratos_resposta
+                ),
+                contratacoes=contratos_resposta,
+                demonstracoes=demonstracoes_resposta
+            )
+        )
+
+    return resultado
 
 @app.get("/me/cursos/historico", tags=["Acessos"])
 def meus_cursos_historico(
@@ -567,28 +736,6 @@ def meus_cursos_historico(
         }
         for a in acessos
     ]
-
-@app.get("/debug/dbinfo")
-def debug_db(db: Session = Depends(get_db)):
-    db_name = db.execute(text("SELECT current_database()")).scalar()
-    db_user = db.execute(text("SELECT current_user")).scalar()
-    db_port = db.execute(text("SHOW port")).scalar()
-    return {"database": db_name, "user": db_user, "port": db_port}
-
-
-@app.get("/debug/disciplinas_count")
-def debug_disciplinas_count(db: Session = Depends(get_db)):
-    total = db.execute(text("SELECT COUNT(*) FROM disciplinas")).scalar()
-    return {"disciplinas_count": total}
-
-
-@app.get("/debug/dbversion")
-def debug_db(db: Session = Depends(get_db)):
-    db_name = db.execute(text("SELECT current_database()")).scalar()
-    db_user = db.execute(text("SELECT current_user")).scalar()
-    db_host = db.execute(text("SHOW server_version")).scalar()
-    return {"database": db_name, "user": db_user, "server_version": db_host}
-
 
 @app.get("/")
 def root():
@@ -824,22 +971,21 @@ def listar_disciplinas_curso_expirado(
 )
 def listar_disciplinas_proprias(
     curso_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    agora = datetime.utcnow()
-
-    acesso = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == True
-    ).first()
-
-    if not usuario.is_admin and not acesso:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem acesso a este curso"
-        )
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    contexto = validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
     disciplinas = (
         db.query(CursoDisciplinaPropria)
@@ -854,26 +1000,14 @@ def listar_disciplinas_proprias(
         .all()
     )
 
-    em_demonstracao = False
-
-    if not usuario.is_admin and acesso:
-        demonstracao = (
-            db.query(DemonstracaoCurso)
-            .filter(
-                DemonstracaoCurso.usuario_id == usuario.id,
-                DemonstracaoCurso.curso_id == curso_id,
-                DemonstracaoCurso.ativo == True,
-                DemonstracaoCurso.data_fim > agora
-            )
-            .order_by(DemonstracaoCurso.id.desc())
-            .first()
-        )
-
-        if demonstracao:
-            em_demonstracao = (
-                acesso.data_inicio == demonstracao.data_inicio
-                and acesso.data_fim == demonstracao.data_fim
-            )
+    # ---------------------------------------------------------
+    # Identifica se o contexto atual é uma demonstração.
+    #
+    # A regra já existente permanece:
+    # em demonstração, somente as duas primeiras disciplinas
+    # ficam disponíveis.
+    # ---------------------------------------------------------
+    em_demonstracao = contexto["demonstracao_id"] is not None
 
     return [
         {
@@ -886,6 +1020,7 @@ def listar_disciplinas_proprias(
         }
         for indice, disciplina in enumerate(disciplinas)
     ]
+
 
 @app.put(
     "/disciplinas-proprias/{disciplina_id}",
@@ -998,14 +1133,21 @@ def criar_assunto_proprio(
 )
 def listar_assuntos_proprios(
     disciplina_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    agora = datetime.utcnow()
-
-    disciplina = db.query(CursoDisciplinaPropria).filter(
-        CursoDisciplinaPropria.id == disciplina_id
-    ).first()
+    # ---------------------------------------------------------
+    # Localiza a disciplina.
+    # ---------------------------------------------------------
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id == disciplina_id
+        )
+        .first()
+    )
 
     if not disciplina:
         raise HTTPException(
@@ -1013,72 +1155,60 @@ def listar_assuntos_proprios(
             detail="Disciplina não encontrada"
         )
 
-    acesso = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == disciplina.curso_id,
-        AcessoCurso.ativo == True
-    ).first()
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    contexto = validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
-    if not usuario.is_admin and not acesso:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem acesso a este curso"
-        )
-
-    if not usuario.is_admin and acesso:
-        demonstracao = (
-            db.query(DemonstracaoCurso)
+    # ---------------------------------------------------------
+    # Na demonstração, somente as duas primeiras disciplinas
+    # do curso ficam disponíveis.
+    # ---------------------------------------------------------
+    if contexto["demonstracao_id"] is not None:
+        disciplinas_liberadas = (
+            db.query(CursoDisciplinaPropria)
             .filter(
-                DemonstracaoCurso.usuario_id == usuario.id,
-                DemonstracaoCurso.curso_id == disciplina.curso_id,
-                DemonstracaoCurso.ativo == True,
-                DemonstracaoCurso.data_fim > agora
+                CursoDisciplinaPropria.curso_id == disciplina.curso_id,
+                CursoDisciplinaPropria.ativo == True
             )
-            .order_by(DemonstracaoCurso.id.desc())
-            .first()
+            .order_by(
+                CursoDisciplinaPropria.ordem.asc(),
+                CursoDisciplinaPropria.id.asc()
+            )
+            .limit(2)
+            .all()
         )
 
-        em_demonstracao = False
+        ids_liberados = {
+            item.id
+            for item in disciplinas_liberadas
+        }
 
-        if demonstracao:
-            em_demonstracao = (
-                acesso.data_inicio == demonstracao.data_inicio
-                and acesso.data_fim == demonstracao.data_fim
+        if disciplina_id not in ids_liberados:
+            raise HTTPException(
+                status_code=403,
+                detail="Esta disciplina não está disponível no acesso gratuito."
             )
 
-        if em_demonstracao:
-            disciplinas_liberadas = (
-                db.query(CursoDisciplinaPropria)
-                .filter(
-                    CursoDisciplinaPropria.curso_id == disciplina.curso_id,
-                    CursoDisciplinaPropria.ativo == True
-                )
-                .order_by(
-                    CursoDisciplinaPropria.ordem.asc(),
-                    CursoDisciplinaPropria.id.asc()
-                )
-                .limit(2)
-                .all()
-            )
-
-            ids_liberados = {
-                item.id
-                for item in disciplinas_liberadas
-            }
-
-            if disciplina_id not in ids_liberados:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Esta disciplina não está disponível no acesso gratuito."
-                )
-
+    # ---------------------------------------------------------
+    # Retorna somente os assuntos ativos da disciplina.
+    # ---------------------------------------------------------
     return (
         db.query(CursoAssuntoProprio)
         .filter(
             CursoAssuntoProprio.curso_disciplina_propria_id == disciplina_id,
             CursoAssuntoProprio.ativo == True
         )
-        .order_by(CursoAssuntoProprio.ordem.asc())
+        .order_by(
+            CursoAssuntoProprio.ordem.asc(),
+            CursoAssuntoProprio.id.asc()
+        )
         .all()
     )
 
@@ -1253,13 +1383,127 @@ def criar_aula(aula: AulaCreate, db: Session = Depends(get_db)):
     }
 
 @app.get("/pastas/{pasta_id}/aulas")
-def listar_aulas_por_pasta(pasta_id: int, db: Session = Depends(get_db)):
+def listar_aulas_por_pasta(
+    pasta_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    # ---------------------------------------------------------
+    # Localiza a pasta.
+    # ---------------------------------------------------------
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # ADMIN
+    #
+    # O administrador continua podendo listar as aulas
+    # diretamente, sem necessidade de contexto de estudo.
+    # ---------------------------------------------------------
+    if usuario.is_admin:
+        aulas = (
+            db.query(Aula)
+            .filter(
+                Aula.pasta_id == pasta_id
+            )
+            .order_by(
+                Aula.ordem.asc(),
+                Aula.id.asc()
+            )
+            .all()
+        )
+
+        return [
+            {
+                "id": a.id,
+                "pasta_id": a.pasta_id,
+                "titulo": a.titulo,
+                "descricao": a.descricao,
+                "ordem": a.ordem,
+                "ativo": a.ativo
+            }
+            for a in aulas
+        ]
+
+    # ---------------------------------------------------------
+    # ALUNO
+    #
+    # Para aluno, a pasta precisa estar vinculada a um
+    # assunto próprio de curso.
+    # ---------------------------------------------------------
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Pasta não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente as aulas da pasta.
+    # ---------------------------------------------------------
     aulas = (
         db.query(Aula)
-        .filter(Aula.pasta_id == pasta_id)
-        .order_by(Aula.ordem.asc(), Aula.id.asc())
+        .filter(
+            Aula.pasta_id == pasta_id,
+            Aula.ativo == True
+        )
+        .order_by(
+            Aula.ordem.asc(),
+            Aula.id.asc()
+        )
         .all()
     )
+
     return [
         {
             "id": a.id,
@@ -1275,18 +1519,108 @@ def listar_aulas_por_pasta(pasta_id: int, db: Session = Depends(get_db)):
 @app.get("/me/progresso")
 def listar_meu_progresso(
     pasta_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    progresso = (
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Identifica o curso a partir da pasta.
+    # ---------------------------------------------------------
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Pasta não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente o progresso do contexto informado.
+    # ---------------------------------------------------------
+    progresso_query = (
         db.query(ProgressoAula)
         .filter(
             ProgressoAula.usuario_id == usuario.id,
             ProgressoAula.pasta_id == pasta_id,
             ProgressoAula.concluida == True
         )
-        .all()
     )
+
+    if contratacao_id is not None:
+        progresso_query = progresso_query.filter(
+            ProgressoAula.contratacao_id == contratacao_id,
+            ProgressoAula.demonstracao_id.is_(None)
+        )
+    else:
+        progresso_query = progresso_query.filter(
+            ProgressoAula.contratacao_id.is_(None),
+            ProgressoAula.demonstracao_id == demonstracao_id
+        )
+
+    progresso = progresso_query.all()
 
     return [
         {
@@ -1304,22 +1638,122 @@ def listar_meu_progresso(
 @app.post("/me/progresso/aulas/{aula_id}/concluir")
 def concluir_aula(
     aula_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    aula = db.query(Aula).filter(Aula.id == aula_id).first()
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza a aula.
+    # ---------------------------------------------------------
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == aula_id)
+        .first()
+    )
 
     if not aula:
-        raise HTTPException(status_code=404, detail="Aula não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
 
-    existente = (
+    # ---------------------------------------------------------
+    # Identifica o curso a partir da pasta da aula.
+    # ---------------------------------------------------------
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente o progresso do contexto informado.
+    # ---------------------------------------------------------
+    progresso_query = (
         db.query(ProgressoAula)
         .filter(
             ProgressoAula.usuario_id == usuario.id,
             ProgressoAula.aula_id == aula_id
         )
-        .first()
     )
+
+    if contratacao_id is not None:
+        progresso_query = progresso_query.filter(
+            ProgressoAula.contratacao_id == contratacao_id,
+            ProgressoAula.demonstracao_id.is_(None)
+        )
+    else:
+        progresso_query = progresso_query.filter(
+            ProgressoAula.contratacao_id.is_(None),
+            ProgressoAula.demonstracao_id == demonstracao_id
+        )
+
+    existente = progresso_query.first()
 
     if existente:
         existente.concluida = True
@@ -1330,6 +1764,8 @@ def concluir_aula(
             usuario_id=usuario.id,
             pasta_id=aula.pasta_id,
             aula_id=aula.id,
+            contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id,
             concluida=True
         )
         db.add(progresso)
@@ -1338,6 +1774,7 @@ def concluir_aula(
     db.refresh(progresso)
 
     return progresso
+
 
 @app.post("/videos")
 def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
@@ -1412,13 +1849,136 @@ def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
     }
 
 @app.get("/aulas/{aula_id}/videos")
-def listar_videos_da_aula(aula_id: int, db: Session = Depends(get_db)):
+def listar_videos_da_aula(
+    aula_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    # ---------------------------------------------------------
+    # Localiza a aula.
+    # ---------------------------------------------------------
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # ADMIN
+    # ---------------------------------------------------------
+    if usuario.is_admin:
+        videos = (
+            db.query(Video)
+            .filter(Video.aula_id == aula_id)
+            .order_by(
+                Video.ordem.asc(),
+                Video.id.asc()
+            )
+            .all()
+        )
+
+        return [
+            {
+                "id": v.id,
+                "aula_id": v.aula_id,
+                "titulo": v.titulo,
+                "url": v.url,
+                "provedor": v.provedor,
+                "cloudflare_uid": v.cloudflare_uid,
+                "duracao_segundos": v.duracao_segundos,
+                "transcricao": v.transcricao,
+                "ordem": v.ordem,
+                "ativo": v.ativo
+            }
+            for v in videos
+        ]
+
+    # ---------------------------------------------------------
+    # ALUNO: identifica o curso da aula.
+    # ---------------------------------------------------------
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id ==
+            pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca os vídeos da aula.
+    # ---------------------------------------------------------
     videos = (
         db.query(Video)
-        .filter(Video.aula_id == aula_id)
-        .order_by(Video.ordem.asc(), Video.id.asc())
+        .filter(
+            Video.aula_id == aula_id,
+            Video.ativo == True
+        )
+        .order_by(
+            Video.ordem.asc(),
+            Video.id.asc()
+        )
         .all()
     )
+
     return [
         {
             "id": v.id,
@@ -1572,75 +2132,46 @@ def obter_playback_video(
 
     curso_id = disciplina.curso_id
 
-    if not usuario.is_admin:
-        acesso = db.query(AcessoCurso).filter(
-            AcessoCurso.usuario_id == usuario.id,
-            AcessoCurso.curso_id == curso_id,
-            AcessoCurso.ativo == True
-        ).first()
+        # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
-        if not acesso:
-            raise HTTPException(
-                status_code=403,
-                detail="Sem acesso ativo a este curso"
-            )
-
-        agora = datetime.utcnow()
-
-        if acesso.data_fim and acesso.data_fim <= agora:
-            acesso.ativo = False
-            db.commit()
-
-            raise HTTPException(
-                status_code=403,
-                detail="Acesso ao curso expirado"
-            )
-        
-        demonstracao = (
-            db.query(DemonstracaoCurso)
+    # ---------------------------------------------------------
+    # Na demonstração, somente as 2 primeiras disciplinas
+    # do curso ficam disponíveis.
+    # ---------------------------------------------------------
+    if demonstracao_id is not None:
+        disciplinas_liberadas = (
+            db.query(CursoDisciplinaPropria)
             .filter(
-                DemonstracaoCurso.usuario_id == usuario.id,
-                DemonstracaoCurso.curso_id == curso_id,
-                DemonstracaoCurso.ativo == True,
-                DemonstracaoCurso.data_fim > agora
+                CursoDisciplinaPropria.curso_id == curso_id,
+                CursoDisciplinaPropria.ativo == True
             )
-            .order_by(DemonstracaoCurso.id.desc())
-            .first()
+            .order_by(
+                CursoDisciplinaPropria.ordem.asc(),
+                CursoDisciplinaPropria.id.asc()
+            )
+            .limit(2)
+            .all()
         )
 
-        em_demonstracao = False
+        ids_liberados = {
+            item.id
+            for item in disciplinas_liberadas
+        }
 
-        if demonstracao:
-            em_demonstracao = (
-                acesso.data_inicio == demonstracao.data_inicio
-                and acesso.data_fim == demonstracao.data_fim
+        if disciplina.id not in ids_liberados:
+            raise HTTPException(
+                status_code=403,
+                detail="Esta disciplina não está disponível no acesso gratuito."
             )
-
-        if em_demonstracao:
-            disciplinas_liberadas = (
-                db.query(CursoDisciplinaPropria)
-                .filter(
-                    CursoDisciplinaPropria.curso_id == curso_id,
-                    CursoDisciplinaPropria.ativo == True
-                )
-                .order_by(
-                    CursoDisciplinaPropria.ordem.asc(),
-                    CursoDisciplinaPropria.id.asc()
-                )
-                .limit(2)
-                .all()
-            )
-
-            ids_liberados = {
-                item.id
-                for item in disciplinas_liberadas
-            }
-
-            if disciplina.id not in ids_liberados:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Esta disciplina não está disponível no acesso gratuito."
-                )
 
     if not CLOUDFLARE_ACCOUNT_ID or not CLOUDFLARE_STREAM_API_TOKEN:
         raise HTTPException(
@@ -1735,7 +2266,63 @@ def criar_bateria(bateria: BateriaCreate, db: Session = Depends(get_db)):
     }
 
 @app.get("/aulas/{aula_id}/baterias")
-def listar_baterias_da_aula(aula_id: int, db: Session = Depends(get_db)):
+def listar_baterias_da_aula(
+    aula_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario_atual: Usuario = Depends(get_usuario_atual)
+):
+    aula = db.query(Aula).filter(Aula.id == aula_id).first()
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
+
+    pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
     baterias = (
         db.query(Bateria)
         .filter(Bateria.aula_id == aula_id)
@@ -1999,7 +2586,77 @@ def criar_comentario_geral(questao_id: int, payload: ComentarioGeralCreate, db: 
 
 
 @app.get("/baterias/{bateria_id}/questoes")
-def listar_questoes_da_bateria(bateria_id: int, db: Session = Depends(get_db)):
+def listar_questoes_da_bateria(
+    bateria_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario_atual: Usuario = Depends(get_usuario_atual)
+):
+    bateria = db.query(Bateria).filter(
+        Bateria.id == bateria_id
+    ).first()
+
+    if not bateria:
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria não encontrada"
+        )
+
+    aula = db.query(Aula).filter(
+        Aula.id == bateria.aula_id
+    ).first()
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula da bateria não encontrada"
+        )
+
+    pasta = db.query(Pasta).filter(
+        Pasta.id == aula.pasta_id
+    ).first()
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Bateria não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
     questoes = (
         db.query(Questao)
         .filter(Questao.bateria_id == bateria_id)
@@ -2242,13 +2899,111 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db)):
     }
 
 @app.get("/aulas/{aula_id}/materiais")
-def listar_materiais_da_aula(aula_id: int, db: Session = Depends(get_db)):
+def listar_materiais_da_aula(
+    aula_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    # ---------------------------------------------------------
+    # Localiza a aula.
+    # ---------------------------------------------------------
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza a pasta da aula.
+    # ---------------------------------------------------------
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza o assunto próprio.
+    # ---------------------------------------------------------
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza a disciplina própria.
+    # ---------------------------------------------------------
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente os materiais ativos da aula.
+    # ---------------------------------------------------------
     materiais = (
         db.query(Material)
-        .filter(Material.aula_id == aula_id)
-        .order_by(Material.ordem.asc(), Material.id.asc())
+        .filter(
+            Material.aula_id == aula_id,
+            Material.ativo == True
+        )
+        .order_by(
+            Material.ordem.asc(),
+            Material.id.asc()
+        )
         .all()
     )
+
     return [
         {
             "id": m.id,
@@ -2708,6 +3463,88 @@ def mp_headers():
         raise HTTPException(status_code=500, detail="MP_ACCESS_TOKEN não configurado no ambiente.")
     return {"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
 
+@app.get("/public/cursos/{curso_id}/checkout")
+def dados_publicos_checkout(
+    curso_id: int,
+    db: Session = Depends(get_db)
+):
+    curso = db.query(Curso).filter(
+        Curso.id == curso_id,
+        Curso.ativo == True
+    ).first()
+
+    if not curso:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado"
+        )
+
+    tempos = (
+        db.query(TempoAcessoCurso)
+        .filter(
+            TempoAcessoCurso.curso_id == curso_id,
+            TempoAcessoCurso.ativo == True
+        )
+        .order_by(TempoAcessoCurso.meses.asc())
+        .all()
+    )
+
+    disciplinas = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.curso_id == curso_id,
+            CursoDisciplinaPropria.ativo == True
+        )
+        .order_by(
+            CursoDisciplinaPropria.ordem.asc(),
+            CursoDisciplinaPropria.id.asc()
+        )
+        .all()
+    )
+
+    estrutura = []
+
+    for disciplina in disciplinas:
+        assuntos = (
+            db.query(CursoAssuntoProprio)
+            .filter(
+                CursoAssuntoProprio.curso_disciplina_propria_id == disciplina.id,
+                CursoAssuntoProprio.ativo == True
+            )
+            .order_by(
+                CursoAssuntoProprio.ordem.asc(),
+                CursoAssuntoProprio.id.asc()
+            )
+            .all()
+        )
+
+        estrutura.append({
+            "id": disciplina.id,
+            "nome": disciplina.nome,
+            "assuntos": [
+                {
+                    "id": assunto.id,
+                    "nome": assunto.nome
+                }
+                for assunto in assuntos
+            ]
+        })
+
+    return {
+        "id": curso.id,
+        "nome": curso.nome,
+        "descricao_publica": curso.descricao_publica,
+        "tempos_acesso": [
+            {
+                "id": tempo.id,
+                "meses": tempo.meses,
+                "valor_cents": tempo.valor_cents
+            }
+            for tempo in tempos
+        ],
+        "disciplinas": estrutura
+    }
+
 @app.post("/checkout/mercadopago")
 def criar_checkout_mp(
     payload: dict,
@@ -2736,6 +3573,113 @@ def criar_checkout_mp(
 
     if not curso:
         raise HTTPException(status_code=404, detail="Curso não encontrado.")
+
+    # Bloqueio de concorrência do checkout por aluno
+    db.query(models.Usuario).filter(
+        models.Usuario.id == user.id
+    ).with_for_update().one()
+
+    agora = datetime.utcnow()
+    tipo_compra = payload.get("tipo_compra", "NOVA")
+    contratacao_id = None
+    vencimento_original = None
+
+    if tipo_compra not in ("NOVA", "RENOVACAO"):
+        raise HTTPException(
+            status_code=400,
+            detail="Tipo de compra inválido."
+        )
+
+    demonstracao_id = None
+
+    if tipo_compra == "NOVA" and payload.get("demonstracao_id") is not None:
+        try:
+            demonstracao_id = int(payload["demonstracao_id"])
+        except (TypeError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail="Identificador da demonstração inválido."
+            )
+
+        demonstracao = db.query(DemonstracaoCurso).filter(
+            DemonstracaoCurso.id == demonstracao_id,
+            DemonstracaoCurso.usuario_id == user.id,
+            DemonstracaoCurso.curso_id == curso.id,
+            DemonstracaoCurso.ativo == True,
+            DemonstracaoCurso.data_inicio <= agora,
+            DemonstracaoCurso.data_fim > agora
+        ).first()
+
+        if not demonstracao:
+            raise HTTPException(
+                status_code=409,
+                detail="Demonstração vigente não encontrada."
+            )
+
+    if tipo_compra == "RENOVACAO" and payload.get("demonstracao_id") is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Uma renovação não pode indicar uma demonstração."
+        )
+
+    if tipo_compra == "RENOVACAO":
+        try:
+            contratacao_id = int(payload["contratacao_id"])
+        except (KeyError, TypeError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail="Informe o contrato que deseja renovar."
+            )
+
+        contratacao = db.query(models.ContratacaoCurso).filter(
+            models.ContratacaoCurso.id == contratacao_id,
+            models.ContratacaoCurso.usuario_id == user.id,
+            models.ContratacaoCurso.curso_id == curso.id,
+            models.ContratacaoCurso.origem.in_(["PAGAMENTO", "ADMIN"]),
+            models.ContratacaoCurso.data_inicio <= agora,
+            models.ContratacaoCurso.data_fim > agora
+        ).with_for_update().first()
+
+        if not contratacao:
+            raise HTTPException(
+                status_code=409,
+                detail="Contrato vigente não encontrado para renovação."
+            )
+
+        if not renovacao_disponivel(contratacao.data_fim, agora):
+            raise HTTPException(
+                status_code=409,
+                detail="A renovação só está disponível nos últimos 15 dias do contrato."
+            )
+
+        vencimento_original = contratacao.data_fim
+
+    oportunidade = obter_oportunidade(
+        db=db,
+        usuario_id=user.id,
+        curso_id=curso.id,
+        tipo_compra=tipo_compra,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+        vencimento_original=vencimento_original,
+    )
+
+    if oportunidade.concluida_em is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Esta oportunidade de compra já foi concluída."
+        )
+
+    titulos_gerados = db.query(Pagamento).filter(
+        Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.mp_preference_id.isnot(None)
+    ).count()
+
+    if titulos_gerados >= 8:
+        raise HTTPException(
+            status_code=409,
+            detail="Limite de oito títulos atingido para esta oportunidade."
+        )
 
     valor_cents = int(tempo.valor_cents)
 
@@ -2827,7 +3771,11 @@ def criar_checkout_mp(
             status,
             valor_cents,
             codigo_cupom,
-            vendedor_id
+            vendedor_id,
+            tipo_compra,
+            vencimento_original,
+            contratacao_id,
+            oportunidade_id
         )
         VALUES (
             :u,
@@ -2836,7 +3784,11 @@ def criar_checkout_mp(
             'PENDENTE',
             :v,
             :codigo_cupom,
-            :vendedor_id
+            :vendedor_id,
+            :tipo_compra,
+            :vencimento_original,
+            :contratacao_id,
+            :oportunidade_id
         )
         RETURNING id
     """), {
@@ -2845,10 +3797,14 @@ def criar_checkout_mp(
         "t": tempo.id,
         "v": valor_cents,
         "codigo_cupom": codigo_cupom_usado,
-        "vendedor_id": vendedor_id
+        "vendedor_id": vendedor_id,
+        "tipo_compra": tipo_compra,
+        "vencimento_original": vencimento_original,
+        "contratacao_id": contratacao_id,
+        "oportunidade_id": oportunidade.id
     }).scalar()
 
-    db.commit()
+    db.flush()
 
     base = (APP_BASE_URL or "").rstrip("/")
     if not base:
@@ -2874,6 +3830,20 @@ def criar_checkout_mp(
         ),
     }
 
+
+    if tipo_compra == "RENOVACAO":
+        from datetime import timezone
+
+        # O sistema armazena e compara os vencimentos em UTC.
+        vencimento_mp = vencimento_original.replace(
+            tzinfo=timezone.utc
+        )
+
+        payload_mp["expires"] = True
+        payload_mp["expiration_date_to"] = vencimento_mp.isoformat(
+            timespec="seconds"
+        )
+
     url = "https://api.mercadopago.com/checkout/preferences"
     headers = {
         "Authorization": f"Bearer {MP_ACCESS_TOKEN}",
@@ -2883,9 +3853,11 @@ def criar_checkout_mp(
     try:
         resp = requests.post(url, headers=headers, json=payload_mp, timeout=20)
     except requests.RequestException as e:
+        db.rollback()
         raise HTTPException(status_code=502, detail=f"Falha de rede ao chamar MP: {e}")
 
     if resp.status_code >= 400:
+        db.rollback()
         raise HTTPException(status_code=502, detail=f"Erro MP {resp.status_code}: {resp.text}")
 
     data = resp.json()
@@ -2894,6 +3866,7 @@ def criar_checkout_mp(
     init_point = data.get("init_point")
 
     if not pref_id or not init_point:
+        db.rollback()
         raise HTTPException(status_code=502, detail=f"MP retornou sem pref_id/init_point: {data}")
 
     db.execute(text("""
@@ -2985,11 +3958,15 @@ def confirmar_pagamento(
             detail="O pagamento não corresponde ao usuário e curso informados."
         )
 
+    db.query(models.Usuario).filter(
+        models.Usuario.id == user.id
+    ).with_for_update().one()
+
     pagamento = db.query(Pagamento).filter(
         Pagamento.id == pagamento_ref,
         Pagamento.usuario_id == user.id,
         Pagamento.curso_id == curso_ref
-    ).first()
+    ).with_for_update().populate_existing().first()
 
     if pagamento and pagamento.mp_payment_id not in (None, str(payment_id)):
         raise HTTPException(
@@ -3030,6 +4007,54 @@ def confirmar_pagamento(
             detail="Valor ou moeda não corresponde à compra registrada."
         )
 
+    if pagamento.ocorrencia_financeira is not None:
+        return {
+            "ok": True,
+            "status": pagamento.status,
+            "curso_id": curso_id,
+            "liberou_acesso": False,
+            "ocorrencia_financeira": pagamento.ocorrencia_financeira,
+        }
+
+    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
+
+    if (
+        status == "approved"
+        and oportunidade is not None
+        and oportunidade.concluida_em is not None
+        and pagamento.aprovado_em is None
+    ):
+        registrar_ocorrencia_financeira(
+            db, pagamento, "COBRANCA_DUPLICADA", p
+        )
+        db.commit()
+        return {
+            "ok": True,
+            "status": "APPROVED",
+            "curso_id": curso_id,
+            "liberou_acesso": False,
+            "ocorrencia_financeira": "COBRANCA_DUPLICADA",
+        }
+
+    if (
+        status == "approved"
+        and pagamento.aprovado_em is None
+        and pagamento.tipo_compra == "RENOVACAO"
+        and pagamento.vencimento_original is not None
+        and obter_data_aprovacao_mp(p) > pagamento.vencimento_original
+    ):
+        registrar_ocorrencia_financeira(
+            db, pagamento, "APROVACAO_FORA_PRAZO", p
+        )
+        db.commit()
+        return {
+            "ok": True,
+            "status": "APPROVED",
+            "curso_id": curso_id,
+            "liberou_acesso": False,
+            "ocorrencia_financeira": "APROVACAO_FORA_PRAZO",
+        }
+
     ja_aprovado = pagamento.aprovado_em is not None
 
     # Uma confirmação posterior não pode rebaixar
@@ -3049,7 +4074,7 @@ def confirmar_pagamento(
         status == "approved"
         and not pagamento.aprovado_em
     ):
-        pagamento.aprovado_em = datetime.utcnow()
+        pagamento.aprovado_em = validar_data_aprovacao_mp(pagamento, p)
 
     pagamento.atualizado_em = datetime.utcnow()
 
@@ -3063,12 +4088,26 @@ def confirmar_pagamento(
         if not tempo:
             raise HTTPException(status_code=400, detail="Tempo de acesso não encontrado para este pagamento.")
 
-        data_inicio = datetime.utcnow()
+        if pagamento.tipo_compra == 'RENOVACAO':
+            if pagamento.vencimento_original is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail='Renovação sem vencimento original.'
+                )
+            data_inicio = pagamento.vencimento_original
+        else:
+            data_inicio = datetime.utcnow()
+
         data_fim = data_inicio + relativedelta(months=tempo.meses)
+
+        contratacao = registrar_contratacao(
+            db, pagamento, data_inicio, data_fim
+        )
 
         db.add(
             PeriodoAcessoPagamento(
                 pagamento_id=pagamento.id,
+                contratacao_id=contratacao.id,
                 usuario_id=pagamento.usuario_id,
                 curso_id=pagamento.curso_id,
                 data_inicio=data_inicio,
@@ -3112,6 +4151,7 @@ def confirmar_pagamento(
             db.rollback()
             raise
 
+        concluir_oportunidade(db, oportunidade)
         liberou = True
 
     try:
@@ -3269,18 +4309,22 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         }
 
     if user_id and curso_id:
+        db.query(models.Usuario).filter(
+            models.Usuario.id == user_id
+        ).with_for_update().one()
+
         if pagamento_id:
             pagamento = db.query(Pagamento).filter(
                 Pagamento.id == pagamento_id,
                 Pagamento.usuario_id == user_id,
                 Pagamento.curso_id == curso_id
-            ).first()
+            ).with_for_update().populate_existing().first()
         else:
             pagamento = db.query(Pagamento).filter(
                 Pagamento.mp_payment_id == str(payment_id),
                 Pagamento.usuario_id == user_id,
                 Pagamento.curso_id == curso_id
-            ).first()
+            ).with_for_update().populate_existing().first()
 
         if (
             pagamento
@@ -3335,6 +4379,52 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
                     detail="Valor ou moeda não corresponde à compra registrada."
                 )
 
+            if pagamento.ocorrencia_financeira is not None:
+                return {
+                    "ok": True,
+                    "status": pagamento.status,
+                    "liberou_acesso": False,
+                    "ocorrencia_financeira": pagamento.ocorrencia_financeira,
+                }
+
+            oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
+
+            if (
+                status == "APPROVED"
+                and oportunidade is not None
+                and oportunidade.concluida_em is not None
+                and pagamento.aprovado_em is None
+            ):
+                registrar_ocorrencia_financeira(
+                    db, pagamento, "COBRANCA_DUPLICADA", pagamento_mp
+                )
+                db.commit()
+                return {
+                    "ok": True,
+                    "status": "APPROVED",
+                    "liberou_acesso": False,
+                    "ocorrencia_financeira": "COBRANCA_DUPLICADA",
+                }
+
+            if (
+                status == "APPROVED"
+                and pagamento.aprovado_em is None
+                and pagamento.tipo_compra == "RENOVACAO"
+                and pagamento.vencimento_original is not None
+                and obter_data_aprovacao_mp(pagamento_mp)
+                > pagamento.vencimento_original
+            ):
+                registrar_ocorrencia_financeira(
+                    db, pagamento, "APROVACAO_FORA_PRAZO", pagamento_mp
+                )
+                db.commit()
+                return {
+                    "ok": True,
+                    "status": "APPROVED",
+                    "liberou_acesso": False,
+                    "ocorrencia_financeira": "APROVACAO_FORA_PRAZO",
+                }
+
             ja_aprovado = pagamento.aprovado_em is not None
 
             if ja_aprovado and status in ("PENDING", "REJECTED"):
@@ -3351,7 +4441,7 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
                 status == "APPROVED"
                 and not pagamento.aprovado_em
             ):
-                pagamento.aprovado_em = datetime.utcnow()
+                pagamento.aprovado_em = validar_data_aprovacao_mp(pagamento, pagamento_mp)
 
             pagamento.atualizado_em = datetime.utcnow()
 
@@ -3393,12 +4483,24 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
                 detail="Tempo de acesso não encontrado para este pagamento."
             )
 
-        data_inicio = datetime.utcnow()
+        if pagamento.tipo_compra == 'RENOVACAO':
+            if pagamento.vencimento_original is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail='Renovação sem vencimento original.'
+                )
+            data_inicio = pagamento.vencimento_original
+        else:
+            data_inicio = datetime.utcnow()
+
         data_fim = data_inicio + relativedelta(months=tempo.meses)
+
+        contratacao = registrar_contratacao(db, pagamento, data_inicio, data_fim)
 
         db.add(
             PeriodoAcessoPagamento(
                 pagamento_id=pagamento.id,
+                contratacao_id=contratacao.id,
                 usuario_id=pagamento.usuario_id,
                 curso_id=pagamento.curso_id,
                 data_inicio=data_inicio,
@@ -3441,6 +4543,7 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
                 "fim": data_fim
             })
 
+            concluir_oportunidade(db, oportunidade)
             db.commit()
 
         except Exception:
@@ -3456,21 +4559,6 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
 
 
 from dotenv import dotenv_values
-
-@app.get("/debug/env")
-def debug_env():
-    token_env = os.getenv("MP_ACCESS_TOKEN", "")
-    valores_env = dotenv_values(ENV_PATH)
-    token_arquivo = valores_env.get("MP_ACCESS_TOKEN", "")
-
-    return {
-        "env_path": str(ENV_PATH),
-        "env_existe": ENV_PATH.exists(),
-        "token_os_inicio": token_env[:12],
-        "token_arquivo_inicio": token_arquivo[:12],
-        "app_base_url": os.getenv("APP_BASE_URL", ""),
-        "mp_webhook_url": os.getenv("MP_WEBHOOK_URL", "")
-    }
 
 @app.post("/me/atendimentos", response_model=AtendimentoResponse)
 def criar_atendimento_aluno(
@@ -3676,6 +4764,18 @@ def admin_revalidar_pagamento(
     user_id = int(pag["usuario_id"])
     curso_id = int(pag["curso_id"])
 
+    # Serializa a revalidação com a confirmação direta e o webhook.
+    db.query(models.Usuario).filter(
+        models.Usuario.id == user_id
+    ).with_for_update().one()
+
+    pagamento = db.query(Pagamento).filter(
+        Pagamento.id == int(pag["id"])
+    ).with_for_update().populate_existing().one()
+
+    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
+
+
     # Impede a revalidação de pagamentos envolvidos em reembolso.
     status_atual = db.execute(
         text("SELECT status FROM pagamentos WHERE id = :id"),
@@ -3695,7 +4795,7 @@ def admin_revalidar_pagamento(
             ),
         )
 
-    ja_aprovado = pag["aprovado_em"] is not None
+    ja_aprovado = pagamento.aprovado_em is not None
 
     # 2) consulta no Mercado Pago
     r = requests.get(
@@ -3709,13 +4809,104 @@ def admin_revalidar_pagamento(
     p = r.json()
     status_mp = (p.get("status") or "").lower().strip()  # approved/pending/rejected...
 
-    # 3) atualiza status no banco
-    db.execute(text("""
-        UPDATE pagamentos
-        SET status = :st,
-            atualizado_em = NOW()
-        WHERE id = :id
-    """), {"st": status_mp.upper(), "id": int(pag["id"])})
+    # Confere a identidade e o valor da compra antes de alterar o banco.
+    referencia = str(p.get("external_reference") or "")
+    referencias = {}
+
+    for parte in referencia.split("|"):
+        if ":" in parte:
+            chave, valor = parte.split(":", 1)
+            referencias[chave] = valor
+
+    try:
+        usuario_ref = int(referencias["user"])
+        curso_ref = int(referencias["curso"])
+        tempo_ref = int(referencias["tempo"])
+        pagamento_ref = int(referencias["pagamento"])
+    except (KeyError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="Referência do pagamento ausente ou inválida.",
+        )
+
+    if (
+        usuario_ref != user_id
+        or curso_ref != curso_id
+        or tempo_ref != pagamento.tempo_acesso_id
+        or pagamento_ref != pagamento.id
+        or str(p.get("id")) != mp_payment_id
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Pagamento não corresponde à compra registrada.",
+        )
+
+    try:
+        valor_mp = Decimal(str(p["transaction_amount"])) * 100
+        if not valor_mp.is_finite() or valor_mp != valor_mp.to_integral_value():
+            raise ValueError("Valor monetário inválido")
+        valor_mp_cents = int(valor_mp)
+    except (KeyError, TypeError, ValueError, InvalidOperation):
+        raise HTTPException(
+            status_code=400,
+            detail="Valor inválido no Mercado Pago.",
+        )
+
+    if p.get("currency_id") != "BRL" or valor_mp_cents != pagamento.valor_cents:
+        raise HTTPException(
+            status_code=409,
+            detail="Valor ou moeda não corresponde à compra registrada.",
+        )
+
+    if pagamento.ocorrencia_financeira is not None:
+        return {
+            "ok": True,
+            "status": pagamento.status,
+            "liberou_acesso": False,
+            "ocorrencia_financeira": pagamento.ocorrencia_financeira,
+        }
+
+    if (
+        status_mp == "approved"
+        and oportunidade is not None
+        and oportunidade.concluida_em is not None
+        and not ja_aprovado
+    ):
+        registrar_ocorrencia_financeira(
+            db, pagamento, "COBRANCA_DUPLICADA", p
+        )
+        db.commit()
+        return {
+            "ok": True,
+            "status": "APPROVED",
+            "liberou_acesso": False,
+            "ocorrencia_financeira": "COBRANCA_DUPLICADA",
+        }
+
+    if (
+        status_mp == "approved"
+        and not ja_aprovado
+        and pagamento.tipo_compra == "RENOVACAO"
+        and pagamento.vencimento_original is not None
+        and obter_data_aprovacao_mp(p) > pagamento.vencimento_original
+    ):
+        registrar_ocorrencia_financeira(
+            db, pagamento, "APROVACAO_FORA_PRAZO", p
+        )
+        db.commit()
+        return {
+            "ok": True,
+            "status": "APPROVED",
+            "liberou_acesso": False,
+            "ocorrencia_financeira": "APROVACAO_FORA_PRAZO",
+        }
+
+    # Preserva a aprovação já registrada por outro caminho.
+    if ja_aprovado and status_mp in ("pending", "rejected"):
+        status_mp = "approved"
+
+    pagamento.status = status_mp.upper()
+    pagamento.atualizado_em = datetime.utcnow()
 
     # 4) se aprovado, libera acesso
     liberou = False
@@ -3736,34 +4927,23 @@ def admin_revalidar_pagamento(
                 detail="Prazo contratado não encontrado para este pagamento."
             )
 
-        data_aprovacao_mp = p.get("date_approved")
+        data_aprovacao = validar_data_aprovacao_mp(pagamento, p)
 
-        if not data_aprovacao_mp:
-            raise HTTPException(
-                status_code=502,
-                detail="Mercado Pago não informou a data de aprovação."
-            )
-
-        from datetime import timezone
-
-        data_aprovacao = datetime.fromisoformat(
-            data_aprovacao_mp.replace("Z", "+00:00")
-        )
-
-        if data_aprovacao.tzinfo is None:
-            data_aprovacao = data_aprovacao.replace(tzinfo=timezone.utc)
-
-        data_aprovacao = data_aprovacao.astimezone(
-            timezone.utc
-        ).replace(tzinfo=None)
-
-        data_inicio = data_aprovacao
+        if pagamento.tipo_compra == "RENOVACAO":
+            data_inicio = pagamento.vencimento_original
+        else:
+            data_inicio = data_aprovacao
 
         data_fim = data_inicio + relativedelta(months=tempo.meses)
 
+        contratacao = registrar_contratacao(
+            db, pagamento, data_inicio, data_fim
+        )
+
         db.add(
             PeriodoAcessoPagamento(
-                pagamento_id=int(pag["id"]),
+                pagamento_id=pagamento.id,
+                contratacao_id=contratacao.id,
                 usuario_id=user_id,
                 curso_id=curso_id,
                 data_inicio=data_inicio,
@@ -3772,15 +4952,6 @@ def admin_revalidar_pagamento(
         )
 
         compra_ainda_valida = data_fim > datetime.utcnow()
-
-        if acesso_atual:
-            data_inicio = acesso_atual.data_inicio
-
-            if (
-                acesso_atual.data_fim is None
-                or acesso_atual.data_fim > data_fim
-            ):
-                data_fim = acesso_atual.data_fim
 
         if compra_ainda_valida:
             db.execute(text("""
@@ -3791,24 +4962,35 @@ def admin_revalidar_pagamento(
                 ON CONFLICT (usuario_id, curso_id)
                 DO UPDATE SET
                     ativo = TRUE,
-                    data_inicio = :inicio,
-                    data_fim = :fim
+                    data_inicio = CASE
+                        WHEN acessos_curso.ativo = TRUE
+                            AND (
+                                acessos_curso.data_fim IS NULL
+                                OR acessos_curso.data_fim > :fim
+                            )
+                        THEN acessos_curso.data_inicio
+                        ELSE :inicio
+                    END,
+                    data_fim = CASE
+                        WHEN acessos_curso.ativo = TRUE
+                            AND (
+                                acessos_curso.data_fim IS NULL
+                                OR acessos_curso.data_fim > :fim
+                            )
+                        THEN acessos_curso.data_fim
+                        ELSE :fim
+                    END
             """), {
                 "u": user_id,
                 "c": curso_id,
                 "inicio": data_inicio,
                 "fim": data_fim
             })
-        db.execute(text("""
-            UPDATE pagamentos
-            SET aprovado_em = :aprovado_em,
-                atualizado_em = :aprovado_em
-            WHERE id = :id
-                AND aprovado_em IS NULL
-        """), {
-            "aprovado_em": data_aprovacao,
-            "id": int(pag["id"])
-        })
+
+        pagamento.aprovado_em = data_aprovacao
+        pagamento.atualizado_em = datetime.utcnow()
+
+        concluir_oportunidade(db, oportunidade)
         db.commit()
         liberou = compra_ainda_valida
 
@@ -4311,20 +5493,6 @@ def listar_meus_reembolsos(
 
     return [dict(r) for r in rows]
 
-@app.get("/debug/mp/payment/{payment_id}")
-def debug_mp_payment(payment_id: str):
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
-
-    return {
-        "status_code": r.status_code,
-        "resposta": r.json() if r.text else None
-    }
-
-
 @app.post("/admin/reembolsos/{pagamento_id}/aprovar")
 def aprovar_reembolso(
     pagamento_id: int,
@@ -4772,25 +5940,6 @@ def criar_aula_pasta(
 
     return aula
 
-@app.get("/pastas/{pasta_id}/aulas")
-def listar_aulas_pasta(
-    pasta_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas admin")
-
-    aulas = (
-        db.query(Aula)
-        .filter(Aula.pasta_id == pasta_id)
-        .order_by(Aula.ordem.asc())
-        .all()
-    )
-
-    return aulas
-
 @app.put("/aulas/{aula_id}")
 def editar_aula(
     aula_id: int,
@@ -4885,10 +6034,56 @@ def concluir_bateria_aluno(
             detail=f"Questões não respondidas: {questoes_nao_respondidas}"
         )
 
+    aula = db.query(Aula).filter(Aula.id == bateria.aula_id).first()
+
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula da bateria não encontrada")
+
+    pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
+
+    if not pasta:
+        raise HTTPException(status_code=404, detail="Pasta da aula não encontrada")
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Bateria não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    contexto = validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=dados.contratacao_id,
+        demonstracao_id=dados.demonstracao_id,
+    )
+
     try:
         tentativa = TentativaBateria(
             usuario_id=usuario_atual.id,
             bateria_id=dados.bateria_id,
+            contratacao_id=contexto["contratacao_id"],
+            demonstracao_id=contexto["demonstracao_id"],
             status="EM_ANDAMENTO",
             percentual_acerto=0,
             concluida_em=datetime.utcnow(),
@@ -4917,6 +6112,8 @@ def concluir_bateria_aluno(
                 usuario_id=usuario_atual.id,
                 bateria_id=dados.bateria_id,
                 questao_id=q.id,
+                contratacao_id=contexto["contratacao_id"],
+                demonstracao_id=contexto["demonstracao_id"],
                 resposta_marcada=marcada,
                 gabarito=gabarito,
                 acertou=acertou,
@@ -5022,7 +6219,21 @@ def finalizar_revisao_tentativa(
     ).first()
 
     if not tentativa:
-        raise HTTPException(status_code=404, detail="Tentativa não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Tentativa não encontrada"
+        )
+
+    # O contexto da revisão é o mesmo contexto em que
+    # a tentativa foi realizada.
+    contexto_contratacao_id = tentativa.contratacao_id
+    contexto_demonstracao_id = tentativa.demonstracao_id
+
+    if bool(contexto_contratacao_id) == bool(contexto_demonstracao_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Tentativa sem contexto de acesso válido."
+        )
 
     tentativa.status = "FEITA"
     tentativa.revisao_concluida_em = datetime.utcnow()
@@ -5032,14 +6243,20 @@ def finalizar_revisao_tentativa(
     ).first()
 
     if not bateria:
-        raise HTTPException(status_code=404, detail="Bateria não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria não encontrada"
+        )
 
     aula = db.query(Aula).filter(
         Aula.id == bateria.aula_id
     ).first()
 
     if not aula:
-        raise HTTPException(status_code=404, detail="Aula não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
 
     baterias_da_aula = (
         db.query(Bateria)
@@ -5050,13 +6267,6 @@ def finalizar_revisao_tentativa(
         .all()
     )
 
-    print(
-        "AULA",
-        aula.id,
-        "BATERIAS",
-        len(baterias_da_aula)
-    )
-
     todas_feitas = True
 
     for b in baterias_da_aula:
@@ -5065,7 +6275,9 @@ def finalizar_revisao_tentativa(
             .filter(
                 TentativaBateria.usuario_id == usuario_atual.id,
                 TentativaBateria.bateria_id == b.id,
-                TentativaBateria.status == "FEITA"
+                TentativaBateria.status == "FEITA",
+                TentativaBateria.contratacao_id == contexto_contratacao_id,
+                TentativaBateria.demonstracao_id == contexto_demonstracao_id,
             )
             .first()
         )
@@ -5074,14 +6286,14 @@ def finalizar_revisao_tentativa(
             todas_feitas = False
             break
 
-    print("TODAS_FEITAS =", todas_feitas)
-
     if todas_feitas and baterias_da_aula:
         progresso_existente = (
             db.query(ProgressoAula)
             .filter(
                 ProgressoAula.usuario_id == usuario_atual.id,
-                ProgressoAula.aula_id == aula.id
+                ProgressoAula.aula_id == aula.id,
+                ProgressoAula.contratacao_id == contexto_contratacao_id,
+                ProgressoAula.demonstracao_id == contexto_demonstracao_id,
             )
             .first()
         )
@@ -5095,6 +6307,8 @@ def finalizar_revisao_tentativa(
                     usuario_id=usuario_atual.id,
                     pasta_id=aula.pasta_id,
                     aula_id=aula.id,
+                    contratacao_id=contexto_contratacao_id,
+                    demonstracao_id=contexto_demonstracao_id,
                     concluida=True
                 )
             )
@@ -5104,7 +6318,9 @@ def finalizar_revisao_tentativa(
             .filter(
                 RevisaoAluno.usuario_id == usuario_atual.id,
                 RevisaoAluno.aula_id == aula.id,
-                RevisaoAluno.etapa == 1
+                RevisaoAluno.etapa == 1,
+                RevisaoAluno.contratacao_id == contexto_contratacao_id,
+                RevisaoAluno.demonstracao_id == contexto_demonstracao_id,
             )
             .first()
         )
@@ -5115,6 +6331,8 @@ def finalizar_revisao_tentativa(
                     usuario_id=usuario_atual.id,
                     aula_id=aula.id,
                     pasta_id=aula.pasta_id,
+                    contratacao_id=contexto_contratacao_id,
+                    demonstracao_id=contexto_demonstracao_id,
                     etapa=1,
                     data_prevista=datetime.utcnow() + timedelta(days=7)
                 )
@@ -5133,9 +6351,65 @@ def finalizar_revisao_tentativa(
 @app.get("/aulas/{aula_id}/baterias-com-status")
 def listar_baterias_com_status_do_aluno(
     aula_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
+    aula = db.query(Aula).filter(
+        Aula.id == aula_id
+    ).first()
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
+
+    pasta = db.query(Pasta).filter(
+        Pasta.id == aula.pasta_id
+    ).first()
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
     baterias = (
         db.query(Bateria)
         .filter(
@@ -5150,13 +6424,28 @@ def listar_baterias_com_status_do_aluno(
     resultado = []
 
     for b in baterias:
-        tentativa = (
+        tentativa_query = (
             db.query(TentativaBateria)
             .filter(
                 TentativaBateria.usuario_id == usuario_atual.id,
                 TentativaBateria.bateria_id == b.id,
                 TentativaBateria.ativo == True
             )
+        )
+
+        if contratacao_id is not None:
+            tentativa_query = tentativa_query.filter(
+                TentativaBateria.contratacao_id == contratacao_id,
+                TentativaBateria.demonstracao_id.is_(None)
+            )
+        else:
+            tentativa_query = tentativa_query.filter(
+                TentativaBateria.contratacao_id.is_(None),
+                TentativaBateria.demonstracao_id == demonstracao_id
+            )
+
+        tentativa = (
+            tentativa_query
             .order_by(TentativaBateria.id.desc())
             .first()
         )
@@ -5180,19 +6469,132 @@ def listar_baterias_com_status_do_aluno(
 @app.put("/baterias/{bateria_id}/limpar-minha-sprint")
 def limpar_minha_sprint(
     bateria_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    bateria = db.query(Bateria).filter(Bateria.id == bateria_id).first()
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza a bateria.
+    # ---------------------------------------------------------
+    bateria = (
+        db.query(Bateria)
+        .filter(Bateria.id == bateria_id)
+        .first()
+    )
 
     if not bateria:
-        raise HTTPException(status_code=404, detail="Bateria não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria não encontrada"
+        )
 
-    tentativas_ativas = db.query(TentativaBateria).filter(
-        TentativaBateria.usuario_id == usuario_atual.id,
-        TentativaBateria.bateria_id == bateria_id,
-        TentativaBateria.ativo == True
-    ).all()
+    # ---------------------------------------------------------
+    # Identifica o curso da bateria:
+    # bateria -> aula -> pasta -> assunto -> disciplina -> curso
+    # ---------------------------------------------------------
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == bateria.aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula da bateria não encontrada"
+        )
+
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Bateria não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Valida que o contexto pertence ao usuário e ao curso.
+    # ---------------------------------------------------------
+    contexto = validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Desativa SOMENTE a tentativa do contexto informado.
+    # ---------------------------------------------------------
+    tentativas_query = (
+        db.query(TentativaBateria)
+        .filter(
+            TentativaBateria.usuario_id == usuario_atual.id,
+            TentativaBateria.bateria_id == bateria_id,
+            TentativaBateria.ativo == True,
+            TentativaBateria.contratacao_id ==
+                contexto["contratacao_id"],
+            TentativaBateria.demonstracao_id ==
+                contexto["demonstracao_id"],
+        )
+    )
+
+    tentativas_ativas = tentativas_query.all()
 
     for tentativa in tentativas_ativas:
         tentativa.ativo = False
@@ -5207,16 +6609,88 @@ def limpar_minha_sprint(
 @app.get("/baterias/{bateria_id}/minha-tentativa-ativa")
 def obter_minha_tentativa_ativa(
     bateria_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    tentativa = (
+    bateria = db.query(Bateria).filter(
+        Bateria.id == bateria_id
+    ).first()
+
+    if not bateria:
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria não encontrada"
+        )
+
+    aula = db.query(Aula).filter(
+        Aula.id == bateria.aula_id
+    ).first()
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula da bateria não encontrada"
+        )
+
+    pasta = db.query(Pasta).filter(
+        Pasta.id == aula.pasta_id
+    ).first()
+
+    if not pasta:
+        raise HTTPException(
+            status_code=404,
+            detail="Pasta da aula não encontrada"
+        )
+
+    if not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Bateria não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    contexto = validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    tentativa_query = (
         db.query(TentativaBateria)
         .filter(
             TentativaBateria.usuario_id == usuario_atual.id,
             TentativaBateria.bateria_id == bateria_id,
-            TentativaBateria.ativo == True
+            TentativaBateria.ativo == True,
+            TentativaBateria.contratacao_id == contexto["contratacao_id"],
+            TentativaBateria.demonstracao_id == contexto["demonstracao_id"],
         )
+    )
+
+    tentativa = (
+        tentativa_query
         .order_by(TentativaBateria.id.desc())
         .first()
     )
@@ -5232,7 +6706,9 @@ def obter_minha_tentativa_ativa(
         .filter(
             RespostaAlunoQuestao.tentativa_id == tentativa.id,
             RespostaAlunoQuestao.usuario_id == usuario_atual.id,
-            RespostaAlunoQuestao.bateria_id == bateria_id
+            RespostaAlunoQuestao.bateria_id == bateria_id,
+            RespostaAlunoQuestao.contratacao_id == contexto["contratacao_id"],
+            RespostaAlunoQuestao.demonstracao_id == contexto["demonstracao_id"],
         )
         .all()
     )
@@ -5259,15 +6735,101 @@ def obter_minha_tentativa_ativa(
 
 @app.get("/me/questoes-para-rever")
 def listar_questoes_para_rever(
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    respostas = (
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Identifica o curso a partir do contexto informado.
+    # ---------------------------------------------------------
+    if contratacao_id is not None:
+        contratacao = (
+            db.query(ContratacaoCurso)
+            .filter(
+                ContratacaoCurso.id == contratacao_id,
+                ContratacaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not contratacao:
+            raise HTTPException(
+                status_code=404,
+                detail="Contratação não encontrada"
+            )
+
+        curso_id = contratacao.curso_id
+
+    else:
+        demonstracao = (
+            db.query(DemonstracaoCurso)
+            .filter(
+                DemonstracaoCurso.id == demonstracao_id,
+                DemonstracaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not demonstracao:
+            raise HTTPException(
+                status_code=404,
+                detail="Demonstração não encontrada"
+            )
+
+        curso_id = demonstracao.curso_id
+
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente questões marcadas para revisão dentro
+    # do contexto informado.
+    # ---------------------------------------------------------
+    respostas_query = (
         db.query(RespostaAlunoQuestao)
         .filter(
             RespostaAlunoQuestao.usuario_id == usuario_atual.id,
             RespostaAlunoQuestao.rever == True
         )
+    )
+
+    if contratacao_id is not None:
+        respostas_query = respostas_query.filter(
+            RespostaAlunoQuestao.contratacao_id == contratacao_id,
+            RespostaAlunoQuestao.demonstracao_id.is_(None)
+        )
+    else:
+        respostas_query = respostas_query.filter(
+            RespostaAlunoQuestao.contratacao_id.is_(None),
+            RespostaAlunoQuestao.demonstracao_id == demonstracao_id
+        )
+
+    respostas = (
+        respostas_query
         .order_by(RespostaAlunoQuestao.criada_em.desc())
         .all()
     )
@@ -5275,8 +6837,17 @@ def listar_questoes_para_rever(
     resultado = []
 
     for r in respostas:
-        questao = db.query(Questao).filter(Questao.id == r.questao_id).first()
-        bateria = db.query(Bateria).filter(Bateria.id == r.bateria_id).first()
+        questao = (
+            db.query(Questao)
+            .filter(Questao.id == r.questao_id)
+            .first()
+        )
+
+        bateria = (
+            db.query(Bateria)
+            .filter(Bateria.id == r.bateria_id)
+            .first()
+        )
 
         resultado.append({
             "resposta_id": r.id,
@@ -5299,9 +6870,87 @@ def listar_questoes_para_rever(
 @app.get("/me/questoes-criticas")
 def listar_questoes_criticas(
     curso_id: int | None = None,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
+    # ---------------------------------------------------------
+    # Valida e identifica o contexto de estudo.
+    # ---------------------------------------------------------
+    contexto_contratacao_id = contratacao_id
+    contexto_demonstracao_id = demonstracao_id
+
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Obtém o curso diretamente do contexto informado.
+    #
+    # Não dependemos de existir uma resposta anterior.
+    # Um contexto válido pode existir mesmo que o aluno ainda
+    # não tenha respondido nenhuma questão.
+    # ---------------------------------------------------------
+    if contratacao_id is not None:
+        contratacao = (
+            db.query(ContratacaoCurso)
+            .filter(
+                ContratacaoCurso.id == contratacao_id,
+                ContratacaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not contratacao:
+            raise HTTPException(
+                status_code=404,
+                detail="Contratação não encontrada"
+            )
+
+        curso_id_contexto = contratacao.curso_id
+
+    else:
+        demonstracao = (
+            db.query(DemonstracaoCurso)
+            .filter(
+                DemonstracaoCurso.id == demonstracao_id,
+                DemonstracaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not demonstracao:
+            raise HTTPException(
+                status_code=404,
+                detail="Demonstração não encontrada"
+            )
+
+        curso_id_contexto = demonstracao.curso_id
+
+    if curso_id is not None and curso_id_contexto != curso_id:
+        raise HTTPException(
+            status_code=403,
+            detail="O contexto informado não pertence ao curso solicitado"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=curso_id_contexto,
+        contratacao_id=contexto_contratacao_id,
+        demonstracao_id=contexto_demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
     query = (
         db.query(
             RespostaAlunoQuestao,
@@ -5312,17 +6961,54 @@ def listar_questoes_criticas(
             CursoAssuntoProprio,
             CursoDisciplinaPropria
         )
-        .join(Questao, Questao.id == RespostaAlunoQuestao.questao_id)
-        .join(Bateria, Bateria.id == RespostaAlunoQuestao.bateria_id)
-        .join(Aula, Aula.id == Bateria.aula_id)
-        .join(Pasta, Pasta.id == Aula.pasta_id)
-        .join(CursoAssuntoProprio, CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id)
-        .join(CursoDisciplinaPropria, CursoDisciplinaPropria.id == CursoAssuntoProprio.curso_disciplina_propria_id)
-        .filter(RespostaAlunoQuestao.usuario_id == usuario_atual.id)
+        .join(
+            Questao,
+            Questao.id == RespostaAlunoQuestao.questao_id
+        )
+        .join(
+            Bateria,
+            Bateria.id == RespostaAlunoQuestao.bateria_id
+        )
+        .join(
+            Aula,
+            Aula.id == Bateria.aula_id
+        )
+        .join(
+            Pasta,
+            Pasta.id == Aula.pasta_id
+        )
+        .join(
+            CursoAssuntoProprio,
+            CursoAssuntoProprio.id ==
+            Pasta.curso_assunto_proprio_id
+        )
+        .join(
+            CursoDisciplinaPropria,
+            CursoDisciplinaPropria.id ==
+            CursoAssuntoProprio.curso_disciplina_propria_id
+        )
+        .filter(
+            RespostaAlunoQuestao.usuario_id == usuario_atual.id
+        )
     )
 
-    if curso_id:
-        query = query.filter(CursoDisciplinaPropria.curso_id == curso_id)
+    if contexto_contratacao_id is not None:
+        query = query.filter(
+            RespostaAlunoQuestao.contratacao_id ==
+            contexto_contratacao_id,
+            RespostaAlunoQuestao.demonstracao_id.is_(None)
+        )
+    else:
+        query = query.filter(
+            RespostaAlunoQuestao.contratacao_id.is_(None),
+            RespostaAlunoQuestao.demonstracao_id ==
+            contexto_demonstracao_id
+        )
+
+    if curso_id is not None:
+        query = query.filter(
+            CursoDisciplinaPropria.curso_id == curso_id
+        )
 
     registros = (
         query
@@ -5376,7 +7062,9 @@ def listar_questoes_criticas(
                     }
                     for alternativa in (
                         db.query(Alternativa)
-                        .filter(Alternativa.questao_id == questao.id)
+                        .filter(
+                            Alternativa.questao_id == questao.id
+                        )
                         .order_by(Alternativa.letra.asc())
                         .all()
                     )
@@ -5417,15 +7105,158 @@ def listar_questoes_criticas(
 
 @app.get("/me/revisoes")
 def listar_minhas_revisoes(
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    revisoes = (
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Localiza uma revisão do contexto para descobrir o curso.
+    # ---------------------------------------------------------
+    revisao_base_query = (
+        db.query(RevisaoAluno)
+        .filter(
+            RevisaoAluno.usuario_id == usuario_atual.id
+        )
+    )
+
+    if contratacao_id is not None:
+        revisao_base_query = revisao_base_query.filter(
+            RevisaoAluno.contratacao_id == contratacao_id,
+            RevisaoAluno.demonstracao_id.is_(None)
+        )
+    else:
+        revisao_base_query = revisao_base_query.filter(
+            RevisaoAluno.contratacao_id.is_(None),
+            RevisaoAluno.demonstracao_id == demonstracao_id
+        )
+
+    revisao_base = (
+        revisao_base_query
+        .order_by(RevisaoAluno.id.desc())
+        .first()
+    )
+
+    # ---------------------------------------------------------
+    # Se ainda não existe revisão, valida diretamente o contexto.
+    # ---------------------------------------------------------
+    if revisao_base is None:
+        if contratacao_id is not None:
+            contratacao = (
+                db.query(ContratacaoCurso)
+                .filter(
+                    ContratacaoCurso.id == contratacao_id,
+                    ContratacaoCurso.usuario_id == usuario_atual.id
+                )
+                .first()
+            )
+
+            if not contratacao:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Contratação não encontrada"
+                )
+
+            curso_id = contratacao.curso_id
+
+        else:
+            demonstracao = (
+                db.query(DemonstracaoCurso)
+                .filter(
+                    DemonstracaoCurso.id == demonstracao_id,
+                    DemonstracaoCurso.usuario_id == usuario_atual.id
+                )
+                .first()
+            )
+
+            if not demonstracao:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Demonstração não encontrada"
+                )
+
+            curso_id = demonstracao.curso_id
+
+    else:
+        pasta = db.query(Pasta).filter(
+            Pasta.id == revisao_base.pasta_id
+        ).first()
+
+        if not pasta or not pasta.curso_assunto_proprio_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Revisão não vinculada a um assunto próprio de curso"
+            )
+
+        assunto = db.query(CursoAssuntoProprio).filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        ).first()
+
+        if not assunto:
+            raise HTTPException(
+                status_code=404,
+                detail="Assunto próprio do curso não encontrado"
+            )
+
+        disciplina = db.query(CursoDisciplinaPropria).filter(
+            CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+        ).first()
+
+        if not disciplina:
+            raise HTTPException(
+                status_code=404,
+                detail="Disciplina própria do curso não encontrada"
+            )
+
+        curso_id = disciplina.curso_id
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente revisões do contexto informado.
+    # ---------------------------------------------------------
+    revisoes_query = (
         db.query(RevisaoAluno)
         .filter(
             RevisaoAluno.usuario_id == usuario_atual.id,
             RevisaoAluno.concluida == False
         )
+    )
+
+    if contratacao_id is not None:
+        revisoes_query = revisoes_query.filter(
+            RevisaoAluno.contratacao_id == contratacao_id,
+            RevisaoAluno.demonstracao_id.is_(None)
+        )
+    else:
+        revisoes_query = revisoes_query.filter(
+            RevisaoAluno.contratacao_id.is_(None),
+            RevisaoAluno.demonstracao_id == demonstracao_id
+        )
+
+    revisoes = (
+        revisoes_query
         .order_by(RevisaoAluno.data_prevista.asc())
         .all()
     )
@@ -5433,7 +7264,9 @@ def listar_minhas_revisoes(
     resultado = []
 
     for r in revisoes:
-        aula = db.query(Aula).filter(Aula.id == r.aula_id).first()
+        aula = db.query(Aula).filter(
+            Aula.id == r.aula_id
+        ).first()
 
         resultado.append({
             "id": r.id,
@@ -5446,26 +7279,100 @@ def listar_minhas_revisoes(
 
     return resultado
 
+
 @app.put("/me/revisoes/{revisao_id}/concluir")
 def concluir_revisao(
     revisao_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    revisao = (
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # A revisão só pode ser localizada dentro do contexto informado.
+    # ---------------------------------------------------------
+    revisao_query = (
         db.query(RevisaoAluno)
         .filter(
             RevisaoAluno.id == revisao_id,
             RevisaoAluno.usuario_id == usuario_atual.id
         )
-        .first()
     )
+
+    if contratacao_id is not None:
+        revisao_query = revisao_query.filter(
+            RevisaoAluno.contratacao_id == contratacao_id,
+            RevisaoAluno.demonstracao_id.is_(None)
+        )
+    else:
+        revisao_query = revisao_query.filter(
+            RevisaoAluno.contratacao_id.is_(None),
+            RevisaoAluno.demonstracao_id == demonstracao_id
+        )
+
+    revisao = revisao_query.first()
 
     if not revisao:
         raise HTTPException(
             status_code=404,
             detail="Revisão não encontrada"
         )
+
+    # ---------------------------------------------------------
+    # Identifica o curso da revisão e valida o contexto.
+    # ---------------------------------------------------------
+    pasta = db.query(Pasta).filter(
+        Pasta.id == revisao.pasta_id
+    ).first()
+
+    if not pasta or not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Revisão não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = db.query(CursoAssuntoProprio).filter(
+        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = db.query(CursoDisciplinaPropria).filter(
+        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+    ).first()
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
     revisao.concluida = True
 
@@ -5487,6 +7394,8 @@ def concluir_revisao(
                 usuario_id=revisao.usuario_id,
                 aula_id=revisao.aula_id,
                 pasta_id=revisao.pasta_id,
+                contratacao_id=revisao.contratacao_id,
+                demonstracao_id=revisao.demonstracao_id,
                 etapa=proxima_etapa,
                 data_prevista=datetime.utcnow() +
                 timedelta(days=intervalo[proxima_etapa])
@@ -5496,6 +7405,7 @@ def concluir_revisao(
         db.commit()
 
     return {"ok": True}
+
 
 @app.post("/me/anotacoes-questoes")
 def criar_anotacao_questao(
@@ -5507,24 +7417,145 @@ def criar_anotacao_questao(
     bateria_id = payload.get("bateria_id")
     texto = (payload.get("texto") or "").strip()
 
+    contratacao_id = payload.get("contratacao_id")
+    demonstracao_id = payload.get("demonstracao_id")
+
     if not questao_id or not bateria_id:
-        raise HTTPException(status_code=400, detail="Informe questao_id e bateria_id")
+        raise HTTPException(
+            status_code=400,
+            detail="Informe questao_id e bateria_id"
+        )
 
     if not texto:
-        raise HTTPException(status_code=400, detail="Informe a anotação")
+        raise HTTPException(
+            status_code=400,
+            detail="Informe a anotação"
+        )
 
     if len(texto.split()) > 300:
-        raise HTTPException(status_code=400, detail="A anotação deve ter no máximo 300 palavras")
+        raise HTTPException(
+            status_code=400,
+            detail="A anotação deve ter no máximo 300 palavras"
+        )
 
-    questao = db.query(Questao).filter(Questao.id == questao_id).first()
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    questao = (
+        db.query(Questao)
+        .filter(Questao.id == questao_id)
+        .first()
+    )
 
     if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Questão não encontrada"
+        )
+
+    # ---------------------------------------------------------
+    # Confirma que a bateria informada corresponde à questão.
+    # ---------------------------------------------------------
+    if questao.bateria_id != bateria_id:
+        raise HTTPException(
+            status_code=400,
+            detail="A questão não pertence à bateria informada"
+        )
+
+    # ---------------------------------------------------------
+    # Descobre o curso da questão.
+    # ---------------------------------------------------------
+    bateria = (
+        db.query(Bateria)
+        .filter(Bateria.id == bateria_id)
+        .first()
+    )
+
+    if not bateria:
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria não encontrada"
+        )
+
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == bateria.aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula não encontrada"
+        )
+
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta or not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aula não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
     nova = AnotacaoAlunoQuestao(
         usuario_id=usuario_atual.id,
         questao_id=questao_id,
         bateria_id=bateria_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
         texto=texto
     )
 
@@ -5536,31 +7567,159 @@ def criar_anotacao_questao(
         "id": nova.id,
         "questao_id": nova.questao_id,
         "bateria_id": nova.bateria_id,
+        "contratacao_id": nova.contratacao_id,
+        "demonstracao_id": nova.demonstracao_id,
         "texto": nova.texto
     }
+
 
 @app.put("/me/anotacoes-questoes/{anotacao_id}")
 def editar_anotacao_questao(
     anotacao_id: int,
     payload: dict,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
     texto = (payload.get("texto") or "").strip()
 
     if not texto:
-        raise HTTPException(status_code=400, detail="Informe a anotação")
+        raise HTTPException(
+            status_code=400,
+            detail="Informe a anotação"
+        )
 
     if len(texto.split()) > 300:
-        raise HTTPException(status_code=400, detail="A anotação deve ter no máximo 300 palavras")
+        raise HTTPException(
+            status_code=400,
+            detail="A anotação deve ter no máximo 300 palavras"
+        )
 
-    anotacao = db.query(AnotacaoAlunoQuestao).filter(
-        AnotacaoAlunoQuestao.id == anotacao_id,
-        AnotacaoAlunoQuestao.usuario_id == usuario_atual.id
-    ).first()
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    anotacao_query = (
+        db.query(AnotacaoAlunoQuestao)
+        .filter(
+            AnotacaoAlunoQuestao.id == anotacao_id,
+            AnotacaoAlunoQuestao.usuario_id == usuario_atual.id
+        )
+    )
+
+    if contratacao_id is not None:
+        anotacao_query = anotacao_query.filter(
+            AnotacaoAlunoQuestao.contratacao_id == contratacao_id,
+            AnotacaoAlunoQuestao.demonstracao_id.is_(None)
+        )
+    else:
+        anotacao_query = anotacao_query.filter(
+            AnotacaoAlunoQuestao.contratacao_id.is_(None),
+            AnotacaoAlunoQuestao.demonstracao_id == demonstracao_id
+        )
+
+    anotacao = anotacao_query.first()
 
     if not anotacao:
-        raise HTTPException(status_code=404, detail="Anotação não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Anotação não encontrada"
+        )
+
+    # Descobre o curso da anotação para validar o contexto.
+    questao = (
+        db.query(Questao)
+        .filter(Questao.id == anotacao.questao_id)
+        .first()
+    )
+
+    if not questao:
+        raise HTTPException(
+            status_code=404,
+            detail="Questão da anotação não encontrada"
+        )
+
+    bateria = (
+        db.query(Bateria)
+        .filter(Bateria.id == questao.bateria_id)
+        .first()
+    )
+
+    if not bateria:
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria da anotação não encontrada"
+        )
+
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == bateria.aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula da anotação não encontrada"
+        )
+
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta or not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Anotação não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
     anotacao.texto = texto
     anotacao.atualizado_em = datetime.utcnow()
@@ -5573,31 +7732,228 @@ def editar_anotacao_questao(
         "texto": anotacao.texto
     }
 
+
 @app.delete("/me/anotacoes-questoes/{anotacao_id}")
 def excluir_anotacao_questao(
     anotacao_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
-    anotacao = db.query(AnotacaoAlunoQuestao).filter(
-        AnotacaoAlunoQuestao.id == anotacao_id,
-        AnotacaoAlunoQuestao.usuario_id == usuario_atual.id
-    ).first()
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    anotacao_query = (
+        db.query(AnotacaoAlunoQuestao)
+        .filter(
+            AnotacaoAlunoQuestao.id == anotacao_id,
+            AnotacaoAlunoQuestao.usuario_id == usuario_atual.id
+        )
+    )
+
+    if contratacao_id is not None:
+        anotacao_query = anotacao_query.filter(
+            AnotacaoAlunoQuestao.contratacao_id == contratacao_id,
+            AnotacaoAlunoQuestao.demonstracao_id.is_(None)
+        )
+    else:
+        anotacao_query = anotacao_query.filter(
+            AnotacaoAlunoQuestao.contratacao_id.is_(None),
+            AnotacaoAlunoQuestao.demonstracao_id == demonstracao_id
+        )
+
+    anotacao = anotacao_query.first()
 
     if not anotacao:
-        raise HTTPException(status_code=404, detail="Anotação não encontrada")
+        raise HTTPException(
+            status_code=404,
+            detail="Anotação não encontrada"
+        )
+
+    # Descobre o curso da anotação para validar o contexto.
+    questao = (
+        db.query(Questao)
+        .filter(Questao.id == anotacao.questao_id)
+        .first()
+    )
+
+    if not questao:
+        raise HTTPException(
+            status_code=404,
+            detail="Questão da anotação não encontrada"
+        )
+
+    bateria = (
+        db.query(Bateria)
+        .filter(Bateria.id == questao.bateria_id)
+        .first()
+    )
+
+    if not bateria:
+        raise HTTPException(
+            status_code=404,
+            detail="Bateria da anotação não encontrada"
+        )
+
+    aula = (
+        db.query(Aula)
+        .filter(Aula.id == bateria.aula_id)
+        .first()
+    )
+
+    if not aula:
+        raise HTTPException(
+            status_code=404,
+            detail="Aula da anotação não encontrada"
+        )
+
+    pasta = (
+        db.query(Pasta)
+        .filter(Pasta.id == aula.pasta_id)
+        .first()
+    )
+
+    if not pasta or not pasta.curso_assunto_proprio_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Anotação não vinculada a um assunto próprio de curso"
+        )
+
+    assunto = (
+        db.query(CursoAssuntoProprio)
+        .filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        )
+        .first()
+    )
+
+    if not assunto:
+        raise HTTPException(
+            status_code=404,
+            detail="Assunto próprio do curso não encontrado"
+        )
+
+    disciplina = (
+        db.query(CursoDisciplinaPropria)
+        .filter(
+            CursoDisciplinaPropria.id ==
+            assunto.curso_disciplina_propria_id
+        )
+        .first()
+    )
+
+    if not disciplina:
+        raise HTTPException(
+            status_code=404,
+            detail="Disciplina própria do curso não encontrada"
+        )
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=disciplina.curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
 
     db.delete(anotacao)
     db.commit()
 
     return {"ok": True}
 
+
 @app.get("/me/minhas-anotacoes")
 def listar_minhas_anotacoes(
     curso_id: int | None = None,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
+    # ---------------------------------------------------------
+    # Valida o contexto de estudo.
+    # ---------------------------------------------------------
+    if contratacao_id is None and demonstracao_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário informar contratacao_id ou demonstracao_id"
+        )
+
+    if contratacao_id is not None and demonstracao_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe apenas um contexto de estudo"
+        )
+
+    # ---------------------------------------------------------
+    # Descobre o curso a partir do contexto.
+    # ---------------------------------------------------------
+    if contratacao_id is not None:
+        contratacao = (
+            db.query(ContratacaoCurso)
+            .filter(
+                ContratacaoCurso.id == contratacao_id,
+                ContratacaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not contratacao:
+            raise HTTPException(
+                status_code=404,
+                detail="Contratação não encontrada"
+            )
+
+        curso_id_contexto = contratacao.curso_id
+
+    else:
+        demonstracao = (
+            db.query(DemonstracaoCurso)
+            .filter(
+                DemonstracaoCurso.id == demonstracao_id,
+                DemonstracaoCurso.usuario_id == usuario_atual.id
+            )
+            .first()
+        )
+
+        if not demonstracao:
+            raise HTTPException(
+                status_code=404,
+                detail="Demonstração não encontrada"
+            )
+
+        curso_id_contexto = demonstracao.curso_id
+
+    # Se o curso foi informado, ele deve corresponder ao contexto.
+    if curso_id is not None and curso_id != curso_id_contexto:
+        raise HTTPException(
+            status_code=400,
+            detail="O curso informado não corresponde ao contexto de estudo"
+        )
+
+    curso_id = curso_id_contexto
+
+    validar_contexto_estudo(
+        db=db,
+        usuario=usuario_atual,
+        curso_id=curso_id,
+        contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    )
+
+    # ---------------------------------------------------------
+    # Busca somente anotações do contexto informado.
+    # ---------------------------------------------------------
     query = (
         db.query(
             AnotacaoAlunoQuestao,
@@ -5608,17 +7964,48 @@ def listar_minhas_anotacoes(
             CursoAssuntoProprio,
             CursoDisciplinaPropria
         )
-        .join(Questao, Questao.id == AnotacaoAlunoQuestao.questao_id)
-        .join(Bateria, Bateria.id == Questao.bateria_id)
-        .join(Aula, Aula.id == Bateria.aula_id)
-        .join(Pasta, Pasta.id == Aula.pasta_id)
-        .join(CursoAssuntoProprio, CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id)
-        .join(CursoDisciplinaPropria, CursoDisciplinaPropria.id == CursoAssuntoProprio.curso_disciplina_propria_id)
-        .filter(AnotacaoAlunoQuestao.usuario_id == usuario_atual.id)
+        .join(
+            Questao,
+            Questao.id == AnotacaoAlunoQuestao.questao_id
+        )
+        .join(
+            Bateria,
+            Bateria.id == Questao.bateria_id
+        )
+        .join(
+            Aula,
+            Aula.id == Bateria.aula_id
+        )
+        .join(
+            Pasta,
+            Pasta.id == Aula.pasta_id
+        )
+        .join(
+            CursoAssuntoProprio,
+            CursoAssuntoProprio.id ==
+            Pasta.curso_assunto_proprio_id
+        )
+        .join(
+            CursoDisciplinaPropria,
+            CursoDisciplinaPropria.id ==
+            CursoAssuntoProprio.curso_disciplina_propria_id
+        )
+        .filter(
+            AnotacaoAlunoQuestao.usuario_id == usuario_atual.id,
+            CursoDisciplinaPropria.curso_id == curso_id
+        )
     )
 
-    if curso_id:
-        query = query.filter(CursoDisciplinaPropria.curso_id == curso_id)
+    if contratacao_id is not None:
+        query = query.filter(
+            AnotacaoAlunoQuestao.contratacao_id == contratacao_id,
+            AnotacaoAlunoQuestao.demonstracao_id.is_(None)
+        )
+    else:
+        query = query.filter(
+            AnotacaoAlunoQuestao.contratacao_id.is_(None),
+            AnotacaoAlunoQuestao.demonstracao_id == demonstracao_id
+        )
 
     registros = (
         query
@@ -5633,7 +8020,16 @@ def listar_minhas_anotacoes(
 
     resultado = []
 
-    for anotacao, questao, bateria, aula, pasta, assunto, disciplina in registros:
+    for (
+        anotacao,
+        questao,
+        bateria,
+        aula,
+        pasta,
+        assunto,
+        disciplina
+    ) in registros:
+
         alternativa_correta = None
 
         if questao.tipo == "MULTIPLA":
@@ -5646,10 +8042,17 @@ def listar_minhas_anotacoes(
                 .first()
             )
 
-        texto_resposta = alternativa_correta.texto if alternativa_correta else None
+        texto_resposta = (
+            alternativa_correta.texto
+            if alternativa_correta
+            else None
+        )
 
         resultado.append({
             "anotacao_id": anotacao.id,
+
+            "contratacao_id": anotacao.contratacao_id,
+            "demonstracao_id": anotacao.demonstracao_id,
 
             "disciplina_id": disciplina.id,
             "disciplina_nome": disciplina.nome,
@@ -5658,6 +8061,9 @@ def listar_minhas_anotacoes(
             "assunto_id": assunto.id,
             "assunto_nome": assunto.nome,
             "assunto_ordem": assunto.ordem,
+
+            "aula_id": aula.id,
+            "aula_titulo": aula.titulo,
 
             "questao_id": questao.id,
             "questao_ordem": questao.ordem,
@@ -5677,5119 +8083,3 @@ def listar_minhas_anotacoes(
         })
 
     return resultado
-
-@app.post("/me/mensagens-prof")
-def aluno_enviar_mensagem_prof(
-    payload: dict,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    questao_id = payload.get("questao_id")
-    bateria_id = payload.get("bateria_id")
-    texto = (payload.get("texto") or "").strip()
-
-    if not questao_id or not bateria_id:
-        raise HTTPException(status_code=400, detail="Informe questao_id e bateria_id")
-
-    if not texto:
-        raise HTTPException(status_code=400, detail="Informe a mensagem")
-
-    if len(texto.split()) > 300:
-        raise HTTPException(status_code=400, detail="A mensagem deve ter no máximo 300 palavras")
-
-    questao = db.query(Questao).filter(Questao.id == questao_id).first()
-
-    if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada")
-
-    conversa = (
-        db.query(ConversaQuestaoProfessor)
-        .filter(
-            ConversaQuestaoProfessor.usuario_id == usuario_atual.id,
-            ConversaQuestaoProfessor.questao_id == questao_id,
-            ConversaQuestaoProfessor.status == "ABERTA"
-        )
-        .first()
-    )
-
-    if not conversa:
-        conversa = ConversaQuestaoProfessor(
-            usuario_id=usuario_atual.id,
-            questao_id=questao_id,
-            bateria_id=bateria_id,
-            status="ABERTA"
-        )
-        db.add(conversa)
-        db.commit()
-        db.refresh(conversa)
-
-    mensagens_aluno = (
-        db.query(MensagemConversaQuestao)
-        .filter(
-            MensagemConversaQuestao.conversa_id == conversa.id,
-            MensagemConversaQuestao.autor == "ALUNO"
-        )
-        .count()
-    )
-
-    if mensagens_aluno >= 3:
-        raise HTTPException(
-            status_code=400,
-            detail="Limite de 3 mensagens ao professor atingido"
-        )
-
-    ultima_msg = (
-        db.query(MensagemConversaQuestao)
-        .filter(MensagemConversaQuestao.conversa_id == conversa.id)
-        .order_by(MensagemConversaQuestao.criada_em.desc())
-        .first()
-    )
-
-    if ultima_msg and ultima_msg.autor == "ALUNO":
-        raise HTTPException(
-            status_code=400,
-            detail="Aguarde a resposta do professor antes de enviar nova mensagem"
-        )
-
-    nova = MensagemConversaQuestao(
-        conversa_id=conversa.id,
-        autor="ALUNO",
-        texto=texto
-    )
-
-    db.add(nova)
-
-    if mensagens_aluno + 1 >= 3:
-        conversa.status = "AGUARDANDO_RESPOSTA_FINAL"
-    else:
-        conversa.status = "ABERTA"
-
-    conversa.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(nova)
-
-    return {
-        "conversa_id": conversa.id,
-        "mensagem_id": nova.id,
-        "autor": nova.autor,
-        "texto": nova.texto
-    }
-
-@app.get("/me/mensagens-prof")
-def listar_minhas_mensagens_prof(
-    curso_id: int | None = None,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    query = (
-        db.query(
-            ConversaQuestaoProfessor,
-            Questao,
-            Bateria,
-            Aula,
-            Pasta,
-            CursoAssuntoProprio,
-            CursoDisciplinaPropria
-        )
-        .join(Questao, Questao.id == ConversaQuestaoProfessor.questao_id)
-        .join(Bateria, Bateria.id == ConversaQuestaoProfessor.bateria_id)
-        .join(Aula, Aula.id == Bateria.aula_id)
-        .join(Pasta, Pasta.id == Aula.pasta_id)
-        .join(CursoAssuntoProprio, CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id)
-        .join(CursoDisciplinaPropria, CursoDisciplinaPropria.id == CursoAssuntoProprio.curso_disciplina_propria_id)
-        .filter(ConversaQuestaoProfessor.usuario_id == usuario_atual.id)
-    )
-
-    if curso_id:
-        query = query.filter(CursoDisciplinaPropria.curso_id == curso_id)
-
-    conversas = (
-        query
-        .order_by(
-            CursoDisciplinaPropria.ordem.asc(),
-            CursoAssuntoProprio.ordem.asc(),
-            ConversaQuestaoProfessor.criado_em.desc()
-        )
-        .all()
-    )
-
-    resultado = []
-
-    for conversa, questao, bateria, aula, pasta, assunto, disciplina in conversas:
-        mensagens = (
-            db.query(MensagemConversaQuestao)
-            .filter(MensagemConversaQuestao.conversa_id == conversa.id)
-            .order_by(MensagemConversaQuestao.criada_em.asc())
-            .all()
-        )
-
-        resultado.append({
-            "conversa_id": conversa.id,
-            "status": conversa.status,
-
-            "disciplina_id": disciplina.id,
-            "disciplina_nome": disciplina.nome,
-            "disciplina_ordem": disciplina.ordem,
-
-            "assunto_id": assunto.id,
-            "assunto_nome": assunto.nome,
-            "assunto_ordem": assunto.ordem,
-
-            "questao_id": questao.id,
-            "questao_ordem": questao.ordem,
-            "tipo": questao.tipo,
-            "tipo_questao": questao.tipo_questao,
-            "enunciado": questao.enunciado,
-            "gabarito": questao.gabarito,
-            "comentario": questao.comentario,
-
-            "bateria_id": bateria.id,
-            "bateria_titulo": bateria.titulo,
-
-            "mensagens": [
-                {
-                    "id": m.id,
-                    "autor": m.autor,
-                    "texto": m.texto,
-                    "criada_em": m.criada_em
-                }
-                for m in mensagens
-            ],
-
-            "criado_em": conversa.criado_em,
-            "atualizado_em": conversa.atualizado_em
-        })
-
-    return resultado
-
-@app.get("/admin/mensagens-questoes")
-def listar_mensagens_questoes_admin(
-    curso_id: int | None = None,
-    disciplina_id: int | None = None,
-    concluidas: bool = False,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario_atual.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito"
-        )
-
-    query = (
-        db.query(
-            ConversaQuestaoProfessor,
-            Questao,
-            Bateria,
-            Aula,
-            Pasta,
-            CursoAssuntoProprio,
-            CursoDisciplinaPropria,
-            Curso,
-            Usuario
-        )
-        .join(
-            Questao,
-            Questao.id == ConversaQuestaoProfessor.questao_id
-        )
-        .join(
-            Bateria,
-            Bateria.id == ConversaQuestaoProfessor.bateria_id
-        )
-        .join(
-            Aula,
-            Aula.id == Bateria.aula_id
-        )
-        .join(
-            Pasta,
-            Pasta.id == Aula.pasta_id
-        )
-        .join(
-            CursoAssuntoProprio,
-            CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id
-        )
-        .join(
-            CursoDisciplinaPropria,
-            CursoDisciplinaPropria.id ==
-            CursoAssuntoProprio.curso_disciplina_propria_id
-        )
-        .join(
-            Curso,
-            Curso.id == CursoDisciplinaPropria.curso_id
-        )
-        .join(
-            Usuario,
-            Usuario.id == ConversaQuestaoProfessor.usuario_id
-        )
-    )
-
-    if concluidas:
-        query = query.filter(
-            ConversaQuestaoProfessor.status == "ENCERRADA"
-        )
-    else:
-        query = query.filter(
-            ConversaQuestaoProfessor.status != "ENCERRADA"
-        )
-
-    if curso_id:
-        query = query.filter(
-            Curso.id == curso_id
-        )
-
-    if disciplina_id:
-        query = query.filter(
-            CursoDisciplinaPropria.id == disciplina_id
-        )
-
-    registros = (
-        query
-        .order_by(
-            ConversaQuestaoProfessor.criado_em.asc()
-        )
-        .all()
-    )
-
-    resultado = []
-
-    for (
-        conversa,
-        questao,
-        bateria,
-        aula,
-        pasta,
-        assunto,
-        disciplina,
-        curso,
-        usuario
-    ) in registros:
-
-        mensagens = (
-            db.query(MensagemConversaQuestao)
-            .filter(
-                MensagemConversaQuestao.conversa_id == conversa.id
-            )
-            .order_by(
-                MensagemConversaQuestao.criada_em.asc()
-            )
-            .all()
-        )
-
-        resultado.append({
-            "conversa_id": conversa.id,
-            "status": conversa.status,
-
-            "aluno_id": usuario.id,
-            "aluno_nome": usuario.nome,
-
-            "curso_id": curso.id,
-            "curso_nome": curso.nome,
-
-            "disciplina_id": disciplina.id,
-            "disciplina_nome": disciplina.nome,
-
-            "assunto_nome": assunto.nome,
-
-            "questao_id": questao.id,
-            "enunciado": questao.enunciado,
-            "gabarito": questao.gabarito,
-            "comentario": questao.comentario,
-
-            "mensagens": [
-                {
-                    "id": m.id,
-                    "autor": m.autor,
-                    "texto": m.texto,
-                    "criada_em": m.criada_em
-                }
-                for m in mensagens
-            ],
-
-            "criado_em": conversa.criado_em
-        })
-
-    return resultado
-
-@app.post("/admin/mensagens-questoes/{conversa_id}/responder")
-def responder_mensagem_questao(
-    conversa_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario_atual.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito"
-        )
-
-    texto = (payload.get("texto") or "").strip()
-
-    if not texto:
-        raise HTTPException(
-            status_code=400,
-            detail="Informe a resposta"
-        )
-
-    conversa = (
-        db.query(ConversaQuestaoProfessor)
-        .filter(
-            ConversaQuestaoProfessor.id == conversa_id
-        )
-        .first()
-    )
-
-    if not conversa:
-        raise HTTPException(
-            status_code=404,
-            detail="Conversa não encontrada"
-        )
-
-    mensagens_prof = (
-        db.query(MensagemConversaQuestao)
-        .filter(
-            MensagemConversaQuestao.conversa_id == conversa.id,
-            MensagemConversaQuestao.autor == "PROFESSOR"
-        )
-        .count()
-    )
-
-    nova = MensagemConversaQuestao(
-        conversa_id=conversa.id,
-        autor="PROFESSOR",
-        texto=texto
-    )
-
-    db.add(nova)
-
-    if mensagens_prof + 1 >= 3:
-        conversa.status = "ENCERRADA"
-    else:
-        conversa.status = "ABERTA"
-
-    conversa.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(nova)
-
-    return {
-        "mensagem_id": nova.id,
-        "status_conversa": conversa.status
-    }
-
-@app.post("/me/mensagens-prof/{conversa_id}/responder")
-def aluno_responder_professor(
-    conversa_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    texto = (payload.get("texto") or "").strip()
-
-    if not texto:
-        raise HTTPException(status_code=400, detail="Informe a mensagem")
-
-    if len(texto.split()) > 300:
-        raise HTTPException(
-            status_code=400,
-            detail="A mensagem deve ter no máximo 300 palavras"
-        )
-
-    conversa = (
-        db.query(ConversaQuestaoProfessor)
-        .filter(
-            ConversaQuestaoProfessor.id == conversa_id,
-            ConversaQuestaoProfessor.usuario_id == usuario_atual.id
-        )
-        .first()
-    )
-
-    if not conversa:
-        raise HTTPException(status_code=404, detail="Conversa não encontrada")
-
-    if conversa.status == "ENCERRADA":
-        raise HTTPException(status_code=400, detail="Interação concluída")
-
-    mensagens = (
-        db.query(MensagemConversaQuestao)
-        .filter(MensagemConversaQuestao.conversa_id == conversa.id)
-        .order_by(MensagemConversaQuestao.criada_em.asc())
-        .all()
-    )
-
-    if not mensagens:
-        raise HTTPException(
-            status_code=400,
-            detail="Conversa ainda não iniciada"
-        )
-
-    ultima = mensagens[-1]
-
-    if ultima.autor != "PROFESSOR":
-        raise HTTPException(
-            status_code=400,
-            detail="Aguarde a resposta do professor antes de enviar nova mensagem"
-        )
-
-    mensagens_aluno = [
-        m for m in mensagens
-        if m.autor == "ALUNO"
-    ]
-
-    if len(mensagens_aluno) >= 3:
-        raise HTTPException(
-            status_code=400,
-            detail="Limite de mensagens atingido"
-        )
-
-    nova = MensagemConversaQuestao(
-        conversa_id=conversa.id,
-        autor="ALUNO",
-        texto=texto
-    )
-
-    db.add(nova)
-
-    conversa.status = "ABERTA"
-    conversa.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(nova)
-
-    return {
-        "mensagem_id": nova.id,
-        "status": conversa.status
-    }
-
-@app.post(
-    "/questoes-pratica/{questao_id}/marcacao",
-    response_model=schemas.QuestaoPraticaMarcacaoAlunoResponse
-)
-def salvar_marcacao_questao_pratica(
-    questao_id: int,
-    dados: schemas.QuestaoPraticaMarcacaoAlunoCreate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    questao = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.id == questao_id,
-        models.QuestaoPraticaAssunto.ativo == True
-    ).first()
-
-    if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada.")
-
-    marcacao = db.query(models.QuestaoPraticaMarcacaoAluno).filter(
-        models.QuestaoPraticaMarcacaoAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaMarcacaoAluno.questao_id == questao_id
-    ).first()
-
-    if marcacao:
-        marcacao.dificuldade_marcada = dados.dificuldade_marcada
-        marcacao.acertou = dados.acertou
-    else:
-        marcacao = models.QuestaoPraticaMarcacaoAluno(
-            usuario_id=usuario.id,
-            questao_id=questao_id,
-            dificuldade_marcada=dados.dificuldade_marcada,
-            acertou=dados.acertou
-        )
-        db.add(marcacao)
-
-    db.commit()
-    db.refresh(marcacao)
-
-    return marcacao
-
-@app.post("/curso-assuntos-proprios/{curso_assunto_proprio_id}/questoes-pratica/proxima")
-def obter_proxima_questao_pratica(
-    curso_assunto_proprio_id: int,
-    dados: schemas.ProximaQuestaoPraticaRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    filtros = dados.filtros or ["TODAS"]
-
-    ids_sessao = dados.ids_questoes_sessao or []
-
-    if "TODAS" in filtros:
-        filtro_chave = "TODAS"
-    else:
-        filtro_chave = "_".join(sorted(filtros))
-
-    query_questoes = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.curso_assunto_proprio_id == curso_assunto_proprio_id,
-        models.QuestaoPraticaAssunto.ativo == True
-    )
-
-    if "TODAS" not in filtros:
-        query_questoes = query_questoes.join(
-            models.QuestaoPraticaMarcacaoAluno,
-            models.QuestaoPraticaMarcacaoAluno.questao_id == models.QuestaoPraticaAssunto.id
-        ).filter(
-            models.QuestaoPraticaMarcacaoAluno.usuario_id == usuario.id
-        )
-
-        condicoes = []
-
-        if "DIFICIL" in filtros:
-            condicoes.append(models.QuestaoPraticaMarcacaoAluno.dificuldade_marcada == "DIFICIL")
-
-        if "MEDIA" in filtros:
-            condicoes.append(models.QuestaoPraticaMarcacaoAluno.dificuldade_marcada == "MEDIA")
-
-        if "FACIL" in filtros:
-            condicoes.append(models.QuestaoPraticaMarcacaoAluno.dificuldade_marcada == "FACIL")
-
-        if "ERREI" in filtros:
-            condicoes.append(models.QuestaoPraticaMarcacaoAluno.acertou == False)
-
-        if "REVER" in filtros:
-            condicoes.append(models.QuestaoPraticaMarcacaoAluno.rever == True)
-
-        if condicoes:
-            from sqlalchemy import or_
-            query_questoes = query_questoes.filter(or_(*condicoes))
-
-    if ids_sessao:
-        ids_questoes_possiveis = ids_sessao
-    else:
-        ids_questoes_possiveis = [q.id for q in query_questoes.all()]
-
-    if not ids_questoes_possiveis:
-        raise HTTPException(status_code=404, detail="Nenhuma questão disponível.")
-
-    ciclo_atual = db.query(func.max(models.QuestaoPraticaRotatividadeAluno.ciclo)).filter(
-        models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == curso_assunto_proprio_id,
-        models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave
-    ).scalar() or 1
-
-    ids_ja_respondidas = [
-        r.questao_id
-        for r in db.query(models.QuestaoPraticaRotatividadeAluno.questao_id).filter(
-            models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-            models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == curso_assunto_proprio_id,
-            models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave,
-            models.QuestaoPraticaRotatividadeAluno.ciclo == ciclo_atual
-        ).all()
-    ]
-
-    ids_disponiveis = [
-        qid for qid in ids_questoes_possiveis
-        if qid not in ids_ja_respondidas
-    ]
-
-    if not ids_disponiveis:
-        ciclo_atual += 1
-        ids_disponiveis = ids_questoes_possiveis
-
-    questao = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.id.in_(ids_disponiveis)
-    ).order_by(func.random()).first()
-
-    numero_questao = db.query(models.QuestaoPraticaRotatividadeAluno).filter(
-        models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == curso_assunto_proprio_id,
-        models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave,
-        models.QuestaoPraticaRotatividadeAluno.ciclo == ciclo_atual
-    ).count() + 1
-
-    alternativas = db.query(models.QuestaoPraticaAlternativa).filter(
-        models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
-    ).order_by(
-        models.QuestaoPraticaAlternativa.letra.asc()
-    ).all()
-
-    return {
-        "numero_questao": numero_questao,
-        "ciclo": ciclo_atual,
-        "filtro": filtro_chave,
-        "ids_questoes_sessao": ids_questoes_possiveis,
-        "questao": {
-            "id": questao.id,
-            "curso_assunto_proprio_id": questao.curso_assunto_proprio_id,
-            "tipo": questao.tipo,
-            "enunciado": questao.enunciado,
-            "gabarito": questao.gabarito,
-            "comentario": questao.comentario,
-            "alternativas": [
-                {
-                    "id": alt.id,
-                    "letra": alt.letra,
-                    "texto": alt.texto,
-                    "correta": alt.correta
-                }
-                for alt in alternativas
-            ]
-        }
-    }
-
-@app.post("/questoes-pratica/{questao_id}/responder")
-def responder_questao_pratica(
-    questao_id: int,
-    dados: schemas.ResponderQuestaoPraticaRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    questao = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.id == questao_id,
-        models.QuestaoPraticaAssunto.ativo == True
-    ).first()
-
-    if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada.")
-
-    filtros = dados.filtros or ["TODAS"]
-
-    if "TODAS" in filtros:
-        filtro_chave = "TODAS"
-    else:
-        filtro_chave = "_".join(sorted(filtros))
-
-    marcacao = db.query(models.QuestaoPraticaMarcacaoAluno).filter(
-        models.QuestaoPraticaMarcacaoAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaMarcacaoAluno.questao_id == questao_id
-    ).first()
-
-    if marcacao:
-        marcacao.dificuldade_marcada = dados.dificuldade_marcada
-        marcacao.acertou = dados.acertou
-        marcacao.rever = dados.rever
-        marcacao.nao_soube = dados.nao_soube
-    else:
-        marcacao = models.QuestaoPraticaMarcacaoAluno(
-            usuario_id=usuario.id,
-            questao_id=questao_id,
-            dificuldade_marcada=dados.dificuldade_marcada,
-            acertou=dados.acertou,
-            rever=dados.rever,
-            nao_soube=dados.nao_soube
-        )
-        db.add(marcacao)
-
-    ciclo_atual = db.query(func.max(models.QuestaoPraticaRotatividadeAluno.ciclo)).filter(
-        models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == questao.curso_assunto_proprio_id,
-        models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave
-    ).scalar() or 1
-
-    ids_questoes_possiveis = [
-        q.id for q in db.query(models.QuestaoPraticaAssunto).filter(
-            models.QuestaoPraticaAssunto.curso_assunto_proprio_id == questao.curso_assunto_proprio_id,
-            models.QuestaoPraticaAssunto.ativo == True
-        ).all()
-    ]
-
-    ids_ja_respondidas = [
-        r.questao_id
-        for r in db.query(models.QuestaoPraticaRotatividadeAluno.questao_id).filter(
-            models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-            models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == questao.curso_assunto_proprio_id,
-            models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave,
-            models.QuestaoPraticaRotatividadeAluno.ciclo == ciclo_atual
-        ).all()
-    ]
-
-    if set(ids_questoes_possiveis).issubset(set(ids_ja_respondidas)):
-        ciclo_atual += 1
-
-    ja_registrada = db.query(models.QuestaoPraticaRotatividadeAluno).filter(
-        models.QuestaoPraticaRotatividadeAluno.usuario_id == usuario.id,
-        models.QuestaoPraticaRotatividadeAluno.curso_assunto_proprio_id == questao.curso_assunto_proprio_id,
-        models.QuestaoPraticaRotatividadeAluno.questao_id == questao_id,
-        models.QuestaoPraticaRotatividadeAluno.filtro == filtro_chave,
-        models.QuestaoPraticaRotatividadeAluno.ciclo == ciclo_atual
-    ).first()
-
-    if not ja_registrada:
-        rotatividade = models.QuestaoPraticaRotatividadeAluno(
-            usuario_id=usuario.id,
-            curso_assunto_proprio_id=questao.curso_assunto_proprio_id,
-            questao_id=questao_id,
-            filtro=filtro_chave,
-            ciclo=ciclo_atual
-        )
-        db.add(rotatividade)
-
-    db.commit()
-
-    return {
-        "mensagem": "Resposta registrada com sucesso.",
-        "questao_id": questao_id,
-        "acertou": dados.acertou,
-        "dificuldade_marcada": dados.dificuldade_marcada,
-        "filtro": filtro_chave,
-        "ciclo": ciclo_atual
-    }
-
-@app.get("/curso-assuntos-proprios/{curso_assunto_proprio_id}/questoes-pratica/filtros")
-def obter_filtros_questoes_pratica(
-    curso_assunto_proprio_id: int,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    # 1. Busca as marcações do aluno para esse assunto
-    marcacoes = (
-        db.query(models.QuestaoPraticaMarcacaoAluno)
-        .join(
-            models.QuestaoPraticaAssunto,
-            models.QuestaoPraticaAssunto.id ==
-            models.QuestaoPraticaMarcacaoAluno.questao_id
-        )
-        .filter(
-            models.QuestaoPraticaMarcacaoAluno.usuario_id == usuario.id,
-            models.QuestaoPraticaAssunto.curso_assunto_proprio_id == curso_assunto_proprio_id
-        )
-        .all()
-    )
-
-    # 2. Monta quais filtros devem ficar habilitados
-    total_questoes = db.query(models.QuestaoPraticaAssunto).filter(
-    models.QuestaoPraticaAssunto.curso_assunto_proprio_id == curso_assunto_proprio_id,
-    models.QuestaoPraticaAssunto.ativo == True
-    ).count()
-
-    return {
-        "TODAS": {
-            "habilitado": True,
-            "quantidade": total_questoes
-        },
-
-        "DIFICIL": {
-            "habilitado": any(m.dificuldade_marcada == "DIFICIL" for m in marcacoes),
-            "quantidade": sum(1 for m in marcacoes if m.dificuldade_marcada == "DIFICIL")
-        },
-
-        "MEDIA": {
-            "habilitado": any(m.dificuldade_marcada == "MEDIA" for m in marcacoes),
-            "quantidade": sum(1 for m in marcacoes if m.dificuldade_marcada == "MEDIA")
-        },
-
-        "FACIL": {
-            "habilitado": any(m.dificuldade_marcada == "FACIL" for m in marcacoes),
-            "quantidade": sum(1 for m in marcacoes if m.dificuldade_marcada == "FACIL")
-        },
-
-        "ERREI": {
-            "habilitado": any(m.acertou is False for m in marcacoes),
-            "quantidade": sum(1 for m in marcacoes if m.acertou is False)
-        },
-
-        "REVER": {
-            "habilitado": any(m.rever for m in marcacoes),
-            "quantidade": sum(1 for m in marcacoes if m.rever)
-        }
-    }
-
-@app.post("/admin/questoes-pratica")
-def criar_questao_pratica_admin(
-    dados: schemas.QuestaoPraticaAdminCreate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    tipo = (dados.tipo or "").strip().upper()
-
-    if tipo not in ["CERTO_ERRADO", "MULTIPLA"]:
-        raise HTTPException(status_code=400, detail="Tipo inválido.")
-
-    assunto = db.query(models.CursoAssuntoProprio).filter(
-        models.CursoAssuntoProprio.id == dados.curso_assunto_proprio_id
-    ).first()
-
-    if not assunto:
-        raise HTTPException(status_code=404, detail="Assunto não encontrado.")
-
-    if tipo == "CERTO_ERRADO":
-        gabarito = (dados.gabarito or "").strip().upper()
-
-        if gabarito not in ["C", "E"]:
-            raise HTTPException(
-                status_code=400,
-                detail="Para CERTO/ERRADO, o gabarito deve ser C ou E."
-            )
-
-        questao = models.QuestaoPraticaAssunto(
-            curso_assunto_proprio_id=dados.curso_assunto_proprio_id,
-            tipo=tipo,
-            enunciado=dados.enunciado.strip(),
-            gabarito=gabarito,
-            comentario=dados.comentario,
-            ativo=dados.ativo
-        )
-
-        db.add(questao)
-        db.commit()
-        db.refresh(questao)
-
-        return {
-            "id": questao.id,
-            "tipo": questao.tipo,
-            "gabarito": questao.gabarito,
-            "mensagem": "Questão cadastrada com sucesso."
-        }
-
-    alternativas = dados.alternativas or []
-
-    if len(alternativas) not in [4, 5]:
-        raise HTTPException(
-            status_code=400,
-            detail="A questão de múltipla escolha deve possuir 4 ou 5 alternativas."
-        )
-
-    letras = [a.letra.strip().upper() for a in alternativas]
-
-    if len(set(letras)) != len(letras):
-        raise HTTPException(
-            status_code=400,
-            detail="Não pode haver letras repetidas nas alternativas."
-        )
-
-    letras_validas = ["A", "B", "C", "D", "E"]
-
-    for letra in letras:
-        if letra not in letras_validas:
-            raise HTTPException(
-                status_code=400,
-                detail="As letras das alternativas devem ser A, B, C, D ou E."
-            )
-
-    alternativas_corretas = [
-        a for a in alternativas
-        if a.correta
-    ]
-
-    if len(alternativas_corretas) != 1:
-        raise HTTPException(
-            status_code=400,
-            detail="A questão deve possuir exatamente uma alternativa correta."
-        )
-
-    gabarito = alternativas_corretas[0].letra.strip().upper()
-
-    questao = models.QuestaoPraticaAssunto(
-        curso_assunto_proprio_id=dados.curso_assunto_proprio_id,
-        tipo=tipo,
-        enunciado=dados.enunciado.strip(),
-        gabarito=gabarito,
-        comentario=dados.comentario,
-        ativo=dados.ativo
-    )
-
-    db.add(questao)
-    db.flush()
-
-    for alternativa in alternativas:
-        db.add(
-            models.QuestaoPraticaAlternativa(
-                questao_pratica_id=questao.id,
-                letra=alternativa.letra.strip().upper(),
-                texto=alternativa.texto.strip(),
-                correta=alternativa.correta
-            )
-        )
-
-    db.commit()
-    db.refresh(questao)
-
-    return {
-        "id": questao.id,
-        "tipo": questao.tipo,
-        "gabarito": questao.gabarito,
-        "mensagem": "Questão cadastrada com sucesso."
-    }
-
-@app.get("/admin/curso-assuntos-proprios/{curso_assunto_proprio_id}/questoes-pratica")
-def listar_questoes_pratica_admin(
-    curso_assunto_proprio_id: int,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    questoes = (
-        db.query(models.QuestaoPraticaAssunto)
-        .filter(
-            models.QuestaoPraticaAssunto.curso_assunto_proprio_id == curso_assunto_proprio_id
-        )
-        .order_by(models.QuestaoPraticaAssunto.id.asc())
-        .all()
-    )
-
-    resultado = []
-
-    for q in questoes:
-        alternativas = (
-            db.query(models.QuestaoPraticaAlternativa)
-            .filter(models.QuestaoPraticaAlternativa.questao_pratica_id == q.id)
-            .order_by(models.QuestaoPraticaAlternativa.letra.asc())
-            .all()
-        )
-
-        resultado.append({
-            "id": q.id,
-            "curso_assunto_proprio_id": q.curso_assunto_proprio_id,
-            "tipo": q.tipo,
-            "enunciado": q.enunciado,
-            "gabarito": q.gabarito,
-            "comentario": q.comentario,
-            "ativo": q.ativo,
-            "alternativas": [
-                {
-                    "id": a.id,
-                    "letra": a.letra,
-                    "texto": a.texto,
-                    "correta": a.correta
-                }
-                for a in alternativas
-            ]
-        })
-
-    return resultado
-
-@app.put("/admin/questoes-pratica/{questao_id}")
-def editar_questao_pratica_admin(
-    questao_id: int,
-    dados: schemas.QuestaoPraticaAdminUpdate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    questao = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.id == questao_id
-    ).first()
-
-    if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada.")
-
-    tipo = (dados.tipo or "").strip().upper()
-
-    if tipo not in ["CERTO_ERRADO", "MULTIPLA"]:
-        raise HTTPException(status_code=400, detail="Tipo inválido.")
-
-    if tipo == "CERTO_ERRADO":
-        gabarito = (dados.gabarito or "").strip().upper()
-
-        if gabarito not in ["C", "E"]:
-            raise HTTPException(
-                status_code=400,
-                detail="Para CERTO/ERRADO, o gabarito deve ser C ou E."
-            )
-
-        db.query(models.QuestaoPraticaAlternativa).filter(
-            models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
-        ).delete()
-
-        questao.tipo = tipo
-        questao.enunciado = dados.enunciado.strip()
-        questao.gabarito = gabarito
-        questao.comentario = dados.comentario
-        questao.ativo = dados.ativo
-
-        db.commit()
-        db.refresh(questao)
-
-        return {
-            "id": questao.id,
-            "tipo": questao.tipo,
-            "gabarito": questao.gabarito,
-            "mensagem": "Questão atualizada com sucesso."
-        }
-
-    alternativas = dados.alternativas or []
-
-    if len(alternativas) not in [4, 5]:
-        raise HTTPException(
-            status_code=400,
-            detail="A questão de múltipla escolha deve possuir 4 ou 5 alternativas."
-        )
-
-    letras = [a.letra.strip().upper() for a in alternativas]
-
-    if len(set(letras)) != len(letras):
-        raise HTTPException(
-            status_code=400,
-            detail="Não pode haver letras repetidas nas alternativas."
-        )
-
-    letras_validas = ["A", "B", "C", "D", "E"]
-
-    for letra in letras:
-        if letra not in letras_validas:
-            raise HTTPException(
-                status_code=400,
-                detail="As letras das alternativas devem ser A, B, C, D ou E."
-            )
-
-    alternativas_corretas = [a for a in alternativas if a.correta]
-
-    if len(alternativas_corretas) != 1:
-        raise HTTPException(
-            status_code=400,
-            detail="A questão deve possuir exatamente uma alternativa correta."
-        )
-
-    gabarito = alternativas_corretas[0].letra.strip().upper()
-
-    questao.tipo = tipo
-    questao.enunciado = dados.enunciado.strip()
-    questao.gabarito = gabarito
-    questao.comentario = dados.comentario
-    questao.ativo = dados.ativo
-
-    db.query(models.QuestaoPraticaAlternativa).filter(
-        models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
-    ).delete()
-
-    for alternativa in alternativas:
-        db.add(
-            models.QuestaoPraticaAlternativa(
-                questao_pratica_id=questao.id,
-                letra=alternativa.letra.strip().upper(),
-                texto=alternativa.texto.strip(),
-                correta=alternativa.correta
-            )
-        )
-
-    db.commit()
-    db.refresh(questao)
-
-    return {
-        "id": questao.id,
-        "tipo": questao.tipo,
-        "gabarito": questao.gabarito,
-        "mensagem": "Questão atualizada com sucesso."
-    }
-
-@app.delete("/admin/questoes-pratica/{questao_id}")
-def excluir_questao_pratica_admin(
-    questao_id: int,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    questao = db.query(models.QuestaoPraticaAssunto).filter(
-        models.QuestaoPraticaAssunto.id == questao_id
-    ).first()
-
-    if not questao:
-        raise HTTPException(status_code=404, detail="Questão não encontrada.")
-
-    db.query(models.QuestaoPraticaAlternativa).filter(
-        models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
-    ).delete()
-
-    db.delete(questao)
-    db.commit()
-
-    return {
-        "mensagem": "Questão excluída com sucesso."
-    }
-
-@app.get("/admin/cursos")
-def listar_cursos_admin(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    cursos = db.query(models.Curso).order_by(models.Curso.nome.asc()).all()
-
-    return [
-        {
-            "id": c.id,
-            "nome": c.nome,
-            "ativo": c.ativo
-        }
-        for c in cursos
-    ]
-
-
-@app.get("/admin/cursos/{curso_id}/disciplinas")
-def listar_disciplinas_do_curso_admin(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    curso = db.query(models.Curso).filter(
-        models.Curso.id == curso_id
-    ).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    disciplinas = db.query(models.CursoDisciplinaPropria).filter(
-        models.CursoDisciplinaPropria.curso_id == curso_id
-    ).order_by(
-        models.CursoDisciplinaPropria.nome.asc()
-    ).all()
-
-    return [
-        {
-            "id": d.id,
-            "nome": d.nome,
-            "ativo": d.ativo,
-            "disponivel_demonstracao": d.disponivel_demonstracao
-        }
-        for d in disciplinas
-    ]
-
-
-@app.get("/admin/cursos/{curso_id}/disciplinas/{disciplina_id}/assuntos")
-def listar_assuntos_da_disciplina_no_curso_admin(
-    curso_id: int,
-    disciplina_id: int,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    disciplina = db.query(models.CursoDisciplinaPropria).filter(
-        models.CursoDisciplinaPropria.id == disciplina_id,
-        models.CursoDisciplinaPropria.curso_id == curso_id
-    ).first()
-
-    if not disciplina:
-        raise HTTPException(status_code=404, detail="Disciplina do curso não encontrada.")
-
-    assuntos = db.query(models.CursoAssuntoProprio).filter(
-        models.CursoAssuntoProprio.curso_disciplina_propria_id == disciplina_id
-    ).order_by(
-        models.CursoAssuntoProprio.nome.asc()
-    ).all()
-
-    return [
-        {
-            "id": a.id,
-            "nome": a.nome,
-            "ativo": a.ativo
-        }
-        for a in assuntos
-    ]
-
-@app.get("/me/cursos-expirados/disciplinas/{disciplina_id}/assuntos")
-def listar_assuntos_disciplina_expirada(
-    disciplina_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    disciplina = (
-        db.query(CursoDisciplinaPropria)
-        .filter(CursoDisciplinaPropria.id == disciplina_id)
-        .first()
-    )
-
-    if not disciplina:
-        raise HTTPException(status_code=404, detail="Disciplina não encontrada")
-
-    acesso_expirado = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == disciplina.curso_id,
-        AcessoCurso.ativo == False
-    ).first()
-
-    if not acesso_expirado:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem histórico de acesso a este curso"
-        )
-
-    assuntos = (
-        db.query(CursoAssuntoProprio)
-        .filter(
-            CursoAssuntoProprio.curso_disciplina_propria_id == disciplina_id,
-            CursoAssuntoProprio.ativo == True
-        )
-        .order_by(CursoAssuntoProprio.ordem.asc())
-        .all()
-    )
-
-    return [
-        {
-            "id": a.id,
-            "disciplina_id": a.curso_disciplina_propria_id,
-            "nome": a.nome,
-            "ativo": a.ativo,
-            "ordem": a.ordem
-        }
-        for a in assuntos
-    ]
-
-@app.get("/me/cursos-expirados/{curso_id}/anotacoes")
-def listar_anotacoes_curso_expirado(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    acesso_expirado = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario_atual.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == False
-    ).first()
-
-    if not acesso_expirado:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem histórico de acesso a este curso"
-        )
-
-    registros = (
-        db.query(
-            AnotacaoAlunoQuestao,
-            Questao,
-            Bateria,
-            Aula,
-            Pasta,
-            CursoAssuntoProprio,
-            CursoDisciplinaPropria
-        )
-        .join(Questao, Questao.id == AnotacaoAlunoQuestao.questao_id)
-        .join(Bateria, Bateria.id == Questao.bateria_id)
-        .join(Aula, Aula.id == Bateria.aula_id)
-        .join(Pasta, Pasta.id == Aula.pasta_id)
-        .join(CursoAssuntoProprio, CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id)
-        .join(CursoDisciplinaPropria, CursoDisciplinaPropria.id == CursoAssuntoProprio.curso_disciplina_propria_id)
-        .filter(
-            AnotacaoAlunoQuestao.usuario_id == usuario_atual.id,
-            CursoDisciplinaPropria.curso_id == curso_id
-        )
-        .order_by(
-            CursoDisciplinaPropria.ordem.asc(),
-            CursoAssuntoProprio.ordem.asc(),
-            Questao.ordem.asc(),
-            AnotacaoAlunoQuestao.criado_em.desc()
-        )
-        .all()
-    )
-
-    resultado = []
-
-    for anotacao, questao, bateria, aula, pasta, assunto, disciplina in registros:
-        resultado.append({
-            "anotacao_id": anotacao.id,
-            "disciplina_nome": disciplina.nome,
-            "assunto_nome": assunto.nome,
-            "questao_id": questao.id,
-            "enunciado": questao.enunciado,
-            "comentario": questao.comentario,
-            "bateria_titulo": bateria.titulo,
-            "anotacao": anotacao.texto,
-            "texto": anotacao.texto,
-            "criado_em": anotacao.criado_em,
-            "atualizado_em": anotacao.atualizado_em
-        })
-
-    return resultado
-
-@app.get("/me/cursos-expirados/{curso_id}/mensagens-prof")
-def listar_mensagens_prof_curso_expirado(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    acesso_expirado = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario_atual.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == False
-    ).first()
-
-    if not acesso_expirado:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem histórico de acesso a este curso"
-        )
-
-    conversas = (
-        db.query(
-            ConversaQuestaoProfessor,
-            Questao,
-            Bateria,
-            Aula,
-            Pasta,
-            CursoAssuntoProprio,
-            CursoDisciplinaPropria
-        )
-        .join(Questao, Questao.id == ConversaQuestaoProfessor.questao_id)
-        .join(Bateria, Bateria.id == ConversaQuestaoProfessor.bateria_id)
-        .join(Aula, Aula.id == Bateria.aula_id)
-        .join(Pasta, Pasta.id == Aula.pasta_id)
-        .join(CursoAssuntoProprio, CursoAssuntoProprio.id == Pasta.curso_assunto_proprio_id)
-        .join(CursoDisciplinaPropria, CursoDisciplinaPropria.id == CursoAssuntoProprio.curso_disciplina_propria_id)
-        .filter(
-            ConversaQuestaoProfessor.usuario_id == usuario_atual.id,
-            CursoDisciplinaPropria.curso_id == curso_id
-        )
-        .order_by(
-            CursoDisciplinaPropria.ordem.asc(),
-            CursoAssuntoProprio.ordem.asc(),
-            ConversaQuestaoProfessor.criado_em.desc()
-        )
-        .all()
-    )
-
-    resultado = []
-
-    for conversa, questao, bateria, aula, pasta, assunto, disciplina in conversas:
-        mensagens = (
-            db.query(MensagemConversaQuestao)
-            .filter(MensagemConversaQuestao.conversa_id == conversa.id)
-            .order_by(MensagemConversaQuestao.criada_em.asc())
-            .all()
-        )
-
-        resultado.append({
-            "conversa_id": conversa.id,
-            "status": conversa.status,
-            "disciplina_nome": disciplina.nome,
-            "assunto_nome": assunto.nome,
-            "questao_id": questao.id,
-            "enunciado": questao.enunciado,
-            "comentario": questao.comentario,
-            "bateria_titulo": bateria.titulo,
-            "mensagens": [
-                {
-                    "id": m.id,
-                    "autor": m.autor,
-                    "texto": m.texto,
-                    "criada_em": m.criada_em
-                }
-                for m in mensagens
-            ],
-            "criado_em": conversa.criado_em,
-            "atualizado_em": conversa.atualizado_em
-        })
-
-    return resultado
-
-@app.get("/admin/cursos/{curso_id}/tempos-acesso")
-def listar_tempos_acesso(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    registros = (
-        db.query(TempoAcessoCurso)
-        .filter(
-            TempoAcessoCurso.curso_id == curso_id
-        )
-        .order_by(TempoAcessoCurso.meses.asc())
-        .all()
-    )
-
-    return [
-        {
-            "id": r.id,
-            "meses": r.meses,
-            "valor_cents": r.valor_cents,
-            "ativo": r.ativo
-        }
-        for r in registros
-    ]
-
-@app.post("/admin/cursos/{curso_id}/tempos-acesso")
-def salvar_tempos_acesso(
-    curso_id: int,
-    payload: list,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    curso = db.query(Curso).filter(Curso.id == curso_id).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    meses_validos = {4, 8, 12}
-
-    for item in payload:
-
-        meses = int(item["meses"])
-        valor = int(item["valor_cents"])
-
-        if meses not in meses_validos:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Tempo de acesso inválido: {meses} meses."
-            )
-
-        registro = (
-            db.query(TempoAcessoCurso)
-            .filter(
-                TempoAcessoCurso.curso_id == curso_id,
-                TempoAcessoCurso.meses == meses
-            )
-            .first()
-        )
-
-        if registro:
-
-            registro.valor_cents = valor
-            registro.ativo = True
-
-        else:
-
-            db.add(
-                TempoAcessoCurso(
-                    curso_id=curso_id,
-                    meses=meses,
-                    valor_cents=valor,
-                    ativo=True
-                )
-            )
-
-    db.commit()
-
-    return {"ok": True}
-
-@app.get("/admin/cursos/{curso_id}/config-publica")
-def obter_config_publica_curso(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    curso = db.query(Curso).filter(Curso.id == curso_id).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    tempos = (
-        db.query(TempoAcessoCurso)
-        .filter(TempoAcessoCurso.curso_id == curso_id)
-        .order_by(TempoAcessoCurso.meses.asc())
-        .all()
-    )
-
-    return {
-        "curso_id": curso.id,
-        "nome": curso.nome,
-        "descricao_publica": curso.descricao_publica or "",
-        "publicado": bool(curso.publicado),
-        "tempos_acesso": [
-            {
-                "id": t.id,
-                "meses": t.meses,
-                "valor_cents": t.valor_cents,
-                "ativo": t.ativo
-            }
-            for t in tempos
-        ]
-    }
-
-@app.put("/admin/cursos/{curso_id}/config-publica")
-def salvar_config_publica_curso(
-    curso_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Apenas administrador.")
-
-    curso = db.query(Curso).filter(Curso.id == curso_id).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    curso.descricao_publica = payload.get("descricao_publica") or ""
-
-    tempos = payload.get("tempos_acesso") or []
-    meses_validos = {4, 8, 12}
-
-    for item in tempos:
-        meses = int(item["meses"])
-        valor_cents = int(item["valor_cents"])
-
-        if meses not in meses_validos:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Tempo inválido: {meses} meses."
-            )
-
-        registro = (
-            db.query(TempoAcessoCurso)
-            .filter(
-                TempoAcessoCurso.curso_id == curso_id,
-                TempoAcessoCurso.meses == meses
-            )
-            .first()
-        )
-
-        if registro:
-            registro.valor_cents = valor_cents
-            registro.ativo = True
-        else:
-            db.add(
-                TempoAcessoCurso(
-                    curso_id=curso_id,
-                    meses=meses,
-                    valor_cents=valor_cents,
-                    ativo=True
-                )
-            )
-
-    db.commit()
-
-    return {"ok": True}
-
-@app.post("/cursos/{curso_id}/demonstracao")
-def iniciar_demonstracao_curso(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    agora = datetime.utcnow()
-
-    acesso_atual = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == True
-    ).first()
-
-    if acesso_atual and (
-        acesso_atual.data_fim is None
-        or acesso_atual.data_fim > agora
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Você já possui acesso ativo a este curso."
-        )
-
-    ultima_demo = (
-        db.query(DemonstracaoCurso)
-        .filter(
-            DemonstracaoCurso.usuario_id == usuario.id,
-            DemonstracaoCurso.curso_id == curso_id
-        )
-        .order_by(DemonstracaoCurso.id.desc())
-        .first()
-    )
-
-    if ultima_demo and ultima_demo.liberado_novamente_em > agora:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Esta modalidade estará disponível novamente para você, "
-                "para este Curso, após 30 dias do último acesso nesta modalidade."
-            )
-        )
-
-    data_fim = agora + timedelta(days=1)
-    liberado_novamente_em = agora + timedelta(days=30)
-
-    demo = DemonstracaoCurso(
-        usuario_id=usuario.id,
-        curso_id=curso_id,
-        data_inicio=agora,
-        data_fim=data_fim,
-        liberado_novamente_em=liberado_novamente_em,
-        ativo=True
-    )
-
-    db.add(demo)
-
-    db.execute(text("""
-        INSERT INTO acessos_curso (usuario_id, curso_id, ativo, data_inicio, data_fim)
-        VALUES (:u, :c, TRUE, :inicio, :fim)
-        ON CONFLICT (usuario_id, curso_id)
-        DO UPDATE SET
-            ativo = TRUE,
-            data_inicio = CASE
-                WHEN acessos_curso.ativo = TRUE
-                        AND (
-                            acessos_curso.data_fim IS NULL
-                            OR acessos_curso.data_fim > :fim
-                        )
-                THEN acessos_curso.data_inicio
-                ELSE :inicio
-            END,
-            data_fim = CASE
-                WHEN acessos_curso.ativo = TRUE
-                        AND (
-                            acessos_curso.data_fim IS NULL
-                            OR acessos_curso.data_fim > :fim
-                        )
-                THEN acessos_curso.data_fim
-                ELSE :fim
-            END
-    """), {
-        "u": usuario.id,
-        "c": curso_id,
-        "inicio": agora,
-        "fim": data_fim
-    })
-
-    db.commit()
-
-    return {
-        "ok": True,
-        "tipo": "DEMONSTRACAO",
-        "curso_id": curso_id,
-        "data_inicio": agora,
-        "data_fim": data_fim,
-        "liberado_novamente_em": liberado_novamente_em
-    }
-
-@app.get("/me/cursos/{curso_id}/tipo-acesso")
-def obter_tipo_acesso_curso(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    acesso = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == True
-    ).first()
-
-    if not acesso:
-        raise HTTPException(status_code=403, detail="Sem acesso ativo ao curso.")
-
-    agora = datetime.utcnow()
-
-    if acesso.data_fim and acesso.data_fim < agora:
-        acesso.ativo = False
-        db.commit()
-
-        raise HTTPException(status_code=403, detail="Acesso expirado.")
-
-    demo = db.query(DemonstracaoCurso).filter(
-        DemonstracaoCurso.usuario_id == usuario.id,
-        DemonstracaoCurso.curso_id == curso_id,
-        DemonstracaoCurso.ativo == True,
-        DemonstracaoCurso.data_fim >= agora
-    ).order_by(DemonstracaoCurso.id.desc()).first()
-
-    if demo:
-        return {
-            "tipo": "DEMONSTRACAO",
-            "curso_id": curso_id,
-            "data_inicio": demo.data_inicio,
-            "data_fim": demo.data_fim
-        }
-
-    return {
-        "tipo": "NORMAL",
-        "curso_id": curso_id,
-        "data_inicio": acesso.data_inicio,
-        "data_fim": acesso.data_fim
-    }
-
-@app.get("/public/cursos/{curso_id}/checkout")
-def obter_dados_checkout_publico(
-    curso_id: int,
-    db: Session = Depends(get_db)
-):
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    tempos = (
-        db.query(TempoAcessoCurso)
-        .filter(
-            TempoAcessoCurso.curso_id == curso_id,
-            TempoAcessoCurso.ativo == True,
-            TempoAcessoCurso.meses.in_([4, 8, 12])
-        )
-        .order_by(TempoAcessoCurso.meses.asc())
-        .all()
-    )
-
-    disciplinas = (
-        db.query(CursoDisciplinaPropria)
-        .filter(
-            CursoDisciplinaPropria.curso_id == curso_id,
-            CursoDisciplinaPropria.ativo == True
-        )
-        .order_by(CursoDisciplinaPropria.ordem.asc())
-        .all()
-    )
-
-    disciplinas_resultado = []
-
-    for d in disciplinas:
-        assuntos = (
-            db.query(CursoAssuntoProprio)
-            .filter(
-                CursoAssuntoProprio.curso_disciplina_propria_id == d.id,
-                CursoAssuntoProprio.ativo == True
-            )
-            .order_by(CursoAssuntoProprio.ordem.asc())
-            .all()
-        )
-
-        disciplinas_resultado.append({
-            "id": d.id,
-            "nome": d.nome,
-            "ordem": d.ordem,
-            "assuntos": [
-                {
-                    "id": a.id,
-                    "nome": a.nome,
-                    "ordem": a.ordem
-                }
-                for a in assuntos
-            ]
-        })
-
-    return {
-        "id": curso.id,
-        "nome": curso.nome,
-        "descricao_publica": curso.descricao_publica or "",
-        "tempos_acesso": [
-            {
-                "id": t.id,
-                "meses": t.meses,
-                "valor_cents": t.valor_cents
-            }
-            for t in tempos
-        ],
-        "disciplinas": disciplinas_resultado
-    }
-
-@app.get("/cursos-publicos")
-def listar_cursos_publicos(
-    db: Session = Depends(get_db)
-):
-    cursos = (
-        db.query(Curso)
-        .filter(
-            Curso.ativo == True,
-            Curso.publicado == True
-        )
-        .order_by(Curso.nome.asc())
-        .all()
-    )
-
-    return [
-        {
-            "id": curso.id,
-            "nome": curso.nome,
-            "ativo": curso.ativo,
-            "publicado": curso.publicado
-        }
-        for curso in cursos
-    ]
-
-@app.put("/admin/cursos/{curso_id}/publicar")
-def publicar_curso(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Apenas administrador."
-        )
-
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado."
-        )
-
-    curso.publicado = True
-
-    db.commit()
-    db.refresh(curso)
-
-    return {
-        "ok": True,
-        "curso_id": curso.id,
-        "publicado": curso.publicado,
-        "mensagem": "Curso publicado com sucesso."
-    }
-
-@app.put("/admin/cursos/{curso_id}/retirar-venda")
-def retirar_curso_da_venda(
-    curso_id: int,
-    db: Session = Depends(get_db),
-    usuario: Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Apenas administrador."
-        )
-
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado."
-        )
-
-    curso.publicado = False
-
-    db.commit()
-    db.refresh(curso)
-
-    return {
-        "ok": True,
-        "curso_id": curso.id,
-        "publicado": curso.publicado,
-        "mensagem": "Curso retirado da venda com sucesso."
-    }
-
-@app.post(
-    "/admin/cursos/{curso_id}/duplicar",
-    tags=["Admin"]
-)
-def duplicar_curso_inteiro(
-    curso_id: int,
-    dados: schemas.DuplicarCursoRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    novo_nome = (dados.novo_nome or "").strip()
-
-    if not novo_nome:
-        raise HTTPException(
-            status_code=400,
-            detail="Informe o nome do novo curso."
-        )
-
-    curso_origem = (
-        db.query(models.Curso)
-        .filter(
-            models.Curso.id == curso_id
-        )
-        .first()
-    )
-
-    if not curso_origem:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso de origem não encontrado."
-        )
-
-    curso_nome_existente = (
-        db.query(models.Curso)
-        .filter(
-            models.Curso.nome == novo_nome
-        )
-        .first()
-    )
-
-    if curso_nome_existente:
-        raise HTTPException(
-            status_code=400,
-            detail="Já existe um curso com este nome."
-        )
-
-    try:
-        # ---------------------------------------------------------
-        # 1. CURSO
-        # ---------------------------------------------------------
-
-        novo_curso = models.Curso(
-            nome=novo_nome,
-            ativo=curso_origem.ativo,
-            publicado=False,
-            descricao_publica=curso_origem.descricao_publica
-        )
-
-        db.add(novo_curso)
-        db.flush()
-
-        # ---------------------------------------------------------
-        # 2. TEMPOS DE ACESSO / VALORES
-        # ---------------------------------------------------------
-
-        tempos_origem = (
-            db.query(models.TempoAcessoCurso)
-            .filter(
-                models.TempoAcessoCurso.curso_id == curso_id
-            )
-            .all()
-        )
-
-        for tempo in tempos_origem:
-            novo_tempo = models.TempoAcessoCurso(
-                curso_id=novo_curso.id,
-                meses=tempo.meses,
-                valor_cents=tempo.valor_cents,
-                ativo=tempo.ativo
-            )
-
-            db.add(novo_tempo)
-
-        # ---------------------------------------------------------
-        # 3. DISCIPLINAS PRÓPRIAS
-        # ---------------------------------------------------------
-
-        disciplinas_origem = (
-            db.query(models.CursoDisciplinaPropria)
-            .filter(
-                models.CursoDisciplinaPropria.curso_id == curso_id
-            )
-            .order_by(
-                models.CursoDisciplinaPropria.ordem.asc(),
-                models.CursoDisciplinaPropria.id.asc()
-            )
-            .all()
-        )
-
-        for disciplina_origem in disciplinas_origem:
-
-            nova_disciplina = models.CursoDisciplinaPropria(
-                curso_id=novo_curso.id,
-                nome=disciplina_origem.nome,
-                ativo=disciplina_origem.ativo,
-                ordem=disciplina_origem.ordem,
-                disponivel_demonstracao=
-                    disciplina_origem.disponivel_demonstracao
-            )
-
-            db.add(nova_disciplina)
-            db.flush()
-
-            # -----------------------------------------------------
-            # 4. ASSUNTOS PRÓPRIOS
-            # -----------------------------------------------------
-
-            assuntos_origem = (
-                db.query(models.CursoAssuntoProprio)
-                .filter(
-                    models.CursoAssuntoProprio.curso_disciplina_propria_id
-                    == disciplina_origem.id
-                )
-                .order_by(
-                    models.CursoAssuntoProprio.ordem.asc(),
-                    models.CursoAssuntoProprio.id.asc()
-                )
-                .all()
-            )
-
-            for assunto_origem in assuntos_origem:
-
-                novo_assunto = models.CursoAssuntoProprio(
-                    curso_disciplina_propria_id=nova_disciplina.id,
-                    nome=assunto_origem.nome,
-                    descricao=assunto_origem.descricao,
-                    ativo=assunto_origem.ativo,
-                    ordem=assunto_origem.ordem
-                )
-
-                db.add(novo_assunto)
-                db.flush()
-
-                # -------------------------------------------------
-                # 5. PASTAS DA ESTRUTURA NOVA
-                # -------------------------------------------------
-
-                pastas_origem = (
-                    db.query(models.Pasta)
-                    .filter(
-                        models.Pasta.curso_assunto_proprio_id
-                        == assunto_origem.id
-                    )
-                    .all()
-                )
-
-                for pasta_origem in pastas_origem:
-
-                    nova_pasta = models.Pasta(
-                        assunto_id=None,
-                        curso_assunto_proprio_id=novo_assunto.id,
-                        tipo=pasta_origem.tipo,
-                        nome=pasta_origem.nome
-                    )
-
-                    db.add(nova_pasta)
-                    db.flush()
-
-                    # ---------------------------------------------
-                    # 6. AULAS
-                    # ---------------------------------------------
-
-                    aulas_origem = (
-                        db.query(models.Aula)
-                        .filter(
-                            models.Aula.pasta_id
-                            == pasta_origem.id
-                        )
-                        .order_by(
-                            models.Aula.ordem.asc(),
-                            models.Aula.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for aula_origem in aulas_origem:
-
-                        nova_aula = models.Aula(
-                            pasta_id=nova_pasta.id,
-                            titulo=aula_origem.titulo,
-                            descricao=aula_origem.descricao,
-                            ordem=aula_origem.ordem,
-                            ativo=aula_origem.ativo
-                        )
-
-                        db.add(nova_aula)
-                        db.flush()
-
-                        # -----------------------------------------
-                        # 7. VÍDEOS
-                        # -----------------------------------------
-
-                        videos_origem = (
-                            db.query(models.Video)
-                            .filter(
-                                models.Video.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Video.ordem.asc(),
-                                models.Video.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for video_origem in videos_origem:
-                            db.add(
-                                models.Video(
-                                    aula_id=nova_aula.id,
-                                    titulo=video_origem.titulo,
-                                    url=video_origem.url,
-                                    provedor=video_origem.provedor,
-                                    cloudflare_uid=video_origem.cloudflare_uid,
-                                    duracao_segundos=
-                                        video_origem.duracao_segundos,
-                                    transcricao=
-                                        video_origem.transcricao,
-                                    ordem=video_origem.ordem,
-                                    ativo=video_origem.ativo
-                                )
-                            )
-
-                        # -----------------------------------------
-                        # 8. MATERIAIS
-                        # -----------------------------------------
-
-                        materiais_origem = (
-                            db.query(models.Material)
-                            .filter(
-                                models.Material.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Material.ordem.asc(),
-                                models.Material.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for material_origem in materiais_origem:
-                            db.add(
-                                models.Material(
-                                    aula_id=nova_aula.id,
-                                    tipo=material_origem.tipo,
-                                    titulo=material_origem.titulo,
-                                    url=material_origem.url,
-                                    conteudo=material_origem.conteudo,
-                                    ordem=material_origem.ordem,
-                                    ativo=material_origem.ativo
-                                )
-                            )
-
-                        # -----------------------------------------
-                        # 9. BATERIAS
-                        # -----------------------------------------
-
-                        baterias_origem = (
-                            db.query(models.Bateria)
-                            .filter(
-                                models.Bateria.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Bateria.ordem.asc(),
-                                models.Bateria.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for bateria_origem in baterias_origem:
-
-                            nova_bateria = models.Bateria(
-                                aula_id=nova_aula.id,
-                                titulo=bateria_origem.titulo,
-                                ordem=bateria_origem.ordem,
-                                status=bateria_origem.status,
-                                ativo=bateria_origem.ativo
-                            )
-
-                            db.add(nova_bateria)
-                            db.flush()
-
-                            # -------------------------------------
-                            # 10. QUESTÕES DA BATERIA
-                            # -------------------------------------
-
-                            questoes_origem = (
-                                db.query(models.Questao)
-                                .filter(
-                                    models.Questao.bateria_id
-                                    == bateria_origem.id
-                                )
-                                .order_by(
-                                    models.Questao.ordem.asc(),
-                                    models.Questao.id.asc()
-                                )
-                                .all()
-                            )
-
-                            for questao_origem in questoes_origem:
-
-                                nova_questao = models.Questao(
-                                    bateria_id=nova_bateria.id,
-                                    enunciado=questao_origem.enunciado,
-                                    tipo=questao_origem.tipo,
-                                    ordem=questao_origem.ordem,
-                                    ativo=questao_origem.ativo,
-                                    tipo_questao=
-                                        questao_origem.tipo_questao,
-                                    quantidade_alternativas=
-                                        questao_origem.quantidade_alternativas,
-                                    gabarito=
-                                        questao_origem.gabarito,
-                                    comentario=
-                                        questao_origem.comentario
-                                )
-
-                                db.add(nova_questao)
-                                db.flush()
-
-                                # ---------------------------------
-                                # 11. ALTERNATIVAS
-                                # ---------------------------------
-
-                                alternativas_origem = (
-                                    db.query(models.Alternativa)
-                                    .filter(
-                                        models.Alternativa.questao_id
-                                        == questao_origem.id
-                                    )
-                                    .all()
-                                )
-
-                                mapa_alternativas = {}
-
-                                for alternativa_origem in alternativas_origem:
-
-                                    nova_alternativa = models.Alternativa(
-                                        questao_id=nova_questao.id,
-                                        letra=alternativa_origem.letra,
-                                        texto=alternativa_origem.texto
-                                    )
-
-                                    db.add(nova_alternativa)
-                                    db.flush()
-
-                                    mapa_alternativas[
-                                        alternativa_origem.id
-                                    ] = nova_alternativa.id
-
-                                # ---------------------------------
-                                # 12. COMENTÁRIOS
-                                # ---------------------------------
-
-                                comentarios_origem = (
-                                    db.query(models.Comentario)
-                                    .filter(
-                                        models.Comentario.questao_id
-                                        == questao_origem.id
-                                    )
-                                    .all()
-                                )
-
-                                for comentario_origem in comentarios_origem:
-
-                                    nova_alternativa_id = None
-
-                                    if comentario_origem.alternativa_id:
-                                        nova_alternativa_id = (
-                                            mapa_alternativas.get(
-                                                comentario_origem.alternativa_id
-                                            )
-                                        )
-
-                                    db.add(
-                                        models.Comentario(
-                                            questao_id=nova_questao.id,
-                                            alternativa_id=
-                                                nova_alternativa_id,
-                                            texto=comentario_origem.texto
-                                        )
-                                    )
-
-                # -------------------------------------------------
-                # 13. QUESTÕES PRÁTICAS DO ASSUNTO
-                # -------------------------------------------------
-
-                questoes_praticas_origem = (
-                    db.query(models.QuestaoPraticaAssunto)
-                    .filter(
-                        models.QuestaoPraticaAssunto.curso_assunto_proprio_id
-                        == assunto_origem.id
-                    )
-                    .order_by(
-                        models.QuestaoPraticaAssunto.id.asc()
-                    )
-                    .all()
-                )
-
-                for questao_pratica_origem in questoes_praticas_origem:
-
-                    nova_questao_pratica = (
-                        models.QuestaoPraticaAssunto(
-                            curso_assunto_proprio_id=
-                                novo_assunto.id,
-                            tipo=
-                                questao_pratica_origem.tipo,
-                            enunciado=
-                                questao_pratica_origem.enunciado,
-                            gabarito=
-                                questao_pratica_origem.gabarito,
-                            comentario=
-                                questao_pratica_origem.comentario,
-                            ativo=
-                                questao_pratica_origem.ativo
-                        )
-                    )
-
-                    db.add(nova_questao_pratica)
-                    db.flush()
-
-                    alternativas_praticas_origem = (
-                        db.query(models.QuestaoPraticaAlternativa)
-                        .filter(
-                            models.QuestaoPraticaAlternativa.questao_pratica_id
-                            == questao_pratica_origem.id
-                        )
-                        .order_by(
-                            models.QuestaoPraticaAlternativa.letra.asc()
-                        )
-                        .all()
-                    )
-
-                    for alternativa_pratica_origem in (
-                        alternativas_praticas_origem
-                    ):
-                        db.add(
-                            models.QuestaoPraticaAlternativa(
-                                questao_pratica_id=
-                                    nova_questao_pratica.id,
-                                letra=
-                                    alternativa_pratica_origem.letra,
-                                texto=
-                                    alternativa_pratica_origem.texto,
-                                correta=
-                                    alternativa_pratica_origem.correta
-                            )
-                        )
-
-        db.commit()
-
-        return {
-            "ok": True,
-            "curso_origem_id": curso_origem.id,
-            "novo_curso_id": novo_curso.id,
-            "novo_curso_nome": novo_curso.nome,
-            "publicado": novo_curso.publicado
-        }
-
-    except Exception as err:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao duplicar curso: {str(err)}"
-        )
-
-@app.post(
-    "/admin/disciplinas/{disciplina_id}/copiar",
-    tags=["Admin"]
-)
-def copiar_disciplina_entre_cursos(
-    disciplina_id: int,
-    dados: schemas.CopiarDisciplinaRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    disciplina_origem = (
-        db.query(models.CursoDisciplinaPropria)
-        .filter(
-            models.CursoDisciplinaPropria.id == disciplina_id
-        )
-        .first()
-    )
-
-    if not disciplina_origem:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplina de origem não encontrada."
-        )
-
-    curso_destino = (
-        db.query(models.Curso)
-        .filter(
-            models.Curso.id == dados.curso_destino_id
-        )
-        .first()
-    )
-
-    if not curso_destino:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso de destino não encontrado."
-        )
-
-    if disciplina_origem.curso_id == curso_destino.id:
-        raise HTTPException(
-            status_code=400,
-            detail="O curso de destino deve ser diferente do curso de origem."
-        )
-
-    try:
-        maior_ordem = (
-            db.query(
-                func.max(
-                    models.CursoDisciplinaPropria.ordem
-                )
-            )
-            .filter(
-                models.CursoDisciplinaPropria.curso_id
-                == curso_destino.id
-            )
-            .scalar()
-        )
-
-        proxima_ordem = (
-            maior_ordem + 1
-            if maior_ordem is not None
-            else 1
-        )
-
-        nova_disciplina = models.CursoDisciplinaPropria(
-            curso_id=curso_destino.id,
-            nome=disciplina_origem.nome,
-            ativo=disciplina_origem.ativo,
-            ordem=proxima_ordem,
-            disponivel_demonstracao=
-                disciplina_origem.disponivel_demonstracao
-        )
-
-        db.add(nova_disciplina)
-        db.flush()
-
-        assuntos_origem = (
-            db.query(models.CursoAssuntoProprio)
-            .filter(
-                models.CursoAssuntoProprio.curso_disciplina_propria_id
-                == disciplina_origem.id
-            )
-            .order_by(
-                models.CursoAssuntoProprio.ordem.asc(),
-                models.CursoAssuntoProprio.id.asc()
-            )
-            .all()
-        )
-
-        for assunto_origem in assuntos_origem:
-
-            novo_assunto = models.CursoAssuntoProprio(
-                curso_disciplina_propria_id=
-                    nova_disciplina.id,
-                nome=assunto_origem.nome,
-                descricao=assunto_origem.descricao,
-                ativo=assunto_origem.ativo,
-                ordem=assunto_origem.ordem
-            )
-
-            db.add(novo_assunto)
-            db.flush()
-
-            # -----------------------------------
-            # PASTAS
-            # -----------------------------------
-
-            pastas_origem = (
-                db.query(models.Pasta)
-                .filter(
-                    models.Pasta.curso_assunto_proprio_id
-                    == assunto_origem.id
-                )
-                .all()
-            )
-
-            for pasta_origem in pastas_origem:
-
-                nova_pasta = models.Pasta(
-                    assunto_id=None,
-                    curso_assunto_proprio_id=
-                        novo_assunto.id,
-                    tipo=pasta_origem.tipo,
-                    nome=pasta_origem.nome
-                )
-
-                db.add(nova_pasta)
-                db.flush()
-
-                # -------------------------------
-                # AULAS
-                # -------------------------------
-
-                aulas_origem = (
-                    db.query(models.Aula)
-                    .filter(
-                        models.Aula.pasta_id
-                        == pasta_origem.id
-                    )
-                    .order_by(
-                        models.Aula.ordem.asc(),
-                        models.Aula.id.asc()
-                    )
-                    .all()
-                )
-
-                for aula_origem in aulas_origem:
-
-                    nova_aula = models.Aula(
-                        pasta_id=nova_pasta.id,
-                        titulo=aula_origem.titulo,
-                        descricao=aula_origem.descricao,
-                        ordem=aula_origem.ordem,
-                        ativo=aula_origem.ativo
-                    )
-
-                    db.add(nova_aula)
-                    db.flush()
-
-                    # ---------------------------
-                    # VÍDEOS
-                    # ---------------------------
-
-                    videos_origem = (
-                        db.query(models.Video)
-                        .filter(
-                            models.Video.aula_id
-                            == aula_origem.id
-                        )
-                        .order_by(
-                            models.Video.ordem.asc(),
-                            models.Video.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for video_origem in videos_origem:
-                        db.add(
-                            models.Video(
-                                aula_id=nova_aula.id,
-                                titulo=video_origem.titulo,
-                                url=video_origem.url,
-                                provedor=video_origem.provedor,
-                                cloudflare_uid=video_origem.cloudflare_uid,
-                                duracao_segundos=
-                                    video_origem.duracao_segundos,
-                                transcricao=
-                                    video_origem.transcricao,
-                                ordem=video_origem.ordem,
-                                ativo=video_origem.ativo
-                            )
-                        )
-
-                    # ---------------------------
-                    # MATERIAIS
-                    # ---------------------------
-
-                    materiais_origem = (
-                        db.query(models.Material)
-                        .filter(
-                            models.Material.aula_id
-                            == aula_origem.id
-                        )
-                        .order_by(
-                            models.Material.ordem.asc(),
-                            models.Material.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for material_origem in materiais_origem:
-                        db.add(
-                            models.Material(
-                                aula_id=nova_aula.id,
-                                tipo=material_origem.tipo,
-                                titulo=material_origem.titulo,
-                                url=material_origem.url,
-                                conteudo=material_origem.conteudo,
-                                ordem=material_origem.ordem,
-                                ativo=material_origem.ativo
-                            )
-                        )
-
-                    # ---------------------------
-                    # BATERIAS
-                    # ---------------------------
-
-                    baterias_origem = (
-                        db.query(models.Bateria)
-                        .filter(
-                            models.Bateria.aula_id
-                            == aula_origem.id
-                        )
-                        .order_by(
-                            models.Bateria.ordem.asc(),
-                            models.Bateria.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for bateria_origem in baterias_origem:
-
-                        nova_bateria = models.Bateria(
-                            aula_id=nova_aula.id,
-                            titulo=bateria_origem.titulo,
-                            ordem=bateria_origem.ordem,
-                            status=bateria_origem.status,
-                            ativo=bateria_origem.ativo
-                        )
-
-                        db.add(nova_bateria)
-                        db.flush()
-
-                        # -----------------------
-                        # QUESTÕES
-                        # -----------------------
-
-                        questoes_origem = (
-                            db.query(models.Questao)
-                            .filter(
-                                models.Questao.bateria_id
-                                == bateria_origem.id
-                            )
-                            .order_by(
-                                models.Questao.ordem.asc(),
-                                models.Questao.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for questao_origem in questoes_origem:
-
-                            nova_questao = models.Questao(
-                                bateria_id=nova_bateria.id,
-                                enunciado=
-                                    questao_origem.enunciado,
-                                tipo=
-                                    questao_origem.tipo,
-                                ordem=
-                                    questao_origem.ordem,
-                                ativo=
-                                    questao_origem.ativo,
-                                tipo_questao=
-                                    questao_origem.tipo_questao,
-                                quantidade_alternativas=
-                                    questao_origem.quantidade_alternativas,
-                                gabarito=
-                                    questao_origem.gabarito,
-                                comentario=
-                                    questao_origem.comentario
-                            )
-
-                            db.add(nova_questao)
-                            db.flush()
-
-                            # -------------------
-                            # ALTERNATIVAS
-                            # -------------------
-
-                            alternativas_origem = (
-                                db.query(models.Alternativa)
-                                .filter(
-                                    models.Alternativa.questao_id
-                                    == questao_origem.id
-                                )
-                                .all()
-                            )
-
-                            mapa_alternativas = {}
-
-                            for alternativa_origem in alternativas_origem:
-
-                                nova_alternativa = models.Alternativa(
-                                    questao_id=nova_questao.id,
-                                    letra=alternativa_origem.letra,
-                                    texto=alternativa_origem.texto
-                                )
-
-                                db.add(nova_alternativa)
-                                db.flush()
-
-                                mapa_alternativas[
-                                    alternativa_origem.id
-                                ] = nova_alternativa.id
-
-                            # -------------------
-                            # COMENTÁRIOS
-                            # -------------------
-
-                            comentarios_origem = (
-                                db.query(models.Comentario)
-                                .filter(
-                                    models.Comentario.questao_id
-                                    == questao_origem.id
-                                )
-                                .all()
-                            )
-
-                            for comentario_origem in comentarios_origem:
-
-                                nova_alternativa_id = None
-
-                                if comentario_origem.alternativa_id:
-                                    nova_alternativa_id = (
-                                        mapa_alternativas.get(
-                                            comentario_origem.alternativa_id
-                                        )
-                                    )
-
-                                db.add(
-                                    models.Comentario(
-                                        questao_id=nova_questao.id,
-                                        alternativa_id=
-                                            nova_alternativa_id,
-                                        texto=
-                                            comentario_origem.texto
-                                    )
-                                )
-
-            # -----------------------------------
-            # QUESTÕES PRÁTICAS DO ASSUNTO
-            # -----------------------------------
-
-            questoes_praticas_origem = (
-                db.query(models.QuestaoPraticaAssunto)
-                .filter(
-                    models.QuestaoPraticaAssunto.curso_assunto_proprio_id
-                    == assunto_origem.id
-                )
-                .order_by(
-                    models.QuestaoPraticaAssunto.id.asc()
-                )
-                .all()
-            )
-
-            for questao_pratica_origem in questoes_praticas_origem:
-
-                nova_questao_pratica = (
-                    models.QuestaoPraticaAssunto(
-                        curso_assunto_proprio_id=
-                            novo_assunto.id,
-                        tipo=
-                            questao_pratica_origem.tipo,
-                        enunciado=
-                            questao_pratica_origem.enunciado,
-                        gabarito=
-                            questao_pratica_origem.gabarito,
-                        comentario=
-                            questao_pratica_origem.comentario,
-                        ativo=
-                            questao_pratica_origem.ativo
-                    )
-                )
-
-                db.add(nova_questao_pratica)
-                db.flush()
-
-                alternativas_praticas_origem = (
-                    db.query(
-                        models.QuestaoPraticaAlternativa
-                    )
-                    .filter(
-                        models.QuestaoPraticaAlternativa.questao_pratica_id
-                        == questao_pratica_origem.id
-                    )
-                    .order_by(
-                        models.QuestaoPraticaAlternativa.letra.asc()
-                    )
-                    .all()
-                )
-
-                for alternativa_origem in (
-                    alternativas_praticas_origem
-                ):
-                    db.add(
-                        models.QuestaoPraticaAlternativa(
-                            questao_pratica_id=
-                                nova_questao_pratica.id,
-                            letra=
-                                alternativa_origem.letra,
-                            texto=
-                                alternativa_origem.texto,
-                            correta=
-                                alternativa_origem.correta
-                        )
-                    )
-
-        db.commit()
-
-        return {
-            "ok": True,
-            "disciplina_origem_id":
-                disciplina_origem.id,
-            "nova_disciplina_id":
-                nova_disciplina.id,
-            "nova_disciplina_nome":
-                nova_disciplina.nome,
-            "curso_destino_id":
-                curso_destino.id,
-            "curso_destino_nome":
-                curso_destino.nome
-        }
-
-    except Exception as err:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=500,
-            detail=
-                f"Erro ao copiar disciplina: {str(err)}"
-        )
-
-def gerar_codigo_cupom_unico(db: Session) -> str:
-    while True:
-        letras = "".join(
-            random.choices(
-                string.ascii_uppercase,
-                k=2
-            )
-        )
-
-        numeros = "".join(
-            random.choices(
-                string.digits,
-                k=3
-            )
-        )
-
-        codigo = letras + numeros
-
-        existe = (
-            db.query(models.CupomDesconto)
-            .filter(
-                models.CupomDesconto.codigo == codigo
-            )
-            .first()
-        )
-
-        if not existe:
-            return codigo
-
-@app.post(
-    "/admin/assuntos/{assunto_id}/copiar",
-    tags=["Admin"]
-)
-def copiar_assunto_entre_disciplinas(
-    assunto_id: int,
-    dados: schemas.CopiarAssuntoRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    assunto_origem = (
-        db.query(models.CursoAssuntoProprio)
-        .filter(
-            models.CursoAssuntoProprio.id == assunto_id
-        )
-        .first()
-    )
-
-    if not assunto_origem:
-        raise HTTPException(
-            status_code=404,
-            detail="Assunto de origem não encontrado."
-        )
-
-    disciplina_destino = (
-        db.query(models.CursoDisciplinaPropria)
-        .filter(
-            models.CursoDisciplinaPropria.id
-            == dados.disciplina_destino_id
-        )
-        .first()
-    )
-
-    if not disciplina_destino:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplina de destino não encontrada."
-        )
-
-    if (
-        assunto_origem.curso_disciplina_propria_id
-        == disciplina_destino.id
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "A disciplina de destino deve ser diferente "
-                "da disciplina de origem."
-            )
-        )
-
-    try:
-        maior_ordem = (
-            db.query(
-                func.max(
-                    models.CursoAssuntoProprio.ordem
-                )
-            )
-            .filter(
-                models.CursoAssuntoProprio.curso_disciplina_propria_id
-                == disciplina_destino.id
-            )
-            .scalar()
-        )
-
-        proxima_ordem = (
-            maior_ordem + 1
-            if maior_ordem is not None
-            else 1
-        )
-
-        novo_assunto = models.CursoAssuntoProprio(
-            curso_disciplina_propria_id=
-                disciplina_destino.id,
-            nome=assunto_origem.nome,
-            descricao=assunto_origem.descricao,
-            ativo=assunto_origem.ativo,
-            ordem=proxima_ordem
-        )
-
-        db.add(novo_assunto)
-        db.flush()
-
-        # -----------------------------------
-        # PASTAS
-        # -----------------------------------
-
-        pastas_origem = (
-            db.query(models.Pasta)
-            .filter(
-                models.Pasta.curso_assunto_proprio_id
-                == assunto_origem.id
-            )
-            .all()
-        )
-
-        for pasta_origem in pastas_origem:
-
-            nova_pasta = models.Pasta(
-                assunto_id=None,
-                curso_assunto_proprio_id=
-                    novo_assunto.id,
-                tipo=pasta_origem.tipo,
-                nome=pasta_origem.nome
-            )
-
-            db.add(nova_pasta)
-            db.flush()
-
-            # -------------------------------
-            # AULAS
-            # -------------------------------
-
-            aulas_origem = (
-                db.query(models.Aula)
-                .filter(
-                    models.Aula.pasta_id
-                    == pasta_origem.id
-                )
-                .order_by(
-                    models.Aula.ordem.asc(),
-                    models.Aula.id.asc()
-                )
-                .all()
-            )
-
-            for aula_origem in aulas_origem:
-
-                nova_aula = models.Aula(
-                    pasta_id=nova_pasta.id,
-                    titulo=aula_origem.titulo,
-                    descricao=aula_origem.descricao,
-                    ordem=aula_origem.ordem,
-                    ativo=aula_origem.ativo
-                )
-
-                db.add(nova_aula)
-                db.flush()
-
-                # ---------------------------
-                # VÍDEOS
-                # ---------------------------
-
-                videos_origem = (
-                    db.query(models.Video)
-                    .filter(
-                        models.Video.aula_id
-                        == aula_origem.id
-                    )
-                    .order_by(
-                        models.Video.ordem.asc(),
-                        models.Video.id.asc()
-                    )
-                    .all()
-                )
-
-                for video_origem in videos_origem:
-                    db.add(
-                        models.Video(
-                            aula_id=nova_aula.id,
-                            titulo=video_origem.titulo,
-                            url=video_origem.url,
-                            provedor=video_origem.provedor,
-                            cloudflare_uid=video_origem.cloudflare_uid,
-                            duracao_segundos=
-                                video_origem.duracao_segundos,
-                            transcricao=
-                                video_origem.transcricao,
-                            ordem=video_origem.ordem,
-                            ativo=video_origem.ativo
-                        )
-                    )
-
-                # ---------------------------
-                # MATERIAIS
-                # ---------------------------
-
-                materiais_origem = (
-                    db.query(models.Material)
-                    .filter(
-                        models.Material.aula_id
-                        == aula_origem.id
-                    )
-                    .order_by(
-                        models.Material.ordem.asc(),
-                        models.Material.id.asc()
-                    )
-                    .all()
-                )
-
-                for material_origem in materiais_origem:
-                    db.add(
-                        models.Material(
-                            aula_id=nova_aula.id,
-                            tipo=material_origem.tipo,
-                            titulo=material_origem.titulo,
-                            url=material_origem.url,
-                            conteudo=material_origem.conteudo,
-                            ordem=material_origem.ordem,
-                            ativo=material_origem.ativo
-                        )
-                    )
-
-                # ---------------------------
-                # BATERIAS
-                # ---------------------------
-
-                baterias_origem = (
-                    db.query(models.Bateria)
-                    .filter(
-                        models.Bateria.aula_id
-                        == aula_origem.id
-                    )
-                    .order_by(
-                        models.Bateria.ordem.asc(),
-                        models.Bateria.id.asc()
-                    )
-                    .all()
-                )
-
-                for bateria_origem in baterias_origem:
-
-                    nova_bateria = models.Bateria(
-                        aula_id=nova_aula.id,
-                        titulo=bateria_origem.titulo,
-                        ordem=bateria_origem.ordem,
-                        status=bateria_origem.status,
-                        ativo=bateria_origem.ativo
-                    )
-
-                    db.add(nova_bateria)
-                    db.flush()
-
-                    # -----------------------
-                    # QUESTÕES
-                    # -----------------------
-
-                    questoes_origem = (
-                        db.query(models.Questao)
-                        .filter(
-                            models.Questao.bateria_id
-                            == bateria_origem.id
-                        )
-                        .order_by(
-                            models.Questao.ordem.asc(),
-                            models.Questao.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for questao_origem in questoes_origem:
-
-                        nova_questao = models.Questao(
-                            bateria_id=nova_bateria.id,
-                            enunciado=questao_origem.enunciado,
-                            tipo=questao_origem.tipo,
-                            ordem=questao_origem.ordem,
-                            ativo=questao_origem.ativo,
-                            tipo_questao=
-                                questao_origem.tipo_questao,
-                            quantidade_alternativas=
-                                questao_origem.quantidade_alternativas,
-                            gabarito=questao_origem.gabarito,
-                            comentario=questao_origem.comentario
-                        )
-
-                        db.add(nova_questao)
-                        db.flush()
-
-                        alternativas_origem = (
-                            db.query(models.Alternativa)
-                            .filter(
-                                models.Alternativa.questao_id
-                                == questao_origem.id
-                            )
-                            .all()
-                        )
-
-                        mapa_alternativas = {}
-
-                        for alternativa_origem in alternativas_origem:
-
-                            nova_alternativa = models.Alternativa(
-                                questao_id=nova_questao.id,
-                                letra=alternativa_origem.letra,
-                                texto=alternativa_origem.texto
-                            )
-
-                            db.add(nova_alternativa)
-                            db.flush()
-
-                            mapa_alternativas[
-                                alternativa_origem.id
-                            ] = nova_alternativa.id
-
-                        comentarios_origem = (
-                            db.query(models.Comentario)
-                            .filter(
-                                models.Comentario.questao_id
-                                == questao_origem.id
-                            )
-                            .all()
-                        )
-
-                        for comentario_origem in comentarios_origem:
-
-                            nova_alternativa_id = None
-
-                            if comentario_origem.alternativa_id:
-                                nova_alternativa_id = (
-                                    mapa_alternativas.get(
-                                        comentario_origem.alternativa_id
-                                    )
-                                )
-
-                            db.add(
-                                models.Comentario(
-                                    questao_id=nova_questao.id,
-                                    alternativa_id=
-                                        nova_alternativa_id,
-                                    texto=
-                                        comentario_origem.texto
-                                )
-                            )
-
-        # -----------------------------------
-        # QUESTÕES PRÁTICAS DO ASSUNTO
-        # -----------------------------------
-
-        questoes_praticas_origem = (
-            db.query(models.QuestaoPraticaAssunto)
-            .filter(
-                models.QuestaoPraticaAssunto.curso_assunto_proprio_id
-                == assunto_origem.id
-            )
-            .order_by(
-                models.QuestaoPraticaAssunto.id.asc()
-            )
-            .all()
-        )
-
-        for questao_pratica_origem in questoes_praticas_origem:
-
-            nova_questao_pratica = (
-                models.QuestaoPraticaAssunto(
-                    curso_assunto_proprio_id=
-                        novo_assunto.id,
-                    tipo=questao_pratica_origem.tipo,
-                    enunciado=
-                        questao_pratica_origem.enunciado,
-                    gabarito=
-                        questao_pratica_origem.gabarito,
-                    comentario=
-                        questao_pratica_origem.comentario,
-                    ativo=
-                        questao_pratica_origem.ativo
-                )
-            )
-
-            db.add(nova_questao_pratica)
-            db.flush()
-
-            alternativas_praticas_origem = (
-                db.query(
-                    models.QuestaoPraticaAlternativa
-                )
-                .filter(
-                    models.QuestaoPraticaAlternativa.questao_pratica_id
-                    == questao_pratica_origem.id
-                )
-                .order_by(
-                    models.QuestaoPraticaAlternativa.letra.asc()
-                )
-                .all()
-            )
-
-            for alternativa_origem in (
-                alternativas_praticas_origem
-            ):
-                db.add(
-                    models.QuestaoPraticaAlternativa(
-                        questao_pratica_id=
-                            nova_questao_pratica.id,
-                        letra=
-                            alternativa_origem.letra,
-                        texto=
-                            alternativa_origem.texto,
-                        correta=
-                            alternativa_origem.correta
-                    )
-                )
-
-        db.commit()
-
-        return {
-            "ok": True,
-            "assunto_origem_id":
-                assunto_origem.id,
-            "novo_assunto_id":
-                novo_assunto.id,
-            "novo_assunto_nome":
-                novo_assunto.nome,
-            "disciplina_destino_id":
-                disciplina_destino.id,
-            "disciplina_destino_nome":
-                disciplina_destino.nome,
-            "curso_destino_id":
-                disciplina_destino.curso_id
-        }
-
-    except Exception as err:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=500,
-            detail=
-                f"Erro ao copiar assunto: {str(err)}"
-        )
-
-@app.post(
-    "/admin/cupons-desconto/gerar",
-    response_model=list[schemas.CupomDescontoResponse],
-    tags=["Admin"]
-)
-def gerar_cupons_desconto(
-    dados: schemas.CupomDescontoGerarRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    if dados.quantidade < 1 or dados.quantidade > 100:
-        raise HTTPException(
-            status_code=400,
-            detail="A quantidade deve estar entre 1 e 100."
-        )
-
-    novos_cupons = []
-
-    codigos_gerados_nesta_execucao = set()
-
-    for _ in range(dados.quantidade):
-
-        while True:
-            codigo = gerar_codigo_cupom_unico(db)
-
-            if codigo not in codigos_gerados_nesta_execucao:
-                codigos_gerados_nesta_execucao.add(
-                    codigo
-                )
-                break
-
-        cupom = models.CupomDesconto(
-            codigo=codigo,
-            vendedor_id=None,
-            percentual_desconto=12,
-            ativo=True
-        )
-
-        db.add(cupom)
-
-        novos_cupons.append(cupom)
-
-    db.commit()
-
-    for cupom in novos_cupons:
-        db.refresh(cupom)
-
-    return novos_cupons
-
-
-@app.get(
-    "/admin/cupons-desconto",
-    response_model=list[schemas.CupomDescontoResponse],
-    tags=["Admin"]
-)
-def listar_cupons_desconto(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    return (
-        db.query(models.CupomDesconto)
-        .order_by(
-            models.CupomDesconto.id.desc()
-        )
-        .all()
-    )
-
-@app.put(
-    "/admin/cupons-desconto/{cupom_id}/vendedor",
-    response_model=schemas.CupomDescontoResponse,
-    tags=["Admin"]
-)
-def vincular_vendedor_cupom(
-    cupom_id: int,
-    dados: schemas.CupomDescontoVincularVendedorRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    cupom = (
-        db.query(models.CupomDesconto)
-        .filter(
-            models.CupomDesconto.id == cupom_id
-        )
-        .first()
-    )
-
-    if not cupom:
-        raise HTTPException(
-            status_code=404,
-            detail="Cupom não encontrado."
-        )
-
-    if dados.vendedor_id is not None:
-        vendedor = (
-            db.query(models.Vendedor)
-            .filter(
-                models.Vendedor.id
-                == dados.vendedor_id
-            )
-            .first()
-        )
-
-        if not vendedor:
-            raise HTTPException(
-                status_code=404,
-                detail="Parceiro/vendedor não encontrado."
-            )
-
-        if not vendedor.ativo:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Não é possível vincular "
-                    "um parceiro/vendedor inativo."
-                )
-            )
-
-    cupom.vendedor_id = dados.vendedor_id
-
-    cupom.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(cupom)
-
-    return cupom
-
-@app.put(
-    "/admin/cupons-desconto/{cupom_id}/status",
-    response_model=schemas.CupomDescontoResponse,
-    tags=["Admin"]
-)
-def alterar_status_cupom(
-    cupom_id: int,
-    ativo: bool,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    cupom = (
-        db.query(models.CupomDesconto)
-        .filter(
-            models.CupomDesconto.id == cupom_id
-        )
-        .first()
-    )
-
-    if not cupom:
-        raise HTTPException(
-            status_code=404,
-            detail="Cupom não encontrado."
-        )
-
-    cupom.ativo = ativo
-    cupom.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(cupom)
-
-    return cupom
-
-@app.post(
-    "/admin/vendedores",
-    response_model=schemas.VendedorResponse,
-    tags=["Admin"]
-)
-def criar_vendedor(
-    dados: schemas.VendedorCreate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    nome = dados.nome.strip()
-
-    email = (
-        dados.email.strip().lower()
-        if dados.email
-        else None
-    )
-
-    telefone = (
-        dados.telefone.strip()
-        if dados.telefone
-        else None
-    )
-
-    cpf_cnpj = (
-        dados.cpf_cnpj.strip()
-        if dados.cpf_cnpj
-        else None
-    )
-
-    estado_uf = (
-        dados.estado_uf.strip().upper()
-        if dados.estado_uf
-        else None
-    )
-
-    cidade = (
-        dados.cidade.strip()
-        if dados.cidade
-        else None
-    )
-
-    # Verifica se já existe conta com o mesmo e-mail.
-    if email:
-        usuario_email_existente = (
-            db.query(models.Usuario)
-            .filter(
-                models.Usuario.email == email
-            )
-            .first()
-        )
-
-        if usuario_email_existente:
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "Já existe usuário cadastrado "
-                    "com esse e-mail."
-                )
-            )
-
-    # Para criar a conta de acesso, precisamos de CPF.
-    # Se for informado CNPJ, não poderá ser usado como CPF do usuário.
-    cpf_usuario = re.sub(
-        r"\D",
-        "",
-        cpf_cnpj or ""
-    )
-
-    if len(cpf_usuario) != 11:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Para criar a conta de acesso do vendedor, "
-                "informe um CPF válido."
-            )
-        )
-
-    usuario_cpf_existente = (
-        db.query(models.Usuario)
-        .filter(
-            models.Usuario.cpf == cpf_usuario
-        )
-        .first()
-    )
-
-    if usuario_cpf_existente:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Já existe usuário cadastrado "
-                "com esse CPF."
-            )
-        )
-
-    try:
-        # 1. Cria a conta de usuário do vendedor.
-        novo_usuario = models.Usuario(
-            nome=nome,
-            email=email,
-            cpf=cpf_usuario,
-            telefone=telefone,
-            data_nascimento=dados.data_nascimento,
-            senha_hash=hash_senha(
-                dados.senha
-            ),
-            ativo=True,
-            is_admin=False,
-            perfil_inicial="VENDEDOR"
-        )
-
-        db.add(novo_usuario)
-
-        # Envia o INSERT sem confirmar a transação ainda.
-        # Isso permite obter novo_usuario.id.
-        db.flush()
-
-        # 2. Cria o cadastro de vendedor já vinculado à conta.
-        vendedor = models.Vendedor(
-            nome=nome,
-            email=email,
-            telefone=telefone,
-            cpf_cnpj=cpf_cnpj,
-            data_nascimento=dados.data_nascimento,
-            estado_uf=estado_uf,
-            cidade=cidade,
-            ativo=True,
-            usuario_id=novo_usuario.id
-        )
-
-        db.add(vendedor)
-
-        # Confirma Usuario + Vendedor juntos.
-        db.commit()
-
-        db.refresh(vendedor)
-
-        return vendedor
-
-    except IntegrityError:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Não foi possível cadastrar o vendedor. "
-                "Verifique se o e-mail ou CPF já estão cadastrados."
-            )
-        )
-
-    except Exception:
-        db.rollback()
-        raise
-
-@app.get(
-    "/admin/vendedores",
-    response_model=list[schemas.VendedorResponse],
-    tags=["Admin"]
-)
-def listar_vendedores(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    return (
-        db.query(models.Vendedor)
-        .order_by(
-            models.Vendedor.ativo.desc(),
-            models.Vendedor.nome.asc()
-        )
-        .all()
-    )
-
-@app.put(
-    "/admin/vendedores/{vendedor_id}",
-    response_model=schemas.VendedorResponse,
-    tags=["Admin"]
-)
-def atualizar_vendedor(
-    vendedor_id: int,
-    dados: schemas.VendedorUpdate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Acesso restrito ao administrador."
-            )
-        )
-
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.id
-            == vendedor_id
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail="Vendedor não encontrado."
-        )
-
-    campos = dados.model_dump(
-        exclude_unset=True
-    )
-
-    if "ativo" in campos:
-        novo_status = campos["ativo"]
-
-        if novo_status is False:
-            vendedor.descredenciado_em = (
-                datetime.utcnow()
-            )
-
-        elif novo_status is True:
-            vendedor.descredenciado_em = None
-
-    for campo, valor in campos.items():
-        if isinstance(valor, str):
-            valor = valor.strip()
-
-        if campo == "email" and valor:
-            valor = valor.lower()
-
-        if campo == "estado_uf" and valor:
-            valor = valor.upper()
-
-        setattr(
-            vendedor,
-            campo,
-            valor
-        )
-
-    vendedor.atualizado_em = (
-        datetime.utcnow()
-    )
-
-    db.commit()
-    db.refresh(vendedor)
-
-    return vendedor
-
-@app.put(
-    "/admin/vendedores/{vendedor_id}/usuario",
-    tags=["Admin"]
-)
-def vincular_usuario_vendedor(
-    vendedor_id: int,
-    dados: schemas.VendedorVincularUsuarioRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.id == vendedor_id
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail="Parceiro/vendedor não encontrado."
-        )
-
-    # REMOVER VÍNCULO
-    if dados.usuario_id is None:
-        vendedor.usuario_id = None
-        vendedor.atualizado_em = datetime.utcnow()
-
-        db.commit()
-        db.refresh(vendedor)
-
-        return {
-            "ok": True,
-            "mensagem": (
-                "Vínculo do usuário removido "
-                "do parceiro/vendedor com sucesso."
-            ),
-            "vendedor_id": vendedor.id,
-            "usuario_id": None
-        }
-
-    # LOCALIZAR NOVO USUÁRIO
-    usuario_vinculado = (
-        db.query(models.Usuario)
-        .filter(
-            models.Usuario.id == dados.usuario_id
-        )
-        .first()
-    )
-
-    if not usuario_vinculado:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não encontrado."
-        )
-
-    # GARANTIR QUE A CONTA NÃO ESTEJA EM OUTRO VENDEDOR
-    outro_vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.usuario_id == dados.usuario_id,
-            models.Vendedor.id != vendedor_id
-        )
-        .first()
-    )
-
-    if outro_vendedor:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Este usuário já está vinculado "
-                "a outro parceiro/vendedor."
-            )
-        )
-
-    # VINCULAR OU TROCAR
-    vendedor.usuario_id = usuario_vinculado.id
-    vendedor.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(vendedor)
-
-    return {
-        "ok": True,
-        "mensagem": (
-            "Usuário vinculado ao "
-            "parceiro/vendedor com sucesso."
-        ),
-        "vendedor_id": vendedor.id,
-        "usuario_id": usuario_vinculado.id,
-        "usuario_nome": usuario_vinculado.nome
-    }
-
-@app.post(
-    "/admin/qr-codes",
-    response_model=list[schemas.QRCodeResponse],
-    tags=["Admin"]
-)
-def criar_qr_codes(
-    dados: schemas.QRCodeCreate,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
-
-    if dados.quantidade < 1 or dados.quantidade > 500:
-        raise HTTPException(
-            status_code=400,
-            detail="A quantidade deve estar entre 1 e 500."
-        )
-
-    novos_qr_codes = []
-
-    for _ in range(dados.quantidade):
-
-        while True:
-            codigo = secrets.token_urlsafe(12)
-
-            existe = (
-                db.query(models.QRCode)
-                .filter(models.QRCode.codigo == codigo)
-                .first()
-            )
-
-            if not existe:
-                break
-
-        qr_code = models.QRCode(
-            codigo=codigo,
-            vendedor_id=None,
-            ativo=True
-        )
-
-        db.add(qr_code)
-        novos_qr_codes.append(qr_code)
-
-    db.commit()
-
-    for qr_code in novos_qr_codes:
-        db.refresh(qr_code)
-
-    return novos_qr_codes
-
-@app.get(
-    "/admin/qr-codes",
-    response_model=list[schemas.QRCodeResponse],
-    tags=["Admin"]
-)
-def listar_qr_codes(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
-
-    return (
-        db.query(models.QRCode)
-        .order_by(models.QRCode.id.desc())
-        .all()
-    )
-
-@app.put(
-    "/admin/qr-codes/{qr_code_id}/vendedor",
-    response_model=schemas.QRCodeResponse,
-    tags=["Admin"]
-)
-def vincular_vendedor_qr_code(
-    qr_code_id: int,
-    dados: schemas.QRCodeVincularVendedorRequest,
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_usuario_atual)
-):
-    if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
-
-    qr_code = (
-        db.query(models.QRCode)
-        .filter(models.QRCode.id == qr_code_id)
-        .first()
-    )
-
-    if not qr_code:
-        raise HTTPException(status_code=404, detail="QR Code não encontrado.")
-
-    if dados.vendedor_id is not None:
-        vendedor = (
-            db.query(models.Vendedor)
-            .filter(models.Vendedor.id == dados.vendedor_id)
-            .first()
-        )
-
-        if not vendedor:
-            raise HTTPException(
-                status_code=404,
-                detail="Vendedor não encontrado."
-            )
-
-        if not vendedor.ativo:
-            raise HTTPException(
-                status_code=400,
-                detail="Não é possível vincular um vendedor inativo."
-            )
-
-    qr_code.vendedor_id = dados.vendedor_id
-    qr_code.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(qr_code)
-
-    return qr_code
-
-@app.post(
-    "/cupons-desconto/validar",
-    response_model=schemas.ValidarCupomResponse
-)
-def validar_cupom_desconto(
-    dados: schemas.ValidarCupomRequest,
-    db: Session = Depends(get_db)
-):
-    codigo = dados.codigo_cupom.strip().upper()
-
-    cupom = (
-        db.query(models.CupomDesconto)
-        .filter(
-            models.CupomDesconto.codigo == codigo,
-            models.CupomDesconto.ativo == True
-        )
-        .first()
-    )
-
-    if not cupom:
-        raise HTTPException(
-            status_code=404,
-            detail="Cupom de desconto inválido ou inativo."
-        )
-
-    if cupom.vendedor_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Este cupom ainda não está vinculado a um parceiro/vendedor."
-        )
-
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.id == cupom.vendedor_id,
-            models.Vendedor.ativo == True
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=400,
-            detail="O parceiro/vendedor vinculado a este cupom está inativo."
-        )
-
-    return schemas.ValidarCupomResponse(
-        valido=True,
-        codigo_cupom=cupom.codigo,
-        percentual_desconto=cupom.percentual_desconto,
-        vendedor_id=cupom.vendedor_id
-    )
-
-@app.get("/")
-def raiz():
-    return {
-        "status": "ok",
-        "mensagem": "Backend da Plataforma Quality Estudos em funcionamento."
-    }
-
-@app.get(
-    "/me/vendedor",
-    tags=["Parceiro/Vendedor"]
-)
-def obter_vendedor_logado(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.usuario_id
-            == usuario.id
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                "Este usuário não está vinculado "
-                "a um parceiro/vendedor."
-            )
-        )
-
-    return {
-        "id": vendedor.id,
-        "nome": vendedor.nome,
-        "email": vendedor.email,
-        "ativo": vendedor.ativo
-    }
-
-@app.get(
-    "/me/vendedor/vendas",
-    tags=["Parceiro/Vendedor"]
-)
-def obter_vendas_vendedor_logado(
-    db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.usuario_id
-            == usuario.id,
-            models.Vendedor.ativo
-            == True
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Usuário não autorizado "
-                "como parceiro/vendedor."
-            )
-        )
-
-    pagamentos = (
-        db.query(models.Pagamento)
-        .filter(
-            models.Pagamento.vendedor_id
-            == vendedor.id,
-            models.Pagamento.status
-            == "APPROVED"
-        )
-        .order_by(
-            models.Pagamento.criado_em.desc()
-        )
-        .all()
-    )
-
-    # Busca todos os cupons vinculados
-    # ao vendedor, mesmo sem vendas.
-    cupons_vendedor = (
-        db.query(models.CupomDesconto)
-        .filter(
-            models.CupomDesconto.vendedor_id
-            == vendedor.id
-        )
-        .order_by(
-            models.CupomDesconto.codigo.asc()
-        )
-        .all()
-    )
-
-    # Inicializa todos os cupons do vendedor
-    # com seus indicadores zerados.
-    cupons = {}
-
-    for cupom in cupons_vendedor:
-        codigo = (
-            cupom.codigo
-            or ""
-        ).strip().upper()
-
-        if not codigo:
-            continue
-
-        cupons[codigo] = {
-            "codigo_cupom":
-                codigo,
-
-            "total_vendas":
-                0,
-
-            "vendas_efetivas":
-                0,
-
-            "vendas_a_confirmar":
-                0,
-
-            "valor_vendas_efetivas_cents":
-                0,
-
-            "valor_vendas_a_confirmar_cents":
-                0,
-
-            # Cursos vendidos com este cupom,
-            # considerando todas as vendas.
-            "cursos_total":
-                {},
-
-            # Cursos das vendas já confirmadas.
-            "cursos_efetivos":
-                {},
-
-            # Cursos das vendas ainda
-            # dentro do prazo de confirmação.
-            "cursos_a_confirmar":
-                {},
-
-            "ativo":
-                cupom.ativo
-        }
-
-    agora = datetime.utcnow()
-
-    vendas_efetivas = []
-    vendas_a_confirmar = []
-
-    valor_vendas_efetivas_cents = 0
-    valor_vendas_a_confirmar_cents = 0
-
-
-    # Função auxiliar para agrupar
-    # as vendas por curso.
-    def acumular_curso(
-        destino,
-        curso_id,
-        nome_curso,
-        valor_cents
-    ):
-        # A chave considera o curso e o valor
-        # efetivamente pago.
-        #
-        # Assim, caso o mesmo curso tenha sido
-        # vendido pelo mesmo cupom por valores
-        # diferentes, as vendas não serão
-        # misturadas em uma única linha.
-        chave = (
-            f"{curso_id}_"
-            f"{valor_cents}"
-        )
-
-        if chave not in destino:
-            destino[chave] = {
-                "curso_id":
-                    curso_id,
-
-                "nome_curso":
-                    nome_curso,
-
-                "valor_cents":
-                    valor_cents,
-
-                "quantidade":
-                    0
-            }
-
-        destino[chave][
-            "quantidade"
-        ] += 1
-
-
-    for pagamento in pagamentos:
-        codigo_cupom = (
-            pagamento.codigo_cupom
-            or ""
-        ).strip().upper()
-
-        # Venda de vendedor só é contabilizada
-        # quando possui cupom válido vinculado a ele.
-        if not codigo_cupom:
-            continue
-
-        if codigo_cupom not in cupons:
-            continue
-
-        data_referencia = (
-            pagamento.aprovado_em
-            or pagamento.criado_em
-        )
-
-        limite = (
-            data_referencia
-            + timedelta(days=7)
-        )
-
-        # Este é o valor efetivamente pago
-        # pelo comprador, já considerando
-        # eventual desconto aplicado.
-        valor_cents = (
-            pagamento.valor_cents
-            or 0
-        )
-
-        curso_id = (
-            pagamento.curso_id
-        )
-
-        nome_curso = (
-            pagamento.curso.nome
-            if pagamento.curso
-            else "Curso não identificado"
-        )
-
-        item = {
-            "pagamento_id":
-                pagamento.id,
-
-            "codigo_cupom":
-                codigo_cupom,
-
-            "curso_id":
-                curso_id,
-
-            "nome_curso":
-                nome_curso,
-
-            "valor_cents":
-                valor_cents,
-
-            "data_pagamento":
-                data_referencia
-        }
-
-
-        # -------------------------------------------------
-        # TOTAL DE VENDAS
-        # -------------------------------------------------
-
-        cupons[codigo_cupom][
-            "total_vendas"
-        ] += 1
-
-        acumular_curso(
-            cupons[codigo_cupom][
-                "cursos_total"
-            ],
-            curso_id,
-            nome_curso,
-            valor_cents
-        )
-
-
-        # -------------------------------------------------
-        # VENDAS CONFIRMADAS
-        # -------------------------------------------------
-
-        if agora >= limite:
-            vendas_efetivas.append(
-                item
-            )
-
-            valor_vendas_efetivas_cents += (
-                valor_cents
-            )
-
-            cupons[codigo_cupom][
-                "vendas_efetivas"
-            ] += 1
-
-            cupons[codigo_cupom][
-                "valor_vendas_efetivas_cents"
-            ] += valor_cents
-
-            acumular_curso(
-                cupons[codigo_cupom][
-                    "cursos_efetivos"
-                ],
-                curso_id,
-                nome_curso,
-                valor_cents
-            )
-
-
-        # -------------------------------------------------
-        # VENDAS A CONFIRMAR
-        # -------------------------------------------------
-
-        else:
-            vendas_a_confirmar.append(
-                item
-            )
-
-            valor_vendas_a_confirmar_cents += (
-                valor_cents
-            )
-
-            cupons[codigo_cupom][
-                "vendas_a_confirmar"
-            ] += 1
-
-            cupons[codigo_cupom][
-                "valor_vendas_a_confirmar_cents"
-            ] += valor_cents
-
-            acumular_curso(
-                cupons[codigo_cupom][
-                    "cursos_a_confirmar"
-                ],
-                curso_id,
-                nome_curso,
-                valor_cents
-            )
-
-
-    # Converte os dicionários usados
-    # para agrupamento em listas,
-    # facilitando o consumo pelo frontend.
-    for dados_cupom in cupons.values():
-
-        dados_cupom[
-            "cursos_total"
-        ] = list(
-            dados_cupom[
-                "cursos_total"
-            ].values()
-        )
-
-        dados_cupom[
-            "cursos_efetivos"
-        ] = list(
-            dados_cupom[
-                "cursos_efetivos"
-            ].values()
-        )
-
-        dados_cupom[
-            "cursos_a_confirmar"
-        ] = list(
-            dados_cupom[
-                "cursos_a_confirmar"
-            ].values()
-        )
-
-
-    return {
-        "vendedor": {
-            "id":
-                vendedor.id,
-
-            "nome":
-                vendedor.nome
-        },
-
-        "total_vendas":
-            (
-                len(vendas_efetivas)
-                + len(vendas_a_confirmar)
-            ),
-
-        "total_vendas_efetivas":
-            len(vendas_efetivas),
-
-        "total_vendas_a_confirmar":
-            len(vendas_a_confirmar),
-
-        "valor_vendas_efetivas_cents":
-            valor_vendas_efetivas_cents,
-
-        "valor_vendas_a_confirmar_cents":
-            valor_vendas_a_confirmar_cents,
-
-        "vendas_efetivas":
-            vendas_efetivas,
-
-        "vendas_a_confirmar":
-            vendas_a_confirmar,
-
-        "cupons":
-            list(cupons.values())
-    }
-    
-@app.post(
-    "/admin/usuarios/{usuario_id}/tornar-vendedor",
-    response_model=schemas.VendedorResponse,
-    tags=["Admin"]
-)
-def tornar_usuario_vendedor(
-    usuario_id: int,
-    dados: schemas.VendedorExistenteCreate,
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    usuario_existente = (
-        db.query(models.Usuario)
-        .filter(
-            models.Usuario.id == usuario_id
-        )
-        .first()
-    )
-
-    if not usuario_existente:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não encontrado."
-        )
-
-    vendedor_existente = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.usuario_id
-            == usuario_id
-        )
-        .first()
-    )
-
-    if vendedor_existente:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Este usuário já possui "
-                "perfil de vendedor."
-            )
-        )
-
-    cpf_cnpj = (
-        dados.cpf_cnpj.strip()
-        if dados.cpf_cnpj
-        else usuario_existente.cpf
-    )
-
-    telefone = (
-        dados.telefone.strip()
-        if dados.telefone
-        else usuario_existente.telefone
-    )
-
-    data_nascimento = (
-        dados.data_nascimento
-        if dados.data_nascimento
-        else usuario_existente.data_nascimento
-    )
-
-    vendedor = models.Vendedor(
-        nome=usuario_existente.nome,
-        email=usuario_existente.email,
-        telefone=telefone,
-        cpf_cnpj=cpf_cnpj,
-        data_nascimento=data_nascimento,
-        estado_uf=(
-            dados.estado_uf.strip().upper()
-            if dados.estado_uf
-            else None
-        ),
-        cidade=(
-            dados.cidade.strip()
-            if dados.cidade
-            else None
-        ),
-        ativo=True,
-        usuario_id=usuario_existente.id,
-        descredenciado_em=None
-    )
-
-    db.add(vendedor)
-
-    try:
-        db.commit()
-        db.refresh(vendedor)
-
-    except IntegrityError:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Não foi possível conceder "
-                "o perfil de vendedor."
-            )
-        )
-
-    return vendedor
-
-@app.get(
-    "/admin/usuarios/perfis",
-    tags=["Admin"]
-)
-def listar_usuarios_com_perfis(
-    q: str = Query(default=""),
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    termo = (
-        q or ""
-    ).strip()
-
-    query = db.query(
-        models.Usuario
-    )
-
-    if termo:
-        termo_like = f"%{termo}%"
-
-        query = query.filter(
-            or_(
-                models.Usuario.nome.ilike(
-                    termo_like
-                ),
-                models.Usuario.email.ilike(
-                    termo_like
-                ),
-                models.Usuario.cpf.ilike(
-                    termo_like
-                )
-            )
-        )
-
-    usuarios = (
-        query
-        .order_by(
-            models.Usuario.nome.asc()
-        )
-        .limit(100)
-        .all()
-    )
-
-    resultado = []
-
-    for usuario in usuarios:
-
-        vendedor = (
-            db.query(
-                models.Vendedor
-            )
-            .filter(
-                models.Vendedor.usuario_id
-                == usuario.id
-            )
-            .first()
-        )
-
-        tem_cursos = (
-            db.query(
-                models.AcessoCurso
-            )
-            .filter(
-                models.AcessoCurso.usuario_id
-                == usuario.id,
-                models.AcessoCurso.ativo
-                == True
-            )
-            .first()
-            is not None
-        )
-
-        is_aluno = (
-            usuario.perfil_inicial == "ALUNO"
-            or tem_cursos
-        )
-
-        is_vendedor = False
-
-        if vendedor:
-            if vendedor.ativo:
-                is_vendedor = True
-
-            elif vendedor.descredenciado_em:
-                limite = (
-                    vendedor.descredenciado_em
-                    + timedelta(days=30)
-                )
-
-                if datetime.utcnow() < limite:
-                    is_vendedor = True
-
-        resultado.append({
-            "id":
-                usuario.id,
-
-            "nome":
-                usuario.nome,
-
-            "email":
-                usuario.email,
-
-            "cpf":
-                usuario.cpf,
-
-            "ativo":
-                usuario.ativo,
-
-            "is_admin":
-                usuario.is_admin,
-
-            "is_aluno":
-                is_aluno,
-
-            "is_vendedor":
-                is_vendedor,
-
-            "vendedor_id":
-                vendedor.id
-                if vendedor
-                else None,
-
-            "vendedor_ativo":
-                vendedor.ativo
-                if vendedor
-                else False,
-
-            "descredenciado_em":
-                vendedor.descredenciado_em
-                if vendedor
-                else None,
-
-            "tem_cursos":
-                tem_cursos,
-
-            "perfil_inicial":
-                usuario.perfil_inicial
-        })
-
-    return resultado
-
-@app.put(
-    "/admin/usuarios/{usuario_id}/conceder-admin",
-    tags=["Admin"]
-)
-def conceder_perfil_admin(
-    usuario_id: int,
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    usuario = (
-        db.query(models.Usuario)
-        .filter(
-            models.Usuario.id == usuario_id
-        )
-        .first()
-    )
-
-    if not usuario:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não encontrado."
-        )
-
-    if usuario.is_admin:
-        raise HTTPException(
-            status_code=400,
-            detail="Este usuário já possui perfil Admin."
-        )
-
-    usuario.is_admin = True
-
-    db.commit()
-    db.refresh(usuario)
-
-    return {
-        "ok": True,
-        "mensagem": (
-            "Perfil Admin concedido com sucesso."
-        ),
-        "usuario_id": usuario.id,
-        "is_admin": usuario.is_admin
-    }
-
-@app.put(
-    "/admin/usuarios/{usuario_id}/retirar-admin",
-    tags=["Admin"]
-)
-def retirar_perfil_admin(
-    usuario_id: int,
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    usuario = (
-        db.query(models.Usuario)
-        .filter(
-            models.Usuario.id == usuario_id
-        )
-        .first()
-    )
-
-    if not usuario:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não encontrado."
-        )
-
-    if not usuario.is_admin:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Este usuário não possui perfil Admin."
-            )
-        )
-
-    if usuario.id == admin.id:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Você não pode retirar o seu próprio "
-                "perfil Admin."
-            )
-        )
-
-    usuario.is_admin = False
-
-    db.commit()
-    db.refresh(usuario)
-
-    return {
-        "ok": True,
-        "mensagem": (
-            "Perfil Admin retirado com sucesso."
-        ),
-        "usuario_id": usuario.id,
-        "is_admin": usuario.is_admin
-    }
-
-@app.put(
-    "/admin/vendedores/{vendedor_id}/descredenciar",
-    tags=["Admin"]
-)
-def descredenciar_vendedor(
-    vendedor_id: int,
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.id == vendedor_id
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail="Vendedor não encontrado."
-        )
-
-    if not vendedor.ativo:
-        raise HTTPException(
-            status_code=400,
-            detail="Este vendedor já está descredenciado."
-        )
-
-    vendedor.ativo = False
-    vendedor.descredenciado_em = datetime.utcnow()
-    vendedor.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(vendedor)
-
-    return {
-        "ok": True,
-        "mensagem": "Vendedor descredenciado com sucesso.",
-        "vendedor_id": vendedor.id,
-        "ativo": vendedor.ativo,
-        "descredenciado_em": vendedor.descredenciado_em
-    }
-
-@app.put(
-    "/admin/vendedores/{vendedor_id}/reativar",
-    tags=["Admin"]
-)
-def reativar_vendedor(
-    vendedor_id: int,
-    db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(
-        get_usuario_atual
-    )
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador."
-        )
-
-    vendedor = (
-        db.query(models.Vendedor)
-        .filter(
-            models.Vendedor.id == vendedor_id
-        )
-        .first()
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail="Vendedor não encontrado."
-        )
-
-    if vendedor.ativo:
-        raise HTTPException(
-            status_code=400,
-            detail="Este vendedor já está ativo."
-        )
-
-    vendedor.ativo = True
-    vendedor.descredenciado_em = None
-    vendedor.atualizado_em = datetime.utcnow()
-
-    db.commit()
-    db.refresh(vendedor)
-
-    return {
-        "ok": True,
-        "mensagem": "Vendedor reativado com sucesso.",
-        "vendedor_id": vendedor.id,
-        "ativo": vendedor.ativo
-    }
-
-@app.post("/admin/contestacoes", tags=["Admin Contestações"])
-def admin_registrar_contestacao(
-    payload: ContestacaoPagamentoCreate,
-    db: Session = Depends(get_db),
-    admin: Usuario = Depends(get_usuario_atual),
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador.",
-        )
-
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == payload.pagamento_id
-    ).with_for_update().first()
-
-    if not pagamento:
-        raise HTTPException(
-            status_code=404,
-            detail="Pagamento não encontrado.",
-        )
-
-    if pagamento.aprovado_em is None:
-        raise HTTPException(
-            status_code=400,
-            detail="A contestação exige uma compra aprovada.",
-        )
-
-    if payload.valor_cents <= 0 or payload.valor_cents > pagamento.valor_cents:
-        raise HTTPException(
-            status_code=400,
-            detail="Valor contestado inválido.",
-        )
-
-    existente = db.query(ContestacaoPagamento).filter(
-        ContestacaoPagamento.pagamento_id == pagamento.id
-    ).first()
-
-    if existente:
-        raise HTTPException(
-            status_code=409,
-            detail="Já existe uma contestação registrada para este pagamento.",
-        )
-
-    contestacao = ContestacaoPagamento(
-        pagamento_id=pagamento.id,
-        mp_dispute_id=payload.mp_dispute_id,
-        status="ABERTA",
-        motivo=payload.motivo,
-        valor_cents=payload.valor_cents,
-    )
-
-    db.add(contestacao)
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail="Contestação duplicada ou conflito no registro.",
-        )
-
-    db.refresh(contestacao)
-
-    return {
-        "ok": True,
-        "contestacao_id": contestacao.id,
-        "pagamento_id": pagamento.id,
-        "status": contestacao.status,
-        "mensagem": "Contestação registrada. O acesso do aluno permanece inalterado.",
-    }
-
-
-@app.post(
-    "/admin/contestacoes/{contestacao_id}/confirmar-devolucao",
-    tags=["Admin Contestações"],
-)
-def admin_confirmar_devolucao_contestacao(
-    contestacao_id: int,
-    payload: ContestacaoDevolucaoConfirmadaCreate,
-    db: Session = Depends(get_db),
-    admin: Usuario = Depends(get_usuario_atual),
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador.",
-        )
-
-    referencia = payload.referencia_devolucao.strip()
-    if not referencia:
-        raise HTTPException(
-            status_code=400,
-            detail="Informe a referência do comprovante da devolução.",
-        )
-
-    contestacao = (
-        db.query(ContestacaoPagamento)
-        .filter(ContestacaoPagamento.id == contestacao_id)
-        .with_for_update()
-        .first()
-    )
-
-    if not contestacao:
-        raise HTTPException(
-            status_code=404,
-            detail="Contestação não encontrada.",
-        )
-
-    if contestacao.devolucao_confirmada_em is not None:
-        raise HTTPException(
-            status_code=409,
-            detail="A devolução já foi confirmada.",
-        )
-
-    contestacao.devolucao_confirmada_em = datetime.utcnow()
-    contestacao.devolucao_confirmada_por = admin.id
-    contestacao.referencia_devolucao = referencia
-    contestacao.status = "DEVOLUCAO_CONFIRMADA"
-
-    db.commit()
-
-    return {
-        "ok": True,
-        "contestacao_id": contestacao.id,
-        "status": contestacao.status,
-        "mensagem": (
-            "Devolução registrada. "
-            "O acesso do aluno permanece inalterado."
-        ),
-    }
-
-
-@app.post(
-    "/admin/contestacoes/{contestacao_id}/bloquear-acesso",
-    tags=["Admin Contestações"],
-)
-def admin_bloquear_acesso_contestacao(
-    contestacao_id: int,
-    db: Session = Depends(get_db),
-    admin: Usuario = Depends(get_usuario_atual),
-):
-    if not admin.is_admin:
-        raise HTTPException(
-            status_code=403,
-            detail="Acesso restrito ao administrador.",
-        )
-
-    try:
-        contestacao = (
-            db.query(ContestacaoPagamento)
-            .filter(ContestacaoPagamento.id == contestacao_id)
-            .with_for_update()
-            .first()
-        )
-
-        if not contestacao:
-            raise HTTPException(
-                status_code=404,
-                detail="Contestação não encontrada.",
-            )
-
-        if contestacao.devolucao_confirmada_em is None:
-            raise HTTPException(
-                status_code=409,
-                detail="É necessário confirmar a devolução antes do bloqueio.",
-            )
-
-        if contestacao.bloqueio_executado_em is not None:
-            raise HTTPException(
-                status_code=409,
-                detail="O bloqueio administrativo já foi executado.",
-            )
-
-        pagamento = (
-            db.query(Pagamento)
-            .filter(Pagamento.id == contestacao.pagamento_id)
-            .with_for_update()
-            .first()
-        )
-
-        if not pagamento:
-            raise HTTPException(
-                status_code=404,
-                detail="Pagamento não encontrado.",
-            )
-
-        resultado = recalcular_acesso_apos_reembolso(
-            db=db,
-            usuario_id=pagamento.usuario_id,
-            curso_id=pagamento.curso_id,
-            pagamento_reembolsado_id=pagamento.id,
-        )
-
-        if resultado["situacao"] == "CONFERENCIA_NECESSARIA":
-            db.rollback()
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "mensagem": "Existem compras sem histórico. "
-                                "O acesso não foi alterado.",
-                    "pagamentos_sem_historico": resultado[
-                        "pagamentos_sem_historico"
-                    ],
-                },
-            )
-
-        contestacao.bloqueio_executado_em = datetime.utcnow()
-        contestacao.bloqueio_executado_por = admin.id
-        contestacao.status = "BLOQUEIO_EXECUTADO"
-
-        db.commit()
-
-        return {
-            "ok": True,
-            "contestacao_id": contestacao.id,
-            "situacao_acesso": resultado["situacao"],
-            "mensagem": "Bloqueio administrativo processado.",
-        }
-
-    except Exception:
-        db.rollback()
-        raise

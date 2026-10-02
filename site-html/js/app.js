@@ -1,5 +1,5 @@
 // js/app.js
-const API_BASE = "https://plataforma-quality-backend.onrender.com";
+const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
 
 // helpers
 function qs(name) {
@@ -917,35 +917,134 @@ async function pageCursos() {
       return;
     }
 
-    for (const a of acessos) {
-      const div = document.createElement("div");
-      div.className = "disciplina";
-      div.style.padding = "15px 14px";
+    const formatarVencimento = (data) => {
+      if (!data) return "";
+      const texto = String(data).replace(" ", "T");
+      const comFuso = /[zZ]$|[+-]\d{2}:\d{2}$/.test(texto)
+        ? texto
+        : texto + "Z";
+      return new Date(comFuso).toLocaleDateString("pt-BR", {
+        timeZone: "UTC"
+      });
+    };
 
-      div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
-          <div style="flex:1; min-width:0;">
-            <div style="
-              font-size:1.05rem;
-              font-weight:bold;
-              padding-left:9px;
-            ">
-              ${escapeHtml(a.nome_curso)}
+    for (const a of acessos) {
+      const contratos = (a.contratacoes || []).map(c => ({
+        tipo: "CONTRATO",
+        id: c.id,
+        data_fim: c.data_fim,
+        renovacao_disponivel: c.renovacao_disponivel
+      }));
+
+      const demonstracoes = (a.demonstracoes || []).map(d => ({
+        tipo: "DEMONSTRACAO",
+        id: d.id,
+        data_fim: d.data_fim,
+        aquisicao_disponivel: d.aquisicao_disponivel
+      }));
+
+      const modalidades = [...contratos, ...demonstracoes];
+
+      // Compatibilidade com acessos anteriores sem detalhamento.
+      if (modalidades.length === 0) {
+        modalidades.push({
+          tipo: "ACESSO",
+          data_fim: a.data_fim
+        });
+      }
+
+      for (const modalidade of modalidades) {
+        const div = document.createElement("div");
+        div.className = "disciplina";
+        div.style.padding = "15px 14px";
+
+        const vencimento = formatarVencimento(modalidade.data_fim);
+
+        const botaoRenovar =
+          modalidade.tipo === "CONTRATO" &&
+          modalidade.renovacao_disponivel
+            ? `<a
+                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}"
+                style="
+                  display:inline-block;
+                  padding:5px 13px;
+                  border-radius:5px;
+                  background:#fff2b3;
+                  color:#354522;
+                  font-size:0.95rem;
+                  font-weight:400;
+                  text-decoration:none;
+                "
+              >RENOVAR</a>`
+            : "";
+
+        const botaoAdquirir =
+          modalidade.tipo === "DEMONSTRACAO" &&
+          modalidade.aquisicao_disponivel
+            ? `<a
+                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}"
+                style="
+                  display:inline-block;
+                  padding:5px 13px;
+                  border-radius:5px;
+                  background:#fff2b3;
+                  color:#354522;
+                  font-size:0.95rem;
+                  font-weight:400;
+                  text-decoration:none;
+                "
+              >ADQUIRIR O CURSO COMPLETO</a>`
+            : "";
+
+        const contextoAcesso =
+          modalidade.tipo === "CONTRATO"
+            ? `&contratacao_id=${encodeURIComponent(modalidade.id)}`
+            : modalidade.tipo === "DEMONSTRACAO"
+              ? `&demonstracao_id=${encodeURIComponent(modalidade.id)}`
+              : "";
+
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <div style="flex:1;min-width:0;">
+              <div style="
+                font-size:1.05rem;
+                font-weight:bold;
+                padding-left:9px;
+              ">
+                ${escapeHtml(a.nome_curso)}
+              </div>
+
+              <div style="
+                display:flex;
+                align-items:center;
+                flex-wrap:wrap;
+                gap:12px;
+                margin-top:8px;
+                padding-left:9px;
+              ">
+                ${vencimento
+                  ? `<span style="font-size:0.72rem;color:#737373;">
+                       (ACESSO ATÉ ${vencimento})
+                     </span>`
+                  : ""}
+                ${botaoRenovar}
+                ${botaoAdquirir}
+              </div>
+            </div>
+
+            <div style="margin-left:12px;">
+              <a
+                class="btn"
+                href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
+              >
+                Abrir
+              </a>
             </div>
           </div>
+        `;
 
-          <div style="margin-left:12px;">
-            <a
-              class="btn"
-              href="curso.html?curso_id=${a.curso_id}&curso_nome=${encodeURIComponent(a.nome_curso)}"
-            >
-              Abrir
-            </a>
-          </div>
-        </div>
-      `;
-
-      el.appendChild(div);
+        el.appendChild(div);
+      }
     }
 
   } catch (err) {
@@ -1030,6 +1129,14 @@ async function calcularProgressoDisciplina(disciplinaId) {
 async function pageDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
+  const contextoAcesso = contratacaoId
+    ? `&contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId
+      ? `&demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+      : "";
+
   const titulo = document.getElementById("titulo_pagina");
 
   if (titulo) {
@@ -1097,15 +1204,15 @@ async function pageDisciplinas() {
                   onclick="
                     localStorage.setItem(
                       'voltar_para_curso',
-                      'curso.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
+                      'curso.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}'
                     );
 
                     localStorage.setItem(
                       'voltar_para_disciplinas',
-                      'disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}'
+                      'disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}'
                     );
 
-                    window.location.href='assuntos.html?curso_id=${encodeURIComponent(cursoId)}&disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}';
+                    window.location.href='assuntos.html?curso_id=${encodeURIComponent(cursoId)}&disciplina_id=${d.id}&disciplina_nome=${encodeURIComponent(d.nome)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}';
                   "
                 >
                   Abrir
@@ -1238,6 +1345,14 @@ async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeE
   const disciplinaId = qs("disciplina_id");
   const disciplinaNomeAtual = qs("disciplina_nome") || "";
   const cursoNome = qs("curso_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
+  const contextoAcesso = contratacaoId
+    ? `&contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId
+      ? `&demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+      : "";
+
 
   window.location.href =
     `teoria.html?pasta_id=${pastaTeoria.id}` +
@@ -1245,7 +1360,8 @@ async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeE
     `&disciplina_id=${encodeURIComponent(disciplinaId || "")}` +
     `&assunto_nome=${assuntoNomeEncoded}` +
     `&disciplina_nome=${disciplinaNomeEncoded}` +
-    `&curso_nome=${encodeURIComponent(cursoNome)}`;
+    `&curso_nome=${encodeURIComponent(cursoNome)}` +
+    contextoAcesso;
   }
 
 // 3) Assuntos da Disciplina
@@ -1664,6 +1780,14 @@ async function pageInteratividadeAssuntos() {
 function pageCurso() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
+
+  const contextoAcesso = contratacaoId
+    ? `&contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId
+      ? `&demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+      : "";
 
   const tituloCurso = document.getElementById("titulo_curso");
   const acoes = document.getElementById("acoes_curso");
@@ -1696,7 +1820,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1712,7 +1836,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="questoes-disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="questoes-disciplinas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1734,7 +1858,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1750,7 +1874,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1772,7 +1896,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="minhas-anotacoes.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="minhas-anotacoes.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1788,7 +1912,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="mensagens-prof.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="mensagens-prof.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -1810,7 +1934,7 @@ function pageCurso() {
 
         <a
           class="btn curso-acao-btn"
-          href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}"
+          href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
@@ -2592,6 +2716,14 @@ function voltarParaCurso() {
 async function pageQuestoesDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
+  const contextoAcesso = contratacaoId
+    ? `&contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId
+      ? `&demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+      : "";
+
 
   const tituloCursoNome =
     document.getElementById("titulo_curso_nome");
@@ -2660,7 +2792,7 @@ async function pageQuestoesDisciplinas() {
               : `
                 <a
                   class="btn questoes-disciplina-btn"
-                  href="questoes-assuntos.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(d.id)}&disciplina_nome=${encodeURIComponent(d.nome)}"
+                  href="questoes-assuntos.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(d.id)}&disciplina_nome=${encodeURIComponent(d.nome)}${contextoAcesso}"
                 >
                   Abrir
                 </a>
@@ -2689,6 +2821,14 @@ async function pageQuestoesAssuntos() {
   const cursoNome = qs("curso_nome") || "";
   const disciplinaId = qs("disciplina_id");
   const disciplinaNome = qs("disciplina_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
+  const contextoAcesso = contratacaoId
+    ? `&contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId
+      ? `&demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+      : "";
+
 
   const tituloCursoNome =
     document.getElementById("titulo_curso_nome");
@@ -2757,7 +2897,7 @@ async function pageQuestoesAssuntos() {
 
           <a
             class="btn questoes-assunto-btn"
-            href="questoes-pratica.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(disciplinaId)}&disciplina_nome=${encodeURIComponent(disciplinaNome)}&assunto_id=${encodeURIComponent(a.id)}&assunto_nome=${encodeURIComponent(a.nome)}"
+            href="questoes-pratica.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&disciplina_id=${encodeURIComponent(disciplinaId)}&disciplina_nome=${encodeURIComponent(disciplinaNome)}&assunto_id=${encodeURIComponent(a.id)}&assunto_nome=${encodeURIComponent(a.nome)}${contextoAcesso}"
           >
             Abrir
           </a>

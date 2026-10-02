@@ -365,6 +365,21 @@ class AcessoCurso(Base):
     usuario = relationship("Usuario")
     curso = relationship("Curso")
 
+class ContratacaoCurso(Base):
+    __tablename__ = "contratacoes_curso"
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
+    data_inicio = Column(DateTime, nullable=False)
+    data_fim = Column(DateTime, nullable=True)
+    origem = Column(String(20), nullable=False)
+    criada_em = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    usuario = relationship("Usuario")
+    curso = relationship("Curso")
+
+
 class ConcessaoAcessoAdmin(Base):
     __tablename__ = "concessoes_acesso_admin"
 
@@ -384,8 +399,25 @@ class ConcessaoAcessoAdmin(Base):
     usuario = relationship("Usuario")
     curso = relationship("Curso")
 
+class OportunidadeCompra(Base):
+    __tablename__ = "oportunidades_compra"
+
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
+    tipo_compra = Column(String(20), nullable=False)
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"))
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"))
+    vencimento_original = Column(DateTime)
+    concluida_em = Column(DateTime)
+    criada_em = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
 class Pagamento(Base):
     __tablename__ = "pagamentos"
+
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    oportunidade_id = Column(Integer, ForeignKey("oportunidades_compra.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -413,6 +445,14 @@ class Pagamento(Base):
         DateTime,
         nullable=True
     )
+
+    tipo_compra = Column(
+        String(20), nullable=False, default="NOVA"
+    )
+    vencimento_original = Column(DateTime, nullable=True)
+
+    ocorrencia_financeira = Column(String(30), nullable=True)
+    ocorrencia_registrada_em = Column(DateTime, nullable=True)
 
     usuario = relationship("Usuario")
     curso = relationship("Curso")
@@ -487,6 +527,8 @@ class ReembolsoFinanceiro(Base):
 
 class ProgressoAula(Base):
     __tablename__ = "progresso_aulas"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
@@ -588,6 +630,8 @@ class CursoAssuntoProprio(Base):
 
 class RespostaAlunoQuestao(Base):
     __tablename__ = "respostas_aluno_questoes"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -623,6 +667,8 @@ class RespostaAlunoQuestao(Base):
 
 class TentativaBateria(Base):
     __tablename__ = "tentativas_bateria"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -640,6 +686,8 @@ class TentativaBateria(Base):
 
 class RevisaoAluno(Base):
     __tablename__ = "revisoes_aluno"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -675,6 +723,8 @@ class RevisaoAluno(Base):
 
 class AnotacaoAlunoQuestao(Base):
     __tablename__ = "anotacoes_aluno_questao"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -697,6 +747,8 @@ class AnotacaoAlunoQuestao(Base):
 
 class ConversaQuestaoProfessor(Base):
     __tablename__ = "conversas_questao_professor"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -837,6 +889,8 @@ class RespostaQuestaoPratica(Base):
 
 class QuestaoPraticaMarcacaoAluno(Base):
     __tablename__ = "questoes_pratica_marcacoes_aluno"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -872,6 +926,8 @@ class QuestaoPraticaMarcacaoAluno(Base):
 
 class QuestaoPraticaRotatividadeAluno(Base):
     __tablename__ = "questoes_pratica_rotatividade_aluno"
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
+    demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -956,6 +1012,8 @@ class TempoAcessoCurso(Base):
 
 class PeriodoAcessoPagamento(Base):
     __tablename__ = "periodos_acesso_pagamento"
+
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
 

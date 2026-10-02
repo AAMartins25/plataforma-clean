@@ -16,12 +16,16 @@ def test_webhook_rejeita_valor_divergente():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {
@@ -39,6 +43,7 @@ def test_webhook_rejeita_valor_divergente():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 39.90,
         "currency_id": "BRL",
@@ -72,12 +77,16 @@ def test_webhook_rejeita_moeda_divergente():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {
@@ -95,6 +104,7 @@ def test_webhook_rejeita_moeda_divergente():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "USD",
@@ -128,12 +138,16 @@ def test_webhook_rejeita_periodo_divergente():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {
@@ -151,6 +165,7 @@ def test_webhook_rejeita_periodo_divergente():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:2|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -185,16 +200,18 @@ def test_webhook_aprova_pagamento_e_libera_acesso():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
         atualizado_em=None,
     )
 
-    db.query.return_value.filter.return_value.first.side_effect = [
-        pagamento,
-        SimpleNamespace(meses=4),
-    ]
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.first.return_value = SimpleNamespace(meses=4)
 
     request = MagicMock()
     request.query_params = {
@@ -212,6 +229,7 @@ def test_webhook_aprova_pagamento_e_libera_acesso():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -252,16 +270,18 @@ def test_webhook_falha_na_concessao_desfaz_pagamento():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
         atualizado_em=None,
     )
 
-    db.query.return_value.filter.return_value.first.side_effect = [
-        pagamento,
-        SimpleNamespace(meses=4),
-    ]
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.first.return_value = SimpleNamespace(meses=4)
 
     db.execute.side_effect = RuntimeError(
         "Falha simulada ao gravar o acesso"
@@ -283,6 +303,7 @@ def test_webhook_falha_na_concessao_desfaz_pagamento():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -322,13 +343,17 @@ def test_webhook_aprovacao_repetida_nao_duplica_acesso():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id="mp_teste_repetido",
         aprovado_em=aprovacao_original,
         status="APPROVED",
         atualizado_em=aprovacao_original,
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {
@@ -346,6 +371,7 @@ def test_webhook_aprovacao_repetida_nao_duplica_acesso():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": (
             "user:87|curso:1|tempo:1|pagamento:155"
         ),
@@ -394,13 +420,17 @@ def test_webhook_ignora_pending_apos_aprovacao():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id="mp_teste_pending_tardio",
         aprovado_em=aprovacao_original,
         status="APPROVED",
         atualizado_em=aprovacao_original,
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {
@@ -463,13 +493,17 @@ def test_webhook_ignora_status_tardio_apos_aprovacao(
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id="mp_teste_status_tardio",
         aprovado_em=aprovacao_original,
         status="APPROVED",
         atualizado_em=aprovacao_original,
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     request = MagicMock()
     request.query_params = {

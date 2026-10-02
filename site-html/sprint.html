@@ -88,6 +88,30 @@
         return new URLSearchParams(window.location.search).get(nome);
       }
 
+      function contextoAcessoLocal() {
+        const contratacaoId = qsLocal("contratacao_id");
+        const demonstracaoId = qsLocal("demonstracao_id");
+
+        return {
+          contratacao_id: contratacaoId ? Number(contratacaoId) : null,
+          demonstracao_id: demonstracaoId ? Number(demonstracaoId) : null
+        };
+      }
+
+      function contextoAcessoQueryLocal() {
+        const contexto = contextoAcessoLocal();
+
+        if (contexto.contratacao_id) {
+          return `contratacao_id=${encodeURIComponent(contexto.contratacao_id)}`;
+        }
+
+        if (contexto.demonstracao_id) {
+          return `demonstracao_id=${encodeURIComponent(contexto.demonstracao_id)}`;
+        }
+
+        return "";
+      }
+
       function escLocal(s) {
         return String(s ?? "")
           .replaceAll("&", "&amp;")
@@ -182,7 +206,10 @@
 
       async function carregarTentativaAtiva() {
         try {
-          const dados = await apiGetAuth(`/baterias/${bateriaId}/minha-tentativa-ativa`);
+          const contextoQuery = contextoAcessoQueryLocal();
+          const dados = await apiGetAuth(
+            `/baterias/${bateriaId}/minha-tentativa-ativa${contextoQuery ? `?${contextoQuery}` : ""}`
+          );
 
           if (!dados || !dados.tentativa) {
             return;
@@ -628,8 +655,12 @@
           return;
         }
 
+        const contexto = contextoAcessoLocal();
+
         const payload = {
           bateria_id: Number(bateriaId),
+          contratacao_id: contexto.contratacao_id,
+          demonstracao_id: contexto.demonstracao_id,
           respostas: questoes.map(q => ({
             questao_id: q.id,
             resposta_marcada: respostasAluno[q.id],
@@ -1000,10 +1031,14 @@
         }
 
         try {
+          const contexto = contextoAcessoLocal();
+
           await apiPostAuth("/me/anotacoes-questoes", {
             questao_id: questaoId,
             bateria_id: Number(bateriaId),
-            texto: texto
+            texto: texto,
+            contratacao_id: contexto.contratacao_id,
+            demonstracao_id: contexto.demonstracao_id
           });
 
           alert("Anotação salva com sucesso.");
@@ -1051,10 +1086,14 @@
         if (!confirmar) return;
 
         try {
+          const contexto = contextoAcessoLocal();
+
           await apiPostAuth("/me/mensagens-prof", {
             questao_id: questaoId,
             bateria_id: Number(bateriaId),
-            texto: texto
+            texto: texto,
+            contratacao_id: contexto.contratacao_id,
+            demonstracao_id: contexto.demonstracao_id
           });
 
           alert("Mensagem enviada ao professor.");

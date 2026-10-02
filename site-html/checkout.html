@@ -78,6 +78,10 @@
   <script>
     let dadosCheckout = null;
     let disciplinaAbertaId = null;
+    const parametrosCheckout = new URLSearchParams(window.location.search);
+    const checkoutRenovacao = parametrosCheckout.get("renovacao") === "1";
+    const contratacaoIdCheckout = parametrosCheckout.get("contratacao_id");
+    const demonstracaoIdCheckout = parametrosCheckout.get("demonstracao_id");
 
     function formatarDinheiro(cents) {
       return (Number(cents || 0) / 100).toLocaleString("pt-BR", {
@@ -152,16 +156,18 @@
       `).join("");
 
       box.innerHTML = `
-        <label class="assunto" style="display:block;cursor:pointer;">
-          <input
-            type="radio"
-            name="tipo_acesso"
-            value="demo"
-            onchange="controleAvisoDemo()"
-            style="margin-right:10px;"
-          />
-          1 dia gratuito para conhecer a plataforma
-        </label>
+        ${checkoutRenovacao ? "" : `
+          <label class="assunto" style="display:block;cursor:pointer;">
+            <input
+              type="radio"
+              name="tipo_acesso"
+              value="demo"
+              onchange="controleAvisoDemo()"
+              style="margin-right:10px;"
+            />
+            1 dia gratuito para conhecer a plataforma
+          </label>
+        `}
 
         ${opcoesPagas}
       `;
@@ -207,7 +213,14 @@
         msg.textContent = "Abrindo checkout do Mercado Pago...";
 
         const r = await apiPostAuth("/checkout/mercadopago", {
-          tempo_acesso_id: Number(tempoId)
+          tempo_acesso_id: Number(tempoId),
+          tipo_compra: checkoutRenovacao ? "RENOVACAO" : "NOVA",
+          ...(checkoutRenovacao && contratacaoIdCheckout
+            ? { contratacao_id: Number(contratacaoIdCheckout) }
+            : {}),
+          ...(!checkoutRenovacao && demonstracaoIdCheckout
+            ? { demonstracao_id: Number(demonstracaoIdCheckout) }
+            : {})
         });
 
         localStorage.setItem("ultimo_curso_id_compra", String(dadosCheckout.id));

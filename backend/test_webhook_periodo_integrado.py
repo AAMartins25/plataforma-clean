@@ -33,6 +33,7 @@ def test_webhook_registra_periodo_integrado():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+            "date_approved": "2026-09-24T15:00:00Z",
         "external_reference": (
             "user:2|curso:1|tempo:1|pagamento:2"
         ),

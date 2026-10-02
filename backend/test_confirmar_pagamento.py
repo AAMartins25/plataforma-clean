@@ -18,6 +18,7 @@ def test_rejeita_pagamento_de_outro_usuario():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:99|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -48,17 +49,22 @@ def test_rejeita_pagamento_com_valor_divergente():
         usuario_id=87,
         curso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         tempo_acesso_id=1
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     resposta_mp = MagicMock()
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 39.90,
         "currency_id": "BRL",
@@ -90,21 +96,24 @@ def test_pagamento_valido_libera_acesso():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
         atualizado_em=None,
     )
 
-    db.query.return_value.filter.return_value.first.side_effect = [
-        pagamento,
-        SimpleNamespace(meses=4),
-    ]
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.first.return_value = SimpleNamespace(meses=4)
 
     resposta_mp = MagicMock()
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -125,7 +134,9 @@ def test_pagamento_valido_libera_acesso():
     assert pagamento.mp_payment_id == "mp_teste_789"
     assert pagamento.aprovado_em is not None
 
-    db.add.assert_called_once()
+    assert db.add.call_count == 2
+    tipos = {type(chamada.args[0]).__name__ for chamada in db.add.call_args_list}
+    assert tipos == {"ContratacaoCurso", "PeriodoAcessoPagamento"}
 
     periodo = db.add.call_args.args[0]
 
@@ -153,16 +164,18 @@ def test_falha_na_concessao_nao_confirma_pagamento():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
         atualizado_em=None,
     )
 
-    db.query.return_value.filter.return_value.first.side_effect = [
-        pagamento,
-        SimpleNamespace(meses=4),
-    ]
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.first.return_value = SimpleNamespace(meses=4)
 
     db.execute.side_effect = RuntimeError(
         "Falha simulada ao gravar o acesso"
@@ -172,6 +185,7 @@ def test_falha_na_concessao_nao_confirma_pagamento():
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:1|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -208,17 +222,22 @@ def test_rejeita_pagamento_com_periodo_divergente():
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id=None,
         aprovado_em=None,
         status="PENDENTE",
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     resposta_mp = MagicMock()
     resposta_mp.status_code = 200
     resposta_mp.json.return_value = {
         "status": "approved",
+        "date_approved": "2026-09-23T15:00:00Z",
         "external_reference": "user:87|curso:1|tempo:2|pagamento:155",
         "transaction_amount": 49.90,
         "currency_id": "BRL",
@@ -256,13 +275,17 @@ def test_pagamento_aprovado_nao_regride(status_mp):
         curso_id=1,
         tempo_acesso_id=1,
         valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
         mp_payment_id="mp_teste_aprovado",
         aprovado_em=data_aprovacao,
         status="APPROVED",
         atualizado_em=data_aprovacao,
     )
 
-    db.query.return_value.filter.return_value.first.return_value = pagamento
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.first.return_value = pagamento
 
     resposta_mp = MagicMock()
     resposta_mp.status_code = 200

@@ -213,6 +213,9 @@ class AcessoCursoResponse(BaseModel):
     ativo: bool
     data_inicio: datetime
     data_fim: Optional[datetime] = None
+    renovacao_disponivel: bool = False
+    contratacoes: list[dict] = []
+    demonstracoes: list[dict] = []
 
 class ProgressoAulaResponse(BaseModel):
     id: int
@@ -364,6 +367,8 @@ class RespostaQuestaoAlunoCreate(BaseModel):
 class ConcluirBateriaCreate(BaseModel):
     bateria_id: int
     respostas: list[RespostaQuestaoAlunoCreate]
+    contratacao_id: int | None = None
+    demonstracao_id: int | None = None
 
 
 class TentativaBateriaResponse(BaseModel):

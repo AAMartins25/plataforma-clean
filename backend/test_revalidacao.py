@@ -5,38 +5,90 @@ from dateutil.relativedelta import relativedelta
 from app.models import PeriodoAcessoPagamento
 from app.main import admin_revalidar_pagamento
 
-def test_compra_vencida_nao_reativa_acesso():
+
+def preparar_db_revalidacao(pagamento, acesso_atual, meses=4):
     db = MagicMock()
 
-    pagamento = {
-        "id": 154,
-        "usuario_id": 87,
-        "curso_id": 1,
-        "tempo_acesso_id": 1,
-        "aprovado_em": None,
-        "criado_em": datetime.utcnow() - timedelta(days=200),
+    pag = {
+        "id": pagamento.id,
+        "usuario_id": pagamento.usuario_id,
+        "curso_id": pagamento.curso_id,
+        "tempo_acesso_id": pagamento.tempo_acesso_id,
+        "aprovado_em": pagamento.aprovado_em,
+        "criado_em": pagamento.criado_em,
     }
 
-    db.execute.return_value.mappings.return_value.first.return_value = pagamento
+    db.execute.return_value.mappings.return_value.first.return_value = pag
     db.execute.return_value.scalar_one.return_value = "PENDENTE"
 
-    # Primeira consulta: acesso existente. Segunda: prazo contratado.
+    # Usuario: lock de serialização.
+    db.query.return_value.filter.return_value.with_for_update.return_value.one.return_value = (
+        SimpleNamespace(id=pagamento.usuario_id)
+    )
+
+    # Pagamento: objeto ORM usado pela implementação atual.
+    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.one.return_value = (
+        pagamento
+    )
+
+    # Consultas simples: acesso atual e prazo contratado.
     db.query.return_value.filter.return_value.first.side_effect = [
-        None,
-        SimpleNamespace(meses=4),
+        acesso_atual,
+        SimpleNamespace(meses=meses),
     ]
 
-    data_antiga = (datetime.utcnow() - timedelta(days=200)).isoformat() + "Z"
+    return db
 
-    resposta_mp = MagicMock()
-    resposta_mp.status_code = 200
-    resposta_mp.json.return_value = {
+
+def resposta_mp(payment_id, pagamento_id, data_aprovacao):
+    resposta = MagicMock()
+    resposta.status_code = 200
+    resposta.json.return_value = {
+        "id": payment_id,
         "status": "approved",
-        "date_approved": data_antiga,
+        "external_reference": (
+            f"user:87|curso:1|tempo:1|pagamento:{pagamento_id}"
+        ),
+        "date_approved": data_aprovacao,
+        "transaction_amount": 49.90,
+        "currency_id": "BRL",
     }
+    return resposta
+
+
+def novo_pagamento(id_pagamento, criado_em):
+    return SimpleNamespace(
+        id=id_pagamento,
+        usuario_id=87,
+        curso_id=1,
+        tempo_acesso_id=1,
+        valor_cents=4990,
+        tipo_compra="NOVA",
+        vencimento_original=None,
+        ocorrencia_financeira=None,
+        oportunidade_id=None,
+        contratacao_id=None,
+        mp_payment_id=None,
+        aprovado_em=None,
+        status="PENDENTE",
+        criado_em=criado_em,
+        atualizado_em=None,
+    )
+
+
+def test_compra_vencida_nao_reativa_acesso():
+    data_aprovacao = datetime.utcnow() - timedelta(days=200)
+    pagamento = novo_pagamento(154, data_aprovacao)
+    db = preparar_db_revalidacao(pagamento, None)
+
+    resposta = resposta_mp(
+        "pagamento_teste",
+        154,
+        data_aprovacao.isoformat() + "Z",
+    )
 
     with (
-        patch("app.main.requests.get", return_value=resposta_mp),
+        patch("app.main.requests.get", return_value=resposta),
         patch("app.main.mp_headers", return_value={}),
     ):
         resultado = admin_revalidar_pagamento(
@@ -53,41 +105,23 @@ def test_compra_vencida_nao_reativa_acesso():
     assert resultado["status"] == "APPROVED"
     assert resultado["liberou_acesso"] is False
     assert not any("INSERT INTO acessos_curso" in sql for sql in comandos)
-    assert any("UPDATE pagamentos" in sql for sql in comandos)
+    assert pagamento.aprovado_em == data_aprovacao
     db.commit.assert_called_once()
 
 
 def test_compra_vigente_libera_acesso():
-    db = MagicMock()
+    data_aprovacao = datetime.utcnow() - timedelta(days=1)
+    pagamento = novo_pagamento(155, datetime.utcnow())
+    db = preparar_db_revalidacao(pagamento, None)
 
-    pagamento = {
-        "id": 155,
-        "usuario_id": 87,
-        "curso_id": 1,
-        "tempo_acesso_id": 1,
-        "aprovado_em": None,
-        "criado_em": datetime.utcnow(),
-    }
-
-    db.execute.return_value.mappings.return_value.first.return_value = pagamento
-    db.execute.return_value.scalar_one.return_value = "PENDENTE"
-
-    db.query.return_value.filter.return_value.first.side_effect = [
-        None,
-        SimpleNamespace(meses=4),
-    ]
-
-    resposta_mp = MagicMock()
-    resposta_mp.status_code = 200
-    resposta_mp.json.return_value = {
-        "status": "approved",
-        "date_approved": (
-            datetime.utcnow() - timedelta(days=1)
-        ).isoformat() + "Z",
-    }
+    resposta = resposta_mp(
+        "pagamento_teste_vigente",
+        155,
+        data_aprovacao.isoformat() + "Z",
+    )
 
     with (
-        patch("app.main.requests.get", return_value=resposta_mp),
+        patch("app.main.requests.get", return_value=resposta),
         patch("app.main.mp_headers", return_value={}),
     ):
         resultado = admin_revalidar_pagamento(
@@ -104,9 +138,15 @@ def test_compra_vigente_libera_acesso():
     assert resultado["status"] == "APPROVED"
     assert resultado["liberou_acesso"] is True
     assert any("INSERT INTO acessos_curso" in sql for sql in comandos)
+    assert pagamento.aprovado_em == data_aprovacao
     db.commit.assert_called_once()
 
-    db.add.assert_called_once()
+    assert db.add.call_count == 2
+    tipos = {
+        type(chamada.args[0]).__name__
+        for chamada in db.add.call_args_list
+    }
+    assert tipos == {"ContratacaoCurso", "PeriodoAcessoPagamento"}
 
     periodo = db.add.call_args.args[0]
 
@@ -118,35 +158,10 @@ def test_compra_vigente_libera_acesso():
         periodo.data_inicio + relativedelta(months=4)
     )
 
-    insercoes = [
-        chamada
-        for chamada in db.execute.call_args_list
-        if "INSERT INTO acessos_curso" in str(chamada.args[0])
-    ]
-
-    assert len(insercoes) == 1
-
-    parametros = insercoes[0].args[1]
-
-    assert parametros["u"] == 87
-    assert parametros["c"] == 1
-    assert parametros["fim"] > parametros["inicio"]
-
 
 def test_compra_antiga_nao_reduz_prazo_atual():
-    db = MagicMock()
-
-    pagamento = {
-        "id": 156,
-        "usuario_id": 87,
-        "curso_id": 1,
-        "tempo_acesso_id": 1,
-        "aprovado_em": None,
-        "criado_em": datetime.utcnow(),
-    }
-
-    db.execute.return_value.mappings.return_value.first.return_value = pagamento
-    db.execute.return_value.scalar_one.return_value = "PENDENTE"
+    data_aprovacao = datetime.utcnow() - timedelta(days=30)
+    pagamento = novo_pagamento(156, datetime.utcnow())
 
     inicio_atual = datetime.utcnow() - timedelta(days=10)
     fim_atual = datetime.utcnow() + timedelta(days=300)
@@ -156,22 +171,16 @@ def test_compra_antiga_nao_reduz_prazo_atual():
         data_fim=fim_atual,
     )
 
-    db.query.return_value.filter.return_value.first.side_effect = [
-        acesso_atual,
-        SimpleNamespace(meses=4),
-    ]
+    db = preparar_db_revalidacao(pagamento, acesso_atual)
 
-    resposta_mp = MagicMock()
-    resposta_mp.status_code = 200
-    resposta_mp.json.return_value = {
-        "status": "approved",
-        "date_approved": (
-            datetime.utcnow() - timedelta(days=30)
-        ).isoformat() + "Z",
-    }
+    resposta = resposta_mp(
+        "pagamento_antigo",
+        156,
+        data_aprovacao.isoformat() + "Z",
+    )
 
     with (
-        patch("app.main.requests.get", return_value=resposta_mp),
+        patch("app.main.requests.get", return_value=resposta),
         patch("app.main.mp_headers", return_value={}),
     ):
         resultado = admin_revalidar_pagamento(
@@ -188,12 +197,19 @@ def test_compra_antiga_nao_reduz_prazo_atual():
 
     assert len(insercoes) == 1
 
+    sql = str(insercoes[0].args[0])
     parametros = insercoes[0].args[1]
 
-    assert parametros["inicio"] == inicio_atual
-    assert parametros["fim"] == fim_atual
+    # A nova compra envia seu próprio período ao UPSERT.
+    # O CASE do SQL é quem preserva o acesso agregado mais longo já existente.
+    assert parametros["inicio"] == data_aprovacao
+    assert parametros["fim"] < fim_atual
+    assert "acessos_curso.data_fim > :fim" in sql
+    assert "THEN acessos_curso.data_inicio" in sql
+    assert "THEN acessos_curso.data_fim" in sql
     assert resultado["status"] == "APPROVED"
     db.commit.assert_called_once()
+
 
 import pytest
 from fastapi import HTTPException
