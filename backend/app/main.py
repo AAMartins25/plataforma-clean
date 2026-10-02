@@ -3545,6 +3545,30 @@ def dados_publicos_checkout(
         "disciplinas": estrutura
     }
 
+@app.get("/cursos-publicos")
+def listar_cursos_publicos(
+    db: Session = Depends(get_db)
+):
+    cursos = (
+        db.query(Curso)
+        .filter(
+            Curso.ativo == True,
+            Curso.publicado == True
+        )
+        .order_by(Curso.nome.asc())
+        .all()
+    )
+
+    return [
+        {
+            "id": curso.id,
+            "nome": curso.nome,
+            "ativo": curso.ativo,
+            "publicado": curso.publicado
+        }
+        for curso in cursos
+    ]
+
 @app.post("/checkout/mercadopago")
 def criar_checkout_mp(
     payload: dict,
