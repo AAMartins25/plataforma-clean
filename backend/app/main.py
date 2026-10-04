@@ -411,6 +411,7 @@ def admin_criar_acesso(
     u = db.query(Usuario).filter(
         Usuario.id == payload.usuario_id
     ).first()
+
     if not u:
         raise HTTPException(
             status_code=404,
@@ -420,6 +421,7 @@ def admin_criar_acesso(
     c = db.query(Curso).filter(
         Curso.id == payload.curso_id
     ).first()
+
     if not c:
         raise HTTPException(
             status_code=404,
@@ -443,6 +445,70 @@ def admin_criar_acesso(
             detail="A data de término deve ser posterior à data atual."
         )
 
+    # ---------------------------------------------------------
+    # Localiza uma contratação ADMIN vigente.
+    #
+    # Se ela estiver nos últimos 15 dias, a nova concessão
+    # preservará a mesma contratação e, portanto, o histórico.
+    #
+    # Se não houver contratação ADMIN vigente/renovável,
+    # uma nova contratação será criada.
+    # ---------------------------------------------------------
+    contratacao_admin = (
+        db.query(ContratacaoCurso)
+        .filter(
+            ContratacaoCurso.usuario_id == payload.usuario_id,
+            ContratacaoCurso.curso_id == payload.curso_id,
+            ContratacaoCurso.origem == "ADMIN",
+            ContratacaoCurso.data_inicio <= agora,
+            ContratacaoCurso.data_fim > agora,
+        )
+        .order_by(
+            ContratacaoCurso.data_fim.desc(),
+            ContratacaoCurso.id.desc()
+        )
+        .with_for_update()
+        .first()
+    )
+
+    if contratacao_admin:
+        # Se estiver dentro da janela dos 15 dias,
+        # preserva a mesma contratação.
+        if renovacao_disponivel(
+            contratacao_admin.data_fim,
+            agora
+        ):
+            contratacao_admin.data_fim = data_fim
+            contratacao = contratacao_admin
+
+        else:
+            # Ainda está vigente, mas fora da janela de renovação.
+            # A nova concessão é uma nova contratação.
+            contratacao = ContratacaoCurso(
+                usuario_id=payload.usuario_id,
+                curso_id=payload.curso_id,
+                data_inicio=agora,
+                data_fim=data_fim,
+                origem="ADMIN",
+            )
+            db.add(contratacao)
+    else:
+        # Não existe contratação ADMIN vigente.
+        # Portanto, esta concessão inicia novo histórico.
+        contratacao = ContratacaoCurso(
+            usuario_id=payload.usuario_id,
+            curso_id=payload.curso_id,
+            data_inicio=agora,
+            data_fim=data_fim,
+            origem="ADMIN",
+        )
+        db.add(contratacao)
+
+    db.flush()
+
+    # ---------------------------------------------------------
+    # Mantém o mecanismo existente de AcessoCurso.
+    # ---------------------------------------------------------
     existente = db.query(AcessoCurso).filter(
         AcessoCurso.usuario_id == payload.usuario_id,
         AcessoCurso.curso_id == payload.curso_id
@@ -485,6 +551,9 @@ def admin_criar_acesso(
         )
         db.add(acesso)
 
+    # ---------------------------------------------------------
+    # Registra a concessão administrativa individual.
+    # ---------------------------------------------------------
     concessao = ConcessaoAcessoAdmin(
         usuario_id=payload.usuario_id,
         curso_id=payload.curso_id,
@@ -497,6 +566,8 @@ def admin_criar_acesso(
     try:
         db.commit()
         db.refresh(acesso)
+        db.refresh(contratacao)
+
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -507,7 +578,8 @@ def admin_criar_acesso(
     return {
         "ok": True,
         "msg": "Concessão administrativa registrada",
-        "acesso_id": acesso.id
+        "acesso_id": acesso.id,
+        "contratacao_id": contratacao.id,
     }
 
 @app.get("/me/compras/reembolso")
@@ -770,6 +842,23 @@ def criar_curso(curso: CursoCreate, db: Session = Depends(get_db)):
 
     db.refresh(novo)
     return novo
+
+@app.get("/admin/cursos", response_model=list[CursoResponse])
+def listar_cursos_admin(
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Apenas admin"
+        )
+
+    return (
+        db.query(Curso)
+        .order_by(Curso.nome.asc())
+        .all()
+    )
 
 # READ: listar cursos
 @app.get("/cursos", response_model=list[CursoResponse])
@@ -3568,6 +3657,135 @@ def listar_cursos_publicos(
         }
         for curso in cursos
     ]
+
+@app.put("/admin/cursos/{curso_id}/publicar")
+def publicar_curso(
+    curso_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Apenas administrador."
+        )
+
+    curso = db.query(Curso).filter(
+        Curso.id == curso_id,
+        Curso.ativo == True
+    ).first()
+
+    if not curso:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado."
+        )
+
+    curso.publicado = True
+
+    db.commit()
+    db.refresh(curso)
+
+    return {
+        "ok": True,
+        "curso_id": curso.id,
+        "publicado": curso.publicado,
+        "mensagem": "Curso publicado com sucesso."
+    }
+
+@app.post("/cursos/{curso_id}/demonstracao")
+def iniciar_demonstracao_curso(
+    curso_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    curso = db.query(Curso).filter(
+        Curso.id == curso_id,
+        Curso.ativo == True
+    ).first()
+
+    if not curso:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado."
+        )
+
+    agora = datetime.utcnow()
+
+    ultima_demo = (
+        db.query(DemonstracaoCurso)
+        .filter(
+            DemonstracaoCurso.usuario_id == usuario.id,
+            DemonstracaoCurso.curso_id == curso_id
+        )
+        .order_by(DemonstracaoCurso.id.desc())
+        .first()
+    )
+
+    if ultima_demo and ultima_demo.liberado_novamente_em > agora:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Esta modalidade estará disponível novamente para você, "
+                "para este Curso, após 30 dias do último acesso nesta modalidade."
+            )
+        )
+
+    data_inicio = agora
+    data_fim = data_inicio + timedelta(days=1)
+    liberado_novamente_em = data_inicio + timedelta(days=30)
+
+    demo = DemonstracaoCurso(
+        usuario_id=usuario.id,
+        curso_id=curso_id,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+        liberado_novamente_em=liberado_novamente_em,
+        ativo=True
+    )
+
+    db.add(demo)
+
+    db.flush()
+
+    db.execute(text("""
+        INSERT INTO acessos_curso (
+            usuario_id,
+            curso_id,
+            ativo,
+            data_inicio,
+            data_fim
+        )
+        VALUES (
+            :u,
+            :c,
+            TRUE,
+            :inicio,
+            :fim
+        )
+        ON CONFLICT (usuario_id, curso_id)
+        DO UPDATE SET
+            ativo = TRUE,
+            data_inicio = :inicio,
+            data_fim = :fim
+    """), {
+        "u": usuario.id,
+        "c": curso_id,
+        "inicio": data_inicio,
+        "fim": data_fim
+    })
+
+    db.commit()
+
+    return {
+        "ok": True,
+        "tipo": "DEMONSTRACAO",
+        "curso_id": curso_id,
+        "demonstracao_id": demo.id,
+        "data_inicio": data_inicio,
+        "data_fim": data_fim,
+        "liberado_novamente_em": liberado_novamente_em
+    }
 
 @app.post("/checkout/mercadopago")
 def criar_checkout_mp(

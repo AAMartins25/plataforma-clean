@@ -156,7 +156,7 @@
       `).join("");
 
       box.innerHTML = `
-        ${checkoutRenovacao ? "" : `
+        ${checkoutRenovacao || demonstracaoIdCheckout ? "" : `
           <label class="assunto" style="display:block;cursor:pointer;">
             <input
               type="radio"

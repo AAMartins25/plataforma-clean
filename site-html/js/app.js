@@ -1,5 +1,5 @@
 // js/app.js
-const API_BASE = "https://plataforma-quality-backend.onrender.com";
+const API_BASE = "https://reimagined-waffle-4jv4jw9pqpwjfqqp4-8000.app.github.dev";
 
 // helpers
 function qs(name) {
@@ -840,6 +840,8 @@ async function pageCursos() {
     }
 
     const acessos = await apiGetAuth("/me/cursos");
+
+    console.log("DEBUG /me/cursos:", JSON.stringify(acessos, null, 2));
     const historico = await apiGetAuth("/me/cursos/historico");
 
     if (cardExpirados && listaExpirados) {
@@ -1158,7 +1160,12 @@ async function pageDisciplinas() {
   try {
     const disciplinas =
       await apiGetAuth(
-        `/cursos/${cursoId}/disciplinas-proprias`
+        `/cursos/${cursoId}/disciplinas-proprias` +
+        (contratacaoId
+          ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
+          : demonstracaoId
+            ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+            : "")
       );
 
     const lista =
@@ -1369,6 +1376,8 @@ async function pageAssuntos() {
   const disciplinaId = qs("disciplina_id");
   const disciplinaNome = qs("disciplina_nome") || "";
   const cursoNome = qs("curso_nome") || "";
+  const contratacaoId = qs("contratacao_id");
+  const demonstracaoId = qs("demonstracao_id");
 
   const tituloCurso =
     document.getElementById("titulo_curso");
@@ -1403,7 +1412,12 @@ async function pageAssuntos() {
 
     try {
       assuntos = await apiGetAuth(
-        `/disciplinas-proprias/${disciplinaId}/assuntos-proprios`
+        `/disciplinas-proprias/${disciplinaId}/assuntos-proprios` +
+        (contratacaoId
+          ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
+          : demonstracaoId
+            ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}`
+            : "")
       );
     } catch (e1) {
       assuntos = await apiGet(
