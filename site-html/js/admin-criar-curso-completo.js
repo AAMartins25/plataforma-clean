@@ -1429,64 +1429,6 @@
       msgConfigPublicaCurso.textContent = "";
     });
 
-    btnSalvarConfigPublicaCurso.addEventListener("click", async () => {
-      if (!cursoAtual || !cursoAtual.id) {
-        alert("Selecione ou crie um curso primeiro.");
-        return;
-      }
-
-      const v4 = valorMonetarioParaCents(valor4Meses.value);
-      const v8 = valorMonetarioParaCents(valor8Meses.value);
-      const v12 = valorMonetarioParaCents(valor12Meses.value);
-
-      if (!v4 || !v8 || !v12) {
-        alert("Informe valores válidos para 4, 8 e 12 meses.");
-        return;
-      }
-
-      try {
-        msgConfigPublicaCurso.textContent = "Salvando...";
-        msgConfigPublicaCurso.style.color = "";
-
-        await apiPutAuth(
-          `/admin/cursos/${cursoAtual.id}/config-publica`,
-          {
-            descricao_publica:
-              cursoDescricaoPublica.value.trim(),
-
-            tempos_acesso: [
-              {
-                meses: 4,
-                valor_cents: v4
-              },
-              {
-                meses: 8,
-                valor_cents: v8
-              },
-              {
-                meses: 12,
-                valor_cents: v12
-              }
-            ]
-          }
-        );
-
-        msgConfigPublicaCurso.textContent =
-          "Descrição e valores salvos com sucesso.";
-
-        msgConfigPublicaCurso.style.color = "#2f5e46";
-
-        bloquearConfigPublicaCurso();
-
-      } catch (err) {
-        console.error(err);
-
-        msgConfigPublicaCurso.textContent =
-          "Erro ao salvar descrição e valores.";
-
-        msgConfigPublicaCurso.style.color = "#8a1f1f";
-      }
-    });
     btnEditarConfigPublicaCurso.addEventListener("click", () => {
       liberarEdicaoConfigPublicaCurso();
       msgConfigPublicaCurso.textContent = "";

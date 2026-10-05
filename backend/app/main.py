@@ -1066,15 +1066,22 @@ def listar_disciplinas_proprias(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
     # ---------------------------------------------------------
-    # Valida o contexto de estudo.
+    # Administrador não depende de contexto de estudo.
+    # Aluno continua sujeito à validação de contratação/
+    # demonstração.
     # ---------------------------------------------------------
-    contexto = validar_contexto_estudo(
-        db=db,
-        usuario=usuario,
-        curso_id=curso_id,
-        contratacao_id=contratacao_id,
-        demonstracao_id=demonstracao_id,
-    )
+    if usuario.is_admin:
+        contexto = {
+            "demonstracao_id": None
+        }
+    else:
+        contexto = validar_contexto_estudo(
+            db=db,
+            usuario=usuario,
+            curso_id=curso_id,
+            contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id,
+        )
 
     disciplinas = (
         db.query(CursoDisciplinaPropria)
@@ -3692,6 +3699,122 @@ def publicar_curso(
         "publicado": curso.publicado,
         "mensagem": "Curso publicado com sucesso."
     }
+
+@app.get("/admin/cursos/{curso_id}/config-publica")
+def obter_config_publica_curso(
+    curso_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Apenas administrador."
+        )
+
+    curso = db.query(Curso).filter(
+        Curso.id == curso_id
+    ).first()
+
+    if not curso:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado."
+        )
+
+    tempos = (
+        db.query(TempoAcessoCurso)
+        .filter(
+            TempoAcessoCurso.curso_id == curso_id
+        )
+        .order_by(
+            TempoAcessoCurso.meses.asc()
+        )
+        .all()
+    )
+
+    return {
+        "curso_id": curso.id,
+        "nome": curso.nome,
+        "descricao_publica": curso.descricao_publica or "",
+        "publicado": bool(curso.publicado),
+        "tempos_acesso": [
+            {
+                "id": t.id,
+                "meses": t.meses,
+                "valor_cents": t.valor_cents,
+                "ativo": t.ativo
+            }
+            for t in tempos
+        ]
+    }
+
+
+@app.put("/admin/cursos/{curso_id}/config-publica")
+def salvar_config_publica_curso(
+    curso_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Apenas administrador."
+        )
+
+    curso = db.query(Curso).filter(
+        Curso.id == curso_id
+    ).first()
+
+    if not curso:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado."
+        )
+
+    curso.descricao_publica = (
+        payload.get("descricao_publica") or ""
+    )
+
+    tempos = payload.get("tempos_acesso") or []
+    meses_validos = {4, 8, 12}
+
+    for item in tempos:
+        meses = int(item["meses"])
+        valor_cents = int(item["valor_cents"])
+
+        if meses not in meses_validos:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tempo inválido: {meses} meses."
+            )
+
+        registro = (
+            db.query(TempoAcessoCurso)
+            .filter(
+                TempoAcessoCurso.curso_id == curso_id,
+                TempoAcessoCurso.meses == meses
+            )
+            .first()
+        )
+
+        if registro:
+            registro.valor_cents = valor_cents
+            registro.ativo = True
+        else:
+            db.add(
+                TempoAcessoCurso(
+                    curso_id=curso_id,
+                    meses=meses,
+                    valor_cents=valor_cents,
+                    ativo=True
+                )
+            )
+
+    db.commit()
+
+    return {"ok": True}
 
 @app.post("/cursos/{curso_id}/demonstracao")
 def iniciar_demonstracao_curso(
