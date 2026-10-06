@@ -2154,6 +2154,8 @@ def editar_video(
 @app.get("/videos/{video_id}/playback")
 def obter_playback_video(
     video_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):

@@ -1086,11 +1086,17 @@ function alternarLista(id) {
 }
 
 async function calcularProgressoDisciplina(disciplinaId) {
+  const contexto = new URLSearchParams();
+  for (const campo of ["contratacao_id", "demonstracao_id"]) {
+    const valor = qs(campo);
+    if (valor) contexto.set(campo, valor);
+  }
+  const contextoQuery = contexto.toString();
   try {
     let assuntos;
 
     try {
-      assuntos = await apiGetAuth(`/disciplinas-proprias/${disciplinaId}/assuntos-proprios`);
+      assuntos = await apiGetAuth(`/disciplinas-proprias/${disciplinaId}/assuntos-proprios${contextoQuery ? `?${contextoQuery}` : ""}`);
     } catch {
       assuntos = await apiGet(`/disciplinas/${disciplinaId}/assuntos`);
     }
@@ -1259,6 +1265,12 @@ async function pageDisciplinas() {
 }
 
 async function calcularProgressoAssunto(assuntoId) {
+  const contexto = new URLSearchParams();
+  for (const campo of ["contratacao_id", "demonstracao_id"]) {
+    const valor = qs(campo);
+    if (valor) contexto.set(campo, valor);
+  }
+  const contextoQuery = contexto.toString();
   try {
     console.log("Calculando progresso do assunto:", assuntoId);
 
@@ -1267,7 +1279,7 @@ async function calcularProgressoAssunto(assuntoId) {
     /* Usa primeiro a pasta própria, como ocorre em Direitos Humanos */
     try {
       const pastaPropria = await apiGetAuth(
-        `/assuntos-proprios/${assuntoId}/pasta-teoria`
+        `/assuntos-proprios/${assuntoId}/pasta-teoria${contextoQuery ? `?${contextoQuery}` : ""}`
       );
 
       if (pastaPropria && pastaPropria.id) {
@@ -1296,14 +1308,14 @@ async function calcularProgressoAssunto(assuntoId) {
 
     console.log("Pasta TEORIA usada:", pastaTeoria);
 
-    const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas`);
+    const aulas = await apiGet(`/pastas/${pastaTeoria.id}/aulas${contextoQuery ? `?${contextoQuery}` : ""}`);
     console.log("Aulas:", aulas);
 
     let totalBaterias = 0;
     let bateriasFeitas = 0;
 
     for (const aula of aulas || []) {
-      const baterias = await apiGetAuth(`/aulas/${aula.id}/baterias-com-status`);
+      const baterias = await apiGetAuth(`/aulas/${aula.id}/baterias-com-status${contextoQuery ? `?${contextoQuery}` : ""}`);
       console.log("Baterias da aula", aula.id, baterias);
 
       const bateriasConcluidas = (baterias || []).filter(b =>
@@ -1342,7 +1354,13 @@ async function calcularProgressoAssunto(assuntoId) {
 }
 
 async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeEncoded) {
-  const pastaTeoria = await apiGetAuth(`/assuntos-proprios/${assuntoId}/pasta-teoria`);
+  const contexto = new URLSearchParams();
+  for (const campo of ["contratacao_id", "demonstracao_id"]) {
+    const valor = qs(campo);
+    if (valor) contexto.set(campo, valor);
+  }
+  const contextoQuery = contexto.toString();
+  const pastaTeoria = await apiGetAuth(`/assuntos-proprios/${assuntoId}/pasta-teoria${contextoQuery ? `?${contextoQuery}` : ""}`);
 
   if (!pastaTeoria || !pastaTeoria.id) {
     alert("Não encontrei a pasta de Teoria deste assunto.");
@@ -1363,6 +1381,7 @@ async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeE
 
   window.location.href =
     `teoria.html?pasta_id=${pastaTeoria.id}` +
+    `&curso_id=${encodeURIComponent(qs("curso_id") || "")}` +
     `&assunto_id=${encodeURIComponent(assuntoId)}` +
     `&disciplina_id=${encodeURIComponent(disciplinaId || "")}` +
     `&assunto_nome=${assuntoNomeEncoded}` +

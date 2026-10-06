@@ -158,7 +158,7 @@
         }
 
         try {
-          questoes = await apiGetAuth(`/baterias/${bateriaId}/questoes`);
+          questoes = await apiGetAuth(`/baterias/${bateriaId}/questoes${contextoAcessoQueryLocal() ? `?${contextoAcessoQueryLocal()}` : ""}`);
           questoes.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
 
           await carregarTentativaAtiva();

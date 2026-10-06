@@ -79,7 +79,9 @@
       if (cursoId) {
         window.location.href =
           "curso.html?curso_id=" + encodeURIComponent(cursoId) +
-          "&curso_nome=" + encodeURIComponent(cursoNome);
+          "&curso_nome=" + encodeURIComponent(cursoNome) +
+          (p.get("contratacao_id") ? "&contratacao_id=" + encodeURIComponent(p.get("contratacao_id")) :
+           p.get("demonstracao_id") ? "&demonstracao_id=" + encodeURIComponent(p.get("demonstracao_id")) : "");
       } else {
         window.location.href = "cursos.html";
       }

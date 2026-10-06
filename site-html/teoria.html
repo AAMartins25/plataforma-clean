@@ -284,7 +284,9 @@
         window.location.href =
           `assuntos.html?disciplina_id=${encodeURIComponent(disciplinaId)}` +
           `&disciplina_nome=${encodeURIComponent(disciplinaNome)}` +
-          `&curso_nome=${encodeURIComponent(cursoNome)}`;
+          `&curso_nome=${encodeURIComponent(cursoNome)}` +
+          `&curso_id=${encodeURIComponent(qs("curso_id") || "")}` +
+          (contextoAcessoQuery() ? `&${contextoAcessoQuery()}` : "");
         return;
       }
 
@@ -691,7 +693,7 @@
       }
 
       const endpointsAulas = [
-        `/pastas/${pastaId}/aulas`,
+        `/pastas/${pastaId}/aulas${contextoAcessoQuery() ? `?${contextoAcessoQuery()}` : ""}`,
         `/aulas?pasta_id=${pastaId}`
       ];
 
@@ -907,7 +909,7 @@
       if (!container) return;
 
       try {
-        const dados = await apiGet(`/videos/${videoId}/playback`);
+        const dados = await apiGet(`/videos/${videoId}/playback${contextoAcessoQuery() ? `?${contextoAcessoQuery()}` : ""}`);
 
         if (!dados.token) {
           throw new Error("Token de reprodução não recebido.");
@@ -1258,7 +1260,7 @@
 
       try {
         const materiais = await tryMany([
-          `/aulas/${aulaId}/materiais`,
+          `/aulas/${aulaId}/materiais${contextoAcessoQuery() ? `?${contextoAcessoQuery()}` : ""}`,
           `/materiais?aula_id=${aulaId}`
         ]);
 
@@ -1306,7 +1308,7 @@
 
       try {
         const videos = await tryMany([
-          `/aulas/${aulaId}/videos`,
+          `/aulas/${aulaId}/videos${contextoAcessoQuery() ? `?${contextoAcessoQuery()}` : ""}`,
           `/videos?aula_id=${aulaId}`
         ]);
 
