@@ -199,8 +199,16 @@ async function carregarQuestoesCriticas() {
 
   try {
 
-    questoesCriticas =
-      await apiGetAuth("/me/questoes-criticas");
+    const params = new URLSearchParams();
+
+    for (const campo of ["curso_id", "contratacao_id", "demonstracao_id"]) {
+      const valor = qs(campo);
+      if (valor) params.set(campo, valor);
+    }
+
+    questoesCriticas = await apiGetAuth(
+      `/me/questoes-criticas?${params.toString()}`
+    );
 
     console.log(
       "QUESTÕES CRÍTICAS RECEBIDAS:",
@@ -334,6 +342,9 @@ function aplicarFiltros() {
   const disciplina =
     document.getElementById("filtroDisciplina").value;
 
+  const assunto =
+    document.getElementById("filtroAssunto").value;
+
   const tipo =
     document.getElementById("filtroTipo").value;
 
@@ -343,6 +354,12 @@ function aplicarFiltros() {
 
     lista = lista.filter(
       q => String(q.disciplina_id) === disciplina
+    );
+  }
+
+  if (assunto !== "TODOS") {
+    lista = lista.filter(
+      q => String(q.assunto_id) === assunto
     );
   }
 
