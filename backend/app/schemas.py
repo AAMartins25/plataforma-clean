@@ -652,3 +652,23 @@ class RespostaRevisaoCreate(BaseModel):
 
 class RespostasBateriaRevisaoCreate(BaseModel):
     respostas: list[RespostaRevisaoCreate]
+
+
+class AnotacaoTexto(BaseModel):
+    texto: str
+
+    @field_validator("texto")
+    @classmethod
+    def validar_texto(cls, value):
+        value = value.strip()
+        if not value or len(value.split()) > 300:
+            raise ValueError("Informe texto entre 1 e 300 palavras")
+        return value
+
+
+class AnotacaoQuestaoCreate(AnotacaoTexto):
+    questao_id: int = Field(gt=0)
+    bateria_id: int = Field(gt=0)
+    tentativa_id: int = Field(gt=0)
+    contratacao_id: int | None = Field(default=None, gt=0)
+    demonstracao_id: int | None = Field(default=None, gt=0)

@@ -171,12 +171,21 @@ function esc(texto) {
     .replace(/>/g, "&gt;");
 }
 
+function comContexto(path) {
+  const params = new URLSearchParams(window.location.search);
+  const query = new URLSearchParams();
+  for (const key of ['curso_id', 'contratacao_id', 'demonstracao_id']) {
+    if (params.get(key)) query.set(key, params.get(key));
+  }
+  return path + '?' + query.toString();
+}
+
 async function apiGet(path) {
 
   const token = getToken();
 
   const res = await fetch(
-    `${API_BASE}${path}`,
+    `${API_BASE}${comContexto(path)}`,
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -722,7 +731,7 @@ async function apiPut(path, body) {
   const token = getToken();
 
   const res = await fetch(
-    `${API_BASE}${path}`,
+    `${API_BASE}${comContexto(path)}`,
     {
       method: "PUT",
       headers: {
@@ -744,7 +753,7 @@ async function apiDelete(path) {
   const token = getToken();
 
   const res = await fetch(
-    `${API_BASE}${path}`,
+    `${API_BASE}${comContexto(path)}`,
     {
       method: "DELETE",
       headers: {

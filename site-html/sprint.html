@@ -81,6 +81,8 @@
       let dificuldadesAluno = {};
       let bateriaId = null;
       let tentativaAtiva = null;
+      let tentativaAnotacaoId = null;
+      let anotacoesDaTentativa = new Set();
       let modo = null;
       let reverQuestoesAluno = {};
 
@@ -173,8 +175,11 @@
               dificuldadesAluno[r.questao_id]=r.dificuldade;
               reverQuestoesAluno[r.questao_id]=r.rever;
             });
+            tentativaAnotacaoId = bateria?.tentativa_id || null;
             if (bateria?.concluida) { revisarAgora(); return; }
           }
+
+          if (!qsLocal("revisao_id")) tentativaAnotacaoId = tentativaAtiva?.id || null;
 
           if (!questoes.length) {
             document.getElementById("area_questoes").innerHTML = `
@@ -690,11 +695,13 @@
         try {
           if (qsLocal("revisao_id")) {
             const result=await apiPostAuth(`/me/revisoes/${Number(qsLocal("revisao_id"))}/baterias/${bateriaId}/respostas?${contextoAcessoQueryLocal()}`, {respostas: payload.respostas});
+            tentativaAnotacaoId = result.id;
             result.feedback.forEach(f=>{ const q=questoes.find(q=>q.id===f.questao_id); if(q) q.gabarito=f.gabarito; });
             if (destino === 'agora') revisarAgora(); else voltarParaListaQuestoes();
             return;
           }
           const tentativa = await apiPostAuth("/baterias/concluir", payload);
+          tentativaAnotacaoId = tentativa.id;
 
           localStorage.setItem(
             `tentativa_bateria_${bateriaId}`,
@@ -958,6 +965,16 @@
           behavior: "smooth",
           block: "start"
         });
+        recuperarAnotacoesTentativa();
+      }
+
+      async function recuperarAnotacoesTentativa() {
+        if (!tentativaAnotacaoId) return;
+        try {
+          const rows = await apiGetAuth(`/me/minhas-anotacoes?${contextoAcessoQueryLocal()}`);
+          anotacoesDaTentativa = new Set(rows.filter(a => Number(a.tentativa_id) === Number(tentativaAnotacaoId)).map(a => a.questao_id));
+          anotacoesDaTentativa.forEach(desativarBotaoSalvarMim);
+        } catch (err) { console.error("Erro ao recuperar anotações da tentativa", err); }
       }
 
       function desativarBotaoSalvarMim(questaoId) {
@@ -1055,10 +1072,12 @@
         }
 
         try {
+          if (!tentativaAnotacaoId) throw new Error("Tentativa não identificada");
           const contexto = contextoAcessoLocal();
 
           await apiPostAuth("/me/anotacoes-questoes", {
             questao_id: questaoId,
+            tentativa_id: tentativaAnotacaoId,
             bateria_id: Number(bateriaId),
             texto: texto,
             contratacao_id: contexto.contratacao_id,
@@ -1069,6 +1088,7 @@
 
           campo.value = "";
           
+          anotacoesDaTentativa.add(questaoId);
           desativarBotaoSalvarMim(questaoId);
 
         } catch (err) {

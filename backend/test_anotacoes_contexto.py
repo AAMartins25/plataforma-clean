@@ -5,12 +5,10 @@ from types import SimpleNamespace
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from app.main import (
-    criar_anotacao_questao,
-    listar_minhas_anotacoes,
-    editar_anotacao_questao,
-    excluir_anotacao_questao,
-)
+from app import models
+from app.schemas import AnotacaoQuestaoCreate, AnotacaoTexto
+from test_questoes_pratica_patch import carregar_main_isolado
+
 
 
 def test_anotacoes_isolam_contexto():
@@ -28,27 +26,23 @@ def test_anotacoes_isolam_contexto():
     )
 
     try:
-        usuario = SimpleNamespace(id=2)
+        with carregar_main_isolado(lambda: db, engine) as main:
+            criar_anotacao_questao = main.criar_anotacao_questao
+            listar_minhas_anotacoes = main.listar_minhas_anotacoes
+            editar_anotacao_questao = main.editar_anotacao_questao
+            excluir_anotacao_questao = main.excluir_anotacao_questao
+        usuario_id = db.execute(text("SELECT id FROM usuarios ORDER BY id LIMIT 1")).scalar_one()
+        usuario = SimpleNamespace(id=usuario_id)
         agora = datetime.utcnow()
 
         # ---------------------------------------------------------
-        # 1. Busca uma contratação existente do usuário.
-        # ---------------------------------------------------------
-        contratacao_id = db.execute(
-            text("""
-                SELECT id
-                FROM contratacoes_curso
-                WHERE usuario_id = 2
-                  AND curso_id = 1
-                ORDER BY id
-                LIMIT 1
-            """)
-        ).scalar()
-
-        assert contratacao_id is not None, (
-            "O banco de teste precisa possuir uma contratação "
-            "do usuário 2 para o curso 1."
-        )
+        # 1. Contratação vigente criada dentro da transação descartável.
+        contratacao = models.ContratacaoCurso(
+            usuario_id=usuario.id, curso_id=1, origem="ADMIN",
+            data_inicio=agora - timedelta(days=1), data_fim=agora + timedelta(days=10))
+        db.add(contratacao)
+        db.flush()
+        contratacao_id = contratacao.id
 
         # ---------------------------------------------------------
         # 2. Cria uma demonstração para o mesmo usuário/curso.
@@ -59,10 +53,11 @@ def test_anotacoes_isolam_contexto():
                     (usuario_id, curso_id, data_inicio, data_fim,
                      liberado_novamente_em, ativo)
                 VALUES
-                    (2, 1, :inicio, :fim, :liberado, TRUE)
+                    (:usuario_id, 1, :inicio, :fim, :liberado, TRUE)
                 RETURNING id
             """),
             {
+                "usuario_id": usuario.id,
                 "inicio": agora - timedelta(days=1),
                 "fim": agora + timedelta(days=10),
                 "liberado": agora + timedelta(days=11),
@@ -154,17 +149,32 @@ def test_anotacoes_isolam_contexto():
             {"bateria_id": bateria_id}
         ).scalar_one()
 
+        def criar_tentativa(cid, did):
+            tentativa = models.TentativaBateria(usuario_id=usuario.id,
+                bateria_id=bateria_id, contratacao_id=cid, demonstracao_id=did, status="FEITA")
+            db.add(tentativa)
+            db.flush()
+            db.add(models.RespostaAlunoQuestao(usuario_id=usuario.id,
+                bateria_id=bateria_id, questao_id=questao_id, tentativa_id=tentativa.id,
+                contratacao_id=cid, demonstracao_id=did, resposta_marcada="C", respondida=True))
+            db.flush()
+            return tentativa.id
+
+        tentativa_contratacao_id = criar_tentativa(contratacao_id, None)
+        tentativa_demonstracao_id = criar_tentativa(None, demonstracao_id)
+
         # ---------------------------------------------------------
         # 4. Cria anotação no contexto da CONTRATAÇÃO.
         # ---------------------------------------------------------
         anotacao_contratacao = criar_anotacao_questao(
-            payload={
+            payload=AnotacaoQuestaoCreate(**{
                 "questao_id": questao_id,
                 "bateria_id": bateria_id,
+                "tentativa_id": tentativa_contratacao_id,
                 "texto": "Anotação criada no contexto da contratação.",
                 "contratacao_id": contratacao_id,
                 "demonstracao_id": None,
-            },
+            }),
             db=db,
             usuario_atual=usuario
         )
@@ -173,13 +183,14 @@ def test_anotacoes_isolam_contexto():
         # 5. Cria anotação no contexto da DEMONSTRAÇÃO.
         # ---------------------------------------------------------
         anotacao_demonstracao = criar_anotacao_questao(
-            payload={
+            payload=AnotacaoQuestaoCreate(**{
                 "questao_id": questao_id,
                 "bateria_id": bateria_id,
+                "tentativa_id": tentativa_demonstracao_id,
                 "texto": "Anotação criada no contexto da demonstração.",
                 "contratacao_id": None,
                 "demonstracao_id": demonstracao_id,
-            },
+            }),
             db=db,
             usuario_atual=usuario
         )
@@ -192,7 +203,8 @@ def test_anotacoes_isolam_contexto():
             text("""
                 SELECT
                     contratacao_id,
-                    demonstracao_id
+                    demonstracao_id,
+                    tentativa_id
                 FROM anotacoes_aluno_questao
                 WHERE id = :id
             """),
@@ -201,12 +213,14 @@ def test_anotacoes_isolam_contexto():
 
         assert registro_contratacao["contratacao_id"] == contratacao_id
         assert registro_contratacao["demonstracao_id"] is None
+        assert registro_contratacao["tentativa_id"] == tentativa_contratacao_id
 
         registro_demonstracao = db.execute(
             text("""
                 SELECT
                     contratacao_id,
-                    demonstracao_id
+                    demonstracao_id,
+                    tentativa_id
                 FROM anotacoes_aluno_questao
                 WHERE id = :id
             """),
@@ -214,6 +228,7 @@ def test_anotacoes_isolam_contexto():
         ).mappings().one()
 
         assert registro_demonstracao["contratacao_id"] is None
+        assert registro_demonstracao["tentativa_id"] == tentativa_demonstracao_id
         assert registro_demonstracao["demonstracao_id"] == demonstracao_id
 
         # ---------------------------------------------------------
@@ -263,9 +278,7 @@ def test_anotacoes_isolam_contexto():
         try:
             editar_anotacao_questao(
                 anotacao_id=anotacao_demonstracao["id"],
-                payload={
-                    "texto": "Tentativa indevida de alteração."
-                },
+                payload=AnotacaoTexto(texto="Tentativa indevida de alteração."),
                 contratacao_id=contratacao_id,
                 demonstracao_id=None,
                 db=db,

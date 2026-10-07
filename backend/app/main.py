@@ -7595,10 +7595,11 @@ registrar_rotas_revisoes(app, get_db, get_usuario_atual, validar_contexto_estudo
 
 @app.post("/me/anotacoes-questoes")
 def criar_anotacao_questao(
-    payload: dict,
+    payload: schemas.AnotacaoQuestaoCreate,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
+    payload = payload.model_dump()
     questao_id = payload.get("questao_id")
     bateria_id = payload.get("bateria_id")
     texto = (payload.get("texto") or "").strip()
@@ -7736,7 +7737,25 @@ def criar_anotacao_questao(
         demonstracao_id=demonstracao_id,
     )
 
+    tentativa = db.query(TentativaBateria).filter_by(
+        id=payload["tentativa_id"], usuario_id=usuario_atual.id,
+        bateria_id=bateria_id, contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id,
+    ).with_for_update().first()
+    if not tentativa or not db.query(RespostaAlunoQuestao).filter_by(
+        tentativa_id=tentativa.id, questao_id=questao_id,
+        usuario_id=usuario_atual.id, bateria_id=bateria_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id,
+        respondida=True,
+    ).first():
+        raise HTTPException(404, "Tentativa/resposta da questão não encontrada")
+    existente = db.query(AnotacaoAlunoQuestao).filter_by(
+        tentativa_id=tentativa.id, questao_id=questao_id).first()
+    if existente:
+        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
+
     nova = AnotacaoAlunoQuestao(
+        tentativa_id=tentativa.id,
         usuario_id=usuario_atual.id,
         questao_id=questao_id,
         bateria_id=bateria_id,
@@ -7746,7 +7765,11 @@ def criar_anotacao_questao(
     )
 
     db.add(nova)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
     db.refresh(nova)
 
     return {
@@ -7762,12 +7785,13 @@ def criar_anotacao_questao(
 @app.put("/me/anotacoes-questoes/{anotacao_id}")
 def editar_anotacao_questao(
     anotacao_id: int,
-    payload: dict,
+    payload: schemas.AnotacaoTexto,
     contratacao_id: int | None = None,
     demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario_atual: Usuario = Depends(get_usuario_atual)
 ):
+    payload = payload.model_dump()
     texto = (payload.get("texto") or "").strip()
 
     if not texto:
@@ -8140,6 +8164,10 @@ def listar_minhas_anotacoes(
     # ---------------------------------------------------------
     # Busca somente anotações do contexto informado.
     # ---------------------------------------------------------
+    return _consultar_anotacoes(db, usuario_atual.id, curso_id, contratacao_id, demonstracao_id)
+
+
+def _consultar_anotacoes(db, usuario_id, curso_id, contratacao_id, demonstracao_id):
     query = (
         db.query(
             AnotacaoAlunoQuestao,
@@ -8177,7 +8205,7 @@ def listar_minhas_anotacoes(
             CursoAssuntoProprio.curso_disciplina_propria_id
         )
         .filter(
-            AnotacaoAlunoQuestao.usuario_id == usuario_atual.id,
+            AnotacaoAlunoQuestao.usuario_id == usuario_id,
             CursoDisciplinaPropria.curso_id == curso_id
         )
     )
@@ -8236,6 +8264,7 @@ def listar_minhas_anotacoes(
 
         resultado.append({
             "anotacao_id": anotacao.id,
+            "tentativa_id": anotacao.tentativa_id,
 
             "contratacao_id": anotacao.contratacao_id,
             "demonstracao_id": anotacao.demonstracao_id,
@@ -8269,6 +8298,25 @@ def listar_minhas_anotacoes(
         })
 
     return resultado
+
+
+@app.get("/me/cursos-expirados/{curso_id}/anotacoes")
+def anotacoes_curso_expirado(curso_id: int, db: Session = Depends(get_db),
+                            usuario_atual: Usuario = Depends(get_usuario_atual)):
+    agora = datetime.utcnow()
+    resultado = []
+    for modelo, campo in [(ContratacaoCurso, "contratacao_id"), (DemonstracaoCurso, "demonstracao_id")]:
+        contextos = db.query(modelo).filter(modelo.usuario_id == usuario_atual.id,
+            modelo.curso_id == curso_id, modelo.data_fim.isnot(None),
+            modelo.data_fim <= agora, modelo.data_inicio <= modelo.data_fim).all()
+        for acesso in contextos:
+            if campo == "contratacao_id" and acesso.origem not in {"ADMIN", "PAGAMENTO"}:
+                continue
+            registros = _consultar_anotacoes(db, usuario_atual.id, curso_id,
+                acesso.id if campo == "contratacao_id" else None,
+                acesso.id if campo == "demonstracao_id" else None)
+            resultado.extend(r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim)
+    return sorted(resultado, key=lambda r: r["criado_em"], reverse=True)
 
 
 # Questões práticas: conteúdo do assunto, independente de baterias/Sprint.

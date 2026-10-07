@@ -121,7 +121,7 @@ def registrar_rotas(app, get_db, get_usuario, validar):
             t = tentativa_atual(db, r, b.id)
             feitas = respondidas(db, t)
             baterias.append({'id': b.id, 'titulo': b.titulo, 'ordem': b.ordem,
-                             'total_questoes': len(qs), 'respondidas': len({q.id for q in qs} & feitas),
+                             'tentativa_id': t.id if t else None, 'total_questoes': len(qs), 'respondidas': len({q.id for q in qs} & feitas),
                              'concluida': bool(qs) and {q.id for q in qs}.issubset(feitas),
                              'respostas': [{'questao_id': x.questao_id, 'resposta_marcada': x.resposta_marcada,
                                             'dificuldade': x.dificuldade, 'rever': x.rever}

@@ -730,6 +730,11 @@ class RevisaoAluno(Base):
 
 class AnotacaoAlunoQuestao(Base):
     __tablename__ = "anotacoes_aluno_questao"
+    __table_args__ = (
+        Index("uq_anotacao_tentativa_questao", "tentativa_id", "questao_id", unique=True,
+              postgresql_where=text("tentativa_id IS NOT NULL"),
+              sqlite_where=text("tentativa_id IS NOT NULL")),
+    )
     contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
     demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
@@ -738,6 +743,8 @@ class AnotacaoAlunoQuestao(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     questao_id = Column(Integer, ForeignKey("questoes.id"), nullable=False)
     bateria_id = Column(Integer, ForeignKey("baterias.id"), nullable=False)
+
+    tentativa_id = Column(Integer, ForeignKey("tentativas_bateria.id"), nullable=True)
 
     texto = Column(Text, nullable=False)
 
