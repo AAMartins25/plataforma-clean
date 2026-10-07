@@ -675,6 +675,8 @@ class TentativaBateria(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     bateria_id = Column(Integer, ForeignKey("baterias.id"), nullable=False)
 
+    revisao_id = Column(Integer, ForeignKey("revisoes_aluno.id"), nullable=True, index=True)
+
     status = Column(String(20), default="EM_ANDAMENTO", nullable=False)
     percentual_acerto = Column(Integer, default=0)
 
@@ -712,6 +714,11 @@ class RevisaoAluno(Base):
     etapa = Column(Integer, default=1)
 
     data_prevista = Column(DateTime, nullable=False)
+
+    status = Column(String(20), nullable=False, default="PENDENTE")
+    concluida_em = Column(DateTime, nullable=True)
+    cancelada_em = Column(DateTime, nullable=True)
+    motivo_cancelamento = Column(String(50), nullable=True)
 
     concluida = Column(Boolean, default=False)
 

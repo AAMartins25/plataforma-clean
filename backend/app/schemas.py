@@ -642,3 +642,13 @@ class ContestacaoPagamentoCreate(BaseModel):
 
 class ContestacaoDevolucaoConfirmadaCreate(BaseModel):
     referencia_devolucao: str
+
+
+class RespostaRevisaoCreate(BaseModel):
+    questao_id: int
+    resposta_marcada: str
+    dificuldade: str | None = None
+    rever: bool = False
+
+class RespostasBateriaRevisaoCreate(BaseModel):
+    respostas: list[RespostaRevisaoCreate]

@@ -158,10 +158,23 @@
         }
 
         try {
-          questoes = await apiGetAuth(`/baterias/${bateriaId}/questoes${contextoAcessoQueryLocal() ? `?${contextoAcessoQueryLocal()}` : ""}`);
+          const revisaoId = qsLocal("revisao_id");
+          questoes = await apiGetAuth(revisaoId
+            ? `/me/revisoes/${Number(revisaoId)}/baterias/${bateriaId}/questoes?${contextoAcessoQueryLocal()}`
+            : `/baterias/${bateriaId}/questoes${contextoAcessoQueryLocal() ? `?${contextoAcessoQueryLocal()}` : ""}`);
           questoes.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
 
-          await carregarTentativaAtiva();
+          if (!qsLocal("revisao_id")) await carregarTentativaAtiva();
+          else {
+            const revisao=await apiGetAuth(`/me/revisoes/${Number(qsLocal('revisao_id'))}?${contextoAcessoQueryLocal()}`);
+            const bateria=revisao.baterias.find(b=>Number(b.id)===Number(bateriaId));
+            (bateria?.respostas || []).forEach(r=>{
+              respostasAluno[r.questao_id]=r.resposta_marcada;
+              dificuldadesAluno[r.questao_id]=r.dificuldade;
+              reverQuestoesAluno[r.questao_id]=r.rever;
+            });
+            if (bateria?.concluida) { revisarAgora(); return; }
+          }
 
           if (!questoes.length) {
             document.getElementById("area_questoes").innerHTML = `
@@ -194,6 +207,11 @@
       }
 
       function voltarParaListaQuestoes() {
+        if (qsLocal("revisao_id")) {
+          const q=new URLSearchParams(window.location.search);
+          q.delete('bateria_id'); q.delete('modo'); q.set('abrir','questoes');
+          window.location.href='teoria.html?'+q; return;
+        }
         const destino = localStorage.getItem("voltar_para_questoes");
 
         if (destino) {
@@ -670,6 +688,12 @@
         };
 
         try {
+          if (qsLocal("revisao_id")) {
+            const result=await apiPostAuth(`/me/revisoes/${Number(qsLocal("revisao_id"))}/baterias/${bateriaId}/respostas?${contextoAcessoQueryLocal()}`, {respostas: payload.respostas});
+            result.feedback.forEach(f=>{ const q=questoes.find(q=>q.id===f.questao_id); if(q) q.gabarito=f.gabarito; });
+            if (destino === 'agora') revisarAgora(); else voltarParaListaQuestoes();
+            return;
+          }
           const tentativa = await apiPostAuth("/baterias/concluir", payload);
 
           localStorage.setItem(
@@ -1136,6 +1160,7 @@
       }
 
       async function finalizarRevisao() {
+        if (qsLocal("revisao_id")) { voltarParaListaQuestoes(); return; }
         try {
           const tentativaSalva = JSON.parse(
             localStorage.getItem(`tentativa_bateria_${bateriaId}`) || "null"

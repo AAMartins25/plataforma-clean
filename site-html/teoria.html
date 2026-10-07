@@ -269,6 +269,10 @@
     }
 
     function voltarParaAssuntos() {
+      if (qs('revisao_id')) {
+        const q=new URLSearchParams(window.location.search); q.delete('revisao_id');
+        window.location.href='revisoes-programadas.html?'+q; return;
+      }
       const urlSalva = localStorage.getItem("voltar_para_assuntos");
 
       if (urlSalva) {
@@ -1382,7 +1386,33 @@
       }
     }
 
+    async function abrirQuestoesRevisao() {
+      const box = document.getElementById("detalhes_aula");
+      destacarBotaoSecao("questoes");
+      try {
+        const id = Number(qs("revisao_id"));
+        const r = await apiGet(`/me/revisoes/${id}?${contextoAcessoQuery()}`);
+        box.innerHTML = `<div class="card"><h3>${r.etapa}ª Revisão</h3>
+          ${r.status !== 'PENDENTE' ? `<p>${esc(r.status)}</p>` : r.baterias.filter(b=>b.total_questoes>0).map(b=> {
+            const q=new URLSearchParams(window.location.search);
+            q.set('bateria_id',b.id); q.set('titulo',b.titulo); q.set('abrir','questoes');
+            return `<p>${esc(b.titulo)} — ${b.respondidas}/${b.total_questoes} <a class="btn" href="sprint.html?${esc(q.toString())}">${b.concluida ? 'Visualizar respostas' : 'fazer'}</a></p>`;
+          }).join('')}
+          ${r.status === 'PENDENTE' ? '<button class="btn" onclick="concluirRevisaoAssunto()">Concluir Revisão</button>' : ''}</div>`;
+      } catch(e) { box.innerHTML=renderError('Erro ao carregar Revisão',e.message); }
+    }
+
+    async function concluirRevisaoAssunto() {
+      try {
+        const r=await apiPut(`/me/revisoes/${Number(qs('revisao_id'))}/concluir?${contextoAcessoQuery()}`,{});
+        alert(r.status === 'CANCELADA' ? 'Revisão cancelada por perda de objeto.' : 'Revisão concluída.');
+        const q=new URLSearchParams(window.location.search); q.delete('revisao_id');
+        window.location.href='revisoes-programadas.html?'+q;
+      } catch(e) { alert(e.message); }
+    }
+
     async function abrirSecaoQuestoes(aulaId) {
+      if (qs("revisao_id")) return abrirQuestoesRevisao();
       aulaAtualId = aulaId;
 
       destacarBotaoSecao("questoes");
@@ -1414,7 +1444,7 @@
           concluidas.every(b => b.status_aluno === "FEITA");
 
         if (todasAsBateriasDoAssuntoFeitas) {
-          criarOuAtualizarRevisaoDoAssunto();
+          // A agenda de Revisões é programada exclusivamente pelo backend.
         }
 
         box.innerHTML = `

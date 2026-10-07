@@ -1437,11 +1437,19 @@ def listar_pastas_do_assunto(assunto_id: int, db: Session = Depends(get_db)):
     return [{"id": p.id, "assunto_id": p.assunto_id, "tipo": p.tipo, "nome": p.nome} for p in pastas]
 
 @app.post("/aulas")
-def criar_aula(aula: AulaCreate, db: Session = Depends(get_db)): 
+def criar_aula(aula: AulaCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+
+    if not usuario.is_admin:
+        raise HTTPException(403, "Apenas admin")
 
     pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
     if not pasta:
         return {"erro": "Pasta não encontrada"}
+
+    if pasta.curso_assunto_proprio_id:
+        db.query(Pasta).filter(Pasta.id == pasta.id).with_for_update().first()
+        if db.query(Aula).filter(Aula.pasta_id == pasta.id).first():
+            raise HTTPException(409, "O assunto já possui sua aula técnica")
 
     # Regra: Aula só pode ser criada dentro da pasta TEORIA
     if pasta.tipo != "TEORIA":
@@ -2755,12 +2763,10 @@ def listar_questoes_da_bateria(
         demonstracao_id=demonstracao_id,
     )
 
-    questoes = (
-        db.query(Questao)
-        .filter(Questao.bateria_id == bateria_id)
-        .order_by(Questao.ordem.asc(), Questao.id.asc())
-        .all()
-    )
+    from app.revisoes import disponiveis
+    questoes = next((qs for b, qs in disponiveis(db, aula.id) if b.id == bateria_id), None)
+    if questoes is None:
+        raise HTTPException(404, "Bateria indisponível ao aluno")
 
     resultado = []
 
@@ -6249,6 +6255,8 @@ def obter_pasta_teoria_assunto_proprio(
     if not pasta:
         raise HTTPException(status_code=404, detail="Pasta TEORIA não encontrada")
 
+    db.query(Pasta).filter(Pasta.id == pasta.id).with_for_update().first()
+
     aula = (
         db.query(Aula)
         .filter(Aula.pasta_id == pasta.id)
@@ -6292,6 +6300,11 @@ def criar_aula_pasta(
 
     if not pasta:
         raise HTTPException(status_code=404, detail="Pasta não encontrada")
+
+    if pasta.curso_assunto_proprio_id:
+        db.query(Pasta).filter(Pasta.id == pasta.id).with_for_update().first()
+        if db.query(Aula).filter(Aula.pasta_id == pasta.id).first():
+            raise HTTPException(409, "O assunto já possui sua aula técnica")
 
     aula = Aula(
         pasta_id=pasta_id,
@@ -6625,85 +6638,17 @@ def finalizar_revisao_tentativa(
             detail="Aula não encontrada"
         )
 
-    baterias_da_aula = (
-        db.query(Bateria)
-        .filter(
-            Bateria.aula_id == aula.id,
-            Bateria.ativo == True
-        )
-        .all()
-    )
-
-    todas_feitas = True
-
-    for b in baterias_da_aula:
-        tentativa_feita = (
-            db.query(TentativaBateria)
-            .filter(
-                TentativaBateria.usuario_id == usuario_atual.id,
-                TentativaBateria.bateria_id == b.id,
-                TentativaBateria.status == "FEITA",
-                TentativaBateria.contratacao_id == contexto_contratacao_id,
-                TentativaBateria.demonstracao_id == contexto_demonstracao_id,
-            )
-            .first()
-        )
-
-        if not tentativa_feita:
-            todas_feitas = False
-            break
-
-    if todas_feitas and baterias_da_aula:
-        progresso_existente = (
-            db.query(ProgressoAula)
-            .filter(
-                ProgressoAula.usuario_id == usuario_atual.id,
-                ProgressoAula.aula_id == aula.id,
-                ProgressoAula.contratacao_id == contexto_contratacao_id,
-                ProgressoAula.demonstracao_id == contexto_demonstracao_id,
-            )
-            .first()
-        )
-
-        if progresso_existente:
-            progresso_existente.concluida = True
-            progresso_existente.data_conclusao = datetime.utcnow()
-        else:
-            db.add(
-                ProgressoAula(
-                    usuario_id=usuario_atual.id,
-                    pasta_id=aula.pasta_id,
-                    aula_id=aula.id,
-                    contratacao_id=contexto_contratacao_id,
-                    demonstracao_id=contexto_demonstracao_id,
-                    concluida=True
-                )
-            )
-
-        revisao_existente = (
-            db.query(RevisaoAluno)
-            .filter(
-                RevisaoAluno.usuario_id == usuario_atual.id,
-                RevisaoAluno.aula_id == aula.id,
-                RevisaoAluno.etapa == 1,
-                RevisaoAluno.contratacao_id == contexto_contratacao_id,
-                RevisaoAluno.demonstracao_id == contexto_demonstracao_id,
-            )
-            .first()
-        )
-
-        if not revisao_existente:
-            db.add(
-                RevisaoAluno(
-                    usuario_id=usuario_atual.id,
-                    aula_id=aula.id,
-                    pasta_id=aula.pasta_id,
-                    contratacao_id=contexto_contratacao_id,
-                    demonstracao_id=contexto_demonstracao_id,
-                    etapa=1,
-                    data_prevista=datetime.utcnow() + timedelta(days=7)
-                )
-            )
+    from app.revisoes import estrutura, programar_primeira
+    _, _, disciplina, _ = estrutura(db, aula.pasta_id)
+    validar_contexto_estudo(db=db, usuario=usuario_atual, curso_id=disciplina.curso_id,
+                           contratacao_id=contexto_contratacao_id,
+                           demonstracao_id=contexto_demonstracao_id)
+    if tentativa.revisao_id is not None:
+        raise HTTPException(409, "Use o fluxo próprio de Revisões")
+    if not tentativa.ativo:
+        raise HTTPException(409, "Tentativa inativa")
+    programar_primeira(db, usuario_atual.id, aula,
+                      contexto_contratacao_id, contexto_demonstracao_id)
 
     db.commit()
     db.refresh(tentativa)
@@ -6777,16 +6722,10 @@ def listar_baterias_com_status_do_aluno(
         demonstracao_id=demonstracao_id,
     )
 
-    baterias = (
-        db.query(Bateria)
-        .filter(
-            Bateria.aula_id == aula_id,
-            Bateria.status == "CONCLUIDA",
-            Bateria.ativo == True
-        )
-        .order_by(Bateria.ordem.asc(), Bateria.id.asc())
-        .all()
-    )
+    from app.revisoes import disponiveis
+    conjunto = disponiveis(db, aula_id)
+    baterias = [b for b, _ in conjunto]
+    quantidade = {b.id: len(qs) for b, qs in conjunto}
 
     resultado = []
 
@@ -6796,7 +6735,8 @@ def listar_baterias_com_status_do_aluno(
             .filter(
                 TentativaBateria.usuario_id == usuario_atual.id,
                 TentativaBateria.bateria_id == b.id,
-                TentativaBateria.ativo == True
+                TentativaBateria.ativo == True,
+                TentativaBateria.revisao_id.is_(None)
             )
         )
 
@@ -6823,9 +6763,7 @@ def listar_baterias_com_status_do_aluno(
             "titulo": b.titulo,
             "ordem": b.ordem,
             "status_bateria": b.status,
-            "questoes_count": db.query(Questao).filter(
-                Questao.bateria_id == b.id
-            ).count(),
+            "questoes_count": quantidade[b.id],
             "status_aluno": tentativa.status if tentativa else None,
             "percentual_acerto": tentativa.percentual_acerto if tentativa else None,
             "tentativa_id": tentativa.id if tentativa else None
@@ -7051,6 +6989,7 @@ def obter_minha_tentativa_ativa(
             TentativaBateria.usuario_id == usuario_atual.id,
             TentativaBateria.bateria_id == bateria_id,
             TentativaBateria.ativo == True,
+            TentativaBateria.revisao_id.is_(None),
             TentativaBateria.contratacao_id == contexto["contratacao_id"],
             TentativaBateria.demonstracao_id == contexto["demonstracao_id"],
         )
@@ -7607,7 +7546,7 @@ def listar_minhas_revisoes(
         db.query(RevisaoAluno)
         .filter(
             RevisaoAluno.usuario_id == usuario_atual.id,
-            RevisaoAluno.concluida == False
+            RevisaoAluno.status == "PENDENTE"
         )
     )
 
@@ -7641,137 +7580,17 @@ def listar_minhas_revisoes(
             "pasta_id": r.pasta_id,
             "titulo": aula.titulo if aula else "Aula",
             "etapa": r.etapa,
-            "data_prevista": r.data_prevista
+            "data_prevista": r.data_prevista,
+            "status": r.status,
+            "contratacao_id": r.contratacao_id,
+            "demonstracao_id": r.demonstracao_id
         })
 
     return resultado
 
 
-@app.put("/me/revisoes/{revisao_id}/concluir")
-def concluir_revisao(
-    revisao_id: int,
-    contratacao_id: int | None = None,
-    demonstracao_id: int | None = None,
-    db: Session = Depends(get_db),
-    usuario_atual: Usuario = Depends(get_usuario_atual)
-):
-    # ---------------------------------------------------------
-    # Valida o contexto de estudo.
-    # ---------------------------------------------------------
-    if contratacao_id is None and demonstracao_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail="É necessário informar contratacao_id ou demonstracao_id"
-        )
-
-    if contratacao_id is not None and demonstracao_id is not None:
-        raise HTTPException(
-            status_code=400,
-            detail="Informe apenas um contexto de estudo"
-        )
-
-    # ---------------------------------------------------------
-    # A revisão só pode ser localizada dentro do contexto informado.
-    # ---------------------------------------------------------
-    revisao_query = (
-        db.query(RevisaoAluno)
-        .filter(
-            RevisaoAluno.id == revisao_id,
-            RevisaoAluno.usuario_id == usuario_atual.id
-        )
-    )
-
-    if contratacao_id is not None:
-        revisao_query = revisao_query.filter(
-            RevisaoAluno.contratacao_id == contratacao_id,
-            RevisaoAluno.demonstracao_id.is_(None)
-        )
-    else:
-        revisao_query = revisao_query.filter(
-            RevisaoAluno.contratacao_id.is_(None),
-            RevisaoAluno.demonstracao_id == demonstracao_id
-        )
-
-    revisao = revisao_query.first()
-
-    if not revisao:
-        raise HTTPException(
-            status_code=404,
-            detail="Revisão não encontrada"
-        )
-
-    # ---------------------------------------------------------
-    # Identifica o curso da revisão e valida o contexto.
-    # ---------------------------------------------------------
-    pasta = db.query(Pasta).filter(
-        Pasta.id == revisao.pasta_id
-    ).first()
-
-    if not pasta or not pasta.curso_assunto_proprio_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Revisão não vinculada a um assunto próprio de curso"
-        )
-
-    assunto = db.query(CursoAssuntoProprio).filter(
-        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
-    ).first()
-
-    if not assunto:
-        raise HTTPException(
-            status_code=404,
-            detail="Assunto próprio do curso não encontrado"
-        )
-
-    disciplina = db.query(CursoDisciplinaPropria).filter(
-        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
-    ).first()
-
-    if not disciplina:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplina própria do curso não encontrada"
-        )
-
-    validar_contexto_estudo(
-        db=db,
-        usuario=usuario_atual,
-        curso_id=disciplina.curso_id,
-        contratacao_id=contratacao_id,
-        demonstracao_id=demonstracao_id,
-    )
-
-    revisao.concluida = True
-
-    db.commit()
-
-    from datetime import timedelta
-
-    proxima_etapa = revisao.etapa + 1
-
-    intervalo = {
-        2: 15,
-        3: 21,
-        4: 28
-    }
-
-    if proxima_etapa <= 4:
-        db.add(
-            RevisaoAluno(
-                usuario_id=revisao.usuario_id,
-                aula_id=revisao.aula_id,
-                pasta_id=revisao.pasta_id,
-                contratacao_id=revisao.contratacao_id,
-                demonstracao_id=revisao.demonstracao_id,
-                etapa=proxima_etapa,
-                data_prevista=datetime.utcnow() +
-                timedelta(days=intervalo[proxima_etapa])
-            )
-        )
-
-        db.commit()
-
-    return {"ok": True}
+from app.revisoes import registrar_rotas as registrar_rotas_revisoes
+registrar_rotas_revisoes(app, get_db, get_usuario_atual, validar_contexto_estudo)
 
 
 @app.post("/me/anotacoes-questoes")
