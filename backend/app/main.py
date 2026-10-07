@@ -8450,3 +8450,558 @@ def listar_minhas_anotacoes(
         })
 
     return resultado
+
+
+# Questões práticas: conteúdo do assunto, independente de baterias/Sprint.
+SEGREDO_SESSAO_PRATICA = (os.getenv("QUESTOES_PRATICA_SESSION_SECRET") or "").strip()
+
+
+def exigir_segredo_pratica():
+    if len(SEGREDO_SESSAO_PRATICA) < 32:
+        raise HTTPException(503, "Questões práticas temporariamente indisponíveis: configuração de sessão ausente ou inválida.")
+    return SEGREDO_SESSAO_PRATICA
+
+
+def versao_questao_pratica(db, questao, alternativas=None):
+    # HMAC evita expor um hash que permitiria adivinhar o gabarito C/E ou A–E.
+    import json
+    if alternativas is None:
+        alternativas = db.query(models.QuestaoPraticaAlternativa).filter_by(
+            questao_pratica_id=questao.id).order_by(models.QuestaoPraticaAlternativa.letra).all()
+    conteudo = [questao.id, questao.curso_assunto_proprio_id, questao.tipo,
+                questao.enunciado, questao.gabarito, questao.comentario, questao.ativo,
+                [[a.letra, a.texto, a.correta] for a in alternativas]]
+    return hmac.new(exigir_segredo_pratica().encode(),
+                    json.dumps(conteudo, ensure_ascii=False, separators=(",", ":")).encode(),
+                    hashlib.sha256).hexdigest()
+
+FILTROS_PRATICA_BITS = {"DIFICIL": 1, "MEDIA": 2, "FACIL": 4, "ERREI": 8, "REVER": 16}
+
+
+def chave_filtros_pratica(filtros):
+    return "TODAS" if "TODAS" in filtros else "F:" + str(sum(FILTROS_PRATICA_BITS[f] for f in set(filtros)))
+
+
+def contexto_query_pratica(query, modelo, usuario_id, contexto):
+    return query.filter(
+        modelo.usuario_id == usuario_id,
+        modelo.contratacao_id == contexto["contratacao_id"],
+        modelo.demonstracao_id == contexto["demonstracao_id"],
+    )
+
+
+def acesso_assunto_pratica(db, usuario, assunto_id, contratacao_id, demonstracao_id):
+    assunto = db.query(models.CursoAssuntoProprio).filter_by(id=assunto_id, ativo=True).first()
+    if not assunto:
+        raise HTTPException(404, "Assunto não encontrado ou inativo.")
+    disciplina = db.query(models.CursoDisciplinaPropria).filter_by(
+        id=assunto.curso_disciplina_propria_id, ativo=True).first()
+    if not disciplina:
+        raise HTTPException(404, "Disciplina não encontrada ou inativa.")
+    if not db.query(models.Curso).filter_by(id=disciplina.curso_id, ativo=True).first():
+        raise HTTPException(404, "Curso não encontrado ou inativo.")
+    contexto = validar_contexto_estudo(db, usuario, disciplina.curso_id, contratacao_id, demonstracao_id)
+    if contexto["demonstracao_id"] is not None:
+        liberadas = db.query(models.CursoDisciplinaPropria.id).filter_by(
+            curso_id=disciplina.curso_id, ativo=True).order_by(
+                models.CursoDisciplinaPropria.ordem, models.CursoDisciplinaPropria.id).limit(2).all()
+        if disciplina.id not in {d.id for d in liberadas}:
+            raise HTTPException(403, "Esta disciplina não está disponível no acesso gratuito.")
+    return assunto, contexto
+
+
+def bloquear_pratica(db, usuario_id, assunto_id, contexto):
+    # Serializa as rotas deste módulo enquanto a migração de unicidade está adiada.
+    if db.get_bind().dialect.name == "postgresql":
+        import hashlib
+        valor = f"pratica:{usuario_id}:{assunto_id}:{contexto['contratacao_id']}:{contexto['demonstracao_id']}"
+        chave = int.from_bytes(hashlib.sha256(valor.encode()).digest()[:8], "big", signed=True)
+        db.execute(text("SELECT pg_advisory_xact_lock(:chave)"), {"chave": chave})
+
+
+def questoes_elegiveis_pratica(db, assunto_id, usuario_id, contexto, filtros):
+    query = db.query(models.QuestaoPraticaAssunto).filter_by(
+        curso_assunto_proprio_id=assunto_id, ativo=True)
+    if "TODAS" not in filtros:
+        m = models.QuestaoPraticaMarcacaoAluno
+        marcacoes = contexto_query_pratica(db.query(m.questao_id), m, usuario_id, contexto)
+        condicoes = []
+        for dificuldade in ("DIFICIL", "MEDIA", "FACIL"):
+            if dificuldade in filtros:
+                condicoes.append(m.dificuldade_marcada == dificuldade)
+        if "ERREI" in filtros:
+            condicoes.append((m.acertou == False) & (m.nao_soube == False))
+        if "REVER" in filtros:
+            condicoes.append(m.rever == True)
+        query = query.filter(models.QuestaoPraticaAssunto.id.in_(marcacoes.filter(or_(*condicoes))))
+    return query
+
+
+def validar_conjunto_pratica(db, assunto_id, usuario_id, contexto, filtros, ids):
+    elegiveis = sorted(q.id for q in questoes_elegiveis_pratica(
+        db, assunto_id, usuario_id, contexto, filtros).all())
+    if ids is not None:
+        # Compatibilidade com o frontend: a lista nunca define o conjunto do ciclo.
+        pertencentes = {q.id for q in db.query(models.QuestaoPraticaAssunto).filter(
+            models.QuestaoPraticaAssunto.curso_assunto_proprio_id == assunto_id,
+            models.QuestaoPraticaAssunto.id.in_(ids)).all()}
+        if set(ids) - pertencentes:
+            raise HTTPException(400, "IDs da sessão não pertencem a este assunto.")
+    return elegiveis
+
+
+def rotatividade_query_pratica(db, assunto_id, usuario_id, contexto, chave):
+    r = models.QuestaoPraticaRotatividadeAluno
+    return contexto_query_pratica(db.query(r), r, usuario_id, contexto).filter_by(
+        curso_assunto_proprio_id=assunto_id, filtro=chave)
+
+
+def estado_ciclo_pratica(db, assunto_id, usuario_id, contexto, chave, ids):
+    registros = rotatividade_query_pratica(db, assunto_id, usuario_id, contexto, chave).all()
+    ciclo = max((r.ciclo for r in registros), default=1)
+    respondidas = {r.questao_id for r in registros if r.ciclo == ciclo}
+    pendentes = set(ids) - respondidas
+    # Só avança depois de percorrer TODO o conjunto elegível calculado no servidor.
+    if ids and not pendentes:
+        ciclo += 1
+        respondidas = set()
+        pendentes = set(ids)
+    return ciclo, respondidas, pendentes
+
+
+@app.get("/curso-assuntos-proprios/{assunto_id}/questoes-pratica/filtros",
+         response_model=dict[str, schemas.DisponibilidadeFiltroPratica])
+def obter_filtros_questoes_pratica(assunto_id: int, contratacao_id: int | None = None,
+                                  demonstracao_id: int | None = None,
+                                  db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    _, contexto = acesso_assunto_pratica(db, usuario, assunto_id, contratacao_id, demonstracao_id)
+    resultado = {}
+    for filtro in ("TODAS", *FILTROS_PRATICA_BITS):
+        quantidade = questoes_elegiveis_pratica(db, assunto_id, usuario.id, contexto, [filtro]).count()
+        resultado[filtro] = {"habilitado": quantidade > 0, "quantidade": quantidade}
+    return resultado
+
+
+@app.post("/curso-assuntos-proprios/{assunto_id}/questoes-pratica/proxima",
+          response_model=schemas.ProximaQuestaoPraticaResponse)
+def obter_proxima_questao_pratica(assunto_id: int, dados: schemas.ProximaQuestaoPraticaRequest,
+                                 db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    from jose import jwt
+    exigir_segredo_pratica()
+    _, contexto = acesso_assunto_pratica(db, usuario, assunto_id, dados.contratacao_id, dados.demonstracao_id)
+    bloquear_pratica(db, usuario.id, assunto_id, contexto)
+    ids = validar_conjunto_pratica(db, assunto_id, usuario.id, contexto, dados.filtros, dados.ids_questoes_sessao)
+    if not ids:
+        raise HTTPException(404, "Nenhuma questão disponível para os filtros selecionados.")
+    chave = chave_filtros_pratica(dados.filtros)
+    ciclo, respondidas, disponiveis = estado_ciclo_pratica(
+        db, assunto_id, usuario.id, contexto, chave, ids)
+    questao = db.query(models.QuestaoPraticaAssunto).filter(
+        models.QuestaoPraticaAssunto.id.in_(disponiveis)).order_by(func.random()).first()
+    alternativas = db.query(models.QuestaoPraticaAlternativa).filter_by(
+        questao_pratica_id=questao.id).order_by(models.QuestaoPraticaAlternativa.letra).all()
+    token = jwt.encode({"sub": str(usuario.id), "uso": "questoes_pratica", "assunto_id": assunto_id,
+                         "questao_id": questao.id, "ids": ids, "ciclo": ciclo, "filtro": chave,
+                         "versao_questao": versao_questao_pratica(db, questao, alternativas),
+                         "exp": datetime.utcnow() + timedelta(hours=1),
+                         **contexto}, SEGREDO_SESSAO_PRATICA, algorithm="HS256")
+    return {"numero_questao": len(respondidas & set(ids)) + 1, "ciclo": ciclo, "filtro": chave,
+            "ids_questoes_sessao": ids, "token_sessao": token,
+            "questao": {"id": questao.id, "curso_assunto_proprio_id": assunto_id,
+                        "tipo": questao.tipo, "enunciado": questao.enunciado,
+                        "alternativas": [{"id": a.id, "letra": a.letra, "texto": a.texto} for a in alternativas]}}
+
+
+@app.post("/questoes-pratica/{questao_id}/responder", response_model=schemas.ResultadoQuestaoPraticaResponse)
+def responder_questao_pratica(questao_id: int, dados: schemas.ResponderQuestaoPraticaRequest,
+                              db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    from jose import jwt
+    exigir_segredo_pratica()
+    questao = db.query(models.QuestaoPraticaAssunto).filter_by(id=questao_id, ativo=True).first()
+    if not questao:
+        raise HTTPException(404, "Questão não encontrada ou inativa.")
+    _, contexto = acesso_assunto_pratica(db, usuario, questao.curso_assunto_proprio_id,
+                                        dados.contratacao_id, dados.demonstracao_id)
+    bloquear_pratica(db, usuario.id, questao.curso_assunto_proprio_id, contexto)
+    # Serializa com edição/exclusão administrativa e atualiza o objeto já carregado.
+    db.refresh(questao, with_for_update=True)
+    if not questao.ativo:
+        raise HTTPException(404, "Questão não encontrada ou inativa.")
+    try:
+        sessao = jwt.decode(dados.token_sessao, SEGREDO_SESSAO_PRATICA, algorithms=["HS256"])
+    except Exception:
+        raise HTTPException(409, "Sessão inválida ou expirada. Carregue novamente a questão.")
+    chave = chave_filtros_pratica(dados.filtros)
+    esperado = {"sub": str(usuario.id), "uso": "questoes_pratica", "assunto_id": questao.curso_assunto_proprio_id,
+                "questao_id": questao.id, "filtro": chave, **contexto}
+    if not sessao or any(sessao.get(k) != v for k, v in esperado.items()):
+        raise HTTPException(409, "Sessão incompatível com a questão ou contexto.")
+    if not hmac.compare_digest(sessao.get("versao_questao", ""), versao_questao_pratica(db, questao)):
+        raise HTTPException(409, "Questão alterada após a seleção. Carregue novamente.")
+    ids = validar_conjunto_pratica(db, questao.curso_assunto_proprio_id, usuario.id, contexto, dados.filtros, None)
+    if ids != sessao["ids"] or questao.id not in ids:
+        raise HTTPException(409, "Conjunto deixou de atender aos filtros. Carregue novamente.")
+    ciclo, _, pendentes = estado_ciclo_pratica(
+        db, questao.curso_assunto_proprio_id, usuario.id, contexto, chave, ids)
+    if sessao.get("ciclo") != ciclo or questao.id not in pendentes:
+        raise HTTPException(409, "Questão já respondida ou ciclo desatualizado.")
+    resposta = dados.resposta_marcada
+    if questao.tipo == "CERTO_ERRADO":
+        if resposta not in {"C", "E", "NAO_SEI"}:
+            raise HTTPException(400, "Resposta inválida para CERTO/ERRADO.")
+        if questao.gabarito not in {"C", "E"}:
+            raise HTTPException(409, "Gabarito inválido no cadastro.")
+    elif questao.tipo == "MULTIPLA":
+        alternativas = db.query(models.QuestaoPraticaAlternativa).filter_by(questao_pratica_id=questao.id).all()
+        letras = sorted(a.letra for a in alternativas)
+        if letras not in [list("ABCD"), list("ABCDE")] or sum(a.correta for a in alternativas) != 1 or not any(a.correta and a.letra == questao.gabarito for a in alternativas):
+            raise HTTPException(409, "Alternativas ou gabarito inválidos no cadastro.")
+        if resposta not in letras:
+            raise HTTPException(400, "Resposta não corresponde a uma alternativa.")
+    else:
+        raise HTTPException(409, "Tipo de questão inválido no cadastro.")
+    nao_soube = resposta == "NAO_SEI"
+    acertou = None if nao_soube else resposta == questao.gabarito
+    m = models.QuestaoPraticaMarcacaoAluno
+    marcacoes = contexto_query_pratica(db.query(m), m, usuario.id, contexto).filter_by(questao_id=questao.id).all()
+    if len(marcacoes) > 1:
+        raise HTTPException(409, "Marcações duplicadas; dados precisam de revisão.")
+    marcacao = marcacoes[0] if marcacoes else m(usuario_id=usuario.id, questao_id=questao.id, **contexto)
+    marcacao.dificuldade_marcada = dados.dificuldade_marcada
+    marcacao.acertou = acertou
+    marcacao.rever = dados.rever
+    marcacao.nao_soube = nao_soube
+    db.add(marcacao)
+    db.add(models.QuestaoPraticaRotatividadeAluno(usuario_id=usuario.id,
+        curso_assunto_proprio_id=questao.curso_assunto_proprio_id, questao_id=questao.id,
+        filtro=chave, ciclo=ciclo, **contexto))
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return {"questao_id": questao.id, "acertou": acertou, "nao_soube": nao_soube,
+            "gabarito": questao.gabarito, "comentario": questao.comentario,
+            "dificuldade_marcada": marcacao.dificuldade_marcada, "rever": marcacao.rever,
+            "ciclo": ciclo, "filtro": chave}
+
+
+@app.post("/admin/questoes-pratica")
+def criar_questao_pratica_admin(
+    dados: schemas.QuestaoPraticaAdminCreate,
+    db: Session = Depends(get_db),
+    usuario: models.Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administrador.")
+
+    if not dados.enunciado.strip():
+        raise HTTPException(400, "Enunciado não pode ser vazio.")
+    tipo = (dados.tipo or "").strip().upper()
+
+    if tipo not in ["CERTO_ERRADO", "MULTIPLA"]:
+        raise HTTPException(status_code=400, detail="Tipo inválido.")
+
+    assunto = db.query(models.CursoAssuntoProprio).filter(
+        models.CursoAssuntoProprio.id == dados.curso_assunto_proprio_id
+    ).first()
+
+    if not assunto:
+        raise HTTPException(status_code=404, detail="Assunto não encontrado.")
+
+    if tipo == "CERTO_ERRADO":
+        gabarito = (dados.gabarito or "").strip().upper()
+
+        if gabarito not in ["C", "E"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Para CERTO/ERRADO, o gabarito deve ser C ou E."
+            )
+
+        questao = models.QuestaoPraticaAssunto(
+            curso_assunto_proprio_id=dados.curso_assunto_proprio_id,
+            tipo=tipo,
+            enunciado=dados.enunciado.strip(),
+            gabarito=gabarito,
+            comentario=dados.comentario,
+            ativo=dados.ativo
+        )
+
+        db.add(questao)
+        db.commit()
+        db.refresh(questao)
+
+        return {
+            "id": questao.id,
+            "tipo": questao.tipo,
+            "gabarito": questao.gabarito,
+            "mensagem": "Questão cadastrada com sucesso."
+        }
+
+    alternativas = dados.alternativas or []
+
+    if len(alternativas) not in [4, 5]:
+        raise HTTPException(
+            status_code=400,
+            detail="A questão de múltipla escolha deve possuir 4 ou 5 alternativas."
+        )
+
+    letras = [a.letra.strip().upper() for a in alternativas]
+
+    if len(set(letras)) != len(letras):
+        raise HTTPException(
+            status_code=400,
+            detail="Não pode haver letras repetidas nas alternativas."
+        )
+
+    letras_validas = list("ABCD" if len(alternativas) == 4 else "ABCDE")
+    if set(letras) != set(letras_validas) or any(not a.texto.strip() for a in alternativas):
+        raise HTTPException(400, "Use exatamente A–D ou A–E, com textos não vazios.")
+
+    for letra in letras:
+        if letra not in letras_validas:
+            raise HTTPException(
+                status_code=400,
+                detail="As letras das alternativas devem ser A, B, C, D ou E."
+            )
+
+    alternativas_corretas = [
+        a for a in alternativas
+        if a.correta
+    ]
+
+    if len(alternativas_corretas) != 1:
+        raise HTTPException(
+            status_code=400,
+            detail="A questão deve possuir exatamente uma alternativa correta."
+        )
+
+    gabarito = alternativas_corretas[0].letra.strip().upper()
+
+    questao = models.QuestaoPraticaAssunto(
+        curso_assunto_proprio_id=dados.curso_assunto_proprio_id,
+        tipo=tipo,
+        enunciado=dados.enunciado.strip(),
+        gabarito=gabarito,
+        comentario=dados.comentario,
+        ativo=dados.ativo
+    )
+
+    db.add(questao)
+    db.flush()
+
+    for alternativa in alternativas:
+        db.add(
+            models.QuestaoPraticaAlternativa(
+                questao_pratica_id=questao.id,
+                letra=alternativa.letra.strip().upper(),
+                texto=alternativa.texto.strip(),
+                correta=alternativa.correta
+            )
+        )
+
+    db.commit()
+    db.refresh(questao)
+
+    return {
+        "id": questao.id,
+        "tipo": questao.tipo,
+        "gabarito": questao.gabarito,
+        "mensagem": "Questão cadastrada com sucesso."
+    }
+
+@app.get("/admin/curso-assuntos-proprios/{curso_assunto_proprio_id}/questoes-pratica")
+def listar_questoes_pratica_admin(
+    curso_assunto_proprio_id: int,
+    db: Session = Depends(get_db),
+    usuario: models.Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administrador.")
+
+    questoes = (
+        db.query(models.QuestaoPraticaAssunto)
+        .filter(
+            models.QuestaoPraticaAssunto.curso_assunto_proprio_id == curso_assunto_proprio_id
+        )
+        .order_by(models.QuestaoPraticaAssunto.id.asc())
+        .all()
+    )
+
+    resultado = []
+
+    for q in questoes:
+        alternativas = (
+            db.query(models.QuestaoPraticaAlternativa)
+            .filter(models.QuestaoPraticaAlternativa.questao_pratica_id == q.id)
+            .order_by(models.QuestaoPraticaAlternativa.letra.asc())
+            .all()
+        )
+
+        resultado.append({
+            "id": q.id,
+            "curso_assunto_proprio_id": q.curso_assunto_proprio_id,
+            "tipo": q.tipo,
+            "enunciado": q.enunciado,
+            "gabarito": q.gabarito,
+            "comentario": q.comentario,
+            "ativo": q.ativo,
+            "alternativas": [
+                {
+                    "id": a.id,
+                    "letra": a.letra,
+                    "texto": a.texto,
+                    "correta": a.correta
+                }
+                for a in alternativas
+            ]
+        })
+
+    return resultado
+
+@app.put("/admin/questoes-pratica/{questao_id}")
+def editar_questao_pratica_admin(
+    questao_id: int,
+    dados: schemas.QuestaoPraticaAdminUpdate,
+    db: Session = Depends(get_db),
+    usuario: models.Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administrador.")
+
+    questao = db.query(models.QuestaoPraticaAssunto).filter(
+        models.QuestaoPraticaAssunto.id == questao_id
+    ).with_for_update().first()
+
+    if not questao:
+        raise HTTPException(status_code=404, detail="Questão não encontrada.")
+
+    if not dados.enunciado.strip():
+        raise HTTPException(400, "Enunciado não pode ser vazio.")
+    tipo = (dados.tipo or "").strip().upper()
+
+    if tipo not in ["CERTO_ERRADO", "MULTIPLA"]:
+        raise HTTPException(status_code=400, detail="Tipo inválido.")
+
+    if tipo == "CERTO_ERRADO":
+        gabarito = (dados.gabarito or "").strip().upper()
+
+        if gabarito not in ["C", "E"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Para CERTO/ERRADO, o gabarito deve ser C ou E."
+            )
+
+        db.query(models.QuestaoPraticaAlternativa).filter(
+            models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
+        ).delete()
+
+        questao.tipo = tipo
+        questao.enunciado = dados.enunciado.strip()
+        questao.gabarito = gabarito
+        questao.comentario = dados.comentario
+        questao.ativo = dados.ativo
+
+        db.commit()
+        db.refresh(questao)
+
+        return {
+            "id": questao.id,
+            "tipo": questao.tipo,
+            "gabarito": questao.gabarito,
+            "mensagem": "Questão atualizada com sucesso."
+        }
+
+    alternativas = dados.alternativas or []
+
+    if len(alternativas) not in [4, 5]:
+        raise HTTPException(
+            status_code=400,
+            detail="A questão de múltipla escolha deve possuir 4 ou 5 alternativas."
+        )
+
+    letras = [a.letra.strip().upper() for a in alternativas]
+
+    if len(set(letras)) != len(letras):
+        raise HTTPException(
+            status_code=400,
+            detail="Não pode haver letras repetidas nas alternativas."
+        )
+
+    letras_validas = list("ABCD" if len(alternativas) == 4 else "ABCDE")
+    if set(letras) != set(letras_validas) or any(not a.texto.strip() for a in alternativas):
+        raise HTTPException(400, "Use exatamente A–D ou A–E, com textos não vazios.")
+
+    for letra in letras:
+        if letra not in letras_validas:
+            raise HTTPException(
+                status_code=400,
+                detail="As letras das alternativas devem ser A, B, C, D ou E."
+            )
+
+    alternativas_corretas = [a for a in alternativas if a.correta]
+
+    if len(alternativas_corretas) != 1:
+        raise HTTPException(
+            status_code=400,
+            detail="A questão deve possuir exatamente uma alternativa correta."
+        )
+
+    gabarito = alternativas_corretas[0].letra.strip().upper()
+
+    questao.tipo = tipo
+    questao.enunciado = dados.enunciado.strip()
+    questao.gabarito = gabarito
+    questao.comentario = dados.comentario
+    questao.ativo = dados.ativo
+
+    db.query(models.QuestaoPraticaAlternativa).filter(
+        models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
+    ).delete()
+
+    for alternativa in alternativas:
+        db.add(
+            models.QuestaoPraticaAlternativa(
+                questao_pratica_id=questao.id,
+                letra=alternativa.letra.strip().upper(),
+                texto=alternativa.texto.strip(),
+                correta=alternativa.correta
+            )
+        )
+
+    db.commit()
+    db.refresh(questao)
+
+    return {
+        "id": questao.id,
+        "tipo": questao.tipo,
+        "gabarito": questao.gabarito,
+        "mensagem": "Questão atualizada com sucesso."
+    }
+
+@app.delete("/admin/questoes-pratica/{questao_id}")
+def excluir_questao_pratica_admin(
+    questao_id: int,
+    db: Session = Depends(get_db),
+    usuario: models.Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(status_code=403, detail="Apenas administrador.")
+
+    questao = db.query(models.QuestaoPraticaAssunto).filter(
+        models.QuestaoPraticaAssunto.id == questao_id
+    ).with_for_update().first()
+
+    if not questao:
+        raise HTTPException(status_code=404, detail="Questão não encontrada.")
+
+    db.query(models.QuestaoPraticaAlternativa).filter(
+        models.QuestaoPraticaAlternativa.questao_pratica_id == questao.id
+    ).delete()
+
+    db.delete(questao)
+    db.commit()
+
+    return {
+        "mensagem": "Questão excluída com sucesso."
+    }

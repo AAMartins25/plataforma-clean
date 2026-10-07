@@ -2746,6 +2746,28 @@ function voltarParaCurso() {
   window.location.href = "cursos.html";
 }
 
+function contextoQuestoesPratica() {
+  const contexto = {};
+  for (const campo of ["contratacao_id", "demonstracao_id"]) {
+    const valor = qs(campo);
+    if (valor) contexto[campo] = Number(valor);
+  }
+  return contexto;
+}
+
+function contextoQuestoesPraticaQuery() {
+  const query = new URLSearchParams(contextoQuestoesPratica()).toString();
+  return query ? `?${query}` : "";
+}
+
+function contextoQuestoesPraticaRetorno() {
+  return contextoQuestoesPraticaQuery().replace(/^\?/, "&");
+}
+
+let tokenSessaoQuestaoPratica = null;
+let enviandoRespostaPratica = false;
+let carregandoQuestaoPratica = false;
+
 async function pageQuestoesDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
@@ -2780,7 +2802,7 @@ async function pageQuestoesDisciplinas() {
 
   try {
     const disciplinas = await apiGetAuth(
-      `/cursos/${cursoId}/disciplinas-proprias`
+      `/cursos/${cursoId}/disciplinas-proprias${contextoQuestoesPraticaQuery()}`
     );
 
     lista.innerHTML = "";
@@ -2902,7 +2924,7 @@ async function pageQuestoesAssuntos() {
 
   try {
     const assuntos = await apiGetAuth(
-      `/disciplinas-proprias/${disciplinaId}/assuntos-proprios`
+      `/disciplinas-proprias/${disciplinaId}/assuntos-proprios${contextoQuestoesPraticaQuery()}`
     );
 
     lista.innerHTML = "";
@@ -2976,18 +2998,28 @@ async function pageQuestoesPratica() {
     return;
   }
 
-  await carregarFiltrosQuestoesPratica();
-  await carregarProximaQuestaoPratica();
+  try {
+    await carregarFiltrosQuestoesPratica();
+    await carregarProximaQuestaoPratica();
+  } catch (err) {
+    area.innerHTML = `<div class="card"><p>${escapeHtml(err.message)}</p>
+      <button class="btn" onclick="pageQuestoesPratica()">Tentar novamente</button></div>`;
+  }
 }
 
 async function carregarProximaQuestaoPratica() {
   const assuntoId = qs("assunto_id");
   const area = document.getElementById("area_questao");
 
+  if (carregandoQuestaoPratica || enviandoRespostaPratica) return;
+  carregandoQuestaoPratica = true;
+  tokenSessaoQuestaoPratica = null;
+  questaoPraticaAtual = null;
   try {
     const dados = await apiPostAuth(
       `/curso-assuntos-proprios/${assuntoId}/questoes-pratica/proxima`,
       {
+        ...contextoQuestoesPratica(),
         filtros: filtrosQuestoesPratica,
         ids_questoes_sessao: idsQuestoesSessaoPratica
       }
@@ -2995,9 +3027,8 @@ async function carregarProximaQuestaoPratica() {
 
     questaoPraticaAtual = dados.questao;
 
-    if (!idsQuestoesSessaoPratica) {
-      idsQuestoesSessaoPratica = dados.ids_questoes_sessao || null;
-    }
+    idsQuestoesSessaoPratica = dados.ids_questoes_sessao;
+    tokenSessaoQuestaoPratica = dados.token_sessao;
 
     const tipo = String(questaoPraticaAtual.tipo || "").toUpperCase();
     const alternativas = questaoPraticaAtual.alternativas || [];
@@ -3068,7 +3099,7 @@ async function carregarProximaQuestaoPratica() {
         </h2>
 
         <div class="questoes-pratica-enunciado">
-          ${questaoPraticaAtual.enunciado}
+          ${escapeHtml(questaoPraticaAtual.enunciado)}
         </div>
 
         <div class="questoes-pratica-respostas-bloco">
@@ -3175,13 +3206,21 @@ async function carregarProximaQuestaoPratica() {
       <div class="card">
         <h2>Erro</h2>
         <pre style="white-space:pre-wrap">${escapeHtml(err.message)}</pre>
+        <button class="btn" onclick="reiniciarSessaoQuestoesPratica()">Tentar novamente</button>
       </div>
     `;
+  } finally {
+    carregandoQuestaoPratica = false;
   }
 }
 
+async function reiniciarSessaoQuestoesPratica() {
+  idsQuestoesSessaoPratica = null;
+  await pageQuestoesPratica();
+}
+
 async function responderQuestaoPratica() {
-  if (!questaoPraticaAtual) return;
+  if (!questaoPraticaAtual || !tokenSessaoQuestaoPratica || enviandoRespostaPratica) return;
 
   const respostaSelecionada = document.querySelector("input[name='resposta_aluno']:checked");
   const dificuldadeSelecionada = document.querySelector("input[name='dificuldade_questao']:checked");
@@ -3200,22 +3239,31 @@ async function responderQuestaoPratica() {
 
   const respostaAluno = respostaSelecionada.value;
   const dificuldade = dificuldadeSelecionada.value;
-  const naoSoube = respostaAluno === "NAO_SEI";
-
-  const gabarito = String(questaoPraticaAtual.gabarito || "").trim().toUpperCase();
-
-  let acertou = null;
-  if (!naoSoube) {
-    acertou = respostaAluno === gabarito;
+  enviandoRespostaPratica = true;
+  const botao = document.querySelector("button[onclick='responderQuestaoPratica()']");
+  if (botao) botao.disabled = true;
+  let resultado;
+  try {
+    resultado = await apiPostAuth(`/questoes-pratica/${questaoPraticaAtual.id}/responder`, {
+      ...contextoQuestoesPratica(),
+      resposta_marcada: respostaAluno,
+      dificuldade_marcada: dificuldade,
+      rever,
+      filtros: filtrosQuestoesPratica,
+      token_sessao: tokenSessaoQuestaoPratica
+    });
+    tokenSessaoQuestaoPratica = null;
+  } catch (err) {
+    mensagem.innerHTML = `<p>${escapeHtml(err.message)}</p>
+      <button class="btn" onclick="reiniciarSessaoQuestoesPratica()">Recarregar questão</button>`;
+    if (botao) botao.disabled = false;
+    enviandoRespostaPratica = false;
+    return;
   }
-
-  await apiPostAuth(`/questoes-pratica/${questaoPraticaAtual.id}/responder`, {
-    dificuldade_marcada: dificuldade,
-    acertou,
-    rever,
-    nao_soube: naoSoube,
-    filtros: filtrosQuestoesPratica
-  });
+  enviandoRespostaPratica = false;
+  const naoSoube = resultado.nao_soube;
+  const acertou = resultado.acertou;
+  const gabarito = resultado.gabarito;
 
   const resultadoHtml = naoSoube
     ? `<div style="color:#b45309;font-weight:bold;">Registrado para revisar depois.</div>`
@@ -3246,8 +3294,8 @@ async function responderQuestaoPratica() {
     </div>
 
     ${
-      questaoPraticaAtual.comentario
-        ? `<div style="margin-top:10px;">Comentário:<br>${questaoPraticaAtual.comentario}</div>`
+      resultado.comentario
+        ? `<div style="margin-top:10px;">Comentário:<br>${escapeHtml(resultado.comentario)}</div>`
         : ""
     }
 
@@ -3285,6 +3333,17 @@ async function responderQuestaoPratica() {
 
   if (acoesIniciais) {
     acoesIniciais.style.display = "none";
+  }
+  try {
+    await carregarFiltrosQuestoesPratica();
+    const filtros = document.querySelector(".questoes-pratica-filtros-card");
+    if (filtros) {
+      const temporario = document.createElement("div");
+      temporario.innerHTML = montarFiltrosQuestoesPraticaHtml();
+      filtros.replaceWith(temporario.querySelector(".questoes-pratica-filtros-card"));
+    }
+  } catch (err) {
+    mensagem.insertAdjacentHTML("beforeend", `<p>Resposta registrada; falha ao atualizar filtros: ${escapeHtml(err.message)}</p>`);
   }
 
   } // fecha responderQuestaoPratica
@@ -3347,14 +3406,14 @@ function continuarDepoisQuestoesPratica() {
     `questoes-assuntos.html?curso_id=${encodeURIComponent(cursoId || "")}` +
     `&curso_nome=${encodeURIComponent(cursoNome)}` +
     `&disciplina_id=${encodeURIComponent(disciplinaId || "")}` +
-    `&disciplina_nome=${encodeURIComponent(disciplinaNome)}`;
+    `&disciplina_nome=${encodeURIComponent(disciplinaNome)}` + contextoQuestoesPraticaRetorno();
 }
 
 async function carregarFiltrosQuestoesPratica() {
   const assuntoId = qs("assunto_id");
 
   filtrosQuestoesDisponiveis = await apiGetAuth(
-    `/curso-assuntos-proprios/${assuntoId}/questoes-pratica/filtros`
+    `/curso-assuntos-proprios/${assuntoId}/questoes-pratica/filtros${contextoQuestoesPraticaQuery()}`
   );
 }
 
@@ -3425,6 +3484,7 @@ function montarFiltrosQuestoesPraticaHtml() {
               <input
                 type="checkbox"
                 ${marcado ? "checked" : ""}
+                ${habilitado ? "" : "disabled"}
                 onclick="
                   alternarFiltroQuestoesPratica(
                     '${f.chave}',
@@ -3445,7 +3505,7 @@ function montarFiltrosQuestoesPraticaHtml() {
 }
 
 function alternarFiltroQuestoesPratica(filtro, habilitado) {
-  if (!habilitado) return;
+  if (!habilitado || carregandoQuestaoPratica || enviandoRespostaPratica) return;
 
   if (filtro === "TODAS") {
     filtrosQuestoesPratica = ["TODAS"];

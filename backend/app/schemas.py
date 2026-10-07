@@ -395,16 +395,93 @@ class QuestaoPraticaMarcacaoAlunoResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class ProximaQuestaoPraticaRequest(BaseModel):
-    filtros: list[str] = ["TODAS"]
-    ids_questoes_sessao: Optional[list[int]] = None
+class ContextoQuestaoPraticaRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    contratacao_id: int | None = Field(default=None, gt=0)
+    demonstracao_id: int | None = Field(default=None, gt=0)
+    filtros: list[str] = Field(default_factory=lambda: ["TODAS"], max_length=6)
 
-class ResponderQuestaoPraticaRequest(BaseModel):
+    @field_validator("filtros")
+    @classmethod
+    def validar_filtros(cls, valores):
+        validos = {"TODAS", "DIFICIL", "MEDIA", "FACIL", "ERREI", "REVER"}
+        if any(v not in validos for v in valores):
+            raise ValueError("Filtro inválido")
+        return ["TODAS"] if not valores or "TODAS" in valores else sorted(set(valores))
+
+
+class ProximaQuestaoPraticaRequest(ContextoQuestaoPraticaRequest):
+    ids_questoes_sessao: list[int] | None = Field(default=None, max_length=10000)
+
+    @field_validator("ids_questoes_sessao")
+    @classmethod
+    def validar_ids(cls, valores):
+        if valores is not None and any(v <= 0 for v in valores):
+            raise ValueError("IDs devem ser positivos")
+        return sorted(set(valores)) if valores is not None else None
+
+
+class ResponderQuestaoPraticaRequest(ContextoQuestaoPraticaRequest):
+    resposta_marcada: str
     dificuldade_marcada: str
-    acertou: Optional[bool] = None
     rever: bool = False
-    nao_soube: bool = False
-    filtros: list[str] = ["TODAS"]
+    token_sessao: str
+
+    @field_validator("resposta_marcada")
+    @classmethod
+    def validar_resposta(cls, valor):
+        valor = valor.strip().upper()
+        if valor not in {"A", "B", "C", "D", "E", "NAO_SEI"}:
+            raise ValueError("Resposta inválida")
+        return valor
+
+    @field_validator("dificuldade_marcada")
+    @classmethod
+    def validar_dificuldade(cls, valor):
+        if valor not in {"FACIL", "MEDIA", "DIFICIL"}:
+            raise ValueError("Dificuldade inválida")
+        return valor
+
+
+class QuestaoPraticaAlternativaResponse(BaseModel):
+    id: int
+    letra: str
+    texto: str
+
+
+class QuestaoPraticaResponse(BaseModel):
+    id: int
+    curso_assunto_proprio_id: int
+    tipo: str
+    enunciado: str
+    alternativas: list[QuestaoPraticaAlternativaResponse]
+
+
+class ProximaQuestaoPraticaResponse(BaseModel):
+    numero_questao: int
+    ciclo: int
+    filtro: str
+    ids_questoes_sessao: list[int]
+    token_sessao: str
+    questao: QuestaoPraticaResponse
+
+
+class ResultadoQuestaoPraticaResponse(BaseModel):
+    questao_id: int
+    acertou: bool | None
+    nao_soube: bool
+    gabarito: str
+    comentario: str | None
+    dificuldade_marcada: str
+    rever: bool
+    ciclo: int
+    filtro: str
+
+
+class DisponibilidadeFiltroPratica(BaseModel):
+    habilitado: bool
+    quantidade: int
+
 
 class QuestaoPraticaAlternativaCreate(BaseModel):
     letra: str
