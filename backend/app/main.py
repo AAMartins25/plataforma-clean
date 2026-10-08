@@ -1253,15 +1253,22 @@ def listar_assuntos_proprios(
         )
 
     # ---------------------------------------------------------
-    # Valida o contexto de estudo.
+    # Administrador não depende de contexto de estudo.
+    # Aluno continua sujeito à validação de contratação/
+    # demonstração.
     # ---------------------------------------------------------
-    contexto = validar_contexto_estudo(
-        db=db,
-        usuario=usuario,
-        curso_id=disciplina.curso_id,
-        contratacao_id=contratacao_id,
-        demonstracao_id=demonstracao_id,
-    )
+    if usuario.is_admin:
+        contexto = {
+            "demonstracao_id": None
+        }
+    else:
+        contexto = validar_contexto_estudo(
+            db=db,
+            usuario=usuario,
+            curso_id=disciplina.curso_id,
+            contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id,
+        )
 
     # ---------------------------------------------------------
     # Na demonstração, somente as duas primeiras disciplinas
