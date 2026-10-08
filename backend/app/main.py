@@ -9042,3 +9042,506 @@ def excluir_questao_pratica_admin(
 
 from app.desempenho import registrar_rotas as registrar_rotas_desempenho
 registrar_rotas_desempenho(app, get_db, get_usuario_atual, validar_contexto_estudo)
+
+
+@app.post(
+    "/admin/cursos/{curso_id}/duplicar",
+    tags=["Admin"]
+)
+def duplicar_curso_inteiro(
+    curso_id: int,
+    dados: schemas.DuplicarCursoRequest,
+    db: Session = Depends(get_db),
+    usuario: models.Usuario = Depends(get_usuario_atual)
+):
+    if not usuario.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Acesso restrito ao administrador."
+        )
+
+    from sqlalchemy import func
+
+    novo_nome = (dados.novo_nome or "").strip()
+
+    if not novo_nome or len(novo_nome) > 255:
+        raise HTTPException(
+            status_code=400,
+            detail="Informe um nome de curso entre 1 e 255 caracteres."
+        )
+
+    curso_origem = (
+        db.query(models.Curso)
+        .filter(
+            models.Curso.id == curso_id
+        )
+        .first()
+    )
+
+    if not curso_origem:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso de origem não encontrado."
+        )
+
+    # Serializa o mesmo nome no PostgreSQL sem criar índices ou tabelas.
+    if db.bind.dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:nome, 0))"),
+                   {"nome": "duplicar_curso:" + novo_nome.casefold()})
+
+    curso_nome_existente = (
+        db.query(models.Curso)
+        .filter(
+            func.lower(models.Curso.nome) == novo_nome.lower()
+        )
+        .first()
+    )
+
+    if curso_nome_existente:
+        raise HTTPException(
+            status_code=400,
+            detail="Já existe um curso com este nome."
+        )
+
+    # Não adaptar silenciosamente conteúdos incompatíveis com a estrutura atual.
+    for disciplina in db.query(models.CursoDisciplinaPropria).filter_by(curso_id=curso_id):
+        for assunto in db.query(models.CursoAssuntoProprio).filter_by(curso_disciplina_propria_id=disciplina.id):
+            pastas = db.query(models.Pasta).filter_by(curso_assunto_proprio_id=assunto.id).all()
+            if len(pastas) > 1:
+                raise HTTPException(409, "O assunto de origem possui mais de uma pasta; revise sua estrutura.")
+            for pasta in pastas:
+                if pasta.tipo == "TEORIA" and db.query(models.Aula).filter_by(pasta_id=pasta.id).count() > 1:
+                    raise HTTPException(409, "A pasta de origem possui mais de uma aula técnica; revise sua estrutura.")
+
+    try:
+        # ---------------------------------------------------------
+        # 1. CURSO
+        # ---------------------------------------------------------
+
+        novo_curso = models.Curso(
+            nome=novo_nome,
+            ativo=curso_origem.ativo,
+            publicado=False,
+            descricao_publica=curso_origem.descricao_publica
+        )
+
+        db.add(novo_curso)
+        db.flush()
+
+        # ---------------------------------------------------------
+        # 2. TEMPOS DE ACESSO / VALORES
+        # ---------------------------------------------------------
+
+        tempos_origem = (
+            db.query(models.TempoAcessoCurso)
+            .filter(
+                models.TempoAcessoCurso.curso_id == curso_id
+            )
+            .all()
+        )
+
+        for tempo in tempos_origem:
+            novo_tempo = models.TempoAcessoCurso(
+                curso_id=novo_curso.id,
+                meses=tempo.meses,
+                valor_cents=tempo.valor_cents,
+                ativo=tempo.ativo
+            )
+
+            db.add(novo_tempo)
+
+        # ---------------------------------------------------------
+        # 3. DISCIPLINAS PRÓPRIAS
+        # ---------------------------------------------------------
+
+        disciplinas_origem = (
+            db.query(models.CursoDisciplinaPropria)
+            .filter(
+                models.CursoDisciplinaPropria.curso_id == curso_id
+            )
+            .order_by(
+                models.CursoDisciplinaPropria.ordem.asc(),
+                models.CursoDisciplinaPropria.id.asc()
+            )
+            .all()
+        )
+
+        for disciplina_origem in disciplinas_origem:
+
+            nova_disciplina = models.CursoDisciplinaPropria(
+                curso_id=novo_curso.id,
+                nome=disciplina_origem.nome,
+                ativo=disciplina_origem.ativo,
+                ordem=disciplina_origem.ordem,
+                disponivel_demonstracao=
+                    disciplina_origem.disponivel_demonstracao
+            )
+
+            db.add(nova_disciplina)
+            db.flush()
+
+            # -----------------------------------------------------
+            # 4. ASSUNTOS PRÓPRIOS
+            # -----------------------------------------------------
+
+            assuntos_origem = (
+                db.query(models.CursoAssuntoProprio)
+                .filter(
+                    models.CursoAssuntoProprio.curso_disciplina_propria_id
+                    == disciplina_origem.id
+                )
+                .order_by(
+                    models.CursoAssuntoProprio.ordem.asc(),
+                    models.CursoAssuntoProprio.id.asc()
+                )
+                .all()
+            )
+
+            for assunto_origem in assuntos_origem:
+
+                novo_assunto = models.CursoAssuntoProprio(
+                    curso_disciplina_propria_id=nova_disciplina.id,
+                    nome=assunto_origem.nome,
+                    descricao=assunto_origem.descricao,
+                    ativo=assunto_origem.ativo,
+                    ordem=assunto_origem.ordem
+                )
+
+                db.add(novo_assunto)
+                db.flush()
+
+                # -------------------------------------------------
+                # 5. PASTAS DA ESTRUTURA NOVA
+                # -------------------------------------------------
+
+                pastas_origem = (
+                    db.query(models.Pasta)
+                    .filter(
+                        models.Pasta.curso_assunto_proprio_id
+                        == assunto_origem.id
+                    )
+                    .all()
+                )
+
+                for pasta_origem in pastas_origem:
+
+                    nova_pasta = models.Pasta(
+                        assunto_id=None,
+                        curso_assunto_proprio_id=novo_assunto.id,
+                        tipo=pasta_origem.tipo,
+                        nome=pasta_origem.nome
+                    )
+
+                    db.add(nova_pasta)
+                    db.flush()
+
+                    # ---------------------------------------------
+                    # 6. AULAS
+                    # ---------------------------------------------
+
+                    aulas_origem = (
+                        db.query(models.Aula)
+                        .filter(
+                            models.Aula.pasta_id
+                            == pasta_origem.id
+                        )
+                        .order_by(
+                            models.Aula.ordem.asc(),
+                            models.Aula.id.asc()
+                        )
+                        .all()
+                    )
+
+                    for aula_origem in aulas_origem:
+
+                        nova_aula = models.Aula(
+                            pasta_id=nova_pasta.id,
+                            titulo=aula_origem.titulo,
+                            descricao=aula_origem.descricao,
+                            ordem=aula_origem.ordem,
+                            ativo=aula_origem.ativo
+                        )
+
+                        db.add(nova_aula)
+                        db.flush()
+
+                        # -----------------------------------------
+                        # 7. VÍDEOS
+                        # -----------------------------------------
+
+                        videos_origem = (
+                            db.query(models.Video)
+                            .filter(
+                                models.Video.aula_id
+                                == aula_origem.id
+                            )
+                            .order_by(
+                                models.Video.ordem.asc(),
+                                models.Video.id.asc()
+                            )
+                            .all()
+                        )
+
+                        for video_origem in videos_origem:
+                            db.add(
+                                models.Video(
+                                    aula_id=nova_aula.id,
+                                    titulo=video_origem.titulo,
+                                    url=video_origem.url,
+                                    provedor=video_origem.provedor,
+                                    cloudflare_uid=video_origem.cloudflare_uid,
+                                    duracao_segundos=
+                                        video_origem.duracao_segundos,
+                                    transcricao=
+                                        video_origem.transcricao,
+                                    ordem=video_origem.ordem,
+                                    ativo=video_origem.ativo
+                                )
+                            )
+
+                        # -----------------------------------------
+                        # 8. MATERIAIS
+                        # -----------------------------------------
+
+                        materiais_origem = (
+                            db.query(models.Material)
+                            .filter(
+                                models.Material.aula_id
+                                == aula_origem.id
+                            )
+                            .order_by(
+                                models.Material.ordem.asc(),
+                                models.Material.id.asc()
+                            )
+                            .all()
+                        )
+
+                        for material_origem in materiais_origem:
+                            db.add(
+                                models.Material(
+                                    aula_id=nova_aula.id,
+                                    tipo=material_origem.tipo,
+                                    titulo=material_origem.titulo,
+                                    url=material_origem.url,
+                                    conteudo=material_origem.conteudo,
+                                    ordem=material_origem.ordem,
+                                    ativo=material_origem.ativo
+                                )
+                            )
+
+                        # -----------------------------------------
+                        # 9. BATERIAS
+                        # -----------------------------------------
+
+                        baterias_origem = (
+                            db.query(models.Bateria)
+                            .filter(
+                                models.Bateria.aula_id
+                                == aula_origem.id
+                            )
+                            .order_by(
+                                models.Bateria.ordem.asc(),
+                                models.Bateria.id.asc()
+                            )
+                            .all()
+                        )
+
+                        for bateria_origem in baterias_origem:
+
+                            nova_bateria = models.Bateria(
+                                aula_id=nova_aula.id,
+                                titulo=bateria_origem.titulo,
+                                ordem=bateria_origem.ordem,
+                                status=bateria_origem.status,
+                                ativo=bateria_origem.ativo
+                            )
+
+                            db.add(nova_bateria)
+                            db.flush()
+
+                            # -------------------------------------
+                            # 10. QUESTÕES DA BATERIA
+                            # -------------------------------------
+
+                            questoes_origem = (
+                                db.query(models.Questao)
+                                .filter(
+                                    models.Questao.bateria_id
+                                    == bateria_origem.id
+                                )
+                                .order_by(
+                                    models.Questao.ordem.asc(),
+                                    models.Questao.id.asc()
+                                )
+                                .all()
+                            )
+
+                            for questao_origem in questoes_origem:
+
+                                nova_questao = models.Questao(
+                                    bateria_id=nova_bateria.id,
+                                    enunciado=questao_origem.enunciado,
+                                    tipo=questao_origem.tipo,
+                                    ordem=questao_origem.ordem,
+                                    ativo=questao_origem.ativo,
+                                    tipo_questao=
+                                        questao_origem.tipo_questao,
+                                    quantidade_alternativas=
+                                        questao_origem.quantidade_alternativas,
+                                    gabarito=
+                                        questao_origem.gabarito,
+                                    comentario=
+                                        questao_origem.comentario
+                                )
+
+                                db.add(nova_questao)
+                                db.flush()
+
+                                # ---------------------------------
+                                # 11. ALTERNATIVAS
+                                # ---------------------------------
+
+                                alternativas_origem = (
+                                    db.query(models.Alternativa)
+                                    .filter(
+                                        models.Alternativa.questao_id
+                                        == questao_origem.id
+                                    )
+                                    .all()
+                                )
+
+                                mapa_alternativas = {}
+
+                                for alternativa_origem in alternativas_origem:
+
+                                    nova_alternativa = models.Alternativa(
+                                        questao_id=nova_questao.id,
+                                        letra=alternativa_origem.letra,
+                                        texto=alternativa_origem.texto
+                                    )
+
+                                    db.add(nova_alternativa)
+                                    db.flush()
+
+                                    mapa_alternativas[
+                                        alternativa_origem.id
+                                    ] = nova_alternativa.id
+
+                                # ---------------------------------
+                                # 12. COMENTÁRIOS
+                                # ---------------------------------
+
+                                comentarios_origem = (
+                                    db.query(models.Comentario)
+                                    .filter(
+                                        models.Comentario.questao_id
+                                        == questao_origem.id
+                                    )
+                                    .all()
+                                )
+
+                                for comentario_origem in comentarios_origem:
+
+                                    nova_alternativa_id = None
+
+                                    if comentario_origem.alternativa_id:
+                                        nova_alternativa_id = (
+                                            mapa_alternativas.get(
+                                                comentario_origem.alternativa_id
+                                            )
+                                        )
+
+                                    db.add(
+                                        models.Comentario(
+                                            questao_id=nova_questao.id,
+                                            alternativa_id=
+                                                nova_alternativa_id,
+                                            texto=comentario_origem.texto
+                                        )
+                                    )
+
+                # -------------------------------------------------
+                # 13. QUESTÕES PRÁTICAS DO ASSUNTO
+                # -------------------------------------------------
+
+                questoes_praticas_origem = (
+                    db.query(models.QuestaoPraticaAssunto)
+                    .filter(
+                        models.QuestaoPraticaAssunto.curso_assunto_proprio_id
+                        == assunto_origem.id
+                    )
+                    .order_by(
+                        models.QuestaoPraticaAssunto.id.asc()
+                    )
+                    .all()
+                )
+
+                for questao_pratica_origem in questoes_praticas_origem:
+
+                    nova_questao_pratica = (
+                        models.QuestaoPraticaAssunto(
+                            curso_assunto_proprio_id=
+                                novo_assunto.id,
+                            tipo=
+                                questao_pratica_origem.tipo,
+                            enunciado=
+                                questao_pratica_origem.enunciado,
+                            gabarito=
+                                questao_pratica_origem.gabarito,
+                            comentario=
+                                questao_pratica_origem.comentario,
+                            ativo=
+                                questao_pratica_origem.ativo
+                        )
+                    )
+
+                    db.add(nova_questao_pratica)
+                    db.flush()
+
+                    alternativas_praticas_origem = (
+                        db.query(models.QuestaoPraticaAlternativa)
+                        .filter(
+                            models.QuestaoPraticaAlternativa.questao_pratica_id
+                            == questao_pratica_origem.id
+                        )
+                        .order_by(
+                            models.QuestaoPraticaAlternativa.letra.asc()
+                        )
+                        .all()
+                    )
+
+                    for alternativa_pratica_origem in (
+                        alternativas_praticas_origem
+                    ):
+                        db.add(
+                            models.QuestaoPraticaAlternativa(
+                                questao_pratica_id=
+                                    nova_questao_pratica.id,
+                                letra=
+                                    alternativa_pratica_origem.letra,
+                                texto=
+                                    alternativa_pratica_origem.texto,
+                                correta=
+                                    alternativa_pratica_origem.correta
+                            )
+                        )
+
+        db.commit()
+
+        return {
+            "ok": True,
+            "curso_origem_id": curso_origem.id,
+            "novo_curso_id": novo_curso.id,
+            "novo_curso_nome": novo_curso.nome,
+            "publicado": novo_curso.publicado
+        }
+
+    except Exception:
+        db.rollback()
+        import logging
+        logging.getLogger(__name__).exception("Falha ao duplicar curso %s", curso_id)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Falha ao duplicar curso; nenhuma cópia foi gravada."
+        )

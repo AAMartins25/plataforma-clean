@@ -2958,10 +2958,15 @@
           }
         );
 
-        await carregarCursosExistentes();
-
-        cursoExistenteSelect.value =
-          String(resultado.novo_curso_id);
+        try {
+          await carregarCursosExistentes();
+          cursoExistenteSelect.value = String(resultado.novo_curso_id);
+        } catch (err) {
+          console.error(err);
+          msgCurso.textContent = `Curso duplicado com sucesso: ${resultado.novo_curso_nome} (ID ${resultado.novo_curso_id}). Não foi possível atualizar a lista; recarregue a página. Não repita a duplicação.`;
+          msgCurso.style.color = "#8a1f1f";
+          return;
+        }
 
         msgCurso.textContent =
           `Curso duplicado com sucesso: ${resultado.novo_curso_nome}`;
@@ -2982,8 +2987,9 @@
           msgCurso.textContent =
             "Já existe um curso com este nome.";
         } else {
-          msgCurso.textContent =
-            "Erro ao duplicar curso.";
+          let detalhe = mensagem;
+          try { detalhe = JSON.parse(mensagem).detail || mensagem; } catch (_) {}
+          msgCurso.textContent = "Erro ao duplicar curso: " + (typeof detalhe === "string" ? detalhe : "Verifique os dados enviados.");
         }
 
         msgCurso.style.color = "#8a1f1f";
