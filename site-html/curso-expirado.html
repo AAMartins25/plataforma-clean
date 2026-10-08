@@ -102,7 +102,7 @@
       `mensagens-prof-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
 
     document.getElementById("link_desempenho").href =
-      `desempenho-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+      `desempenho-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}&${new URLSearchParams(['contratacao_id','demonstracao_id'].filter(k => qs(k)).map(k => [k, qs(k)]))}`;
     
     function voltarParaCursosExpirados() {
       localStorage.setItem("abrir_cursos_expirados", "1");

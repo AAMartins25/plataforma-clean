@@ -213,7 +213,10 @@ def registrar_rotas(app, get_db, get_usuario, validar):
             feedback.append({'questao_id': q.id, 'acertou': resposta.acertou, 'gabarito': resposta.gabarito, 'comentario': q.comentario})
         t.status = 'FEITA'
         t.concluida_em = t.concluida_em or datetime.utcnow()
-        t.percentual_acerto = round(100 * sum(f['acertou'] for f in feedback) / len(feedback))
+        acertos = sum(f['acertou'] for f in feedback)
+        erros = sum(not f['acertou'] and enviados[f['questao_id']].resposta_marcada.strip().upper() not in {'NAO_SEI', 'PULOU', 'NAO TENHO CERTEZA OU NAO SEI'} for f in feedback)
+        pontuacao = acertos - erros if any(q.tipo == 'CERTO_ERRADO' for q in qs) else acertos
+        t.percentual_acerto = round(100 * pontuacao / len(feedback))
         db.commit()
         return {'id': t.id, 'status': t.status, 'feedback': feedback}
 

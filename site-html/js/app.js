@@ -842,7 +842,7 @@ async function pageCursos() {
     const acessos = await apiGetAuth("/me/cursos");
 
     console.log("DEBUG /me/cursos:", JSON.stringify(acessos, null, 2));
-    const historico = await apiGetAuth("/me/cursos/historico");
+    const historico = await apiGetAuth("/me/desempenho/contextos-expirados");
 
     if (cardExpirados && listaExpirados) {
       const expirados = (historico || []).filter(c => c.ativo === false);
@@ -867,7 +867,7 @@ async function pageCursos() {
                 onclick="
                   localStorage.setItem('curso_expirado_${c.curso_id}_data_inicio', '${escapeHtml(c.data_inicio || '')}');
                   localStorage.setItem('curso_expirado_${c.curso_id}_data_fim', '${escapeHtml(c.data_fim || '')}');
-                  window.location.href='curso-expirado.html?curso_id=${encodeURIComponent(c.curso_id)}&curso_nome=${encodeURIComponent(c.nome_curso)}&data_inicio=${encodeURIComponent(c.data_inicio || '')}&data_fim=${encodeURIComponent(c.data_fim || '')}';
+                  window.location.href='curso-expirado.html?curso_id=${encodeURIComponent(c.curso_id)}&curso_nome=${encodeURIComponent(c.nome_curso)}&data_inicio=${encodeURIComponent(c.data_inicio || '')}&data_fim=${encodeURIComponent(c.data_fim || '')}&${c.contratacao_id ? 'contratacao_id=' + encodeURIComponent(c.contratacao_id) : 'demonstracao_id=' + encodeURIComponent(c.demonstracao_id)}';
                 "
               >
                 Abrir

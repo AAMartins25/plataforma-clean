@@ -63,7 +63,7 @@
         `curso-expirado.html?curso_id=${encodeURIComponent(cursoId || "")}` +
         `&curso_nome=${encodeURIComponent(cursoNome)}` +
         `&data_inicio=${encodeURIComponent(dataInicio)}` +
-        `&data_fim=${encodeURIComponent(dataFim)}`;
+        `&data_fim=${encodeURIComponent(dataFim)}&${contextoDesempenho()}`;
     }
 
     function alternarLista(id) {
@@ -89,53 +89,28 @@
       return res.json();
     }
 
+    let desempenhoAtual;
+    function contextoDesempenho() {
+      const query = new URLSearchParams();
+      for (const key of ['contratacao_id', 'demonstracao_id']) {
+        if (qs(key)) query.set(key, qs(key));
+      }
+      return query.toString();
+    }
     async function carregarDisciplinasDoCursoExpirado(cursoId) {
-      return await apiGet(`/me/cursos-expirados/${cursoId}/disciplinas`);
+      desempenhoAtual = await apiGet(`/me/cursos-expirados/${cursoId}/desempenho?${contextoDesempenho()}`);
+      return desempenhoAtual.disciplinas;
     }
-
-    async function carregarAssuntosDaDisciplina(disciplinaId) {
-        return await apiGet(`/me/cursos-expirados/disciplinas/${disciplinaId}/assuntos`);
+    async function carregarAssuntosDaDisciplina(id) {
+      return desempenhoAtual.disciplinas.find(d => Number(d.id) === Number(id))?.assuntos || [];
     }
-
-    async function carregarPastaTeoriaDoAssunto(assuntoId) {
-      try {
-        return await apiGet(`/assuntos-proprios/${assuntoId}/pasta-teoria`);
-      } catch {
-        return null;
-      }
-    }
-
-    async function carregarAulasDaPasta(pastaId) {
-      return await apiGet(`/pastas/${pastaId}/aulas`);
-    }
-
-    async function carregarBateriasComStatus(aulaId) {
-      return await apiGet(`/aulas/${aulaId}/baterias-com-status`);
-    }
-
     async function calcularNotaAssunto(assuntoId) {
-      const pastaTeoria = await carregarPastaTeoriaDoAssunto(assuntoId);
-
-      if (!pastaTeoria || !pastaTeoria.id) return null;
-
-      const aulas = await carregarAulasDaPasta(pastaTeoria.id);
-
-      let totalBaterias = 0;
-      let bateriasFeitas = 0;
-      let somaPercentuais = 0;
-
-      for (const aula of aulas) {
-        const baterias = await carregarBateriasComStatus(aula.id);
-
-        for (const b of baterias || []) {
-          totalBaterias++;
-
-          if (b.status_aluno === "FEITA") {
-            bateriasFeitas++;
-            somaPercentuais += Number(b.percentual_acerto || 0);
-          }
-        }
-      }
+      const assunto = desempenhoAtual.disciplinas.flatMap(d => d.assuntos).find(a => Number(a.id) === Number(assuntoId));
+      const baterias = assunto?.baterias || [];
+      const totalBaterias = baterias.length;
+      const feitas = baterias.filter(b => b.status_aluno === "FEITA" && b.percentual_acerto !== null);
+      const bateriasFeitas = feitas.length;
+      const somaPercentuais = feitas.reduce((soma, b) => soma + Number(b.percentual_acerto), 0);
 
       if (totalBaterias === 0 || bateriasFeitas !== totalBaterias) {
         return null;

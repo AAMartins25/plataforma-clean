@@ -112,7 +112,7 @@
       const cursoNome = qs("curso_nome") || "";
 
       window.location.replace(
-        `curso.html?curso_id=${encodeURIComponent(cursoId || "")}&curso_nome=${encodeURIComponent(cursoNome)}`
+        `curso.html?curso_id=${encodeURIComponent(cursoId || "")}&curso_nome=${encodeURIComponent(cursoNome)}&${contextoDesempenho()}`
       );
     }
 
@@ -148,38 +148,30 @@
     }
 
     async function carregarCursoAtual() {
-      const cursos = await apiGet("/me/cursos");
-      const cursoIdUrl = Number(qs("curso_id") || 0);
-
-      if (!cursos || cursos.length === 0) return null;
-
-      return cursos.find(c => Number(c.curso_id) === cursoIdUrl) || cursos[0];
+      const cursoId = Number(qs("curso_id"));
+      if (!cursoId) throw new Error("Curso não identificado.");
+      const dados = await apiGet(`/me/cursos/${cursoId}/desempenho?${contextoDesempenho()}`);
+      desempenhoAtual = dados;
+      return {curso_id: dados.curso_id, nome_curso: dados.nome_curso};
     }
 
-    async function carregarDisciplinasDoCurso(cursoId) {
-      return await apiGet(`/cursos/${cursoId}/disciplinas-proprias`);
-    }
-
-    async function carregarAssuntosDaDisciplina(disciplinaId) {
-      return await apiGet(`/disciplinas-proprias/${disciplinaId}/assuntos-proprios`);
-    }
-
-    async function carregarPastaTeoriaDoAssunto(assuntoId) {
-      try {
-        return await apiGet(`/assuntos-proprios/${assuntoId}/pasta-teoria`);
-      } catch {
-        return null;
+    let desempenhoAtual;
+    function contextoDesempenho() {
+      const query = new URLSearchParams();
+      for (const key of ['contratacao_id', 'demonstracao_id']) {
+        if (qs(key)) query.set(key, qs(key));
       }
+      return query.toString();
     }
-
-    async function carregarAulasDaPasta(pastaId) {
-      return await apiGet(`/pastas/${pastaId}/aulas`);
+    async function carregarDisciplinasDoCurso(cursoId) {
+      if (!desempenhoAtual || Number(desempenhoAtual.curso_id) !== Number(cursoId)) {
+        desempenhoAtual = await apiGet(`/me/cursos/${cursoId}/desempenho?${contextoDesempenho()}`);
+      }
+      return desempenhoAtual.disciplinas;
     }
-
-    async function carregarBateriasComStatus(aulaId) {
-      return await apiGet(`/aulas/${aulaId}/baterias-com-status`);
+    async function carregarAssuntosDaDisciplina(id) {
+      return desempenhoAtual.disciplinas.find(d => Number(d.id) === Number(id))?.assuntos || [];
     }
-
     function getRevisoes(pastaId) {
       try {
         const dados = localStorage.getItem(`revisoes_${pastaId}`);
@@ -201,30 +193,12 @@
     }
 
     async function calcularNotaAssunto(assuntoId) {
-      const pastaTeoria = await carregarPastaTeoriaDoAssunto(assuntoId);
-
-      if (!pastaTeoria || !pastaTeoria.id) {
-        return null;
-      }
-
-      const aulas = await carregarAulasDaPasta(pastaTeoria.id);
-
-      let totalBaterias = 0;
-      let bateriasFeitas = 0;
-      let somaPercentuais = 0;
-
-      for (const aula of aulas) {
-        const baterias = await carregarBateriasComStatus(aula.id);
-
-        for (const b of baterias || []) {
-          totalBaterias++;
-
-          if (b.status_aluno === "FEITA") {
-            bateriasFeitas++;
-            somaPercentuais += Number(b.percentual_acerto || 0);
-          }
-        }
-      }
+      const assunto = desempenhoAtual.disciplinas.flatMap(d => d.assuntos).find(a => Number(a.id) === Number(assuntoId));
+      const baterias = assunto?.baterias || [];
+      const totalBaterias = baterias.length;
+      const feitas = baterias.filter(b => b.status_aluno === "FEITA" && b.percentual_acerto !== null);
+      const bateriasFeitas = feitas.length;
+      const somaPercentuais = feitas.reduce((soma, b) => soma + Number(b.percentual_acerto), 0);
 
       if (totalBaterias === 0 || bateriasFeitas !== totalBaterias) {
         return null;

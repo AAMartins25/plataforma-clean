@@ -9038,3 +9038,7 @@ def excluir_questao_pratica_admin(
     return {
         "mensagem": "Questão excluída com sucesso."
     }
+
+
+from app.desempenho import registrar_rotas as registrar_rotas_desempenho
+registrar_rotas_desempenho(app, get_db, get_usuario_atual, validar_contexto_estudo)
