@@ -1,6 +1,7 @@
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 from app.schemas import CursoCreate, CursoResponse, DisciplinaCreate, DisciplinaResponse, AssuntoCreate, AssuntoResponse
 from app.models import Questao, Alternativa, Comentario, QuestaoPraticaAssunto, QuestaoPraticaAlternativa
 from app.schemas import QuestaoCreate, AlternativaCreate, ComentarioGeralCreate
@@ -8317,6 +8318,171 @@ def anotacoes_curso_expirado(curso_id: int, db: Session = Depends(get_db),
                 acesso.id if campo == "demonstracao_id" else None)
             resultado.extend(r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim)
     return sorted(resultado, key=lambda r: r["criado_em"], reverse=True)
+
+
+def _estrutura_conversa(db, questao_id, bateria_id):
+    questao = db.get(Questao, questao_id)
+    bateria = db.get(Bateria, bateria_id)
+    aula = db.get(Aula, bateria.aula_id) if bateria else None
+    pasta = db.get(Pasta, aula.pasta_id) if aula else None
+    assunto = db.get(CursoAssuntoProprio, pasta.curso_assunto_proprio_id) if pasta else None
+    disciplina = db.get(CursoDisciplinaPropria, assunto.curso_disciplina_propria_id) if assunto else None
+    if not questao or questao.bateria_id != bateria_id or not disciplina:
+        raise HTTPException(404, "Questão/bateria do curso não encontrada")
+    return questao, bateria, assunto, disciplina
+
+
+def _contexto_conversa(db, conversa, vigente=False):
+    _, _, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
+    cid, did = conversa.contratacao_id, conversa.demonstracao_id
+    if (cid is None) == (did is None):
+        raise HTTPException(409, "Conversa sem contexto exclusivo válido")
+    modelo, aid = (ContratacaoCurso, cid) if cid is not None else (DemonstracaoCurso, did)
+    acesso = db.query(modelo).filter_by(id=aid, usuario_id=conversa.usuario_id, curso_id=disciplina.curso_id).first()
+    if not acesso or (cid is not None and acesso.origem not in {'ADMIN', 'PAGAMENTO'}):
+        raise HTTPException(403, "Contexto da conversa inválido")
+    if vigente:
+        validar_contexto_estudo(db, SimpleNamespace(id=conversa.usuario_id), disciplina.curso_id, cid, did)
+    return acesso
+
+
+def _resultado_conversa(db, conversa):
+    questao, bateria, assunto, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
+    aluno = db.get(Usuario, conversa.usuario_id)
+    curso = db.get(Curso, disciplina.curso_id)
+    mensagens = db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).order_by(
+        MensagemConversaQuestao.criada_em, MensagemConversaQuestao.id).all()
+    return {'conversa_id': conversa.id, 'tentativa_id': conversa.tentativa_id,
+        'status': conversa.status, 'contratacao_id': conversa.contratacao_id, 'demonstracao_id': conversa.demonstracao_id,
+        'aluno_id': conversa.usuario_id, 'aluno_nome': aluno.nome if aluno else '',
+        'curso_id': disciplina.curso_id, 'curso_nome': curso.nome if curso else '',
+        'disciplina_id': disciplina.id, 'disciplina_nome': disciplina.nome, 'disciplina_ordem': disciplina.ordem,
+        'assunto_id': assunto.id, 'assunto_nome': assunto.nome, 'assunto_ordem': assunto.ordem,
+        'questao_id': questao.id, 'questao_ordem': questao.ordem, 'tipo': questao.tipo, 'tipo_questao': questao.tipo_questao,
+        'enunciado': questao.enunciado, 'gabarito': questao.gabarito, 'comentario': questao.comentario,
+        'bateria_id': bateria.id, 'bateria_titulo': bateria.titulo,
+        'criado_em': conversa.criado_em, 'atualizado_em': conversa.atualizado_em,
+        'mensagens': [{'id': m.id, 'autor': m.autor, 'texto': m.texto, 'criada_em': m.criada_em} for m in mensagens]}
+
+
+@app.post('/me/mensagens-prof')
+def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = Depends(get_db),
+                         usuario: Usuario = Depends(get_usuario_atual)):
+    _, _, _, disciplina = _estrutura_conversa(db, dados.questao_id, dados.bateria_id)
+    validar_contexto_estudo(db, usuario, disciplina.curso_id, dados.contratacao_id, dados.demonstracao_id)
+    tentativa = db.query(TentativaBateria).filter_by(id=dados.tentativa_id, usuario_id=usuario.id,
+        bateria_id=dados.bateria_id, contratacao_id=dados.contratacao_id, demonstracao_id=dados.demonstracao_id).with_for_update().first()
+    resposta = db.query(RespostaAlunoQuestao).filter_by(tentativa_id=dados.tentativa_id, questao_id=dados.questao_id,
+        usuario_id=usuario.id, bateria_id=dados.bateria_id, contratacao_id=dados.contratacao_id,
+        demonstracao_id=dados.demonstracao_id, respondida=True).first()
+    if not tentativa or not resposta or not resposta.resposta_marcada:
+        raise HTTPException(404, 'Tentativa/resposta da questão não encontrada')
+    if db.query(ConversaQuestaoProfessor).filter_by(tentativa_id=tentativa.id, questao_id=dados.questao_id).first():
+        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+    conversa = ConversaQuestaoProfessor(usuario_id=usuario.id, questao_id=dados.questao_id,
+        bateria_id=dados.bateria_id, tentativa_id=tentativa.id, contratacao_id=dados.contratacao_id,
+        demonstracao_id=dados.demonstracao_id, status='ABERTA')
+    db.add(conversa)
+    try:
+        db.flush()
+        db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor='ALUNO', texto=dados.texto))
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+    return _resultado_conversa(db, conversa)
+
+
+@app.get('/me/mensagens-prof')
+def minhas_conversas_prof(curso_id: int | None = None, contratacao_id: int | None = None,
+                         demonstracao_id: int | None = None, db: Session = Depends(get_db),
+                         usuario: Usuario = Depends(get_usuario_atual)):
+    if (contratacao_id is None) == (demonstracao_id is None):
+        raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
+    modelo, aid = (ContratacaoCurso, contratacao_id) if contratacao_id is not None else (DemonstracaoCurso, demonstracao_id)
+    acesso = db.query(modelo).filter_by(id=aid, usuario_id=usuario.id).first()
+    if not acesso or (curso_id is not None and curso_id != acesso.curso_id):
+        raise HTTPException(403, 'Curso/contexto inválido')
+    validar_contexto_estudo(db, usuario, acesso.curso_id, contratacao_id, demonstracao_id)
+    conversas = db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).order_by(ConversaQuestaoProfessor.id.desc()).all()
+    resultado = []
+    for c in conversas:
+        _contexto_conversa(db, c)
+        resultado.append(_resultado_conversa(db, c))
+    return resultado
+
+
+def _responder_conversa(db, conversa, texto, autor):
+    if conversa.status == 'ENCERRADA':
+        raise HTTPException(409, 'Conversa encerrada')
+    mensagens = db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).order_by(
+        MensagemConversaQuestao.criada_em, MensagemConversaQuestao.id).all()
+    if not mensagens or mensagens[-1].autor == autor:
+        raise HTTPException(409, 'Aguarde a resposta do outro participante')
+    quantidade = sum(m.autor == autor for m in mensagens)
+    if quantidade >= 3:
+        raise HTTPException(409, 'Limite de mensagens atingido')
+    db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor=autor, texto=texto))
+    conversa.status = 'ENCERRADA' if autor == 'PROFESSOR' and quantidade == 2 else 'ABERTA'
+    conversa.atualizado_em = datetime.utcnow()
+    db.commit()
+    return _resultado_conversa(db, conversa)
+
+
+@app.post('/me/mensagens-prof/{conversa_id}/responder')
+def continuar_conversa_prof(conversa_id: int, dados: schemas.MensagemProfessorTexto,
+        contratacao_id: int | None = None, demonstracao_id: int | None = None,
+        db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if (contratacao_id is None) == (demonstracao_id is None):
+        raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
+    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id, usuario_id=usuario.id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).with_for_update().first()
+    if not conversa:
+        raise HTTPException(404, 'Conversa não encontrada')
+    _contexto_conversa(db, conversa, vigente=True)
+    return _responder_conversa(db, conversa, dados.texto, 'ALUNO')
+
+
+@app.get('/admin/mensagens-questoes')
+def conversas_prof_admin(curso_id: int | None = None, disciplina_id: int | None = None,
+        concluidas: bool = False, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito')
+    query = db.query(ConversaQuestaoProfessor)
+    query = query.filter(ConversaQuestaoProfessor.status == 'ENCERRADA') if concluidas else query.filter(ConversaQuestaoProfessor.status != 'ENCERRADA')
+    resultado = []
+    for conversa in query.order_by(ConversaQuestaoProfessor.criado_em, ConversaQuestaoProfessor.id):
+        _contexto_conversa(db, conversa)
+        r = _resultado_conversa(db, conversa)
+        if (curso_id is None or r['curso_id'] == curso_id) and (disciplina_id is None or r['disciplina_id'] == disciplina_id):
+            resultado.append(r)
+    return resultado
+
+
+@app.post('/admin/mensagens-questoes/{conversa_id}/responder')
+def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfessorTexto,
+        db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito')
+    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id).with_for_update().first()
+    if not conversa:
+        raise HTTPException(404, 'Conversa não encontrada')
+    _contexto_conversa(db, conversa)
+    return _responder_conversa(db, conversa, dados.texto, 'PROFESSOR')
+
+
+@app.get('/me/cursos-expirados/{curso_id}/mensagens-prof')
+def historico_conversas_prof(curso_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    resultado = []
+    for conversa in db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id).order_by(ConversaQuestaoProfessor.id.desc()):
+        _, _, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
+        if disciplina.curso_id != curso_id:
+            continue
+        acesso = _contexto_conversa(db, conversa)
+        if acesso.data_fim is not None and acesso.data_fim <= datetime.utcnow() and acesso.data_inicio <= conversa.criado_em < acesso.data_fim:
+            resultado.append(_resultado_conversa(db, conversa))
+    return resultado
 
 
 # Questões práticas: conteúdo do assunto, independente de baterias/Sprint.

@@ -171,10 +171,17 @@ function esc(texto) {
     .replace(/>/g, "&gt;");
 }
 
+function contextoMensagens(path) {
+  const params = new URLSearchParams(location.search);
+  const query = new URLSearchParams();
+  for (const key of ['curso_id','contratacao_id','demonstracao_id']) if (params.get(key)) query.set(key,params.get(key));
+  return path + '?' + query;
+}
+
 async function apiGet(path) {
   const token = getToken();
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${contextoMensagens(path)}`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -341,7 +348,7 @@ async function exibirNomeUsuarioLogadoMensagens() {
 async function apiPost(path, body) {
   const token = getToken();
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${contextoMensagens(path)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -720,9 +727,7 @@ async function enviarNovaMensagem(conversaId) {
   if (!confirmar) return;
 
   try {
-    await apiPost("/me/mensagens-prof", {
-      questao_id: conversa.questao_id,
-      bateria_id: conversa.bateria_id,
+    await apiPost(`/me/mensagens-prof/${conversaId}/responder`, {
       texto
     });
 

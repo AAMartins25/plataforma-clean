@@ -761,6 +761,13 @@ class AnotacaoAlunoQuestao(Base):
 
 class ConversaQuestaoProfessor(Base):
     __tablename__ = "conversas_questao_professor"
+    __table_args__ = (
+        Index("uq_conversa_tentativa_questao", "tentativa_id", "questao_id", unique=True,
+              postgresql_where=text("tentativa_id IS NOT NULL"), sqlite_where=text("tentativa_id IS NOT NULL")),
+        CheckConstraint("(contratacao_id IS NULL) <> (demonstracao_id IS NULL)", name="conversa_contexto"),
+        CheckConstraint("status IN ('ABERTA','AGUARDANDO_RESPOSTA_FINAL','ENCERRADA')", name="conversa_status"),
+    )
+    tentativa_id = Column(Integer, ForeignKey("tentativas_bateria.id"), nullable=True)
     contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
     demonstracao_id = Column(Integer, ForeignKey("demonstracoes_curso.id"), nullable=True, index=True)
 
@@ -787,6 +794,7 @@ class ConversaQuestaoProfessor(Base):
 class MensagemConversaQuestao(Base):
     __tablename__ = "mensagens_conversa_questao"
 
+    __table_args__ = (CheckConstraint("autor IN ('ALUNO','PROFESSOR')", name="mensagem_autor"),)
     id = Column(Integer, primary_key=True, index=True)
 
     conversa_id = Column(

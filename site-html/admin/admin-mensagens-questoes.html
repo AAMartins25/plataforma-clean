@@ -560,8 +560,8 @@
           "PROFESSOR";
 
       const ehCertoErrado =
-        conversa.gabarito === "C" ||
-        conversa.gabarito === "E";
+        conversa.tipo === "CERTO_ERRADO" ||
+        conversa.tipo_questao === "CERTO_ERRADO";
 
       const respostaCorreta =
         ehCertoErrado

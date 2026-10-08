@@ -974,6 +974,8 @@
           const rows = await apiGetAuth(`/me/minhas-anotacoes?${contextoAcessoQueryLocal()}`);
           anotacoesDaTentativa = new Set(rows.filter(a => Number(a.tentativa_id) === Number(tentativaAnotacaoId)).map(a => a.questao_id));
           anotacoesDaTentativa.forEach(desativarBotaoSalvarMim);
+          const conversas = await apiGetAuth(`/me/mensagens-prof?${contextoAcessoQueryLocal()}`);
+          conversas.filter(c => Number(c.tentativa_id) === Number(tentativaAnotacaoId)).forEach(c => desativarBotaoEnviarProf(c.questao_id));
         } catch (err) { console.error("Erro ao recuperar anotações da tentativa", err); }
       }
 
@@ -1130,10 +1132,12 @@
         if (!confirmar) return;
 
         try {
+          if (!tentativaAnotacaoId) throw new Error("Tentativa não identificada");
           const contexto = contextoAcessoLocal();
 
           await apiPostAuth("/me/mensagens-prof", {
             questao_id: questaoId,
+            tentativa_id: tentativaAnotacaoId,
             bateria_id: Number(bateriaId),
             texto: texto,
             contratacao_id: contexto.contratacao_id,
