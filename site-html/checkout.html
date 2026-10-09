@@ -2,19 +2,18 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkout</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 
-<body>
-  <header style="padding-top:22px;padding-bottom:24px; position:relative;">
-    <h1 style="margin-bottom:0;font-weight:400;font-size:1.7rem;">
-      Adquirir curso
-    </h1>
-
-    <div style="position:absolute;right:24px;top:22px;display:flex;gap:10px;">
-      <a class="btn" href="index.html" title="Início">⌂</a>
-      <a class="btn" href="cursos.html" title="Meus cursos">🎓</a>
+<body class="curso-page">
+  <header class="curso-header">
+    <div class="curso-header-titulo"><h1>Adquirir curso</h1></div>
+    <div class="curso-header-acoes">
+      <a class="btn" href="javascript:void(0)" onclick="voltarCheckout()" title="Voltar" aria-label="Voltar">⇦</a>
+      <a class="btn" href="javascript:void(0)" onclick="localStorage.setItem('pagina_antes_inicio', window.location.href); window.location.replace('index.html');" title="Página inicial" aria-label="Início">⌂</a>
+      <a class="btn" href="javascript:void(0)" onclick="sairComConfirmacao()" title="Sair" aria-label="Sair">⎋</a>
     </div>
   </header>
 
@@ -45,6 +44,81 @@
       <h2 style="margin-top:0;font-size:1.2rem;">Acesso:</h2>
 
       <div id="opcoesAcesso" class="list"></div>
+
+      <div
+        id="box_cupom_desconto"
+        class="assunto"
+        style="display:none;margin-top:14px;"
+      >
+        <label>
+          <b>Possui cupom de desconto?</b>
+        </label>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            margin-top:16px;
+            flex-wrap:wrap;
+          "
+        >
+          <input
+            id="codigo_cupom_desconto"
+            type="text"
+            maxlength="5"
+            placeholder="Ex.: AW265"
+            style="
+              flex:1;
+              min-width:180px;
+              height:40px;
+              padding:4px 10px;
+              box-sizing:border-box;
+              border:1px solid #ddd;
+              border-radius:6px;
+              text-transform:uppercase;
+              position: relative;
+              top: 3px;
+            "
+          />
+
+          <button
+            id="btnAplicarCupom"
+            class="btn curso-info-btn-cupom"
+            type="button"
+          >
+            Aplicar cupom
+          </button>
+        </div>
+
+        <div
+          id="msgCupomDesconto"
+          style="margin-top:10px;"
+        ></div>
+
+        <div
+          id="resumoCupomDesconto"
+          style="
+            display:none;
+            margin-top:14px;
+            line-height:1.8;
+          "
+        >
+          <div>
+            Valor original:
+            <b id="valorOriginalCupom"></b>
+          </div>
+
+          <div>
+            Desconto:
+            <b id="valorDescontoCupom"></b>
+          </div>
+
+          <div>
+            Valor final:
+            <b id="valorFinalCupom"></b>
+          </div>
+        </div>
+      </div>
 
       <div
         id="avisoDemo"
@@ -82,6 +156,15 @@
     const checkoutRenovacao = parametrosCheckout.get("renovacao") === "1";
     const contratacaoIdCheckout = parametrosCheckout.get("contratacao_id");
     const demonstracaoIdCheckout = parametrosCheckout.get("demonstracao_id");
+
+    function voltarCheckout() {
+      const origem = parametrosCheckout.get("origem");
+      const cursoId = parametrosCheckout.get("curso_id") || dadosCheckout?.id;
+      const destino = origem === "inicio" ? "index.html"
+        : origem === "cursos" || checkoutRenovacao || demonstracaoIdCheckout ? "cursos.html"
+        : `curso-info.html?curso_id=${encodeURIComponent(cursoId || "")}`;
+      window.location.replace(destino);
+    }
 
     function formatarDinheiro(cents) {
       return (Number(cents || 0) / 100).toLocaleString("pt-BR", {
@@ -148,6 +231,7 @@
             name="tipo_acesso"
             value="tempo_${t.id}"
             data-tempo-id="${t.id}"
+            data-valor-cents="${t.valor_cents}"
             onchange="controleAvisoDemo()"
             style="margin-right:10px;"
           />
@@ -177,6 +261,9 @@
       const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
       const aviso = document.getElementById("avisoDemo");
 
+      document.getElementById("box_cupom_desconto").style.display =
+        selecionado && selecionado.value !== "demo" ? "block" : "none";
+      limparCupomCursoInfo();
       aviso.style.display =
         selecionado && selecionado.value === "demo"
           ? "block"
@@ -214,6 +301,7 @@
 
         const r = await apiPostAuth("/checkout/mercadopago", {
           tempo_acesso_id: Number(tempoId),
+          codigo_cupom: cupomAplicadoCursoInfo?.codigo_cupom || null,
           tipo_compra: checkoutRenovacao ? "RENOVACAO" : "NOVA",
           ...(checkoutRenovacao && contratacaoIdCheckout
             ? { contratacao_id: Number(contratacaoIdCheckout) }
@@ -235,6 +323,7 @@
         window.location.href = url;
 
       } catch (err) {
+        if (tratarErroCompra(err)) return;
         console.error(err);
         msg.textContent = "Erro ao iniciar acesso: " + err.message;
         msg.style.color = "#8a1f1f";
@@ -275,6 +364,8 @@
     const anoAtual = document.getElementById("ano_atual");
     if (anoAtual) anoAtual.textContent = new Date().getFullYear();
 
+    document.getElementById("btnAplicarCupom").onclick = aplicarCupomCursoInfo;
+    document.getElementById("codigo_cupom_desconto").oninput = invalidarCupomDigitado;
     carregarCheckout();
   </script>
 </body>

@@ -42,6 +42,7 @@ from app.aulas import (
 )
 from app.schemas import (ReembolsoPixManualCreate, ContestacaoPagamentoCreate, ContestacaoDevolucaoConfirmadaCreate)
 from app import models
+from app.compras import validar_nova_compra, validar_nova_demonstracao, validar_cupom
 from app.oportunidades import (
     obter_oportunidade,
     bloquear_oportunidade_pagamento,
@@ -3910,7 +3911,10 @@ def iniciar_demonstracao_curso(
             detail="Curso não encontrado."
         )
 
+    db.query(models.Usuario).filter_by(id=usuario.id).with_for_update().one()
     agora = datetime.utcnow()
+
+    validar_nova_demonstracao(db, usuario.id, curso_id, agora)
 
     ultima_demo = (
         db.query(DemonstracaoCurso)
@@ -3987,6 +3991,12 @@ def iniciar_demonstracao_curso(
         "liberado_novamente_em": liberado_novamente_em
     }
 
+@app.post("/cupons-desconto/validar")
+def validar_cupom_desconto(payload: dict, db: Session = Depends(get_db)):
+    cupom, vendedor = validar_cupom(db, payload.get("codigo_cupom"))
+    return {"codigo_cupom": cupom.codigo, "percentual_desconto": cupom.percentual_desconto,
+            "vendedor_id": vendedor.id}
+
 @app.post("/checkout/mercadopago")
 def criar_checkout_mp(
     payload: dict,
@@ -4031,6 +4041,9 @@ def criar_checkout_mp(
             status_code=400,
             detail="Tipo de compra inválido."
         )
+
+    if tipo_compra == "NOVA":
+        validar_nova_compra(db, user.id, curso.id, agora)
 
     demonstracao_id = None
 
@@ -4106,21 +4119,14 @@ def criar_checkout_mp(
         vencimento_original=vencimento_original,
     )
 
+    oportunidade = db.query(models.OportunidadeCompra).filter_by(id=oportunidade.id).populate_existing().with_for_update().one()
+    if tipo_compra == "NOVA":
+        validar_nova_compra(db, user.id, curso.id, datetime.utcnow())
+
     if oportunidade.concluida_em is not None:
         raise HTTPException(
             status_code=409,
             detail="Esta oportunidade de compra já foi concluída."
-        )
-
-    titulos_gerados = db.query(Pagamento).filter(
-        Pagamento.oportunidade_id == oportunidade.id,
-        Pagamento.mp_preference_id.isnot(None)
-    ).count()
-
-    if titulos_gerados >= 8:
-        raise HTTPException(
-            status_code=409,
-            detail="Limite de oito títulos atingido para esta oportunidade."
         )
 
     valor_cents = int(tempo.valor_cents)
@@ -4132,60 +4138,7 @@ def criar_checkout_mp(
     codigo_cupom_usado = None
 
     if codigo_cupom:
-        codigo_cupom = str(
-            codigo_cupom
-        ).strip().upper()
-
-        cupom = (
-            db.query(models.CupomDesconto)
-            .filter(
-                models.CupomDesconto.codigo
-                == codigo_cupom,
-
-                models.CupomDesconto.ativo
-                == True
-            )
-            .first()
-        )
-
-        if not cupom:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Cupom de desconto inválido "
-                    "ou inativo."
-                )
-            )
-
-        if cupom.vendedor_id is None:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Este cupom ainda não está "
-                    "vinculado a um parceiro/vendedor."
-                )
-            )
-
-        vendedor = (
-            db.query(models.Vendedor)
-            .filter(
-                models.Vendedor.id
-                == cupom.vendedor_id,
-
-                models.Vendedor.ativo
-                == True
-            )
-            .first()
-        )
-
-        if not vendedor:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "O parceiro/vendedor vinculado "
-                    "a este cupom está inativo."
-                )
-            )
+        cupom, vendedor = validar_cupom(db, codigo_cupom)
 
         percentual_desconto = int(
             cupom.percentual_desconto
@@ -4204,6 +4157,48 @@ def criar_checkout_mp(
 
         vendedor_id = vendedor.id
         codigo_cupom_usado = cupom.codigo
+
+    # Reabrir a mesma seleção pendente evita criar outra preferência em duplo clique.
+    pendente = db.query(Pagamento).filter(
+        Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.tempo_acesso_id == tempo.id,
+        Pagamento.valor_cents == valor_cents,
+        Pagamento.codigo_cupom == codigo_cupom_usado,
+        Pagamento.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+        Pagamento.mp_preference_id.isnot(None),
+    ).order_by(Pagamento.id.desc()).first()
+    if pendente:
+        try:
+            resposta = requests.get(
+                f"https://api.mercadopago.com/checkout/preferences/{pendente.mp_preference_id}",
+                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}, timeout=20)
+            if resposta.status_code >= 400:
+                raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
+            preferencia = resposta.json()
+            if not preferencia.get("init_point") or str(preferencia.get("id")) != str(pendente.mp_preference_id):
+                raise HTTPException(502, "Resposta inválida ao reabrir o checkout pendente.")
+        except (requests.RequestException, ValueError):
+            db.rollback()
+            raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
+        resultado = {"preference_id": str(pendente.mp_preference_id), "pagamento_id": pendente.id,
+            "init_point": preferencia["init_point"], "sandbox_init_point": preferencia.get("sandbox_init_point"),
+            "curso_id": curso.id, "tempo_acesso_id": tempo.id, "meses": tempo.meses,
+            "valor_cents": valor_cents, "valor_original_cents": valor_original_cents,
+            "valor_desconto_cents": valor_desconto_cents, "percentual_desconto": percentual_desconto,
+            "codigo_cupom": codigo_cupom_usado, "vendedor_id": vendedor_id}
+        db.commit()
+        return resultado
+
+    titulos_gerados = db.query(Pagamento).filter(
+        Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.mp_preference_id.isnot(None)
+    ).count()
+
+    if titulos_gerados >= 8:
+        raise HTTPException(
+            status_code=409,
+            detail="Limite de oito títulos atingido para esta oportunidade."
+        )
 
     pagamento_id = db.execute(text("""
         INSERT INTO pagamentos (

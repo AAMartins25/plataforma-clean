@@ -48,6 +48,32 @@ async function apiGetAuth(path) {
   return res.json();
 }
 
+function erroApiCompra(txt, status) {
+  let detalhe = txt;
+  try { detalhe = JSON.parse(txt).detail ?? txt; } catch (_) {}
+  const erro = new Error(typeof detalhe === "string" ? detalhe : detalhe.mensagem || `Erro HTTP ${status}`);
+  erro.detail = detalhe;
+  return erro;
+}
+
+function tratarErroCompra(erro) {
+  const detalhe = erro?.detail;
+  if (detalhe?.codigo !== "USE_RENOVACAO") return false;
+  window.location.replace(`checkout.html?curso_id=${encodeURIComponent(detalhe.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(detalhe.contratacao_id)}&origem=cursos`);
+  return true;
+}
+
+let versaoValidacaoCupom = 0;
+function invalidarCupomDigitado() {
+  versaoValidacaoCupom++;
+  cupomAplicadoCursoInfo = null;
+  const resumo = document.getElementById("resumoCupomDesconto");
+  const msg = document.getElementById("msgCupomDesconto");
+  if (resumo) resumo.style.display = "none";
+  if (msg) msg.textContent = "";
+  if (dadosCursoInfo) salvarEstadoCompraCursoInfo();
+}
+
 // POST com Bearer token
 async function apiPostAuth(path, body) {
   const token = getToken();
@@ -64,7 +90,7 @@ async function apiPostAuth(path, body) {
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `Erro HTTP ${res.status}`);
+    throw erroApiCompra(txt, res.status);
   }
   return res.json();
 }
@@ -118,6 +144,9 @@ async function aplicarCupomCursoInfo() {
     return;
   }
 
+  invalidarCupomDigitado();
+  const versao = versaoValidacaoCupom;
+
   const codigo =
     campo.value
       .trim()
@@ -150,6 +179,10 @@ async function aplicarCupomCursoInfo() {
           codigo_cupom: codigo
         }
       );
+
+    if (versao !== versaoValidacaoCupom ||
+        document.querySelector("input[name='tipo_acesso']:checked") !== selecionado ||
+        campo.value.trim().toUpperCase() !== codigo) return;
 
     const valorOriginalCents =
       Number(
@@ -224,9 +257,10 @@ async function aplicarCupomCursoInfo() {
     msg.style.color =
       "#2f5e46";
 
-    salvarEstadoCompraCursoInfo();
+    if (dadosCursoInfo) salvarEstadoCompraCursoInfo();
 
   } catch (err) {
+    if (versao !== versaoValidacaoCupom) return;
     console.error(err);
 
     cupomAplicadoCursoInfo = null;
@@ -966,7 +1000,7 @@ async function pageCursos() {
           modalidade.tipo === "CONTRATO" &&
           modalidade.renovacao_disponivel
             ? `<a
-                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}"
+                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
                 style="
                   display:inline-block;
                   padding:5px 13px;
@@ -984,7 +1018,7 @@ async function pageCursos() {
           modalidade.tipo === "DEMONSTRACAO" &&
           modalidade.aquisicao_disponivel
             ? `<a
-                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}"
+                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
                 style="
                   display:inline-block;
                   padding:5px 13px;
@@ -2134,7 +2168,7 @@ function controlarAvisoDemoCursoInfo() {
 }
 
 function limparCupomCursoInfo() {
-  cupomAplicadoCursoInfo = null;
+  invalidarCupomDigitado();
 
   const campo =
     document.getElementById(
@@ -2330,6 +2364,7 @@ async function adquirirAgoraCursoInfo() {
       url;
 
   } catch (err) {
+    if (tratarErroCompra(err)) return;
     console.error(err);
 
     document.body.style.visibility =
@@ -2353,10 +2388,7 @@ async function adquirirAgoraCursoInfo() {
       // Se não for JSON, mantém a mensagem original.
     }
 
-    msg.textContent =
-      "Erro ao iniciar acesso.\n" +
-      "Esta modalidade de acesso estará disponível para você novamente, " +
-      "para este Curso, após 30 dias do último acesso nesta modalidade.";
+    msg.textContent = "Erro ao iniciar acesso.\n" + mensagemErro;
 
     msg.style.whiteSpace = "pre-line";
     msg.style.color = "#8a1f1f";
@@ -2451,6 +2483,8 @@ async function pageCursoInfo() {
         adquirirAgoraCursoInfo;
     }
 
+    const campoCupom = document.getElementById("codigo_cupom_desconto");
+    if (campoCupom) campoCupom.oninput = invalidarCupomDigitado;
     if (btnAplicarCupom) {
       btnAplicarCupom.onclick =
         aplicarCupomCursoInfo;
@@ -2655,7 +2689,7 @@ async function comprarCursoFromHome(cursoId) {
   localStorage.setItem("ultimo_curso_id_compra", String(cursoId));
   localStorage.setItem("ultimo_checkout_curso_id", String(cursoId));
 
-  window.location.href = `checkout.html?curso_id=${encodeURIComponent(cursoId)}`;
+  window.location.href = `checkout.html?curso_id=${encodeURIComponent(cursoId)}&origem=inicio`;
 }
 
 async function pageInteratividadeDisciplinas() {
