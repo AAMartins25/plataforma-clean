@@ -972,7 +972,9 @@ async function pageCursos() {
         renovacao_disponivel: c.renovacao_disponivel
       }));
 
-      const demonstracoes = (a.demonstracoes || []).map(d => ({
+      // /me/cursos retorna apenas contratações vigentes e efetivamente liberadas.
+      const possuiContratacaoPaga = (a.contratacoes || []).some(c => c.origem === "PAGAMENTO");
+      const demonstracoes = (possuiContratacaoPaga ? [] : (a.demonstracoes || [])).map(d => ({
         tipo: "DEMONSTRACAO",
         id: d.id,
         data_fim: d.data_fim,
