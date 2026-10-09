@@ -3991,6 +3991,9 @@ def iniciar_demonstracao_curso(
         "liberado_novamente_em": liberado_novamente_em
     }
 
+from app.cupons_admin import registrar_rotas as registrar_cupons_admin
+registrar_cupons_admin(app, get_db, get_usuario_atual)
+
 @app.post("/cupons-desconto/validar")
 def validar_cupom_desconto(payload: dict, db: Session = Depends(get_db)):
     cupom, vendedor = validar_cupom(db, payload.get("codigo_cupom"))

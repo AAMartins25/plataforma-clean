@@ -69,21 +69,64 @@
 
   let cuponsCarregados = [];
   let vendedoresCarregados = [];
+  let estadoDados = "carregando";
+  let sequenciaCarga = 0;
+
+  function mensagemErro(err) {
+    const texto = String(err?.message || "Falha de comunicação. Tente novamente.");
+    const inicio = texto.indexOf("{");
+    if (inicio >= 0) {
+      try {
+        const detalhe = JSON.parse(texto.slice(inicio)).detail;
+        if (typeof detalhe === "string") return detalhe;
+      } catch (_) {}
+    }
+    return texto;
+  }
+
+  async function comPrazo(promise) {
+    let timer;
+    try {
+      return await Promise.race([promise, new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("O carregamento demorou demais. Tente novamente.")), 30000);
+      })]);
+    } finally { clearTimeout(timer); }
+  }
+
+  function renderizarPesquisa() {
+    buscaCupom.value = buscaCupom.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5);
+    const termo = buscaCupom.value.trim();
+    if (!termo) { listaResultadoBuscaCupom.innerHTML = ""; return; }
+    if (estadoDados !== "pronto") {
+      listaResultadoBuscaCupom.innerHTML = estadoDados === "carregando"
+        ? "<p>Carregando cupons...</p>" : "<p>Não foi possível carregar os cupons. Tente novamente.</p>";
+      return;
+    }
+    const filtrados = cuponsCarregados.filter(c => String(c.codigo || "").toUpperCase().includes(termo));
+    listaResultadoBuscaCupom.innerHTML = filtrados.length
+      ? filtrados.map(montarHtmlCupom).join("") : "<p>Nenhum cupom encontrado.</p>";
+  }
 
 
   async function carregarDados() {
+    const sequencia = ++sequenciaCarga;
+    estadoDados = "carregando";
+    listaCuponsDisponiveis.innerHTML = listaCuponsAtribuidos.innerHTML = "<p>Carregando cupons...</p>";
+    renderizarPesquisa();
     try {
       const [
         cupons,
         vendedores
-      ] = await Promise.all([
+      ] = await comPrazo(Promise.all([
         apiGetAuth(
           "/admin/cupons-desconto"
         ),
         apiGetAuth(
           "/admin/vendedores"
         )
-      ]);
+      ]));
+      if (sequencia !== sequenciaCarga) return false;
+      if (!Array.isArray(cupons) || !Array.isArray(vendedores)) throw new Error("Resposta inválida ao carregar cupons.");
 
       cuponsCarregados =
         [...(cupons || [])];
@@ -102,19 +145,20 @@
                 )
           );
 
-      renderizarCupons(
-        cuponsCarregados
-      );
+      estadoDados = "pronto";
+      renderizarCupons(cuponsCarregados);
+      renderizarPesquisa();
+      return true;
 
     } catch (err) {
+      if (sequencia !== sequenciaCarga) return false;
       console.error(err);
-
-      listaCupons.innerHTML =
-        `
-          <div class="assunto">
-            Erro ao carregar cupons.
-          </div>
-        `;
+      estadoDados = "erro";
+      cuponsCarregados = []; vendedoresCarregados = [];
+      const mensagem = `<div class="assunto">Erro ao carregar cupons: ${escapeHtml(mensagemErro(err))}</div>`;
+      listaCuponsDisponiveis.innerHTML = listaCuponsAtribuidos.innerHTML = mensagem;
+      renderizarPesquisa();
+      return false;
     }
   }
 
@@ -326,6 +370,8 @@
 
       if (!ok) return;
 
+      if (btnGerarCupons.disabled) return;
+      btnGerarCupons.disabled = true;
       try {
         msgGerarCupons.textContent =
           "Gerando cupons...";
@@ -346,17 +392,18 @@
         msgGerarCupons.style.color =
           "#2f5e46";
 
-        await carregarDados();
+        if (!(await carregarDados())) msgGerarCupons.textContent += " Não foi possível atualizar as listagens.";
 
       } catch (err) {
         console.error(err);
 
         msgGerarCupons.textContent =
-          "Erro ao gerar cupons.";
+          "Erro ao gerar cupons: " + mensagemErro(err);
 
         msgGerarCupons.style.color =
           "#8a1f1f";
       }
+      finally { btnGerarCupons.disabled = false; }
     }
   );
 
@@ -383,7 +430,7 @@
         );
 
       if (
-        vendedoresAtivos.length === 0
+        vendedoresAtivos.length === 0 && !cupom.vendedor_id
       ) {
         alert(
           "Não há parceiros/vendedores ativos cadastrados."
@@ -444,13 +491,14 @@
             }
           );
 
-          await carregarDados();
+          const atualizou = await carregarDados();
+          alert("Vínculo removido com sucesso." + (atualizou ? "" : " Não foi possível atualizar as listagens."));
 
         } catch (err) {
           console.error(err);
 
           alert(
-            "Erro ao remover vínculo."
+            "Erro ao remover vínculo: " + mensagemErro(err)
           );
         }
 
@@ -497,18 +545,18 @@
             v => v.id === vendedorId
             );
 
-        await carregarDados();
+        const atualizou = await carregarDados();
 
         alert(
             "Atribuição efetuada com sucesso para o parceiro/vendedor " +
-            `${vendedorSelecionado?.nome || ""}!`
+            `${vendedorSelecionado?.nome || ""}!` + (atualizou ? "" : " Não foi possível atualizar as listagens.")
         );
 
         } catch (err) {
         console.error(err);
 
         alert(
-          "Erro ao alterar vínculo do cupom."
+          "Erro ao alterar vínculo do cupom: " + mensagemErro(err)
         );
       }
     };
@@ -538,13 +586,14 @@
           {}
         );
 
-        await carregarDados();
+        const atualizou = await carregarDados();
+        alert("Status alterado com sucesso." + (atualizou ? "" : " Não foi possível atualizar as listagens."));
 
       } catch (err) {
         console.error(err);
 
         alert(
-          "Erro ao alterar status do cupom."
+          "Erro ao alterar status do cupom: " + mensagemErro(err)
         );
       }
     };
@@ -588,54 +637,12 @@
         "block";
 
         buscaCupom.focus();
+        if (estadoDados === "erro") carregarDados();
     }
     );
 
 
-  buscaCupom.addEventListener(
-    "input",
-    () => {
-        buscaCupom.value =
-        buscaCupom.value
-            .toUpperCase()
-            .replace(
-            /[^A-Z0-9]/g,
-            ""
-            )
-            .slice(0, 5);
-
-        const termo =
-        buscaCupom.value.trim();
-
-        if (!termo) {
-        listaResultadoBuscaCupom.innerHTML =
-            "";
-
-        return;
-        }
-
-        const filtrados =
-        cuponsCarregados.filter(
-            cupom =>
-            String(cupom.codigo || "")
-                .toUpperCase()
-                .includes(termo)
-        );
-
-        if (filtrados.length === 0) {
-        listaResultadoBuscaCupom.innerHTML =
-            "<p>Nenhum cupom encontrado.</p>";
-
-        return;
-        }
-
-        listaResultadoBuscaCupom.innerHTML =
-        filtrados
-            .map(montarHtmlCupom)
-            .join("");
-    }
-    );
-
+  buscaCupom.addEventListener("input", renderizarPesquisa);
 
   await carregarDados();
 
