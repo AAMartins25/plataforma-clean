@@ -31,6 +31,11 @@ import secrets
 import string
 import random
 from app import schemas
+from app.aulas import (
+    bloquear_pai, ordem_conteudo, confirmar_conteudo, validar_vinculo,
+    validar_material, garantir_sem_historico, validar_alternativas,
+    sincronizar_alternativas, validar_conclusao,
+)
 from app.schemas import (ReembolsoPixManualCreate, ContestacaoPagamentoCreate, ContestacaoDevolucaoConfirmadaCreate)
 from app import models
 from app.oportunidades import (
@@ -172,6 +177,12 @@ def get_usuario_atual(token: str = Depends(oauth2_scheme), db: Session = Depends
         raise HTTPException(status_code=401, detail="Usuário não encontrado/inativo")
 
     return usuario
+
+def exigir_admin_aulas(usuario: Usuario = Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, "Apenas administradores podem gerenciar conteúdos de aulas")
+    return usuario
+
 
 def validar_contexto_estudo(
     db: Session,
@@ -1889,7 +1900,7 @@ def concluir_aula(
 
 
 @app.post("/videos")
-def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
+def criar_video(video: VideoCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
     provedor = (video.provedor or "").strip().upper()
 
     if provedor not in {"YOUTUBE", "CLOUDFLARE"}:
@@ -1910,6 +1921,10 @@ def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
             detail="Vídeo do Cloudflare deve possuir UID"
         )
 
+    bloquear_pai(db, Aula, video.aula_id)
+    if not video.titulo.strip():
+        raise HTTPException(400, "Informe o título")
+    video.ordem = ordem_conteudo(db, Video, Video.aula_id, video.aula_id, video)
     aula = db.query(Aula).filter(Aula.id == video.aula_id).first()
     if not aula:
         return {"erro": "Aula não encontrada"}
@@ -1944,7 +1959,7 @@ def criar_video(video: VideoCreate, db: Session = Depends(get_db)):
         ativo=video.ativo
     )
     db.add(novo)
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(novo)
 
     return {
@@ -2111,8 +2126,19 @@ def listar_videos_da_aula(
 def editar_video(
     video_id: int,
     dados: VideoCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
+    video = db.query(Video).filter(Video.id == video_id).first()
+    if not video:
+        raise HTTPException(status_code=404, detail="Vídeo não encontrado")
+    bloquear_pai(db, Aula, video.aula_id)
+    validar_vinculo(dados, video, "aula_id")
+    dados = dados.model_copy(update={
+        campo: getattr(video, campo)
+        for campo in ("provedor", "url", "cloudflare_uid")
+        if campo not in dados.model_fields_set
+    })
     provedor = (dados.provedor or "").strip().upper()
 
     if provedor not in {"YOUTUBE", "CLOUDFLARE"}:
@@ -2133,11 +2159,9 @@ def editar_video(
             detail="Vídeo do Cloudflare deve possuir UID"
         )
 
-    video = db.query(Video).filter(Video.id == video_id).first()
-
-    if not video:
-        raise HTTPException(status_code=404, detail="Vídeo não encontrado")
-
+    if not dados.titulo.strip():
+        raise HTTPException(400, "Informe o título do vídeo")
+    video.ordem = ordem_conteudo(db, Video, Video.aula_id, video.aula_id, dados, video)
     video.titulo = dados.titulo
     video.url = dados.url
     video.provedor = provedor
@@ -2146,12 +2170,14 @@ def editar_video(
         if provedor == "CLOUDFLARE"
         else None
     )
-    video.duracao_segundos = dados.duracao_segundos
-    video.transcricao = dados.transcricao
-    video.ordem = dados.ordem
-    video.ativo = dados.ativo
+    if "duracao_segundos" in dados.model_fields_set:
+        video.duracao_segundos = dados.duracao_segundos
+    if "transcricao" in dados.model_fields_set:
+        video.transcricao = dados.transcricao
+    if "ativo" in dados.model_fields_set:
+        video.ativo = dados.ativo
 
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(video)
 
     return {
@@ -2341,7 +2367,13 @@ def obter_playback_video(
     }
 
 @app.post("/baterias")
-def criar_bateria(bateria: BateriaCreate, db: Session = Depends(get_db)):
+def criar_bateria(bateria: BateriaCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
+    bloquear_pai(db, Aula, bateria.aula_id)
+    if bateria.status != "EM_ANDAMENTO":
+        raise HTTPException(400, "Crie a bateria em rascunho e conclua após cadastrar as 10 questões")
+    if not bateria.titulo.strip():
+        raise HTTPException(400, "Informe o título")
+    bateria.ordem = ordem_conteudo(db, Bateria, Bateria.aula_id, bateria.aula_id, bateria)
     aula = db.query(Aula).filter(Aula.id == bateria.aula_id).first()
     if not aula:
         return {"erro": "Aula não encontrada"}
@@ -2367,7 +2399,7 @@ def criar_bateria(bateria: BateriaCreate, db: Session = Depends(get_db)):
         ativo=bateria.ativo
     )
     db.add(nova)
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(nova)
 
     return {
@@ -2395,47 +2427,48 @@ def listar_baterias_da_aula(
             detail="Aula não encontrada"
         )
 
-    pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
+    if not usuario_atual.is_admin:
+        pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
 
-    if not pasta:
-        raise HTTPException(
-            status_code=404,
-            detail="Pasta da aula não encontrada"
+        if not pasta:
+            raise HTTPException(
+                status_code=404,
+                detail="Pasta da aula não encontrada"
+            )
+
+        if not pasta.curso_assunto_proprio_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Aula não vinculada a um assunto próprio de curso"
+            )
+
+        assunto = db.query(CursoAssuntoProprio).filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        ).first()
+
+        if not assunto:
+            raise HTTPException(
+                status_code=404,
+                detail="Assunto próprio do curso não encontrado"
+            )
+
+        disciplina = db.query(CursoDisciplinaPropria).filter(
+            CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+        ).first()
+
+        if not disciplina:
+            raise HTTPException(
+                status_code=404,
+                detail="Disciplina própria do curso não encontrada"
+            )
+
+        validar_contexto_estudo(
+            db=db,
+            usuario=usuario_atual,
+            curso_id=disciplina.curso_id,
+            contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id,
         )
-
-    if not pasta.curso_assunto_proprio_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Aula não vinculada a um assunto próprio de curso"
-        )
-
-    assunto = db.query(CursoAssuntoProprio).filter(
-        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
-    ).first()
-
-    if not assunto:
-        raise HTTPException(
-            status_code=404,
-            detail="Assunto próprio do curso não encontrado"
-        )
-
-    disciplina = db.query(CursoDisciplinaPropria).filter(
-        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
-    ).first()
-
-    if not disciplina:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplina própria do curso não encontrada"
-        )
-
-    validar_contexto_estudo(
-        db=db,
-        usuario=usuario_atual,
-        curso_id=disciplina.curso_id,
-        contratacao_id=contratacao_id,
-        demonstracao_id=demonstracao_id,
-    )
 
     baterias = (
         db.query(Bateria)
@@ -2459,7 +2492,12 @@ def listar_baterias_da_aula(
     ]
 
 @app.post("/questoes")
-def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db)):
+def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
+    bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    alternativas = validar_alternativas(questao)
+    questao.ordem = ordem_conteudo(db, Questao, Questao.bateria_id, questao.bateria_id, questao)
+    if db.query(Questao).filter_by(bateria_id=bateria.id).count() >= 10:
+        raise HTTPException(400, "A bateria já possui 10 questões")
     bateria = db.query(Bateria).filter(Bateria.id == questao.bateria_id).first()
 
     if not bateria:
@@ -2509,7 +2547,10 @@ def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db)):
     )
 
     db.add(nova)
-    db.commit()
+    confirmar_conteudo(db, flush=True)
+    sincronizar_alternativas(db, nova, alternativas)
+    bateria.status = "EM_ANDAMENTO"
+    confirmar_conteudo(db)
     db.refresh(nova)
 
     return {
@@ -2529,13 +2570,20 @@ def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db)):
 def editar_questao(
     questao_id: int,
     dados: QuestaoCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
     questao = db.query(Questao).filter(Questao.id == questao_id).first()
 
     if not questao:
         raise HTTPException(status_code=404, detail="Questão não encontrada")
 
+    bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    validar_vinculo(dados, questao, "bateria_id")
+    alternativas = validar_alternativas(dados, questao)
+    if dados.tipo_questao.strip().upper() != questao.tipo_questao:
+        garantir_sem_historico(db, bateria)
+    questao.ordem = ordem_conteudo(db, Questao, Questao.bateria_id, questao.bateria_id, dados, questao)
     tipo_questao = (dados.tipo_questao or "").strip().upper()
 
     if tipo_questao not in ("MULTIPLA_5", "MULTIPLA_4", "CERTO_ERRADO"):
@@ -2565,9 +2613,11 @@ def editar_questao(
     questao.quantidade_alternativas = quantidade_alternativas
     questao.gabarito = gabarito
     questao.comentario = dados.comentario.strip() if dados.comentario else None
-    questao.ativo = dados.ativo
+    if "ativo" in dados.model_fields_set:
+        questao.ativo = dados.ativo
 
-    db.commit()
+    sincronizar_alternativas(db, questao, alternativas)
+    confirmar_conteudo(db)
     db.refresh(questao)
 
     return {
@@ -2586,42 +2636,21 @@ def editar_questao(
 @app.delete("/questoes/{questao_id}")
 def excluir_questao(
     questao_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
     questao = db.query(Questao).filter(Questao.id == questao_id).first()
 
     if not questao:
         raise HTTPException(status_code=404, detail="Questão não encontrada")
 
-    bateria_id = questao.bateria_id
-
-    db.query(Alternativa).filter(
-        Alternativa.questao_id == questao_id
-    ).delete()
-
-    db.query(Comentario).filter(
-        Comentario.questao_id == questao_id
-    ).delete()
-
+    bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    garantir_sem_historico(db, bateria)
+    db.query(Comentario).filter(Comentario.questao_id == questao_id).delete(synchronize_session=False)
+    db.query(Alternativa).filter(Alternativa.questao_id == questao_id).delete(synchronize_session=False)
     db.delete(questao)
-    db.commit()
-
-    questoes_restantes = (
-        db.query(Questao)
-        .filter(Questao.bateria_id == bateria_id)
-        .order_by(Questao.ordem.asc(), Questao.id.asc())
-        .all()
-    )
-
-    for i, q in enumerate(questoes_restantes, start=1):
-        q.ordem = i
-
-    bateria = db.query(Bateria).filter(Bateria.id == bateria_id).first()
-
-    if bateria and len(questoes_restantes) < 10:
-        bateria.status = "EM_ANDAMENTO"
-
-    db.commit()
+    bateria.status = "EM_ANDAMENTO"
+    confirmar_conteudo(db)
 
     return {"mensagem": "Questão excluída com sucesso!"}
 
@@ -2629,13 +2658,17 @@ def excluir_questao(
 def criar_alternativa(
     questao_id: int,
     alt: AlternativaCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
     questao = db.query(Questao).filter(Questao.id == questao_id).first()
 
     if not questao:
         return {"erro": "Questão não encontrada"}
 
+    bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    if bateria.status == "CONCLUIDA":
+        raise HTTPException(409, "Edite a questão completa para alterar uma bateria concluída")
     if questao.tipo != "MULTIPLA":
         return {"erro": "Alternativas só podem ser adicionadas a questões de múltipla escolha"}
 
@@ -2661,7 +2694,7 @@ def criar_alternativa(
     )
 
     db.add(nova_alt)
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(nova_alt)
 
     return {
@@ -2672,11 +2705,14 @@ def criar_alternativa(
     }
 
 @app.post("/questoes/{questao_id}/comentario-geral")
-def criar_comentario_geral(questao_id: int, payload: ComentarioGeralCreate, db: Session = Depends(get_db)):
+def criar_comentario_geral(questao_id: int, payload: ComentarioGeralCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
     questao = db.query(Questao).filter(Questao.id == questao_id).first()
     if not questao:
         return {"erro": "Questão não encontrada"}
 
+    bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    if bateria.status == "CONCLUIDA":
+        raise HTTPException(409, "Edite a questão completa para alterar uma bateria concluída")
     if questao.tipo != "CERTO_ERRADO":
         return {"erro": "Comentário geral é usado apenas em questões do tipo CERTO_ERRADO"}
 
@@ -2693,7 +2729,7 @@ def criar_comentario_geral(questao_id: int, payload: ComentarioGeralCreate, db: 
         texto=payload.texto
     )
     db.add(novo)
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(novo)
 
     return {"id": novo.id, "questao_id": novo.questao_id, "texto": novo.texto}
@@ -2717,64 +2753,67 @@ def listar_questoes_da_bateria(
             detail="Bateria não encontrada"
         )
 
-    aula = db.query(Aula).filter(
-        Aula.id == bateria.aula_id
-    ).first()
+    if usuario_atual.is_admin:
+        questoes = db.query(Questao).filter(Questao.bateria_id == bateria_id).order_by(Questao.ordem, Questao.id).all()
+    else:
+        aula = db.query(Aula).filter(
+            Aula.id == bateria.aula_id
+        ).first()
 
-    if not aula:
-        raise HTTPException(
-            status_code=404,
-            detail="Aula da bateria não encontrada"
+        if not aula:
+            raise HTTPException(
+                status_code=404,
+                detail="Aula da bateria não encontrada"
+            )
+
+        pasta = db.query(Pasta).filter(
+            Pasta.id == aula.pasta_id
+        ).first()
+
+        if not pasta:
+            raise HTTPException(
+                status_code=404,
+                detail="Pasta da aula não encontrada"
+            )
+
+        if not pasta.curso_assunto_proprio_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Bateria não vinculada a um assunto próprio de curso"
+            )
+
+        assunto = db.query(CursoAssuntoProprio).filter(
+            CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
+        ).first()
+
+        if not assunto:
+            raise HTTPException(
+                status_code=404,
+                detail="Assunto próprio do curso não encontrado"
+            )
+
+        disciplina = db.query(CursoDisciplinaPropria).filter(
+            CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
+        ).first()
+
+        if not disciplina:
+            raise HTTPException(
+                status_code=404,
+                detail="Disciplina própria do curso não encontrada"
+            )
+
+        validar_contexto_estudo(
+            db=db,
+            usuario=usuario_atual,
+            curso_id=disciplina.curso_id,
+            contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id,
         )
 
-    pasta = db.query(Pasta).filter(
-        Pasta.id == aula.pasta_id
-    ).first()
-
-    if not pasta:
-        raise HTTPException(
-            status_code=404,
-            detail="Pasta da aula não encontrada"
-        )
-
-    if not pasta.curso_assunto_proprio_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Bateria não vinculada a um assunto próprio de curso"
-        )
-
-    assunto = db.query(CursoAssuntoProprio).filter(
-        CursoAssuntoProprio.id == pasta.curso_assunto_proprio_id
-    ).first()
-
-    if not assunto:
-        raise HTTPException(
-            status_code=404,
-            detail="Assunto próprio do curso não encontrado"
-        )
-
-    disciplina = db.query(CursoDisciplinaPropria).filter(
-        CursoDisciplinaPropria.id == assunto.curso_disciplina_propria_id
-    ).first()
-
-    if not disciplina:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplina própria do curso não encontrada"
-        )
-
-    validar_contexto_estudo(
-        db=db,
-        usuario=usuario_atual,
-        curso_id=disciplina.curso_id,
-        contratacao_id=contratacao_id,
-        demonstracao_id=demonstracao_id,
-    )
-
-    from app.revisoes import disponiveis
-    questoes = next((qs for b, qs in disponiveis(db, aula.id) if b.id == bateria_id), None)
-    if questoes is None:
-        raise HTTPException(404, "Bateria indisponível ao aluno")
+        from app.revisoes import disponiveis
+        questoes = next((qs for b, qs in disponiveis(db, aula.id) if b.id == bateria_id), None)
+        if questoes is None:
+            raise HTTPException(404, "Bateria indisponível ao aluno")
 
     resultado = []
 
@@ -2810,7 +2849,8 @@ def listar_questoes_da_bateria(
     return resultado
 
 @app.post("/baterias/{bateria_id}/gerar-10-questoes")
-def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = Depends(get_db)):
+def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
+    bloquear_pai(db, Bateria, bateria_id)
     # valida bateria
     bateria = db.query(Bateria).filter(Bateria.id == bateria_id).first()
     if not bateria:
@@ -2849,7 +2889,7 @@ def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = De
             ativo=True
         )
         db.add(q)
-        db.commit()
+        db.flush()
         db.refresh(q)
 
         # Se MULTIPLA: cria A-E com placeholders + comentários
@@ -2865,11 +2905,11 @@ def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = De
             for letra, texto, comentario in alternativas_padrao:
                 alt = Alternativa(questao_id=q.id, letra=letra, texto=texto)
                 db.add(alt)
-                db.commit()
+                db.flush()
                 db.refresh(alt)
 
                 db.add(Comentario(questao_id=q.id, alternativa_id=alt.id, texto=comentario))
-                db.commit()
+                db.flush()
 
         # Se CERTO_ERRADO: cria comentário geral placeholder
         if tipo == "CERTO_ERRADO":
@@ -2878,9 +2918,11 @@ def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = De
                 alternativa_id=None,
                 texto="Comentário geral (sem dizer explicitamente certo/errado)."
             ))
-            db.commit()
+            db.flush()
 
         criadas.append({"questao_id": q.id, "ordem": q.ordem})
+
+    confirmar_conteudo(db)
 
     return {
         "bateria_id": bateria_id,
@@ -2893,24 +2935,31 @@ def gerar_10_questoes(bateria_id: int, payload: Sprint10Create, db: Session = De
 def editar_bateria(
     bateria_id: int,
     dados: BateriaCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
     bateria = db.query(Bateria).filter(Bateria.id == bateria_id).first()
 
     if not bateria:
         raise HTTPException(status_code=404, detail="Bateria não encontrada")
 
+    bloquear_pai(db, Aula, bateria.aula_id)
+    validar_vinculo(dados, bateria, "aula_id")
     titulo = dados.titulo.strip()
-
     if not titulo:
-        raise HTTPException(status_code=400, detail="Informe o título da bateria")
-
+        raise HTTPException(400, "Informe o título da bateria")
     bateria.titulo = titulo
-    bateria.ordem = dados.ordem
-    bateria.status = dados.status
-    bateria.ativo = dados.ativo
+    bateria.ordem = ordem_conteudo(db, Bateria, Bateria.aula_id, bateria.aula_id, dados, bateria)
+    if "status" in dados.model_fields_set:
+        if dados.status not in {"EM_ANDAMENTO", "CONCLUIDA"}:
+            raise HTTPException(400, "Status de bateria inválido")
+        if dados.status == "CONCLUIDA":
+            validar_conclusao(db, bateria)
+        bateria.status = dados.status
+    if "ativo" in dados.model_fields_set:
+        bateria.ativo = dados.ativo
 
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(bateria)
 
     return {
@@ -2925,26 +2974,15 @@ def editar_bateria(
 @app.put("/baterias/{bateria_id}/concluir")
 def concluir_bateria(
     bateria_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
-    bateria = db.query(Bateria).filter(Bateria.id == bateria_id).first()
-
-    if not bateria:
-        raise HTTPException(status_code=404, detail="Bateria não encontrada")
-
-    total_questoes = db.query(Questao).filter(
-        Questao.bateria_id == bateria_id
-    ).count()
-
-    if total_questoes < 10:
-        raise HTTPException(
-            status_code=400,
-            detail="A bateria precisa ter 10 questões para ser concluída"
-        )
+    bateria = bloquear_pai(db, Bateria, bateria_id)
+    validar_conclusao(db, bateria)
 
     bateria.status = "CONCLUIDA"
 
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(bateria)
 
     return {
@@ -2957,7 +2995,12 @@ def concluir_bateria(
     }
 
 @app.post("/materiais")
-def criar_material(material: MaterialCreate, db: Session = Depends(get_db)):
+def criar_material(material: MaterialCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
+    bloquear_pai(db, Aula, material.aula_id)
+    if not material.titulo.strip():
+        raise HTTPException(400, "Informe o título")
+    material.ordem = ordem_conteudo(db, Material, Material.aula_id, material.aula_id, material)
+    material.tipo = validar_material(material)
     aula = db.query(Aula).filter(Aula.id == material.aula_id).first()
     if not aula:
         return {"erro": "Aula não encontrada"}
@@ -2996,7 +3039,7 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db)):
         ativo=material.ativo
     )
     db.add(novo)
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(novo)
 
     return {
@@ -3032,6 +3075,12 @@ def listar_materiais_da_aula(
             status_code=404,
             detail="Aula não encontrada"
         )
+
+    if usuario.is_admin:
+        materiais = db.query(Material).filter(Material.aula_id == aula_id).order_by(Material.ordem, Material.id).all()
+        return [{"id": m.id, "aula_id": m.aula_id, "tipo": m.tipo,
+                 "titulo": m.titulo, "url": m.url, "conteudo": m.conteudo,
+                 "ordem": m.ordem, "ativo": m.ativo} for m in materiais]
 
     # ---------------------------------------------------------
     # Localiza a pasta da aula.
@@ -3134,21 +3183,29 @@ def listar_materiais_da_aula(
 def editar_material(
     material_id: int,
     dados: MaterialCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
 ):
     material = db.query(Material).filter(Material.id == material_id).first()
 
     if not material:
         raise HTTPException(status_code=404, detail="Material não encontrado")
 
-    material.titulo = dados.titulo
-    material.tipo = dados.tipo
-    material.url = dados.url
-    material.conteudo = dados.conteudo
-    material.ordem = dados.ordem
-    material.ativo = dados.ativo
+    bloquear_pai(db, Aula, material.aula_id)
+    validar_vinculo(dados, material, "aula_id")
+    dados = dados.model_copy(update={
+        campo: getattr(material, campo)
+        for campo in ("url", "conteudo") if campo not in dados.model_fields_set
+    })
+    tipo = validar_material(dados)
+    material.ordem = ordem_conteudo(db, Material, Material.aula_id, material.aula_id, dados, material)
+    material.titulo = dados.titulo.strip()
+    material.tipo = tipo
+    for campo in ("url", "conteudo", "ativo"):
+        if campo in dados.model_fields_set:
+            setattr(material, campo, getattr(dados, campo))
 
-    db.commit()
+    confirmar_conteudo(db)
     db.refresh(material)
 
     return {
@@ -6560,36 +6617,15 @@ def excluir_bateria(
             detail="Apenas admin"
         )
 
-    bateria = (
-        db.query(Bateria)
-        .filter(Bateria.id == bateria_id)
-        .first()
-    )
-
-    if not bateria:
-        raise HTTPException(
-            status_code=404,
-            detail="Bateria não encontrada"
-        )
-
-    questoes_ids = [
-        q.id
-        for q in db.query(Questao.id)
-        .filter(Questao.bateria_id == bateria_id)
-        .all()
-    ]
-
+    bateria = bloquear_pai(db, Bateria, bateria_id)
+    garantir_sem_historico(db, bateria)
+    questoes_ids = [q.id for q in db.query(Questao.id).filter(Questao.bateria_id == bateria_id).all()]
     if questoes_ids:
-        db.query(Alternativa).filter(
-            Alternativa.questao_id.in_(questoes_ids)
-        ).delete(synchronize_session=False)
-
-        db.query(Questao).filter(
-            Questao.bateria_id == bateria_id
-        ).delete(synchronize_session=False)
-
+        db.query(Comentario).filter(Comentario.questao_id.in_(questoes_ids)).delete(synchronize_session=False)
+        db.query(Alternativa).filter(Alternativa.questao_id.in_(questoes_ids)).delete(synchronize_session=False)
+        db.query(Questao).filter(Questao.bateria_id == bateria_id).delete(synchronize_session=False)
     db.delete(bateria)
-    db.commit()
+    confirmar_conteudo(db)
 
     return {
         "mensagem": "Bateria removida com sucesso"
@@ -9552,3 +9588,27 @@ def duplicar_curso_inteiro(
             status_code=500,
             detail="Falha ao duplicar curso; nenhuma cópia foi gravada."
         )
+
+
+@app.delete("/materiais/{material_id}")
+def excluir_material(material_id: int, db: Session = Depends(get_db),
+                     usuario: Usuario = Depends(exigir_admin_aulas)):
+    material = db.query(Material).filter(Material.id == material_id).first()
+    if not material:
+        raise HTTPException(404, "Material não encontrado")
+    bloquear_pai(db, Aula, material.aula_id)
+    db.delete(material)
+    confirmar_conteudo(db)
+    return {"mensagem": "Material excluído com sucesso"}
+
+
+@app.delete("/videos/{video_id}")
+def excluir_video(video_id: int, db: Session = Depends(get_db),
+                  usuario: Usuario = Depends(exigir_admin_aulas)):
+    video = db.query(Video).filter(Video.id == video_id).first()
+    if not video:
+        raise HTTPException(404, "Vídeo não encontrado")
+    bloquear_pai(db, Aula, video.aula_id)
+    db.delete(video)
+    confirmar_conteudo(db)
+    return {"mensagem": "Vídeo excluído com sucesso"}

@@ -1,4 +1,13 @@
 (function () {
+  function mensagemErroAula(err) {
+    const mensagem = String(err.message || err);
+    try {
+      const dados = JSON.parse(mensagem.slice(mensagem.indexOf("{")));
+      if (typeof dados.detail === "string") return dados.detail;
+    } catch (_) {}
+    return mensagem;
+  }
+
   let cursoAtual = null;
   let disciplinasDoCurso = [];
 
@@ -1118,12 +1127,9 @@
       }
 
       try {
-        const ordem = bateriasDaAula.length + 1;
-
         const bateria = await apiPostAuth("/baterias", {
           aula_id: aulaAtual.id,
           titulo: titulo.trim(),
-          ordem,
           ativo: true
         });
 
@@ -1138,7 +1144,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao criar bateria.");
+        alert("Erro ao criar bateria: " + mensagemErroAula(err));
       }
     };
 
@@ -1150,7 +1156,7 @@
         renderizarBaterias();
       } catch (err) {
         console.error(err);
-        alert("Erro ao carregar baterias.");
+        alert("Erro ao carregar baterias: " + mensagemErroAula(err));
       }
     }
 
@@ -1305,7 +1311,7 @@
         renderizarQuestoes();
       } catch (err) {
         console.error(err);
-        alert("Erro ao carregar questões.");
+        alert("Erro ao carregar questões: " + mensagemErroAula(err));
       }
     }
 
@@ -1326,7 +1332,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao excluir bateria.");
+        alert("Erro ao excluir bateria: " + mensagemErroAula(err));
       }
     };
 
@@ -1942,7 +1948,7 @@
           ? questoesDaBateria.find(q => q.id === questaoEditandoId)
           : null;
 
-        const ordem = questaoOriginal
+        let ordem = questaoOriginal
           ? questaoOriginal.ordem
           : questoesDaBateria.length + 1;
 
@@ -1954,8 +1960,12 @@
           quantidade_alternativas: letras.length,
           gabarito,
           comentario,
-          ordem,
-          ativo: true
+          ...(questaoOriginal ? { ordem } : {}),
+          ...(questaoOriginal ? {} : { ativo: true }),
+          alternativas: tipoQuestao === "CERTO_ERRADO" ? [] : letras.map(letra => ({
+            letra,
+            texto: document.getElementById(`alternativa_${letra}`).value.trim()
+          }))
         };
 
         const questao = questaoEditandoId
@@ -1967,22 +1977,7 @@
           return;
         }
 
-        if (!questaoEditandoId && tipoQuestao !== "CERTO_ERRADO") {
-          for (const letra of letras) {
-            const textoAlt = document.getElementById(`alternativa_${letra}`).value.trim();
-
-            const alternativa = await apiPostAuth(`/questoes/${questao.id}/alternativas`, {
-              letra,
-              texto: textoAlt,
-              comentario: null
-            });
-
-            if (alternativa.erro) {
-              alert(alternativa.erro);
-              return;
-            }
-          }
-        }
+        ordem = questao.ordem;
 
         const estavaEditando = !!questaoEditandoId;
         const questaoEditadaId = questaoEditandoId;
@@ -2119,7 +2114,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao salvar questão.");
+        alert("Erro ao salvar questão: " + mensagemErroAula(err));
       }
     };
 
@@ -2155,7 +2150,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao concluir bateria.");
+        alert("Erro ao concluir bateria: " + mensagemErroAula(err));
       }
     };
 
@@ -2245,6 +2240,9 @@
                           >
                             Abrir / editar
                           </button>
+                          <button class="btn" type="button" onclick="excluirTextoTeoria(${t.id})">
+                            Excluir
+                          </button>
 
                         </div>
 
@@ -2265,7 +2263,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao carregar textos.");
+        alert("Erro ao carregar textos: " + mensagemErroAula(err));
       }
     };
 
@@ -2313,6 +2311,9 @@
                           <button class="btn" type="button" onclick="abrirEditarVideo(${v.id})">
                             Abrir / editar
                           </button>
+                          <button class="btn" type="button" onclick="excluirResumoVideo(${v.id})">
+                            Excluir
+                          </button>
                         </div>
                       </div>
                     `).join("")
@@ -2331,7 +2332,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao carregar vídeos.");
+        alert("Erro ao carregar vídeos: " + mensagemErroAula(err));
       }
     };
 
@@ -2368,6 +2369,26 @@
           block: "start"
         });
       }, 100);
+    };
+
+    window.excluirTextoTeoria = async function (materialId) {
+      if (!confirm("Deseja realmente excluir este texto?")) return;
+      try {
+        await apiDeleteAuth(`/materiais/${materialId}`);
+        await abrirTeoriaAula(aulaAtual.id, aulaAtual.titulo);
+      } catch (err) {
+        alert("Erro ao excluir texto: " + mensagemErroAula(err));
+      }
+    };
+
+    window.excluirResumoVideo = async function (videoId) {
+      if (!confirm("Deseja realmente excluir este vídeo?")) return;
+      try {
+        await apiDeleteAuth(`/videos/${videoId}`);
+        await abrirVideoAula(aulaAtual.id, aulaAtual.titulo);
+      } catch (err) {
+        alert("Erro ao excluir vídeo: " + mensagemErroAula(err));
+      }
     };
 
     window.novoTextoTeoria = function () {
@@ -2447,21 +2468,12 @@
 
       try {
 
-        const materiais = await apiGetAuth(`/aulas/${aulaAtual.id}/materiais`);
-
-        const textos = (materiais || []).filter(
-          m => m.tipo === "TEXTO"
-        );
-
-        const ordem = textos.length + 1;
-
         const resposta = await apiPostAuth("/materiais", {
           aula_id: aulaAtual.id,
           tipo: "TEXTO",
-          titulo: titulo || `Texto ${ordem}`,
+          titulo,
           conteudo: texto,
           url: null,
-          ordem,
           ativo: true
         });
 
@@ -2476,7 +2488,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao salvar texto.");
+        alert("Erro ao salvar texto: " + mensagemErroAula(err));
       }
     };
 
@@ -2580,8 +2592,7 @@
           titulo,
           conteudo: texto,
           url: null,
-          ordem,
-          ativo: true
+          ordem
         });
 
         alert("Texto atualizado com sucesso.");
@@ -2590,7 +2601,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao atualizar texto.");
+        alert("Erro ao atualizar texto: " + mensagemErroAula(err));
       }
     };
 
@@ -2701,9 +2712,6 @@
       }
 
       try {
-        const videos = await apiGetAuth(`/aulas/${aulaAtual.id}/videos`);
-        const ordem = (videos || []).length + 1;
-
         const resposta = await apiPostAuth("/videos", {
           aula_id: aulaAtual.id,
           titulo,
@@ -2712,7 +2720,6 @@
           cloudflare_uid,
           duracao_segundos: 0,
           transcricao: null,
-          ordem,
           ativo: true
         });
 
@@ -2726,7 +2733,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao salvar vídeo.");
+        alert("Erro ao salvar vídeo: " + mensagemErroAula(err));
       }
     };
 
@@ -2853,10 +2860,7 @@
           url,
           provedor,
           cloudflare_uid,
-          duracao_segundos: 0,
-          transcricao: null,
-          ordem,
-          ativo: true
+          ordem
         });
 
         if (resposta.erro) {
@@ -2869,7 +2873,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao atualizar vídeo.");
+        alert("Erro ao atualizar vídeo: " + mensagemErroAula(err));
       }
     };
 
@@ -3174,8 +3178,7 @@
         const atualizada = await apiPutAuth(`/baterias/${bateriaId}`, {
           aula_id: aulaAtual.id,
           titulo: novoTitulo.trim(),
-          ordem,
-          ativo: true
+          ordem
         });
 
         bateriasDaAula = bateriasDaAula.map(b =>
@@ -3186,7 +3189,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao editar título da bateria.");
+        alert("Erro ao editar título da bateria: " + mensagemErroAula(err));
       }
     };
 
@@ -3304,7 +3307,7 @@
 
       } catch (err) {
         console.error(err);
-        alert("Erro ao excluir questão.");
+        alert("Erro ao excluir questão: " + mensagemErroAula(err));
       }
     };
 

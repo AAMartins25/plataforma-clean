@@ -96,6 +96,11 @@ class BateriaResponse(BaseModel):
     ordem: int
     ativo: bool
 
+class AlternativaConteudo(BaseModel):
+    letra: str
+    texto: str
+
+
 class QuestaoCreate(BaseModel):
     bateria_id: int
     enunciado: str
@@ -107,6 +112,7 @@ class QuestaoCreate(BaseModel):
     quantidade_alternativas: int | None = None
     gabarito: str | None = None
     comentario: str | None = None
+    alternativas: list[AlternativaConteudo] | None = None
 
 
 class AlternativaCreate(BaseModel):
