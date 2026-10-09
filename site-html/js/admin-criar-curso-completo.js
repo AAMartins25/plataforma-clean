@@ -1624,7 +1624,7 @@
           console.error(err);
 
           msgCopiarAssunto.textContent =
-            "Erro ao copiar assunto.";
+            "Erro ao copiar assunto: " + mensagemErroAula(err);
 
           msgCopiarAssunto.style.color = "#8a1f1f";
         }

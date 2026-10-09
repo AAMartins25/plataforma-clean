@@ -31,6 +31,10 @@ import secrets
 import string
 import random
 from app import schemas
+from app.copias import (
+    copiar_disciplina_conteudo, copiar_disciplina_para_curso,
+    copiar_assunto_para_disciplina, executar_copia,
+)
 from app.aulas import (
     bloquear_pai, ordem_conteudo, confirmar_conteudo, validar_vinculo,
     validar_material, garantir_sem_historico, validar_alternativas,
@@ -9210,364 +9214,7 @@ def duplicar_curso_inteiro(
         )
 
         for disciplina_origem in disciplinas_origem:
-
-            nova_disciplina = models.CursoDisciplinaPropria(
-                curso_id=novo_curso.id,
-                nome=disciplina_origem.nome,
-                ativo=disciplina_origem.ativo,
-                ordem=disciplina_origem.ordem,
-                disponivel_demonstracao=
-                    disciplina_origem.disponivel_demonstracao
-            )
-
-            db.add(nova_disciplina)
-            db.flush()
-
-            # -----------------------------------------------------
-            # 4. ASSUNTOS PRÓPRIOS
-            # -----------------------------------------------------
-
-            assuntos_origem = (
-                db.query(models.CursoAssuntoProprio)
-                .filter(
-                    models.CursoAssuntoProprio.curso_disciplina_propria_id
-                    == disciplina_origem.id
-                )
-                .order_by(
-                    models.CursoAssuntoProprio.ordem.asc(),
-                    models.CursoAssuntoProprio.id.asc()
-                )
-                .all()
-            )
-
-            for assunto_origem in assuntos_origem:
-
-                novo_assunto = models.CursoAssuntoProprio(
-                    curso_disciplina_propria_id=nova_disciplina.id,
-                    nome=assunto_origem.nome,
-                    descricao=assunto_origem.descricao,
-                    ativo=assunto_origem.ativo,
-                    ordem=assunto_origem.ordem
-                )
-
-                db.add(novo_assunto)
-                db.flush()
-
-                # -------------------------------------------------
-                # 5. PASTAS DA ESTRUTURA NOVA
-                # -------------------------------------------------
-
-                pastas_origem = (
-                    db.query(models.Pasta)
-                    .filter(
-                        models.Pasta.curso_assunto_proprio_id
-                        == assunto_origem.id
-                    )
-                    .all()
-                )
-
-                for pasta_origem in pastas_origem:
-
-                    nova_pasta = models.Pasta(
-                        assunto_id=None,
-                        curso_assunto_proprio_id=novo_assunto.id,
-                        tipo=pasta_origem.tipo,
-                        nome=pasta_origem.nome
-                    )
-
-                    db.add(nova_pasta)
-                    db.flush()
-
-                    # ---------------------------------------------
-                    # 6. AULAS
-                    # ---------------------------------------------
-
-                    aulas_origem = (
-                        db.query(models.Aula)
-                        .filter(
-                            models.Aula.pasta_id
-                            == pasta_origem.id
-                        )
-                        .order_by(
-                            models.Aula.ordem.asc(),
-                            models.Aula.id.asc()
-                        )
-                        .all()
-                    )
-
-                    for aula_origem in aulas_origem:
-
-                        nova_aula = models.Aula(
-                            pasta_id=nova_pasta.id,
-                            titulo=aula_origem.titulo,
-                            descricao=aula_origem.descricao,
-                            ordem=aula_origem.ordem,
-                            ativo=aula_origem.ativo
-                        )
-
-                        db.add(nova_aula)
-                        db.flush()
-
-                        # -----------------------------------------
-                        # 7. VÍDEOS
-                        # -----------------------------------------
-
-                        videos_origem = (
-                            db.query(models.Video)
-                            .filter(
-                                models.Video.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Video.ordem.asc(),
-                                models.Video.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for video_origem in videos_origem:
-                            db.add(
-                                models.Video(
-                                    aula_id=nova_aula.id,
-                                    titulo=video_origem.titulo,
-                                    url=video_origem.url,
-                                    provedor=video_origem.provedor,
-                                    cloudflare_uid=video_origem.cloudflare_uid,
-                                    duracao_segundos=
-                                        video_origem.duracao_segundos,
-                                    transcricao=
-                                        video_origem.transcricao,
-                                    ordem=video_origem.ordem,
-                                    ativo=video_origem.ativo
-                                )
-                            )
-
-                        # -----------------------------------------
-                        # 8. MATERIAIS
-                        # -----------------------------------------
-
-                        materiais_origem = (
-                            db.query(models.Material)
-                            .filter(
-                                models.Material.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Material.ordem.asc(),
-                                models.Material.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for material_origem in materiais_origem:
-                            db.add(
-                                models.Material(
-                                    aula_id=nova_aula.id,
-                                    tipo=material_origem.tipo,
-                                    titulo=material_origem.titulo,
-                                    url=material_origem.url,
-                                    conteudo=material_origem.conteudo,
-                                    ordem=material_origem.ordem,
-                                    ativo=material_origem.ativo
-                                )
-                            )
-
-                        # -----------------------------------------
-                        # 9. BATERIAS
-                        # -----------------------------------------
-
-                        baterias_origem = (
-                            db.query(models.Bateria)
-                            .filter(
-                                models.Bateria.aula_id
-                                == aula_origem.id
-                            )
-                            .order_by(
-                                models.Bateria.ordem.asc(),
-                                models.Bateria.id.asc()
-                            )
-                            .all()
-                        )
-
-                        for bateria_origem in baterias_origem:
-
-                            nova_bateria = models.Bateria(
-                                aula_id=nova_aula.id,
-                                titulo=bateria_origem.titulo,
-                                ordem=bateria_origem.ordem,
-                                status=bateria_origem.status,
-                                ativo=bateria_origem.ativo
-                            )
-
-                            db.add(nova_bateria)
-                            db.flush()
-
-                            # -------------------------------------
-                            # 10. QUESTÕES DA BATERIA
-                            # -------------------------------------
-
-                            questoes_origem = (
-                                db.query(models.Questao)
-                                .filter(
-                                    models.Questao.bateria_id
-                                    == bateria_origem.id
-                                )
-                                .order_by(
-                                    models.Questao.ordem.asc(),
-                                    models.Questao.id.asc()
-                                )
-                                .all()
-                            )
-
-                            for questao_origem in questoes_origem:
-
-                                nova_questao = models.Questao(
-                                    bateria_id=nova_bateria.id,
-                                    enunciado=questao_origem.enunciado,
-                                    tipo=questao_origem.tipo,
-                                    ordem=questao_origem.ordem,
-                                    ativo=questao_origem.ativo,
-                                    tipo_questao=
-                                        questao_origem.tipo_questao,
-                                    quantidade_alternativas=
-                                        questao_origem.quantidade_alternativas,
-                                    gabarito=
-                                        questao_origem.gabarito,
-                                    comentario=
-                                        questao_origem.comentario
-                                )
-
-                                db.add(nova_questao)
-                                db.flush()
-
-                                # ---------------------------------
-                                # 11. ALTERNATIVAS
-                                # ---------------------------------
-
-                                alternativas_origem = (
-                                    db.query(models.Alternativa)
-                                    .filter(
-                                        models.Alternativa.questao_id
-                                        == questao_origem.id
-                                    )
-                                    .all()
-                                )
-
-                                mapa_alternativas = {}
-
-                                for alternativa_origem in alternativas_origem:
-
-                                    nova_alternativa = models.Alternativa(
-                                        questao_id=nova_questao.id,
-                                        letra=alternativa_origem.letra,
-                                        texto=alternativa_origem.texto
-                                    )
-
-                                    db.add(nova_alternativa)
-                                    db.flush()
-
-                                    mapa_alternativas[
-                                        alternativa_origem.id
-                                    ] = nova_alternativa.id
-
-                                # ---------------------------------
-                                # 12. COMENTÁRIOS
-                                # ---------------------------------
-
-                                comentarios_origem = (
-                                    db.query(models.Comentario)
-                                    .filter(
-                                        models.Comentario.questao_id
-                                        == questao_origem.id
-                                    )
-                                    .all()
-                                )
-
-                                for comentario_origem in comentarios_origem:
-
-                                    nova_alternativa_id = None
-
-                                    if comentario_origem.alternativa_id:
-                                        nova_alternativa_id = (
-                                            mapa_alternativas.get(
-                                                comentario_origem.alternativa_id
-                                            )
-                                        )
-
-                                    db.add(
-                                        models.Comentario(
-                                            questao_id=nova_questao.id,
-                                            alternativa_id=
-                                                nova_alternativa_id,
-                                            texto=comentario_origem.texto
-                                        )
-                                    )
-
-                # -------------------------------------------------
-                # 13. QUESTÕES PRÁTICAS DO ASSUNTO
-                # -------------------------------------------------
-
-                questoes_praticas_origem = (
-                    db.query(models.QuestaoPraticaAssunto)
-                    .filter(
-                        models.QuestaoPraticaAssunto.curso_assunto_proprio_id
-                        == assunto_origem.id
-                    )
-                    .order_by(
-                        models.QuestaoPraticaAssunto.id.asc()
-                    )
-                    .all()
-                )
-
-                for questao_pratica_origem in questoes_praticas_origem:
-
-                    nova_questao_pratica = (
-                        models.QuestaoPraticaAssunto(
-                            curso_assunto_proprio_id=
-                                novo_assunto.id,
-                            tipo=
-                                questao_pratica_origem.tipo,
-                            enunciado=
-                                questao_pratica_origem.enunciado,
-                            gabarito=
-                                questao_pratica_origem.gabarito,
-                            comentario=
-                                questao_pratica_origem.comentario,
-                            ativo=
-                                questao_pratica_origem.ativo
-                        )
-                    )
-
-                    db.add(nova_questao_pratica)
-                    db.flush()
-
-                    alternativas_praticas_origem = (
-                        db.query(models.QuestaoPraticaAlternativa)
-                        .filter(
-                            models.QuestaoPraticaAlternativa.questao_pratica_id
-                            == questao_pratica_origem.id
-                        )
-                        .order_by(
-                            models.QuestaoPraticaAlternativa.letra.asc()
-                        )
-                        .all()
-                    )
-
-                    for alternativa_pratica_origem in (
-                        alternativas_praticas_origem
-                    ):
-                        db.add(
-                            models.QuestaoPraticaAlternativa(
-                                questao_pratica_id=
-                                    nova_questao_pratica.id,
-                                letra=
-                                    alternativa_pratica_origem.letra,
-                                texto=
-                                    alternativa_pratica_origem.texto,
-                                correta=
-                                    alternativa_pratica_origem.correta
-                            )
-                        )
+            copiar_disciplina_conteudo(db, disciplina_origem, novo_curso.id)
 
         db.commit()
 
@@ -9612,3 +9259,29 @@ def excluir_video(video_id: int, db: Session = Depends(get_db),
     db.delete(video)
     confirmar_conteudo(db)
     return {"mensagem": "Vídeo excluído com sucesso"}
+
+
+@app.post("/admin/disciplinas/{disciplina_id}/copiar", tags=["Admin"])
+def copiar_disciplina_entre_cursos(
+    disciplina_id: int,
+    dados: schemas.CopiarDisciplinaRequest,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
+):
+    return executar_copia(
+        db, lambda: copiar_disciplina_para_curso(db, disciplina_id, dados.curso_destino_id),
+        "disciplina"
+    )
+
+
+@app.post("/admin/assuntos/{assunto_id}/copiar", tags=["Admin"])
+def copiar_assunto_entre_disciplinas(
+    assunto_id: int,
+    dados: schemas.CopiarAssuntoRequest,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_aulas)
+):
+    return executar_copia(
+        db, lambda: copiar_assunto_para_disciplina(db, assunto_id, dados.disciplina_destino_id),
+        "assunto"
+    )
