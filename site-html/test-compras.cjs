@@ -7,7 +7,7 @@ function ambiente(search='?curso_id=1&demonstracao_id=2&origem=cursos',checkout=
  const elementos={},store=new Map([['access_token','token']]),pedidos=[];
  const s={URLSearchParams,console:{error(){}},Date,Number,String,Math,JSON,encodeURIComponent,
   confirm:()=>true,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
-  window:{location:{search,pathname:'/checkout.html',href:'https://example.com/checkout.html'+search,replace(url){this.href=url}}},
+  window:{addEventListener(){},location:{search,pathname:'/checkout.html',href:'https://example.com/checkout.html'+search,replace(url){this.href=url}}},
   document:{getElementById(id){return elementos[id]??={style:{},value:'',textContent:''}},querySelector(){return s.radio},addEventListener(){},body:{dataset:{},style:{}}},
   fetch:async(url,opts)=>{pedidos.push({url,opts});return{ok:true,json:async()=>url.includes('validar')?{codigo_cupom:'AW265',percentual_desconto:12,vendedor_id:1}:{init_point:'https://example.com/pagamento'}}},
  };

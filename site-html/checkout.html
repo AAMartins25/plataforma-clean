@@ -134,7 +134,7 @@
       </div>
 
       <div style="margin-top:18px;text-align:right;">
-        <button class="btn" onclick="adquirirAgora()">
+        <button id="btnAdquirirAgora" class="btn" onclick="adquirirAgora()">
           Adquirir agora
         </button>
       </div>
@@ -270,7 +270,27 @@
           : "none";
     }
 
+    let aberturaCheckout = false;
+    let sequenciaCheckout = 0;
+
+    function encerrarAberturaCheckout() {
+      aberturaCheckout = false;
+      document.getElementById("btnAdquirirAgora").disabled = false;
+      const msg = document.getElementById("msgCheckout");
+      if (["Abrindo checkout do Mercado Pago...", "Ativando acesso gratuito..."].includes(msg.textContent)) {
+        msg.textContent = "";
+      }
+    }
+
+    window.addEventListener("pageshow", event => {
+      if (event.persisted) {
+        ++sequenciaCheckout;
+        encerrarAberturaCheckout();
+      }
+    });
+
     async function adquirirAgora() {
+      if (aberturaCheckout) return;
       const msg = document.getElementById("msgCheckout");
       const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
 
@@ -287,10 +307,16 @@
         return;
       }
 
+      aberturaCheckout = true;
+      const sequencia = ++sequenciaCheckout;
+      document.getElementById("btnAdquirirAgora").disabled = true;
+      msg.style.color = "";
       try {
         if (selecionado.value === "demo") {
           msg.textContent = "Ativando acesso gratuito...";
           await apiPostAuth(`/cursos/${dadosCheckout.id}/demonstracao`, {});
+          if (sequencia !== sequenciaCheckout) return;
+          encerrarAberturaCheckout();
           window.location.href = "cursos.html";
           return;
         }
@@ -311,6 +337,7 @@
             : {})
         });
 
+        if (sequencia !== sequenciaCheckout) return;
         localStorage.setItem("ultimo_curso_id_compra", String(dadosCheckout.id));
         localStorage.setItem("ultimo_checkout_curso_id", String(dadosCheckout.id));
 
@@ -320,13 +347,17 @@
           throw new Error("Checkout não retornou link de pagamento.");
         }
 
+        encerrarAberturaCheckout();
         window.location.href = url;
 
       } catch (err) {
+        if (sequencia !== sequenciaCheckout) return;
         if (tratarErroCompra(err)) return;
         console.error(err);
         msg.textContent = "Erro ao iniciar acesso: " + err.message;
         msg.style.color = "#8a1f1f";
+      } finally {
+        if (sequencia === sequenciaCheckout) encerrarAberturaCheckout();
       }
     }
 

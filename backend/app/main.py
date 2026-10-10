@@ -4450,6 +4450,7 @@ def confirmar_pagamento(
     if pagamento.ocorrencia_financeira is not None:
         return {
             "ok": True,
+            "payment_method_id": p.get("payment_method_id"),
             "status": pagamento.status,
             "curso_id": curso_id,
             "liberou_acesso": False,
@@ -4470,6 +4471,7 @@ def confirmar_pagamento(
         db.commit()
         return {
             "ok": True,
+            "payment_method_id": p.get("payment_method_id"),
             "status": "APPROVED",
             "curso_id": curso_id,
             "liberou_acesso": False,
@@ -4489,6 +4491,7 @@ def confirmar_pagamento(
         db.commit()
         return {
             "ok": True,
+            "payment_method_id": p.get("payment_method_id"),
             "status": "APPROVED",
             "curso_id": curso_id,
             "liberou_acesso": False,
@@ -4502,6 +4505,7 @@ def confirmar_pagamento(
     if ja_aprovado and status in ("pending", "rejected"):
         return {
             "ok": True,
+            "payment_method_id": p.get("payment_method_id"),
             "status": "APPROVED",
             "curso_id": curso_id,
             "liberou_acesso": False,
@@ -4602,6 +4606,7 @@ def confirmar_pagamento(
 
     return {
         "ok": True,
+        "payment_method_id": p.get("payment_method_id"),
         "status": status.upper(),
         "curso_id": curso_id,
         "liberou_acesso": liberou

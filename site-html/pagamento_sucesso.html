@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Pagamento aprovado</title>
+  <title>Pagamento</title>
 
   <link
     rel="stylesheet"
@@ -21,14 +21,15 @@
 
     <div class="card">
 
-      <h2>
-        ✅ Pagamento aprovado!
+      <h2 id="tituloPagamento">
+        Verificando pagamento
       </h2>
 
       <p id="msg">
-        Pagamento aprovado! Estamos liberando seu acesso...
+        Consultando a situação do pagamento...
       </p>
 
+      <button id="btnConsultarPagamento" class="btn" type="button">Consultar novamente</button>
     </div>
 
   </main>
@@ -36,104 +37,65 @@
   <script src="js/app.js"></script>
 
   <script>
-    (async function () {
+    const msgPagamento = document.getElementById("msg");
+    const tituloPagamento = document.getElementById("tituloPagamento");
+    const btnConsultarPagamento = document.getElementById("btnConsultarPagamento");
+    let consultaPagamentoEmAndamento = false;
+    let retornoPagamentoConcluido = false;
 
-      const msg =
-        document.getElementById(
-          "msg"
-        );
+    function apresentarPagamento(titulo, mensagem) {
+      tituloPagamento.textContent = titulo;
+      document.title = titulo;
+      msgPagamento.textContent = mensagem;
+    }
 
+    async function verificarPagamento() {
+      if (consultaPagamentoEmAndamento || retornoPagamentoConcluido) return;
+      consultaPagamentoEmAndamento = true;
+      btnConsultarPagamento.disabled = true;
+      apresentarPagamento("Verificando pagamento", "Consultando a situação do pagamento...");
       try {
-        const params =
-          new URLSearchParams(
-            window.location.search
-          );
-
-        const paymentId =
-          params.get("payment_id") ||
-          params.get("collection_id") ||
-          params.get("id");
-
-        const cursoId =
-          Number(
-            localStorage.getItem(
-              "ultimo_checkout_curso_id"
-            ) ||
-            localStorage.getItem(
-              "ultimo_curso_id_compra"
-            ) ||
-            "0"
-          );
-
-        if (!paymentId) {
-          msg.textContent =
-            "Não foi possível identificar o pagamento.";
-
-          return;
+        const params = new URLSearchParams(window.location.search);
+        const paymentId = params.get("payment_id") || params.get("collection_id") || params.get("id");
+        const cursoId = Number(localStorage.getItem("ultimo_checkout_curso_id") ||
+          localStorage.getItem("ultimo_curso_id_compra") || "0");
+        const resultado = await consultarConfirmacaoPagamento(paymentId, cursoId);
+        if (!resultado || resultado.ok !== true || Number(resultado.curso_id) !== cursoId) {
+          throw new Error("Resposta de confirmação inválida.");
         }
-
-        if (!cursoId) {
-          msg.textContent =
-            "Não foi possível identificar o curso adquirido.";
-
-          return;
+        const status = String(resultado.status || "").toUpperCase();
+        if (resultado.ocorrencia_financeira) {
+          apresentarPagamento("Pagamento não confirmado", "Não foi possível confirmar a liberação do acesso. Entre em contato com o suporte.");
+        } else if (pagamentoAprovadoSemImpedimento(resultado, cursoId)) {
+          apresentarPagamento("Pagamento aprovado!", "Seu pagamento foi confirmado.");
+          retornoPagamentoConcluido = true;
+          limparContextoCompraConfirmada();
+          setTimeout(() => { window.location.href = "cursos.html"; }, 900);
+        } else if (["PENDING", "PENDENTE"].includes(status)) {
+          apresentarPagamento("Pagamento pendente", resultado.payment_method_id === "pix"
+            ? "Seu pagamento por Pix ainda não foi confirmado. O acesso ao curso será liberado após a confirmação!"
+            : "Seu pagamento ainda não foi confirmado. O acesso ao curso será liberado após a confirmação!");
+        } else if (["IN_PROCESS", "IN_MEDIATION"].includes(status)) {
+          apresentarPagamento("Pagamento em processamento", "Seu pagamento está sendo processado. Aguarde a confirmação!");
+        } else if (status === "REJECTED") {
+          apresentarPagamento("Pagamento não aprovado", "Seu pagamento não foi aprovado. Você pode tentar novamente.");
+        } else if (status === "CANCELLED") {
+          apresentarPagamento("Pagamento cancelado", "Seu pagamento foi cancelado.");
+        } else {
+          throw new Error("Situação não confirmada.");
         }
-
-        await apiPostAuth(
-          "/pagamentos/confirmar",
-          {
-            payment_id:
-              Number(paymentId),
-
-            curso_id:
-              cursoId
-          }
-        );
-
-        localStorage.removeItem(
-          "ultimo_curso_id_compra"
-        );
-
-        localStorage.removeItem(
-          "ultimo_checkout_curso_id"
-        );
-
-        localStorage.removeItem(
-          "pos_login_redirect"
-        );
-
-        localStorage.removeItem(
-          "voltar_para_compra"
-        );
-
-        localStorage.removeItem(
-          "estado_compra_curso"
-        );
-
-        localStorage.removeItem(
-          "continuar_compra_apos_login"
-        );
-
-        msg.textContent =
-          "Pagamento aprovado! Estamos liberando seu acesso...";
-
-        setTimeout(
-          () => {
-            window.location.href =
-              "cursos.html";
-          },
-          900
-        );
-
-      } catch (e) {
-        console.error(e);
-
-        msg.textContent =
-          "Não foi possível concluir a liberação do acesso. " +
-          "Por favor, tente novamente em instantes.";
+      } catch (err) {
+        console.error(err);
+        apresentarPagamento("Pagamento não confirmado", "Não foi possível confirmar a situação do pagamento. Consulte novamente em instantes.");
+      } finally {
+        consultaPagamentoEmAndamento = false;
+        btnConsultarPagamento.disabled = retornoPagamentoConcluido;
       }
+    }
 
-    })();
+    btnConsultarPagamento.addEventListener("click", verificarPagamento);
+    verificarPagamento();
+
   </script>
 
 </body>

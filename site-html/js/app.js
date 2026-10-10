@@ -747,6 +747,36 @@ function bindBotaoEntrarEEstudarSeExistir() {
 
 const PRECO_CURSO_CENTS = 1990; // ajuste depois se quiser
 
+const confirmacoesPagamentoEmAndamento = new Map();
+
+function consultarConfirmacaoPagamento(paymentId, cursoId) {
+  if (!/^[1-9]\d*$/.test(String(paymentId)) || !Number.isSafeInteger(Number(paymentId)) ||
+      !Number.isSafeInteger(cursoId) || cursoId <= 0) {
+    return Promise.reject(new Error("Pagamento ou curso inválido."));
+  }
+  const chave = `${paymentId}:${cursoId}`;
+  if (!confirmacoesPagamentoEmAndamento.has(chave)) {
+    const consulta = apiPostAuth("/pagamentos/confirmar", {
+      payment_id: Number(paymentId), curso_id: cursoId
+    }).finally(() => confirmacoesPagamentoEmAndamento.delete(chave));
+    confirmacoesPagamentoEmAndamento.set(chave, consulta);
+  }
+  return confirmacoesPagamentoEmAndamento.get(chave);
+}
+
+function pagamentoAprovadoSemImpedimento(resultado, cursoId) {
+  return resultado?.ok === true && String(resultado.status).toUpperCase() === "APPROVED" &&
+    !resultado.ocorrencia_financeira && Number(resultado.curso_id) === cursoId &&
+    typeof resultado.liberou_acesso === "boolean";
+}
+
+function limparContextoCompraConfirmada() {
+  for (const chave of ["ultimo_curso_id_compra", "ultimo_checkout_curso_id", "pos_login_redirect",
+    "voltar_para_compra", "estado_compra_curso", "continuar_compra_apos_login"]) {
+    localStorage.removeItem(chave);
+  }
+}
+
 async function tentarConfirmarPagamentoAoVoltar() {
   const paymentId = qs("payment_id");
   if (!paymentId) return;
@@ -755,12 +785,9 @@ async function tentarConfirmarPagamentoAoVoltar() {
   if (!cursoId) return;
 
   try {
-    await apiPostAuth("/pagamentos/confirmar", {
-      payment_id: Number(paymentId),
-      curso_id: cursoId
-    });
-
-    localStorage.removeItem("ultimo_checkout_curso_id");
+    const resultado = await consultarConfirmacaoPagamento(paymentId, cursoId);
+    if (!pagamentoAprovadoSemImpedimento(resultado, cursoId)) return;
+    limparContextoCompraConfirmada();
     window.history.replaceState({}, document.title, "cursos.html");
   } catch (e) {
     console.warn("Falha ao confirmar pagamento:", e);
