@@ -3,18 +3,31 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pagamento</title>
 
   <link
     rel="stylesheet"
     href="css/style.css"
   />
+  <style>
+    @media (max-width: 600px) {
+      .curso-page .curso-header { padding: 12px 16px 20px; }
+      .curso-page .curso-header-titulo { padding-top: 40px; }
+      .curso-page .curso-header-acoes { top: 12px; right: 16px; }
+    }
+  </style>
 </head>
 
-<body>
+<body class="curso-page">
 
-  <header>
-    <h1>Pagamento</h1>
+  <header class="curso-header">
+    <div class="curso-header-titulo"><h1>Pagamento</h1></div>
+    <div class="curso-header-acoes">
+      <a class="btn" href="cursos.html" title="Voltar" aria-label="Voltar">⇦</a>
+      <a class="btn" href="index.html" onclick="irParaInicio('index.html'); return false;" title="Início" aria-label="Início">⌂</a>
+      <a class="btn" href="javascript:void(0)" onclick="sairComConfirmacao()" title="Sair" aria-label="Sair">⎋</a>
+    </div>
   </header>
 
   <main class="container">
@@ -29,7 +42,7 @@
         Consultando a situação do pagamento...
       </p>
 
-      <button id="btnConsultarPagamento" class="btn" type="button">Consultar novamente</button>
+      <p id="msgComplemento" hidden></p>
     </div>
 
   </main>
@@ -39,20 +52,17 @@
   <script>
     const msgPagamento = document.getElementById("msg");
     const tituloPagamento = document.getElementById("tituloPagamento");
-    const btnConsultarPagamento = document.getElementById("btnConsultarPagamento");
-    let consultaPagamentoEmAndamento = false;
-    let retornoPagamentoConcluido = false;
+    const msgComplementoPagamento = document.getElementById("msgComplemento");
 
-    function apresentarPagamento(titulo, mensagem) {
+    function apresentarPagamento(titulo, mensagem, complemento = "") {
       tituloPagamento.textContent = titulo;
       document.title = titulo;
       msgPagamento.textContent = mensagem;
+      msgComplementoPagamento.textContent = complemento;
+      msgComplementoPagamento.hidden = !complemento;
     }
 
     async function verificarPagamento() {
-      if (consultaPagamentoEmAndamento || retornoPagamentoConcluido) return;
-      consultaPagamentoEmAndamento = true;
-      btnConsultarPagamento.disabled = true;
       apresentarPagamento("Verificando pagamento", "Consultando a situação do pagamento...");
       try {
         const params = new URLSearchParams(window.location.search);
@@ -68,13 +78,12 @@
           apresentarPagamento("Pagamento não confirmado", "Não foi possível confirmar a liberação do acesso. Entre em contato com o suporte.");
         } else if (pagamentoAprovadoSemImpedimento(resultado, cursoId)) {
           apresentarPagamento("Pagamento aprovado!", "Seu pagamento foi confirmado.");
-          retornoPagamentoConcluido = true;
           limparContextoCompraConfirmada();
           setTimeout(() => { window.location.href = "cursos.html"; }, 900);
         } else if (["PENDING", "PENDENTE"].includes(status)) {
-          apresentarPagamento("Pagamento pendente", resultado.payment_method_id === "pix"
-            ? "Seu pagamento por Pix ainda não foi confirmado. O acesso ao curso será liberado após a confirmação!"
-            : "Seu pagamento ainda não foi confirmado. O acesso ao curso será liberado após a confirmação!");
+          // Etapa 2: orientar a consulta ao e-mail somente após confirmação confiável do envio.
+          apresentarPagamento("Pagamento pendente", "Seu pagamento ainda não foi confirmado.",
+            "O acesso ao curso será liberado após a confirmação!");
         } else if (["IN_PROCESS", "IN_MEDIATION"].includes(status)) {
           apresentarPagamento("Pagamento em processamento", "Seu pagamento está sendo processado. Aguarde a confirmação!");
         } else if (status === "REJECTED") {
@@ -87,13 +96,9 @@
       } catch (err) {
         console.error(err);
         apresentarPagamento("Pagamento não confirmado", "Não foi possível confirmar a situação do pagamento. Consulte novamente em instantes.");
-      } finally {
-        consultaPagamentoEmAndamento = false;
-        btnConsultarPagamento.disabled = retornoPagamentoConcluido;
       }
     }
 
-    btnConsultarPagamento.addEventListener("click", verificarPagamento);
     verificarPagamento();
 
   </script>

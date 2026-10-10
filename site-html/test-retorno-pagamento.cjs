@@ -27,7 +27,7 @@ test('estado inicial neutro, sem afirmação de aprovação',()=>{
 for(const [status,titulo] of [['PENDING','Pagamento pendente'],['IN_PROCESS','Pagamento em processamento'],['REJECTED','Pagamento não aprovado'],['CANCELLED','Pagamento cancelado']])test('HTTP 200 '+status+' preserva contexto e não redireciona',async()=>{
  const x=ambiente();x.s.resultado=resultado(status,{payment_method_id:'pix'});await x.s.verificarPagamento();
  assert.equal(x.elementos.tituloPagamento.textContent,titulo);assert.equal(x.timers.length,0);assert.equal(x.store.get('estado_compra_curso'),'contexto');
- if(status==='PENDING')assert.equal(x.elementos.msg.textContent,'Seu pagamento por Pix ainda não foi confirmado. O acesso ao curso será liberado após a confirmação!');
+ if(status==='PENDING'){assert.equal(x.elementos.msg.textContent,'Seu pagamento ainda não foi confirmado.');assert.equal(x.elementos.msgComplemento.textContent,'O acesso ao curso será liberado após a confirmação!');assert.equal(x.elementos.msgComplemento.hidden,false);}
 });
 for(const liberou of [true,false])test('aprovado '+(liberou?'novo':'já processado')+' confirmado limpa e redireciona',async()=>{
  const x=ambiente();x.s.resultado=resultado('APPROVED',{liberou_acesso:liberou});await x.s.verificarPagamento();
@@ -40,9 +40,9 @@ for(const query of ['','?status=approved','?payment_id=abc','?payment_id=-1','?p
  const x=ambiente(undefined,query);x.s.resultado=resultado('PENDING');await x.s.verificarPagamento();assert.notEqual(x.elementos.tituloPagamento.textContent,'Pagamento aprovado!');assert.equal(x.timers.length,0);
  if(!query.includes('payment_id=123'))assert.equal(x.pedidos.length,0);
 });
-test('falha de consulta mostra mensagem neutra e permite tentar novamente',async()=>{
- const x=ambiente();x.s.apiPostAuth=async()=>{throw Error('Indisponível')};await x.s.verificarPagamento();assert.equal(x.elementos.msg.textContent,'Não foi possível confirmar a situação do pagamento. Consulte novamente em instantes.');assert.equal(x.elementos.btnConsultarPagamento.disabled,false);
- x.s.apiPostAuth=async()=>resultado('APPROVED');await x.elementos.btnConsultarPagamento.click();assert.equal(x.elementos.tituloPagamento.textContent,'Pagamento aprovado!');
+test('falha de consulta mostra mensagem neutra sem botão de consulta',async()=>{
+ const x=ambiente();x.s.apiPostAuth=async()=>{throw Error('Indisponível')};await x.s.verificarPagamento();assert.equal(x.elementos.msg.textContent,'Não foi possível confirmar a situação do pagamento. Consulte novamente em instantes.');assert.doesNotMatch(x.html,/btnConsultarPagamento|Consultar novamente/);
+ x.s.apiPostAuth=async()=>resultado('APPROVED');await x.s.verificarPagamento();assert.equal(x.elementos.tituloPagamento.textContent,'Pagamento aprovado!');
 });
 test('consulta pendente pode posteriormente confirmar aprovação',async()=>{
  const x=ambiente();x.s.resultado=resultado('PENDING');await x.s.verificarPagamento();x.s.resultado=resultado('APPROVED');await x.s.verificarPagamento();assert.equal(x.pedidos.length,2);assert.equal(x.timers.length,1);
@@ -69,4 +69,27 @@ test('restauração ignora resposta antiga sem redirecionar ou alterar nova oper
 test('falha de abertura restaura botão e permite nova tentativa',async()=>{
  const x=ambiente('checkout.html','?curso_id=1');x.s.apiPostAuth=async()=>{throw Error('Falha de rede')};await x.s.adquirirAgora();assert.equal(x.elementos.btnAdquirirAgora.disabled,false);assert.match(x.elementos.msgCheckout.textContent,/Falha de rede/);
  x.s.apiPostAuth=async()=>({init_point:'https://example.com/mp'});await x.s.adquirirAgora();assert.equal(x.elementos.msgCheckout.textContent,'');
+});
+
+test('navegação reutiliza cabeçalho, Início e logout com confirmação',()=>{
+ const x=ambiente();
+ assert.match(x.html,/<meta name="viewport"/);
+ assert.match(x.html,/<body class="curso-page">/);
+ assert.match(x.html,/class="curso-header-acoes"/);
+ assert.match(x.html,/href="cursos.html" title="Voltar"/);
+ assert.match(x.html,/onclick="irParaInicio\('index.html'\); return false;"/);
+ assert.match(x.html,/onclick="sairComConfirmacao\(\)"/);
+ x.s.irParaInicio('index.html');assert.equal(x.s.window.location.href,'index.html');
+ x.s.confirm=()=>false;x.s.sairComConfirmacao();assert.equal(x.store.get('access_token'),'token');
+ x.s.confirm=()=>true;x.s.sairComConfirmacao();assert.equal(x.store.has('access_token'),false);assert.equal(x.s.window.location.href,'index.html');
+});
+test('consulta inicial preservada e nenhuma promessa fictícia de e-mail',async()=>{
+ const x=ambiente();x.s.resultado=resultado('PENDING',{payment_method_id:'pix',email_enviado:true});
+ const script=x.html.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
+ assert.equal((script.match(/    verificarPagamento\(\);/g)||[]).length,1);
+ assert.doesNotMatch(script,/setInterval|btnConsultarPagamento|addEventListener/);
+ await vm.runInContext('verificarPagamento()',x.s);
+ assert.equal(x.pedidos.length,1);assert.equal(x.timers.length,0);
+ assert.doesNotMatch(x.elementos.msg.textContent,/e-mail/);
+ assert.doesNotMatch(x.elementos.msgComplemento.textContent,/e-mail/);
 });
