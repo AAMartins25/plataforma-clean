@@ -1,91 +1,94 @@
-# Manutenção temporária do serviço Render
+# Manutenção temporária M2 do serviço Render
 
-Preparação local: nenhuma configuração de produção foi alterada. Este servidor
-usa somente a biblioteca padrão Python, não importa `app`, não lê dotenv ou
-DATABASE_URL e não abre conexões de saída. Não exige migrations nem modelos.
-Até 16 threads atendem conexões; sockets têm timeout de cinco segundos. Saturação
-retorna 503 quando possível. Solicitações HTTP malformadas podem receber 400 ou
-encerramento da conexão, nunca confirmação de webhook.
+Preparação local, sem commit ou publicação. O servidor usa somente a biblioteca
+padrão Python, não importa app/FastAPI/SQLAlchemy, não lê dotenv ou DATABASE_URL
+nem abre conexões de saída. Não exige migrations nem modelos. Até 16 threads
+atendem conexões; sockets têm timeout de cinco segundos. Saturação retorna 503
+quando possível. HTTP malformado pode receber 400 ou desconexão, nunca confirmação
+financeira. Logs não registram URLs, identificadores ou cabeçalhos.
 
-## Comandos e health check
+## Saúde e comando
 
-Se o Root Directory do Render é `backend`, o Start Command temporário é:
+GET e HEAD respondem 200 exclusivamente para os alvos exatos `/` e
+`/__maintenance_health`, indicando status maintenance. POST nesses caminhos e
+as demais requisições válidas retornam 503 com Retry-After de 60 segundos,
+incluindo login, checkout e webhooks. Query strings, barra adicional e `//`
+não são considerados caminhos de saúde. HEAD não inclui corpo.
+
+O Health Check do Render permanece HTTP `/` durante toda a transição. Não alterar
+seu caminho, Root Directory backend, Build Command ou Pre-Deploy Command vazio.
+Com Root Directory backend, o Start Command temporário será:
 
 ```text
 python -u manutencao_temporaria.py
 ```
 
-Se o Root Directory é a raiz do repositório:
+O servidor escuta 0.0.0.0 e PORT fornecida pelo Render (padrão local 10000).
+Para o intermediário, o comando correto é:
 
 ```text
-python -u backend/manutencao_temporaria.py
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-Usa `0.0.0.0` e a variável PORT fornecida pelo Render (padrão local 10000).
-O Health Check Path temporário é exatamente `/__maintenance_health`: GET e HEAD
-respondem 200 com indicação de manutenção. Todas as outras rotas/métodos válidos,
-incluindo POST nesse caminho, respondem 503 com Retry-After de 60 segundos.
-Não usar `/`, `/health` ou a URL do webhook como health check HTTP desta versão.
-Não há processamento, armazenamento ou confirmação de notificações.
+`app.main` sem `:app` é inválido para Uvicorn. No commit I, a rota GET `/` do
+intermediário já responde 200 sem consultar o banco. O teste M2 confirma isso
+no backend completo, com qualquer instrução SQL proibida durante a requisição.
 
-## Ativação futura, dependente de autorização
+## Preparação e transição futuras, cada uma mediante autorização
 
-1. Registrar Start Command, Health Check Path, Root Directory, SHA e configurações
-   originais; não copiar credenciais. Desativar Auto-Deploy de backend e frontend,
-   conferir deploys pendentes e automações. Aprovar separadamente commit/push dos
-   arquivos deste mecanismo, sem incorporar o backend definitivo 014/015.
-2. Confirmar que Build Command e Pre-Deploy Command não importam a aplicação,
-   executam migrations nem estabelecem conexões financeiras. Este servidor não
-   protege outros comandos/processos; interromper se houver algum desses efeitos.
-3. Preparar o SHA intermediário aprovado. A 016 deve estar validada antes do
-   startup intermediário, mas não é necessária para este servidor temporário.
-4. Autorizar a mudança do Start Command e Health Check Path e o deploy de
-   manutenção. Coordenar as duas configurações para que o candidato tenha health
-   check compatível; não publicar antecipadamente lógica definitiva. Se salvar
-   configurações disparar deploy, esse disparo também exige autorização e revisão
-   prévia do SHA que será utilizado. Não presumir que Auto-Deploy desligado impede
-   deploy causado por mudança de configuração.
-5. Registrar início da janela. Confirmar deploy ativo, health 200, webhook POST
-   503, encerramento de todas as instâncias antigas e liberação de suas conexões.
-   O processo temporário abre zero conexões PostgreSQL: antigo + temporário não
-   acrescenta posições ao pool. Não iniciar o intermediário só porque o health
-   check respondeu. Conferir margem para suas cinco conexões no pool pertinente.
+1. M2 será filho de I na branch preparacao-financeira-016, preservando M/I/main.
+   Alterar somente este documento, o servidor temporário e seus testes.
+   O mesmo SHA M2 conterá o servidor e o intermediário já aprovado: não exige I2.
+2. Autorizar separadamente commit/push e implantação. Manter Auto-Deploy Off,
+   branch configurada main e HTTP Health Check `/`. Conferir SHAs, processos,
+   ausência de deploys pendentes e margem do pool. Não assumir que Auto-Deploy
+   Off impeça deploy causado pelo salvamento no Dashboard.
+3. Pela API Update service, preparar somente o Start Command de manutenção:
+   a documentação informa que a atualização não dispara deploy automaticamente.
+   Conferir configuração e disparar separadamente o deploy pelo SHA M2 explícito.
+   Não incluir buildSourceId, mudanças de branch ou configurações extras.
+4. Registrar início da janela. Confirmar SHA M2 LIVE, GET `/` 200 indicando
+   maintenance e POST de webhook 503. A mudança de Start Command não comprova
+   encerramento do antigo. Aguardar shutdown de todas as instâncias Uvicorn
+   antigas, requisições encerradas e liberação de suas conexões. O temporário
+   abre zero conexões PostgreSQL. Conferir margem para as cinco do intermediário.
+5. Autorizar restauração exclusivamente do Start Command Uvicorn acima pela API
+   e outro deploy do MESMO SHA M2. Manter Health Check `/`. A 016 precisa estar
+   aplicada/validada; não executar migrations neste procedimento. Confirmar
+   backend_definitivo=false, versao_protecao=pausa-financeira-v2-transacional,
+   SHA M2, saúde e encerramento do temporário. Variáveis efetivas do pool precisam
+   manter tamanho cinco e overflow zero. O candidato protegido executa seu startup
+   de validação antes de responder saúde; o 200 de `/` sozinho não prova a proteção.
+6. Ativar a pausa centralizada somente com autorização própria e após conferir
+   ausência de instâncias antigas. Recuperação administrativa/reconciliação exige
+   o definitivo após 014/015; não tentar habilitá-la no intermediário.
 
-## Desativação e recuperação futuras, dependentes de autorização
+## Contingência e notificações
 
-1. Autorizar restauração do Start Command Uvicorn **exatamente como registrado**,
-   restauração do health check original e deploy do SHA intermediário aprovado.
-   Não presumir qual era o comando Uvicorn ou seu caminho de health check.
-2. Confirmar que candidato usa comando e health compatíveis; temporário +
-   intermediário abre até cinco conexões do backend. Conferir SHA ativo,
-   backend_definitivo=false, startup/health e encerramento do processo temporário.
-3. Ativar a pausa centralizada somente com autorização própria e após comprovar
-   ausência de processos antigos sem proteção. Prosseguir conforme procedimento
-   016/014/015 aprovado; não reabrir finanças antes da recuperação necessária.
-4. Manter a URL do Mercado Pago intacta. Durante a indisponibilidade notificações
-   recebem erro e **não são armazenadas localmente**. Reenvios não garantem cobertura.
-   Registrar fim da janela e reconciliar posteriormente pela API autenticada, com
-   margens e paginação, incluindo transações sem registro individual local.
-   Recuperação administrativa exige o definitivo após 014/015. Nunca usar caixa
-   vazia como prova de cobertura ou realizar aprovação/reembolso por suposição.
+Conservar os dois comandos e os artefatos. Se um deploy falhar, conferir qual
+processo continua atendendo; não presumir que ocorreu troca. Se o intermediário
+falhar, manter/restaurar a manutenção com seu Start Command e o SHA correto,
+mediante autorização. Não restaurar automaticamente backend sem proteção.
 
-## Falhas e limites
+A URL do Mercado Pago permanece intacta. Durante a manutenção toda a aplicação
+fica indisponível; webhooks recebem erro e NÃO são armazenados localmente.
+Registrar início/fim da janela e reconciliar depois pela API confiável com margens,
+paginação e transações ainda sem registro local. Não depender exclusivamente dos
+reenvios, não usar caixa vazia como prova de cobertura e não aprovar/reembolsar
+por suposição. Liveness da manutenção não significa prontidão financeira.
 
-Se o deploy de manutenção falhar, confirmar qual versão ainda atende. Se o
-intermediário falhar, conservar a manutenção com 503, investigar e republicar o
-SHA correto; não restaurar automaticamente um backend sem proteção. Não alterar
-dados financeiros para resolver falha de implantação. Estudo e demais rotas ficam
-indisponíveis durante esta etapa temporária. A duração total inclui builds,
-health checks e drenagem: não é garantida pelo servidor. A resposta de saúde é
-somente liveness deste processo, não prontidão da aplicação financeira.
-
-Teste local (não importa a aplicação e não requer PostgreSQL):
+## Validação local
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s backend -p test_manutencao_temporaria.py -v
+PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s backend -p test_backend_intermediario.py -v
+PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=backend python -m pytest -q -p no:cacheprovider backend/test_financeiro_transacional.py
 ```
 
-O subprocesso de teste bloqueia imports de aplicação/drivers, leitura de variáveis
-PostgreSQL/dotenv e chamadas de conexão de saída, enquanto recebe requisições HTTP
-reais em loopback. Isso testa o servidor, não comprova comandos de build/startup,
-capacidade do pool ou encerramento de instâncias reais do Render.
+O servidor de teste recebe HTTP real em loopback enquanto imports da aplicação e
+banco, variáveis PostgreSQL, dotenv e conexões de saída são proibidos. Testes
+cobrem os dois caminhos, métodos, variantes, login/webhooks, concorrência,
+saturação, recuperação e SIGTERM. O backend completo é testado em subprocesso
+com SQLite exclusivo da fixture e Mercado Pago simulado, sem migrations; GET `/`
+é executado com SQL bloqueado. Nada acessa produção. Testes não comprovam shutdown
+no Render nem cobertura de notificações no provedor.

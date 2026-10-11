@@ -9,6 +9,7 @@ import sys
 import socket
 import time
 import unittest
+import runpy
 
 SCRIPT = Path(__file__).with_name("manutencao_temporaria.py")
 BOOTSTRAP = r'''
@@ -69,18 +70,21 @@ class ManutencaoTests(unittest.TestCase):
             conn.close()
 
     def test_health_get_head(self):
-        for method in ("GET", "HEAD"):
-            with self.subTest(method=method):
-                status, headers, body = self.request(method, "/__maintenance_health")
-                self.assertEqual(status, 200)
-                self.assertEqual(headers["Cache-Control"], "no-store")
-                if method == "HEAD":
-                    self.assertEqual(body, b"")
-                else:
-                    self.assertEqual(json.loads(body), {"status": "maintenance"})
+        for path in ("/", "/__maintenance_health"):
+            for method in ("GET", "HEAD"):
+                with self.subTest(method=method, path=path):
+                    status, headers, body = self.request(method, path)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(headers["Cache-Control"], "no-store")
+                    if method == "HEAD":
+                        self.assertEqual(body, b"")
+                    else:
+                        self.assertEqual(json.loads(body), {"status": "maintenance"})
 
     def test_health_nao_aceita_post_query_ou_variantes(self):
         for method, path in (("POST", "/__maintenance_health"),
+                             ("POST", "/"), ("GET", "/?x=1"),
+                             ("HEAD", "/?x=1"), ("GET", "//"),
                              ("GET", "/__maintenance_health?x=1"),
                              ("GET", "/__maintenance_health/")):
             with self.subTest(method=method, path=path):
@@ -99,7 +103,10 @@ class ManutencaoTests(unittest.TestCase):
     def test_todas_rotas_e_metodos_indisponiveis(self):
         for method in ("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "CUSTOM"):
             for path in ("/", "/health", "/checkout/mercadopago", "/pagamentos/confirmar",
+                         "/login", "/auth/login", "/token", "/__maintenance_health",
                          "/admin/financeiro/manutencao", "/admin/reembolsos/1/pix-manual"):
+                if method in ("GET", "HEAD") and path in ("/", "/__maintenance_health"):
+                    continue
                 with self.subTest(method=method, path=path):
                     self.assertEqual(self.request(method, path)[0], 503)
 
@@ -109,7 +116,7 @@ class ManutencaoTests(unittest.TestCase):
     def test_concorrencia_health_e_webhooks(self):
         def consultar(i):
             return self.request("GET" if i % 2 == 0 else "POST",
-                "/__maintenance_health" if i % 2 == 0 else "/webhooks/mercadopago")[0]
+                "/" if i % 2 == 0 else "/webhooks/mercadopago")[0]
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             results = list(pool.map(consultar, range(40)))
         self.assertEqual(results, [200 if i % 2 == 0 else 503 for i in range(40)])
@@ -125,7 +132,7 @@ class ManutencaoTests(unittest.TestCase):
                 cliente = socket.create_connection(("127.0.0.1", self.port), timeout=3)
                 clientes.append(cliente)
                 # Cabeçalhos incompletos mantêm uma thread ocupada até fechar.
-                cliente.sendall(b"GET /__maintenance_health HTTP/1.1\r\n")
+                cliente.sendall(b"GET / HTTP/1.1\r\n")
             time.sleep(.1)
             status, headers, _ = self.request("POST", "/webhooks/mercadopago")
             self.assertEqual(status, 503)
@@ -134,9 +141,40 @@ class ManutencaoTests(unittest.TestCase):
             for cliente in clientes:
                 cliente.close()
         limite = time.monotonic() + 2
-        while self.request("GET", "/__maintenance_health")[0] != 200:
+        while self.request("GET", "/")[0] != 200:
             self.assertLess(time.monotonic(), limite)
             time.sleep(.02)
+
+
+class IntermediarioRootTests(unittest.TestCase):
+    def test_get_root_do_backend_completo_sem_sql(self):
+        # Reutiliza a fixture isolada existente, sem alterar app/main.py ou seus testes.
+        script = runpy.run_path(str(SCRIPT.with_name("test_backend_intermediario.py")))["CHILD"]
+        teste = '''
+    def test_root_200_sem_sql(self):
+        from sqlalchemy import event
+        def proibir_sql(*args, **kwargs):
+            raise AssertionError('GET / tentou consultar o banco')
+        event.listen(self.engine, 'before_cursor_execute', proibir_sql)
+        try:
+            r=self.client.get('/')
+            self.assertEqual(r.status_code,200,r.text)
+            self.assertIn('mensagem',r.json())
+        finally:
+            event.remove(self.engine, 'before_cursor_execute', proibir_sql)
+
+'''
+        anchor = '    def test_versao_sem_colunas_014015(self):'
+        self.assertIn(anchor, script)
+        script = script.replace(anchor, teste + anchor, 1)
+        env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", AMBIENTE_TESTE="1",
+                   PYTHONPATH=str(SCRIPT.parent), DATABASE_URL="sqlite://",
+                   RENDER_GIT_COMMIT="sha-teste-isolado")
+        result = subprocess.run([sys.executable, "-c", script,
+            str(SCRIPT.parent / "app/main.py")], cwd=SCRIPT.parent,
+            env=env, capture_output=True, text=True, timeout=40)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Ran 8 tests", result.stderr)
 
 
 if __name__ == "__main__":

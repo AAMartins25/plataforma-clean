@@ -5,7 +5,7 @@ import signal
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HEALTH_PATH = "/__maintenance_health"
+HEALTH_PATHS = frozenset({"/", "/__maintenance_health"})
 BODY = json.dumps({"detail": "Serviço temporariamente indisponível para manutenção."},
                   ensure_ascii=False).encode("utf-8")
 
@@ -28,7 +28,9 @@ class Handler(BaseHTTPRequestHandler):
             self.close_connection = True
 
     def responder(self):
-        saudavel = self.command in {"GET", "HEAD"} and self.path == HEALTH_PATH
+        # BaseHTTPRequestHandler normaliza "//" para "/"; conferir o alvo original.
+        alvo = self.requestline.split()[1]
+        saudavel = self.command in {"GET", "HEAD"} and alvo in HEALTH_PATHS
         body = b'{"status":"maintenance"}' if saudavel else BODY
         self.send_response(200 if saudavel else 503)
         self.send_header("Content-Type", "application/json; charset=utf-8")
