@@ -1,3 +1,4 @@
+from app.financeiro_transacional import protegido
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -358,6 +359,7 @@ def consultar_direitos_acesso_apos_reembolso(
         "maior_data_fim": max(datas_fim) if datas_fim else None,
     }
 
+@protegido
 def recalcular_acesso_apos_reembolso(
     db: Session,
     usuario_id: int,
@@ -414,6 +416,7 @@ def recalcular_acesso_apos_reembolso(
     }
 
 @app.post("/admin/acessos", tags=["Acessos"])
+@protegido
 def admin_criar_acesso(
     payload: AcessoCursoCreate,
     db: Session = Depends(get_db),
@@ -3895,6 +3898,7 @@ def salvar_config_publica_curso(
     return {"ok": True}
 
 @app.post("/cursos/{curso_id}/demonstracao")
+@protegido
 def iniciar_demonstracao_curso(
     curso_id: int,
     db: Session = Depends(get_db),
@@ -4001,6 +4005,7 @@ def validar_cupom_desconto(payload: dict, db: Session = Depends(get_db)):
             "vendedor_id": vendedor.id}
 
 @app.post("/checkout/mercadopago")
+@protegido
 def criar_checkout_mp(
     payload: dict,
     db: Session = Depends(get_db),
@@ -4192,6 +4197,17 @@ def criar_checkout_mp(
         db.commit()
         return resultado
 
+    indefinido = db.query(Pagamento).filter(
+        Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.status == 'CHECKOUT_INDEFINIDO',
+        Pagamento.mp_preference_id.is_(None)
+    ).first()
+    if indefinido:
+        from app.financeiro_transacional import esperar_checkout
+        if esperar_checkout(db, indefinido.id):
+            return criar_checkout_mp(payload, db, user)
+        raise HTTPException(409, 'A abertura anterior do checkout precisa ser verificada no provedor antes de outra tentativa.')
+
     titulos_gerados = db.query(Pagamento).filter(
         Pagamento.oportunidade_id == oportunidade.id,
         Pagamento.mp_preference_id.isnot(None)
@@ -4221,7 +4237,7 @@ def criar_checkout_mp(
             :u,
             :c,
             :t,
-            'PENDENTE',
+            'CHECKOUT_INDEFINIDO',
             :v,
             :codigo_cupom,
             :vendedor_id,
@@ -4290,6 +4306,11 @@ def criar_checkout_mp(
         "Content-Type": "application/json"
     }
 
+    # Identidade durável antes do efeito externo; não confirma pagamento ou acesso.
+    db.commit()
+    # Preservar a serialização comercial; revalidar modo/geração após o commit.
+    db.query(models.Usuario).filter(models.Usuario.id == user.id).with_for_update().one()
+
     try:
         resp = requests.post(url, headers=headers, json=payload_mp, timeout=20)
     except requests.RequestException as e:
@@ -4311,7 +4332,7 @@ def criar_checkout_mp(
 
     db.execute(text("""
         UPDATE pagamentos
-        SET mp_preference_id = :pid
+        SET mp_preference_id = :pid, status = 'PENDENTE'
         WHERE id = :pag_id
     """), {
         "pid": str(pref_id),
@@ -4350,6 +4371,7 @@ def criar_checkout_mp(
 from fastapi import HTTPException
 
 @app.post("/pagamentos/confirmar")
+@protegido
 def confirmar_pagamento(
     payload: dict,
     db: Session = Depends(get_db),
@@ -4703,7 +4725,13 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
             "msg": "Notificação legada não processada"
         }
 
-    r = requests.get(
+    from starlette.concurrency import run_in_threadpool
+    return await run_in_threadpool(processar_pagamento_mp, str(payment_id), db)
+
+
+@protegido
+def processar_pagamento_mp(payment_id, db, resposta_mp=None):
+    r = resposta_mp if resposta_mp is not None else requests.get(
         f"https://api.mercadopago.com/v1/payments/{payment_id}",
         headers=mp_headers(),
         timeout=20
@@ -5182,6 +5210,7 @@ def admin_listar_reembolsos(
     return [dict(r) for r in rows]
 
 @app.post("/admin/pagamentos/revalidar", tags=["Admin Pagamentos"])
+@protegido
 def admin_revalidar_pagamento(
     payload: dict,
     db: Session = Depends(get_db),
@@ -5863,6 +5892,7 @@ def redefinir_senha(
     }
 
 @app.post("/me/reembolso/{pagamento_id}")
+@protegido
 def solicitar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -5939,6 +5969,7 @@ def listar_meus_reembolsos(
     return [dict(r) for r in rows]
 
 @app.post("/admin/reembolsos/{pagamento_id}/aprovar")
+@protegido
 def aprovar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -5982,6 +6013,7 @@ def aprovar_reembolso(
 
 
 @app.post("/admin/reembolsos/{pagamento_id}/recusar")
+@protegido
 def recusar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -6021,6 +6053,7 @@ def recusar_reembolso(
     }
 
 @app.post("/admin/reembolsos/{pagamento_id}/pix-manual")
+@protegido
 def registrar_reembolso_pix_manual(
     pagamento_id: int,
     dados: ReembolsoPixManualCreate,
@@ -6103,6 +6136,7 @@ def registrar_reembolso_pix_manual(
     }
 
 @app.post("/admin/reembolsos/{reembolso_id}/pix-manual/confirmar")
+@protegido
 def confirmar_reembolso_pix_manual(
     reembolso_id: int,
     confirmacao_extrato: bool,
@@ -9288,3 +9322,10 @@ def copiar_assunto_entre_disciplinas(
         db, lambda: copiar_assunto_para_disciplina(db, assunto_id, dados.disciplina_destino_id),
         "assunto"
     )
+
+
+from app.pausa_financeira import instalar
+from app.database import engine as motor_financeiro
+instalar(app, motor_financeiro, SessionLocal, get_db, get_usuario_atual,
+    validar_assinatura_mercadopago, processar_pagamento_mp, mp_headers, definitivo=False,
+    consulta=lambda pid: requests.get(f"https://api.mercadopago.com/v1/payments/{pid}", headers=mp_headers(), timeout=20))

@@ -1,3 +1,4 @@
+from app.financeiro_transacional import protegido
 from datetime import datetime
 
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.models import ContratacaoCurso
 
 
+@protegido
 def registrar_contratacao(
     db: Session,
     pagamento,
@@ -105,6 +107,7 @@ def validar_data_aprovacao_mp(pagamento, dados_mp):
     return data
 
 
+@protegido
 def registrar_ocorrencia_financeira(db, pagamento, tipo, dados_mp):
     """Registra pagamento recebido sem conceder acesso ao curso."""
     if tipo not in ("COBRANCA_DUPLICADA", "APROVACAO_FORA_PRAZO"):

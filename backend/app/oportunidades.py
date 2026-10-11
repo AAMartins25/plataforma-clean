@@ -1,7 +1,9 @@
+from app.financeiro_transacional import protegido
 from sqlalchemy.orm import Session
 from app.models import OportunidadeCompra
 
 
+@protegido
 def obter_oportunidade(
     db: Session,
     usuario_id: int,
@@ -72,6 +74,7 @@ def bloquear_oportunidade_pagamento(db: Session, pagamento):
     return oportunidade
 
 
+@protegido
 def concluir_oportunidade(db: Session, oportunidade):
     """Encerra a oportunidade na mesma transação da contratação."""
     if oportunidade is None:
