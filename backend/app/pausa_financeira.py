@@ -223,6 +223,11 @@ class Protecao:
             self.consumidores.release()
 
     def _processar(self, ident, recuperacao, prazo):
+        from app.diagnostico_financeiro import contexto
+        with contexto(ident):
+            return self._processar_notificacao(ident, recuperacao, prazo)
+
+    def _processar_notificacao(self, ident, recuperacao, prazo):
         with self.lease(recuperacao) as op:
             if prazo is not None:
                 op.prazo = min(op.prazo, prazo)
@@ -265,6 +270,8 @@ class Protecao:
                     real_commit()
                     return {'id':ident, 'processado':True, **resumo}
             except Exception as exc:
+                from app.diagnostico_financeiro import resumo
+                resumo()
                 # Nunca retomar o domínio nesta execução, inclusive após rollback.
                 # Resultado incerto de commit continua elegível para reconciliação.
                 codigo = exc.status_code if isinstance(exc, HTTPException) else 500

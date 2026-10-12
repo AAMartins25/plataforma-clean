@@ -1,3 +1,5 @@
+from time import monotonic
+from .diagnostico_financeiro import falha, transporte
 from app.financeiro_transacional import protegido, timeout_financeiro
 """Identidade financeira de tentativas de uma preferência; não concede acesso."""
 from decimal import Decimal, InvalidOperation
@@ -9,12 +11,14 @@ from .oportunidades import bloquear_oportunidade_pagamento
 
 
 def consultar_pagamento(payment_id, headers):
+    inicio = monotonic()
     try:
         return requests.get(
             f"https://api.mercadopago.com/v1/payments/{payment_id}",
             headers=headers, timeout=timeout_financeiro(),
         )
-    except requests.RequestException:
+    except requests.RequestException as exc:
+        falha("consulta_pagamento", transporte(exc), inicio)
         raise HTTPException(502, "Não foi possível consultar o pagamento no Mercado Pago.")
 
 
@@ -22,6 +26,9 @@ def atualizar_estado_mp(pagamento, dados):
     status = str(dados.get("status") or "").strip().upper()
     if status not in {"APPROVED", "PENDING", "IN_PROCESS", "AUTHORIZED", "IN_MEDIATION",
                       "REJECTED", "CANCELLED", "REFUNDED", "CHARGED_BACK"}:
+        valor = dados.get("status")
+        categoria = "ausente" if valor is None or valor == "" else ("tipo_invalido" if not isinstance(valor, str) else "nao_reconhecido")
+        falha("interpretacao_status", categoria)
         raise HTTPException(502, "Estado financeiro retornado pelo Mercado Pago inválido.")
     # Uma consulta iniciada antes da devolução não pode regredir um estado terminal.
     if pagamento.mp_status in {"REFUNDED", "CHARGED_BACK"} and status not in {"REFUNDED", "CHARGED_BACK"}:
@@ -125,16 +132,23 @@ def verificar_ordem_mp(dados, pid, headers, preferencia_id=None):
     order_id = (dados.get("order") or {}).get("id")
     if not order_id:
         raise HTTPException(409, "Mercado Pago não informou a ordem da nova tentativa.")
+    inicio = monotonic()
     try:
         resposta = requests.get(
             f"https://api.mercadopago.com/merchant_orders/{order_id}",
             headers=headers, timeout=timeout_financeiro(),
         )
-    except requests.RequestException:
+    except requests.RequestException as exc:
+        falha("consulta_merchant_order", transporte(exc), inicio)
         raise HTTPException(502, "Não foi possível verificar a preferência da nova tentativa.")
     if resposta.status_code >= 400:
+        falha("consulta_merchant_order", "http", inicio, resposta.status_code)
         raise HTTPException(502, "Não foi possível verificar a preferência da nova tentativa.")
-    ordem = resposta.json()
+    try:
+        ordem = resposta.json()
+    except ValueError:
+        falha("consulta_merchant_order", "json_invalido", inicio, resposta.status_code)
+        raise
     if (str(ordem.get("id")) != str(order_id)
             or not ordem.get("preference_id")
             or (preferencia_id is not None and str(ordem.get("preference_id")) != preferencia_id)

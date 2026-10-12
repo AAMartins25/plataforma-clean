@@ -89,9 +89,32 @@ def test_campos_014015_e_protecao_m2_preservados(ambiente_compra):
     assert next(c for c in inspect(engine).get_columns('reembolsos_financeiros')
                 if c['name'] == 'confirmado_por')['nullable'] is True
     root = Path(__file__).resolve().parents[1]
-    for name in ('backend/app/pausa_financeira.py', 'backend/app/financeiro_transacional.py',
+    for name in ('backend/app/financeiro_transacional.py',
                  'backend/app/database.py', 'backend/manutencao_temporaria.py',
                  'backend/manutencao_temporaria.md'):
         original = subprocess.check_output(['git', 'show',
             'f36e2a1c8008a8f9cc0445397d292cb6d5460d43:' + name], cwd=root)
         assert (root / name).read_bytes() == original, name
+
+    # Instrumentação pode mudar pausa_financeira, mas não as barreiras financeiras.
+    import ast
+    before=ast.parse(subprocess.check_output(['git','show',
+        '8f5407b60f2e9aaf05996f22878e43509a5d6a87:backend/app/pausa_financeira.py'],cwd=root,text=True))
+    after=ast.parse((root/'backend/app/pausa_financeira.py').read_text())
+    def methods(tree):
+        c=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='Protecao')
+        return {n.name:n for n in c.body if isinstance(n,ast.FunctionDef)}
+    a,b=methods(before),methods(after)
+    for name in ('nova_operacao','bloquear','lease','mudar','armazenar','recuperar','reconciliar'):
+        assert ast.dump(a[name])==ast.dump(b[name]),name
+
+    # A unidade financeira deve ser a mesma, descontando apenas o log acrescentado.
+    import copy
+    unidade=copy.deepcopy(b['_processar_notificacao'])
+    for n in ast.walk(unidade):
+        if isinstance(n,ast.ExceptHandler):
+            n.body=[x for x in n.body if not (isinstance(x,ast.ImportFrom) and
+                x.module=='app.diagnostico_financeiro') and not (isinstance(x,ast.Expr) and
+                isinstance(x.value,ast.Call) and isinstance(x.value.func,ast.Name) and
+                x.value.func.id=='resumo')]
+    assert [ast.dump(x) for x in a['_processar'].body]==[ast.dump(x) for x in unidade.body]

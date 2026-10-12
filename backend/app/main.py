@@ -4698,6 +4698,9 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
 
 @protegido
 def processar_pagamento_mp(payment_id, db, resposta_mp=None):
+    from app.diagnostico_financeiro import falha
+    from time import monotonic
+    inicio_diagnostico = monotonic()
     r = resposta_mp if resposta_mp is not None else consultar_pagamento(payment_id, mp_headers())
 
     if r.status_code == 404:
@@ -4708,12 +4711,17 @@ def processar_pagamento_mp(payment_id, db, resposta_mp=None):
         }
 
     if r.status_code >= 400:
+        falha("consulta_pagamento", "http", inicio_diagnostico, r.status_code)
         raise HTTPException(
             status_code=502,
             detail=f"Erro ao consultar pagamento no Mercado Pago: {r.status_code}"
         )
 
-    pagamento_mp = r.json()
+    try:
+        pagamento_mp = r.json()
+    except ValueError:
+        falha("consulta_pagamento", "json_invalido", inicio_diagnostico, r.status_code)
+        raise
 
     status = (pagamento_mp.get("status") or "desconhecido").upper()
     external_reference = pagamento_mp.get("external_reference") or ""
