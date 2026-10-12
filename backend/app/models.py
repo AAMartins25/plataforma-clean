@@ -415,6 +415,14 @@ class OportunidadeCompra(Base):
 
 class Pagamento(Base):
     __tablename__ = "pagamentos"
+    __table_args__ = (
+        CheckConstraint("pagamento_origem_id IS NULL OR pagamento_origem_id <> id", name="ck_pagamentos_origem_distinta"),
+        Index("uq_pagamentos_mp_payment_id", "mp_payment_id", unique=True,
+              postgresql_where=text("mp_payment_id IS NOT NULL"),
+              sqlite_where=text("mp_payment_id IS NOT NULL")),
+    )
+
+    pagamento_origem_id = Column(Integer, ForeignKey("pagamentos.id"), nullable=True, index=True)
 
     contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
     oportunidade_id = Column(Integer, ForeignKey("oportunidades_compra.id"), nullable=True, index=True)
@@ -424,6 +432,7 @@ class Pagamento(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
 
+    mp_status = Column(String(30), nullable=True)
     status = Column(String(50), nullable=False)
     valor_cents = Column(Integer, nullable=False, default=0)
 
@@ -522,6 +531,7 @@ class ReembolsoFinanceiro(Base):
 
     criado_em = Column(DateTime, default=datetime.utcnow)
     confirmado_em = Column(DateTime, nullable=True)
+    confirmado_por = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
 
     pagamento = relationship("Pagamento")
 

@@ -167,6 +167,10 @@ class IntermediarioRootTests(unittest.TestCase):
         anchor = '    def test_versao_sem_colunas_014015(self):'
         self.assertIn(anchor, script)
         script = script.replace(anchor, teste + anchor, 1)
+        # No definitivo, executar somente a prova de GET /; as premissas do
+        # esquema intermediário continuam testadas na exportação própria.
+        script = script.replace("unittest.main(verbosity=2)",
+            "unittest.main(argv=[sys.argv[0], 'Exportado.test_root_200_sem_sql'], verbosity=2)")
         env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", AMBIENTE_TESTE="1",
                    PYTHONPATH=str(SCRIPT.parent), DATABASE_URL="sqlite://",
                    RENDER_GIT_COMMIT="sha-teste-isolado")
@@ -174,7 +178,7 @@ class IntermediarioRootTests(unittest.TestCase):
             str(SCRIPT.parent / "app/main.py")], cwd=SCRIPT.parent,
             env=env, capture_output=True, text=True, timeout=40)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("Ran 8 tests", result.stderr)
+        self.assertIn("Ran 1 test", result.stderr)
 
 
 if __name__ == "__main__":

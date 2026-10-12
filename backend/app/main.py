@@ -1,4 +1,5 @@
-from app.financeiro_transacional import protegido
+from app.financeiro_transacional import protegido, timeout_financeiro
+from .transacoes_mp import consultar_pagamento, resolver_transacao
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -291,6 +292,8 @@ def consultar_direitos_acesso_apos_reembolso(
         Pagamento.curso_id == curso_id,
         Pagamento.id != pagamento_reembolsado_id,
         Pagamento.aprovado_em.isnot(None),
+        or_(Pagamento.ocorrencia_financeira.is_(None),
+            Pagamento.ocorrencia_financeira.notin_(["COBRANCA_DUPLICADA", "APROVACAO_FORA_PRAZO"])),
         or_(
             Pagamento.status != "REFUNDED",
             Pagamento.id.in_(pagamentos_contestados_sem_bloqueio),
@@ -607,12 +610,15 @@ def listar_compras_reembolso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    limite_7_dias = datetime.utcnow() - timedelta(days=7)
+    agora = datetime.utcnow()
+    limite_7_dias = agora - timedelta(days=7)
 
     compras_elegiveis = db.query(Pagamento).filter(
         Pagamento.usuario_id == usuario.id,
         Pagamento.status.in_(["APPROVED", "approved", "PAGO"]),
-        Pagamento.criado_em >= limite_7_dias
+        Pagamento.aprovado_em.isnot(None),
+        Pagamento.aprovado_em >= limite_7_dias,
+        Pagamento.aprovado_em <= agora
     ).order_by(Pagamento.criado_em.desc()).all()
 
     if compras_elegiveis:
@@ -621,9 +627,13 @@ def listar_compras_reembolso(
             "compras": [
                 {
                     "pagamento_id": p.id,
+                    "mp_payment_id": p.mp_payment_id,
+                    "ocorrencia_financeira": p.ocorrencia_financeira,
                     "curso_id": p.curso_id,
                     "nome_curso": p.curso.nome if p.curso else "Curso",
                     "data_compra": p.criado_em,
+                    "data_aprovacao": p.aprovado_em,
+                    "data_limite_reembolso": (p.aprovado_em + timedelta(days=7)).isoformat() + "Z",
                     "data_solicitacao": p.atualizado_em,
                     "valor_cents": p.valor_cents,
                     "status": p.status
@@ -643,9 +653,13 @@ def listar_compras_reembolso(
             "compras": [
                 {
                     "pagamento_id": compra_recente.id,
+                    "mp_payment_id": compra_recente.mp_payment_id,
+                    "ocorrencia_financeira": compra_recente.ocorrencia_financeira,
                     "curso_id": compra_recente.curso_id,
                     "nome_curso": compra_recente.curso.nome if compra_recente.curso else "Curso",
                     "data_compra": compra_recente.criado_em,
+                    "data_aprovacao": compra_recente.aprovado_em,
+                    "data_limite_reembolso": ((compra_recente.aprovado_em + timedelta(days=7)).isoformat() + "Z") if (compra_recente.status in ["APPROVED", "approved", "PAGO"] and compra_recente.aprovado_em is not None and compra_recente.aprovado_em <= agora) else None,
                     "data_solicitacao": compra_recente.atualizado_em,
                     "valor_cents": compra_recente.valor_cents,
                     "status": compra_recente.status
@@ -4167,19 +4181,28 @@ def criar_checkout_mp(
         codigo_cupom_usado = cupom.codigo
 
     # Reabrir a mesma seleção pendente evita criar outra preferência em duplo clique.
+    from sqlalchemy.orm import aliased
+    tentativa_pendente = aliased(Pagamento)
     pendente = db.query(Pagamento).filter(
         Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.pagamento_origem_id.is_(None),
         Pagamento.tempo_acesso_id == tempo.id,
         Pagamento.valor_cents == valor_cents,
         Pagamento.codigo_cupom == codigo_cupom_usado,
-        Pagamento.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+        or_(
+            Pagamento.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+            db.query(tentativa_pendente.id).filter(
+                tentativa_pendente.pagamento_origem_id == Pagamento.id,
+                tentativa_pendente.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+            ).exists(),
+        ),
         Pagamento.mp_preference_id.isnot(None),
     ).order_by(Pagamento.id.desc()).first()
     if pendente:
         try:
             resposta = requests.get(
                 f"https://api.mercadopago.com/checkout/preferences/{pendente.mp_preference_id}",
-                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}, timeout=20)
+                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}, timeout=timeout_financeiro())
             if resposta.status_code >= 400:
                 raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
             preferencia = resposta.json()
@@ -4210,6 +4233,7 @@ def criar_checkout_mp(
 
     titulos_gerados = db.query(Pagamento).filter(
         Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.pagamento_origem_id.is_(None),
         Pagamento.mp_preference_id.isnot(None)
     ).count()
 
@@ -4312,7 +4336,7 @@ def criar_checkout_mp(
     db.query(models.Usuario).filter(models.Usuario.id == user.id).with_for_update().one()
 
     try:
-        resp = requests.post(url, headers=headers, json=payload_mp, timeout=20)
+        resp = requests.post(url, headers=headers, json=payload_mp, timeout=timeout_financeiro())
     except requests.RequestException as e:
         db.rollback()
         raise HTTPException(status_code=502, detail=f"Falha de rede ao chamar MP: {e}")
@@ -4370,6 +4394,24 @@ def criar_checkout_mp(
 
 from fastapi import HTTPException
 
+@protegido
+def reconciliar_sem_conceder_acesso(db, pagamento):
+    """Estado do provedor não substitui uma decisão administrativa de devolução."""
+    manual = pagamento.status in {
+        "REFUND_REQUESTED", "REFUND_IN_PROCESS", "REFUNDED", "REFUND_DENIED", "REFUND_ERROR"
+    }
+    if not manual and pagamento.ocorrencia_financeira is None:
+        return False
+    if not manual:
+        pagamento.status = pagamento.mp_status
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return True
+
+
 @app.post("/pagamentos/confirmar")
 @protegido
 def confirmar_pagamento(
@@ -4383,11 +4425,7 @@ def confirmar_pagamento(
     if not payment_id or not curso_id:
         raise HTTPException(status_code=400, detail="Informe payment_id e curso_id")
 
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    r = consultar_pagamento(payment_id, mp_headers())
 
     if r.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"Erro MP: {r.text}")
@@ -4395,85 +4433,14 @@ def confirmar_pagamento(
     p = r.json()
     status = (p.get("status") or "").lower()
 
-    external_reference = p.get("external_reference") or ""
+    pagamento = resolver_transacao(db, payment_id, p, mp_headers(), user.id, curso_id)
 
-    referencias = {}
-    for parte in external_reference.split("|"):
-        if ":" in parte:
-            chave, valor = parte.split(":", 1)
-            referencias[chave] = valor
-
-    try:
-        usuario_ref = int(referencias["user"])
-        curso_ref = int(referencias["curso"])
-        tempo_ref = int(referencias["tempo"])
-        pagamento_ref = int(referencias["pagamento"])
-    except (KeyError, ValueError):
-        raise HTTPException(
-            status_code=400,
-            detail="Referência do pagamento ausente ou inválida."
-        )
-
-    if usuario_ref != user.id or curso_ref != int(curso_id):
-        raise HTTPException(
-            status_code=403,
-            detail="O pagamento não corresponde ao usuário e curso informados."
-        )
-
-    db.query(models.Usuario).filter(
-        models.Usuario.id == user.id
-    ).with_for_update().one()
-
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_ref,
-        Pagamento.usuario_id == user.id,
-        Pagamento.curso_id == curso_ref
-    ).with_for_update().populate_existing().first()
-
-    if pagamento and pagamento.mp_payment_id not in (None, str(payment_id)):
-        raise HTTPException(
-            status_code=409,
-            detail="Esta compra já está vinculada a outra transação."
-        )
-
-    if not pagamento:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado.")
-
-    if tempo_ref != pagamento.tempo_acesso_id:
-        raise HTTPException(
-            status_code=409,
-            detail="O período de acesso não corresponde à compra registrada."
-        )
-
-    from decimal import Decimal, InvalidOperation
-
-    try:
-        valor_mp = Decimal(str(p["transaction_amount"])) * 100
-
-        if not valor_mp.is_finite() or valor_mp != valor_mp.to_integral_value():
-            raise ValueError("Valor monetário inválido")
-
-        valor_mp_cents = int(valor_mp)
-    except (KeyError, TypeError, ValueError, InvalidOperation):
-        raise HTTPException(
-            status_code=400,
-            detail="Valor do pagamento ausente ou inválido no Mercado Pago."
-        )
-
-    if (
-        p.get("currency_id") != "BRL"
-        or valor_mp_cents != pagamento.valor_cents
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Valor ou moeda não corresponde à compra registrada."
-        )
-
-    if pagamento.ocorrencia_financeira is not None:
+    if reconciliar_sem_conceder_acesso(db, pagamento):
         return {
             "ok": True,
             "payment_method_id": p.get("payment_method_id"),
             "status": pagamento.status,
+            "mp_status": pagamento.mp_status,
             "curso_id": curso_id,
             "liberou_acesso": False,
             "ocorrencia_financeira": pagamento.ocorrencia_financeira,
@@ -4731,11 +4698,7 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
 
 @protegido
 def processar_pagamento_mp(payment_id, db, resposta_mp=None):
-    r = resposta_mp if resposta_mp is not None else requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    r = resposta_mp if resposta_mp is not None else consultar_pagamento(payment_id, mp_headers())
 
     if r.status_code == 404:
         return {
@@ -4782,80 +4745,14 @@ def processar_pagamento_mp(payment_id, db, resposta_mp=None):
         }
 
     if user_id and curso_id:
-        db.query(models.Usuario).filter(
-            models.Usuario.id == user_id
-        ).with_for_update().one()
-
-        if pagamento_id:
-            pagamento = db.query(Pagamento).filter(
-                Pagamento.id == pagamento_id,
-                Pagamento.usuario_id == user_id,
-                Pagamento.curso_id == curso_id
-            ).with_for_update().populate_existing().first()
-        else:
-            pagamento = db.query(Pagamento).filter(
-                Pagamento.mp_payment_id == str(payment_id),
-                Pagamento.usuario_id == user_id,
-                Pagamento.curso_id == curso_id
-            ).with_for_update().populate_existing().first()
-
-        if (
-            pagamento
-            and pagamento.mp_payment_id
-            and pagamento.mp_payment_id != str(payment_id)
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Pagamento já associado a outra transação"
-            )
+        pagamento = resolver_transacao(db, payment_id, pagamento_mp, mp_headers(), user_id, curso_id)
 
         if pagamento:
-            from decimal import Decimal, InvalidOperation
-
-            # Confere o período de acesso da compra.
-            if (
-                tempo_acesso_id is None
-                or tempo_acesso_id != pagamento.tempo_acesso_id
-            ):
-                raise HTTPException(
-                    status_code=409,
-                    detail="O período de acesso não corresponde à compra registrada."
-                )
-
-            # Confere o valor recebido do Mercado Pago.
-            try:
-                valor_mp = (
-                    Decimal(str(pagamento_mp["transaction_amount"])) * 100
-                )
-
-                if (
-                    not valor_mp.is_finite()
-                    or valor_mp != valor_mp.to_integral_value()
-                ):
-                    raise ValueError("Valor monetário inválido")
-
-                valor_mp_cents = int(valor_mp)
-
-            except (KeyError, TypeError, ValueError, InvalidOperation):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Valor do pagamento ausente ou inválido."
-                )
-
-            # Confere o valor e a moeda da compra.
-            if (
-                pagamento_mp.get("currency_id") != "BRL"
-                or valor_mp_cents != pagamento.valor_cents
-            ):
-                raise HTTPException(
-                    status_code=409,
-                    detail="Valor ou moeda não corresponde à compra registrada."
-                )
-
-            if pagamento.ocorrencia_financeira is not None:
+            if reconciliar_sem_conceder_acesso(db, pagamento):
                 return {
                     "ok": True,
                     "status": pagamento.status,
+                    "mp_status": pagamento.mp_status,
                     "liberou_acesso": False,
                     "ocorrencia_financeira": pagamento.ocorrencia_financeira,
                 }
@@ -5193,10 +5090,26 @@ def admin_listar_reembolsos(
             p.atualizado_em AS data_solicitacao,
             p.valor_cents,
             p.mp_payment_id,
-            p.mp_preference_id
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
+            p.mp_preference_id,
+            rf.id AS reembolso_id,
+            rf.status AS reembolso_status,
+            rf.metodo AS reembolso_metodo,
+            rf.valor_cents AS reembolso_valor_cents,
+            rf.referencia_comprovante,
+            rf.confirmado_em,
+            rf.confirmado_por
         FROM pagamentos p
         JOIN usuarios u ON u.id = p.usuario_id
         JOIN cursos c ON c.id = p.curso_id
+        LEFT JOIN reembolsos_financeiros rf ON rf.id = (
+            SELECT r.id FROM reembolsos_financeiros r
+            WHERE r.pagamento_id = p.id
+            ORDER BY r.id DESC LIMIT 1
+        )
         WHERE p.status IN (
             'REFUND_REQUESTED',
             'REFUND_IN_PROCESS',
@@ -5223,119 +5136,22 @@ def admin_revalidar_pagamento(
     if not mp_payment_id:
         raise HTTPException(status_code=400, detail="Informe mp_payment_id")
 
-    # 1) acha pagamento no banco (pelo mp_payment_id)
-    pag = db.execute(text("""
-        SELECT id, usuario_id, curso_id, tempo_acesso_id, aprovado_em, criado_em
-        FROM pagamentos
-        WHERE mp_payment_id = :pid
-        ORDER BY id DESC
-        LIMIT 1
-    """), {"pid": mp_payment_id}).mappings().first()
-
-    if not pag:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado no banco para esse mp_payment_id")
-
-    user_id = int(pag["usuario_id"])
-    curso_id = int(pag["curso_id"])
-
-    # Serializa a revalidação com a confirmação direta e o webhook.
-    db.query(models.Usuario).filter(
-        models.Usuario.id == user_id
-    ).with_for_update().one()
-
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == int(pag["id"])
-    ).with_for_update().populate_existing().one()
-
-    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
-
-
-    # Impede a revalidação de pagamentos envolvidos em reembolso.
-    status_atual = db.execute(
-        text("SELECT status FROM pagamentos WHERE id = :id"),
-        {"id": int(pag["id"])}
-    ).scalar_one()
-
-    if status_atual in (
-        "REFUND_REQUESTED",
-        "REFUND_IN_PROCESS",
-        "REFUNDED",
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Este pagamento está envolvido em um processo de "
-                "reembolso e não pode ser revalidado."
-            ),
-        )
-
-    ja_aprovado = pagamento.aprovado_em is not None
-
-    # 2) consulta no Mercado Pago
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{mp_payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    r = consultar_pagamento(mp_payment_id, mp_headers())
     if r.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"Erro MP: {r.text}")
-
     p = r.json()
-    status_mp = (p.get("status") or "").lower().strip()  # approved/pending/rejected...
+    status_mp = (p.get("status") or "").lower().strip()
+    pagamento = resolver_transacao(db, mp_payment_id, p, mp_headers())
+    user_id, curso_id = pagamento.usuario_id, pagamento.curso_id
+    pag = {"id": pagamento.id, "tempo_acesso_id": pagamento.tempo_acesso_id}
+    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
+    ja_aprovado = pagamento.aprovado_em is not None
 
-    # Confere a identidade e o valor da compra antes de alterar o banco.
-    referencia = str(p.get("external_reference") or "")
-    referencias = {}
-
-    for parte in referencia.split("|"):
-        if ":" in parte:
-            chave, valor = parte.split(":", 1)
-            referencias[chave] = valor
-
-    try:
-        usuario_ref = int(referencias["user"])
-        curso_ref = int(referencias["curso"])
-        tempo_ref = int(referencias["tempo"])
-        pagamento_ref = int(referencias["pagamento"])
-    except (KeyError, ValueError):
-        raise HTTPException(
-            status_code=400,
-            detail="Referência do pagamento ausente ou inválida.",
-        )
-
-    if (
-        usuario_ref != user_id
-        or curso_ref != curso_id
-        or tempo_ref != pagamento.tempo_acesso_id
-        or pagamento_ref != pagamento.id
-        or str(p.get("id")) != mp_payment_id
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Pagamento não corresponde à compra registrada.",
-        )
-
-    try:
-        valor_mp = Decimal(str(p["transaction_amount"])) * 100
-        if not valor_mp.is_finite() or valor_mp != valor_mp.to_integral_value():
-            raise ValueError("Valor monetário inválido")
-        valor_mp_cents = int(valor_mp)
-    except (KeyError, TypeError, ValueError, InvalidOperation):
-        raise HTTPException(
-            status_code=400,
-            detail="Valor inválido no Mercado Pago.",
-        )
-
-    if p.get("currency_id") != "BRL" or valor_mp_cents != pagamento.valor_cents:
-        raise HTTPException(
-            status_code=409,
-            detail="Valor ou moeda não corresponde à compra registrada.",
-        )
-
-    if pagamento.ocorrencia_financeira is not None:
+    if reconciliar_sem_conceder_acesso(db, pagamento):
         return {
             "ok": True,
             "status": pagamento.status,
+            "mp_status": pagamento.mp_status,
             "liberou_acesso": False,
             "ocorrencia_financeira": pagamento.ocorrencia_financeira,
         }
@@ -5505,6 +5321,10 @@ def admin_listar_pagamentos(
             p.moeda,
             p.mp_preference_id,
             p.mp_payment_id,
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
             p.criado_em,
             p.atualizado_em
         FROM pagamentos p
@@ -5906,30 +5726,35 @@ def solicitar_reembolso(
     if not pagamento:
         raise HTTPException(status_code=404, detail="Pagamento não encontrado")
 
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
+    if pagamento.usuario_id != usuario.id:
+        raise HTTPException(404, "Pagamento não encontrado")
+
     if pagamento.status not in ["APPROVED", "approved", "PAGO"]:
         raise HTTPException(
             status_code=400,
             detail="Este pagamento não está elegível para solicitação de reembolso"
         )
 
-    data_referencia = (
-        pagamento.aprovado_em
-        or pagamento.criado_em
-    )
+    agora = datetime.utcnow()
+    if pagamento.aprovado_em is None or pagamento.aprovado_em > agora:
+        raise HTTPException(400, "Data de aprovação efetiva indisponível ou inválida. É necessária conferência do pagamento.")
+
+    data_referencia = pagamento.aprovado_em
 
     limite_reembolso = (
         data_referencia
         + timedelta(days=7)
     )
 
-    if datetime.utcnow() > limite_reembolso:
+    if agora > limite_reembolso:
         raise HTTPException(
             status_code=400,
             detail="Prazo de reembolso expirado"
         )
 
     pagamento.status = "REFUND_REQUESTED"
-    pagamento.atualizado_em = datetime.utcnow()
+    pagamento.atualizado_em = agora
 
     db.commit()
 
@@ -5981,9 +5806,7 @@ def aprovar_reembolso(
             detail="Apenas administradores podem aprovar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -6025,9 +5848,7 @@ def recusar_reembolso(
             detail="Apenas administradores podem recusar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -6052,6 +5873,20 @@ def recusar_reembolso(
         "status": pagamento.status
     }
 
+def bloquear_pagamento_reembolso(db, pagamento_id):
+    """Mesmo início da ordem de locks do processamento financeiro: usuário, raiz.
+
+    A leitura inicial somente descobre IDs imutáveis. O status é relido sob lock.
+    """
+    inicial = db.query(Pagamento).filter(Pagamento.id == pagamento_id).first()
+    if inicial is None:
+        raise HTTPException(404, "Pagamento não encontrado")
+    db.query(Usuario).filter(Usuario.id == inicial.usuario_id).with_for_update().first()
+    raiz_id = inicial.pagamento_origem_id or inicial.id
+    db.query(Pagamento).filter(Pagamento.id == raiz_id).with_for_update().populate_existing().one()
+    return db.query(Pagamento).filter(Pagamento.id == pagamento_id).with_for_update().populate_existing().one()
+
+
 @app.post("/admin/reembolsos/{pagamento_id}/pix-manual")
 @protegido
 def registrar_reembolso_pix_manual(
@@ -6066,9 +5901,7 @@ def registrar_reembolso_pix_manual(
             detail="Apenas administradores podem registrar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).with_for_update().first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -6155,9 +5988,15 @@ def confirmar_reembolso_pix_manual(
             detail="É obrigatório confirmar a conferência do extrato bancário"
         )
 
+    inicial = db.query(ReembolsoFinanceiro).filter(
+        ReembolsoFinanceiro.id == reembolso_id
+    ).first()
+    if inicial is None:
+        raise HTTPException(404, "Reembolso financeiro não encontrado")
+    pagamento = bloquear_pagamento_reembolso(db, inicial.pagamento_id)
     reembolso = db.query(ReembolsoFinanceiro).filter(
         ReembolsoFinanceiro.id == reembolso_id
-    ).with_for_update().first()
+    ).with_for_update().populate_existing().one()
 
     if not reembolso:
         raise HTTPException(
@@ -6171,10 +6010,6 @@ def confirmar_reembolso_pix_manual(
             detail="Este reembolso não está pendente de confirmação manual"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == reembolso.pagamento_id
-    ).with_for_update().first()
-
     if not pagamento or pagamento.status != "REFUND_IN_PROCESS":
         raise HTTPException(
             status_code=400,
@@ -6187,21 +6022,47 @@ def confirmar_reembolso_pix_manual(
             detail="O valor do reembolso não corresponde ao valor da compra"
         )
 
+    duplicada = pagamento.ocorrencia_financeira == "COBRANCA_DUPLICADA"
+    if duplicada and db.query(PeriodoAcessoPagamento).filter(
+        PeriodoAcessoPagamento.pagamento_id == pagamento.id
+    ).first() is not None:
+        raise HTTPException(409, "Cobrança duplicada com período de acesso vinculado. É necessária conferência antes da confirmação.")
+
+    if duplicada:
+        concessao = db.query(PeriodoAcessoPagamento).join(
+            Pagamento, Pagamento.id == PeriodoAcessoPagamento.pagamento_id
+        ).filter(
+            Pagamento.id != pagamento.id,
+            Pagamento.oportunidade_id == pagamento.oportunidade_id,
+            Pagamento.usuario_id == pagamento.usuario_id,
+            Pagamento.curso_id == pagamento.curso_id,
+            Pagamento.ocorrencia_financeira.is_(None),
+            PeriodoAcessoPagamento.usuario_id == pagamento.usuario_id,
+            PeriodoAcessoPagamento.curso_id == pagamento.curso_id,
+        ).first() if pagamento.oportunidade_id is not None else None
+        if concessao is None:
+            raise HTTPException(409, "Não foi possível identificar o período concedido pela compra. É necessária conferência antes da confirmação.")
+
     agora = datetime.utcnow()
 
     reembolso.status = "CONFIRMADO"
     reembolso.confirmado_em = agora
+    reembolso.confirmado_por = admin.id
 
     pagamento.status = "REFUNDED"
     pagamento.atualizado_em = agora
 
     try:
-        resultado_acesso = recalcular_acesso_apos_reembolso(
-            db=db,
-            usuario_id=pagamento.usuario_id,
-            curso_id=pagamento.curso_id,
-            pagamento_reembolsado_id=pagamento.id,
-        )
+        if duplicada:
+            # Esta transação não concedeu acesso: nenhum direito é recalculado.
+            resultado_acesso = {"situacao": "ACESSO_PRESERVADO"}
+        else:
+            resultado_acesso = recalcular_acesso_apos_reembolso(
+                db=db,
+                usuario_id=pagamento.usuario_id,
+                curso_id=pagamento.curso_id,
+                pagamento_reembolsado_id=pagamento.id,
+            )
 
         db.commit()
 
@@ -6246,6 +6107,11 @@ def historico_compras_usuario(
     rows = db.execute(text("""
         SELECT
             p.id AS pagamento_id,
+            p.mp_payment_id,
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
             p.usuario_id,
             p.curso_id,
             c.nome AS nome_curso,
@@ -6267,14 +6133,14 @@ def historico_compras_usuario(
             LIMIT 1
         ) a ON TRUE
         WHERE p.usuario_id = :usuario_id
-          AND p.status IN (
+          AND (p.status IN (
               'APPROVED',
               'PAGO',
               'REFUND_REQUESTED',
               'REFUNDED',
               'REFUND_IN_PROCESS',
               'REFUND_ERROR'
-          )
+          ) OR p.ocorrencia_financeira IS NOT NULL)
     """), {"usuario_id": usuario.id}).mappings().all()
 
     historico = []
@@ -6297,6 +6163,11 @@ def historico_compras_usuario(
 
         historico.append({
             "pagamento_id": r["pagamento_id"],
+            "mp_payment_id": r["mp_payment_id"],
+            "mp_status": r.get("mp_status"),
+            "pagamento_origem_id": r["pagamento_origem_id"],
+            "oportunidade_id": r["oportunidade_id"],
+            "ocorrencia_financeira": r["ocorrencia_financeira"],
             "curso_id": r["curso_id"],
             "nome_curso": r["nome_curso"],
             "situacao": situacao,
@@ -9324,8 +9195,9 @@ def copiar_assunto_entre_disciplinas(
     )
 
 
-from app.pausa_financeira import instalar
+# Proteção independente de 014/015; não executa migrations na inicialização.
+from app.pausa_financeira import instalar as instalar_pausa_financeira
 from app.database import engine as motor_financeiro
-instalar(app, motor_financeiro, SessionLocal, get_db, get_usuario_atual,
-    validar_assinatura_mercadopago, processar_pagamento_mp, mp_headers, definitivo=False,
-    consulta=lambda pid: requests.get(f"https://api.mercadopago.com/v1/payments/{pid}", headers=mp_headers(), timeout=20))
+instalar_pausa_financeira(app, motor_financeiro, SessionLocal, get_db,
+    get_usuario_atual, lambda request, pid: validar_assinatura_mercadopago(request, pid),
+    processar_pagamento_mp, mp_headers, consulta=lambda pid: consultar_pagamento(pid, mp_headers()))
