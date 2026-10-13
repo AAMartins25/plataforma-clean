@@ -4250,6 +4250,7 @@ def criar_checkout_mp(
     recebedor_checkout = recebedor_esperado()
     pagamento_id = db.execute(text("""
         INSERT INTO pagamentos (
+            criado_em,
             usuario_id,
             curso_id,
             tempo_acesso_id,
@@ -4268,6 +4269,7 @@ def criar_checkout_mp(
             provedor
         )
         VALUES (
+            :criado_em,
             :u,
             :c,
             :t,
@@ -4287,6 +4289,7 @@ def criar_checkout_mp(
         )
         RETURNING id
     """), {
+        "criado_em": datetime.utcnow(),
         "u": user.id,
         "c": curso.id,
         "t": tempo.id,
@@ -4618,6 +4621,7 @@ def confirmar_pagamento(
         concluir_oportunidade(db, oportunidade)
         liberou = True
 
+    pagamento_email_id = pagamento.id
     try:
         db.commit()
     except Exception:
@@ -4629,7 +4633,8 @@ def confirmar_pagamento(
         "payment_method_id": p.get("payment_method_id"),
         "status": status.upper(),
         "curso_id": curso_id,
-        "liberou_acesso": liberou
+        "liberou_acesso": liberou,
+        "email_instrucoes_aceito": app.state.emails_pagamentos.aceito(pagamento_email_id, p)
     }
 
 from fastapi import Request, HTTPException
@@ -9240,3 +9245,35 @@ from app.database import engine as motor_financeiro
 instalar_pausa_financeira(app, motor_financeiro, SessionLocal, get_db,
     get_usuario_atual, lambda request, pid: validar_assinatura_mercadopago(request, pid),
     processar_pagamento_mp, mp_headers, consulta=lambda pid: consultar_pagamento(pid, mp_headers()))
+
+
+# E-mails consomem somente o domínio já confirmado; desativados por padrão.
+from app.emails_pagamentos import EmailsPagamentos, Invalido as EmailInvalido
+app.state.emails_pagamentos = EmailsPagamentos(motor_financeiro, SessionLocal, mp_headers)
+app.router.add_event_handler('startup', app.state.emails_pagamentos.iniciar)
+app.router.add_event_handler('shutdown', app.state.emails_pagamentos.encerrar)
+
+@app.post('/admin/emails-pagamentos/{pagamento_id}/{tipo}/reenviar')
+def reenviar_email_pagamento(pagamento_id: int, tipo: str, db: Session = Depends(get_db),
+                            usuario=Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito ao administrador.')
+    db.expunge_all(); db.rollback()
+    try:
+        app.state.emails_pagamentos.reenviar(pagamento_id, tipo.upper())
+    except EmailInvalido:
+        raise HTTPException(409, 'Reenvio indisponível; verificar o registro e a janela de idempotência.') from None
+    return {'agendado': True}
+
+@app.get('/admin/emails-pagamentos')
+def listar_emails_pagamentos(db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito ao administrador.')
+    db.expunge_all(); db.rollback()
+    from app.emails_pagamentos import fila as fila_emails
+    from sqlalchemy import select
+    with motor_financeiro.connect() as c:
+        registros = c.execute(select(fila_emails.c.pagamento_id, fila_emails.c.tipo,
+            fila_emails.c.estado, fila_emails.c.tentativas, fila_emails.c.aceito_em,
+            fila_emails.c.erro_codigo).order_by(fila_emails.c.criado_em.desc()).limit(100)).mappings().all()
+    return {'emails': [dict(r) for r in registros]}

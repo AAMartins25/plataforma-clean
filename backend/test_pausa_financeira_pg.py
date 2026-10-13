@@ -160,7 +160,8 @@ def test_startup_definitivo_recusa_esquema_anterior(ambiente_compra,motor):
     with motor.begin() as c:
         c.execute(text('ALTER TABLE pagamentos DROP COLUMN mp_status'))
     with pytest.raises(RuntimeError,match='014 e 015'):
-        a[0].app.router.on_startup[-1]()
+        for iniciar in a[0].app.router.on_startup:
+            iniciar()
 
 
 def test_exportacao_bootstrap_usa_modelos_head_e_nao_precisa_014015(tmp_path,motor):

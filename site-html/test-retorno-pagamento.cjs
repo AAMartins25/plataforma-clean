@@ -93,3 +93,13 @@ test('consulta inicial preservada e nenhuma promessa fictícia de e-mail',async(
  assert.doesNotMatch(x.elementos.msg.textContent,/e-mail/);
  assert.doesNotMatch(x.elementos.msgComplemento.textContent,/e-mail/);
 });
+
+for(const flag of [false,undefined,'true',true])test('mensagem de e-mail depende de aceitação persistente booleana '+String(flag),async()=>{
+ const x=ambiente();x.s.resultado=resultado('PENDING',{email_instrucoes_aceito:flag});await x.s.verificarPagamento();
+ assert.equal(x.elementos.msg.textContent,flag===true?'Enviamos para seu e-mail as instruções para continuar o pagamento. Consulte sua caixa de entrada e, se necessário, a pasta de spam.':'Seu pagamento ainda não foi confirmado.');
+ if(flag!==true)assert.equal(x.elementos.msgComplemento.textContent,'O acesso ao curso será liberado após a confirmação!');
+});
+test('aprovação não acrescenta promessa de e-mail',async()=>{
+ const x=ambiente();x.s.resultado=resultado('APPROVED',{email_instrucoes_aceito:true});await x.s.verificarPagamento();
+ assert.doesNotMatch(x.elementos.msg.textContent,/e-mail/);
+});
