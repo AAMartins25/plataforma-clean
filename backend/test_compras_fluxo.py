@@ -40,7 +40,7 @@ def ambiente_compra(motor, monkeypatch):
         with motor.connect() as c:
             c.connection.driver_connection.execute((Path(__file__).parent/
                 'migrations/016_pausa_financeira_webhooks.sql').read_text())
-            for script in ('014_pagamentos_multiplas_transacoes.sql','015_reembolsos_manual_auditoria.sql','017_checkout_identidade_segura.sql'):
+            for script in ('014_pagamentos_multiplas_transacoes.sql','015_reembolsos_manual_auditoria.sql','017_checkout_identidade_segura.sql','018_isolamento_notificacoes_historicas.sql'):
                 c.connection.driver_connection.execute((Path(__file__).parent/'migrations'/script).read_text())
     else:
         metadata.create_all(motor)

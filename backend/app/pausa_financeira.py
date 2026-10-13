@@ -15,9 +15,9 @@ from datetime import datetime, timezone
 
 import requests
 from fastapi import Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy import (BigInteger, Column, DateTime, Integer, JSON, MetaData,
-                        String, Table, select, text, update)
+                        String, Table, ForeignKey, select, text, update)
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse
@@ -38,6 +38,32 @@ inbox = Table('notificacoes_mp', metadata,
     Column('estado', String(16), nullable=False), Column('tentativas', Integer, nullable=False),
     Column('erro', String(200)), Column('concluida_em', DateTime(timezone=True)),
     Column('resultado', JSON))
+
+
+# Auditoria específica dos testes históricos; novos eventos nunca herdam isolamento.
+IDS_HISTORICOS = (1, 2, 3, 4, 7, 8, 9, 10)
+from app.models import Usuario
+isolamentos = Table('notificacoes_mp_isolamentos', metadata,
+    Column('notificacao_id', BigInteger().with_variant(Integer, 'sqlite'),
+           ForeignKey(inbox.c.id), primary_key=True),
+    Column('isolada_por', Integer, ForeignKey(Usuario.__table__.c.id), nullable=False),
+    Column('isolada_em', DateTime(timezone=True), nullable=False),
+    Column('geracao', Integer, nullable=False), Column('motivo', String(300), nullable=False),
+    Column('revogada_em', DateTime(timezone=True)),
+    Column('revogada_por', Integer, ForeignKey(Usuario.__table__.c.id)),
+    Column('motivo_revogacao', String(300)))
+
+
+def isolamento_ativo():
+    return select(isolamentos.c.notificacao_id).where(
+        isolamentos.c.notificacao_id == inbox.c.id,
+        isolamentos.c.revogada_em.is_(None)).exists().correlate(inbox)
+
+
+class Isolamento(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    geracao: int = Field(ge=0, strict=True)
+    motivo: str = Field(min_length=1, max_length=300)
 
 
 class Modo(BaseModel):
@@ -194,13 +220,56 @@ class Protecao:
             if payload.modo == 'NORMAL':
                 if row['modo'] != 'NORMAL' and not payload.conferencia_provedor:
                     raise HTTPException(409, 'Conferir notificações e transações no provedor antes de reabrir.')
-                pendentes = c.execute(select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO').limit(1)).first()
+                pendentes = c.execute(select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO',
+                    ~isolamento_ativo() if self.definitivo else text('TRUE')).limit(1)).first()
                 if pendentes:
                     raise HTTPException(409, 'Há notificações pendentes ou com erro. Concluir a recuperação antes de reabrir.')
             c.execute(update(controle).where(controle.c.id == 1).values(
                 modo=payload.modo, geracao=row['geracao']+1, alterado_em=agora(),
                 alterado_por=admin_id, motivo=payload.motivo))
         return self.estado()
+
+    def auditar_isolamento(self, payload, admin_id, revogar_id=None):
+        # Mesma ordem da recuperação: barreira financeira, depois notificações.
+        if not self.definitivo or not payload.motivo.strip():
+            raise HTTPException(409, 'Backend definitivo e motivo explícito são obrigatórios.')
+        if revogar_id is not None and revogar_id not in IDS_HISTORICOS:
+            raise HTTPException(422, 'ID fora do isolamento histórico autorizado.')
+        with self.engine.begin() as c:
+            op = self.nova_operacao(c, True)
+            c.info['finance_op'] = op
+            self.bloquear(c, op)
+            if op.geracao != payload.geracao:
+                raise HTTPException(409, 'Geração financeira divergente.')
+            ids = [revogar_id] if revogar_id is not None else list(IDS_HISTORICOS)
+            rows = c.execute(select(inbox).where(inbox.c.id.in_(ids))
+                .order_by(inbox.c.id).with_for_update()).mappings().all()
+            if len(rows) != len(ids):
+                raise HTTPException(409, 'Conjunto histórico incompleto; nenhum isolamento aplicado.')
+            if revogar_id is not None:
+                audit = c.execute(select(isolamentos).where(
+                    isolamentos.c.notificacao_id == revogar_id)).mappings().first()
+                if audit is None:
+                    raise HTTPException(404, 'Isolamento não encontrado.')
+                if audit['revogada_em'] is None:
+                    c.execute(update(isolamentos).where(isolamentos.c.notificacao_id == revogar_id)
+                        .values(revogada_em=agora(), revogada_por=admin_id,
+                                motivo_revogacao=payload.motivo.strip()))
+            else:
+                if any(r['estado'] not in ('PENDENTE', 'ERRO') for r in rows):
+                    raise HTTPException(409, 'Só pendências históricas podem ser isoladas.')
+                for ident in ids:
+                    audit = c.execute(select(isolamentos).where(
+                        isolamentos.c.notificacao_id == ident)).mappings().first()
+                    if audit is not None:
+                        if audit['revogada_em'] is not None:
+                            raise HTTPException(409, 'Isolamento revogado; não será reaplicado.')
+                        continue  # Repetição preserva administrador, data e motivo originais.
+                    c.execute(isolamentos.insert().values(notificacao_id=ident,
+                        isolada_por=admin_id, isolada_em=agora(), geracao=op.geracao,
+                        motivo=payload.motivo.strip()))
+            op.verificar()
+        return {'ids': ids, 'revogado': revogar_id is not None, 'geracao': payload.geracao}
 
     def armazenar(self, payment_id, chave, fonte):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -237,7 +306,8 @@ class Protecao:
                 resposta = None
                 if self.consulta is not None:
                     with self.engine.connect() as c:
-                        row = c.execute(select(inbox.c.payment_id).where(inbox.c.id == ident)).first()
+                        row = c.execute(select(inbox.c.payment_id).where(inbox.c.id == ident,
+                            ~isolamento_ativo() if self.definitivo else text('TRUE'))).first()
                     if row is None:
                         return {'id':ident, 'processado':False}
                     resposta = self.consulta(row.payment_id)
@@ -246,7 +316,8 @@ class Protecao:
                     db.info['finance_op'] = op
                     db.info['finance_unidade_atomica'] = True
                     # A própria transação financeira reivindica a notificação.
-                    row = db.execute(select(inbox).where(inbox.c.id == ident)
+                    row = db.execute(select(inbox).where(inbox.c.id == ident,
+                        ~isolamento_ativo() if self.definitivo else text('TRUE'))
                         .with_for_update(skip_locked=True)).mappings().first()
                     if row is None or row['estado'] == 'CONCLUIDO':
                         db.rollback()
@@ -279,7 +350,9 @@ class Protecao:
                 token = ATUAL.set(None)
                 try:
                     with self.engine.begin() as c:
-                        c.execute(update(inbox).where(inbox.c.id == ident, inbox.c.estado != 'CONCLUIDO')
+                        c.execute(select(inbox.c.id).where(inbox.c.id == ident).with_for_update()).first()
+                        c.execute(update(inbox).where(inbox.c.id == ident, inbox.c.estado != 'CONCLUIDO',
+                            ~isolamento_ativo() if self.definitivo else text('TRUE'))
                             .values(estado='ERRO', tentativas=inbox.c.tentativas+1,
                                 erro=f'Falha de processamento ({codigo}); verificar e reconciliar antes de repetir.'))
                 except SQLAlchemyError:
@@ -295,7 +368,8 @@ class Protecao:
             raise HTTPException(422, 'Utilize lotes de um a cinco eventos.')
         if notificacao_id is not None and (type(notificacao_id) is not int or notificacao_id <= 0):
             raise HTTPException(422, 'Informe um ID de notificação positivo.')
-        consulta = select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO')
+        consulta = select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO',
+            ~isolamento_ativo())
         if notificacao_id is not None:
             consulta = consulta.where(inbox.c.id == notificacao_id)
         with self.engine.connect() as c:
@@ -390,8 +464,11 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
                     AND has_table_privilege(current_user,'public.notificacoes_mp','SELECT')
                     AND has_table_privilege(current_user,'public.notificacoes_mp','INSERT')
                     AND has_table_privilege(current_user,'public.notificacoes_mp','UPDATE')""")).scalar()
+                if definitivo:
+                    c.execute(select(isolamentos.c.notificacao_id).limit(0))
+                    permissoes = permissoes and c.execute(text("SELECT has_table_privilege(current_user,'public.notificacoes_mp_isolamentos','SELECT') AND has_table_privilege(current_user,'public.notificacoes_mp_isolamentos','INSERT') AND has_table_privilege(current_user,'public.notificacoes_mp_isolamentos','UPDATE')")).scalar()
                 if not permissoes:
-                    raise RuntimeError('Backend exige permissões operacionais da migration 016.')
+                    raise RuntimeError('Backend exige permissões operacionais das migrations 016/018.')
         app.router.add_event_handler('startup', validar_inicio)
 
     def admin(usuario=Depends(get_usuario_atual), db=Depends(get_db)):
@@ -422,10 +499,21 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
             rows = c.execute(select(inbox.c.estado, text('count(*) AS quantidade'))
                 .group_by(inbox.c.estado)).mappings().all()
             pendencias = c.execute(select(inbox.c.id, inbox.c.payment_id, inbox.c.fonte,
-                inbox.c.estado, inbox.c.tentativas, inbox.c.erro, inbox.c.recebida_em)
+                inbox.c.estado, inbox.c.tentativas, inbox.c.erro, inbox.c.recebida_em,
+                isolamento_ativo().label('isolada'))
                 .where(inbox.c.estado != 'CONCLUIDO').order_by(inbox.c.id).limit(100)).mappings().all()
-        return {'contagens':[dict(r) for r in rows], 'pendencias':[dict(r) for r in pendencias],
+        with engine.connect() as c:
+            auditoria = c.execute(select(isolamentos).order_by(isolamentos.c.notificacao_id)).mappings().all()
+        return {'isolamentos':[dict(r) for r in auditoria], 'contagens':[dict(r) for r in rows], 'pendencias':[dict(r) for r in pendencias],
             'cobertura_provedor_confirmada':False}
+
+    @app.post('/admin/financeiro/notificacoes/isolamento')
+    def isolar(payload: Isolamento, usuario=Depends(admin)):
+        return protecao.auditar_isolamento(payload, usuario.id)
+
+    @app.post('/admin/financeiro/notificacoes/{notificacao_id}/isolamento/revogar')
+    def revogar(notificacao_id: int, payload: Isolamento, usuario=Depends(admin)):
+        return protecao.auditar_isolamento(payload, usuario.id, notificacao_id)
 
     @app.post('/admin/financeiro/notificacoes/recuperar')
     async def recuperar(payload: Recuperar, usuario=Depends(admin)):

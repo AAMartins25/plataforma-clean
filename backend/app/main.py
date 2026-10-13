@@ -4199,6 +4199,8 @@ def criar_checkout_mp(
         ),
         Pagamento.mp_preference_id.isnot(None),
     ).order_by(Pagamento.id.desc()).first()
+    if pendente and not pendente.checkout_identidade:
+        raise HTTPException(409, 'Existe uma intenção de compra legada pendente. Conferir antes de iniciar outra cobrança.')
     if pendente:
         try:
             resposta = requests.get(
