@@ -237,3 +237,107 @@ def test_reconciliacao_interrompe_incompatibilidades(ambiente_compra,variacao):
     r=a[1].post('/admin/financeiro/notificacoes/reconciliar',json={'inicio':inicio.isoformat(),'fim':fim.isoformat()})
     assert r.status_code in (400,409,502)
     with a[2].kw['bind'].connect() as c:assert c.execute(select(inbox)).first() is None
+
+
+def preparar_selecao(a):
+    pid, dados, transacoes, _ = preparar(a, legado=True)
+    transacoes['101'] = dados(101, 'cancelled')
+    with a[2]() as db:
+        p = db.get(m.Pagamento, pid)
+        p.mp_payment_id = '101'
+        p.status = 'CANCELLED'
+        db.commit()
+    modo(a, 'PAUSADO')
+    for ident, tx in ((1, '999'), (5, '101'), (6, '101')):
+        with a[2].kw['bind'].begin() as c:
+            c.execute(inbox.insert().values(id=ident, chave=f'selecao:{ident}',
+                payment_id=tx, fonte='RECONCILIACAO', recebida_em=datetime.now(timezone.utc),
+                estado='ERRO' if ident == 1 else 'PENDENTE',
+                tentativas=2 if ident == 1 else 0))
+    modo(a, 'RECUPERACAO')
+    return pid
+
+
+def test_selecao_cancelado_preserva_direitos_e_demais_notificacoes(ambiente_compra):
+    a = ambiente_compra
+    with a[2]() as db:
+        from test_compras_fluxo import contrato
+        contrato(db, origem='ADMIN')
+    pid = preparar_selecao(a)
+    with a[2]() as db:
+        antes = [(c.id, c.data_inicio, c.data_fim) for c in db.query(m.ContratacaoCurso)]
+        demos = [(d.id, d.data_fim) for d in db.query(m.DemonstracaoCurso)]
+    a[4].reset_mock()
+    for ident in (5, 6):
+        r = a[1].post('/admin/financeiro/notificacoes/recuperar',
+            json={'notificacao_id': ident, 'limite': 5})
+        assert r.status_code == 200
+        assert r.json()['resultados'] == [{'id': ident, 'processado': True, 'status': 'CANCELLED'}]
+        if ident == 5:
+            with a[2].kw['bind'].connect() as c:
+                rows = {row['id']: row for row in c.execute(select(inbox)).mappings()}
+                assert rows[1]['estado'] == 'ERRO' and rows[1]['tentativas'] == 2
+                assert rows[6]['estado'] == 'PENDENTE' and rows[6]['tentativas'] == 0
+    assert all('/v1/payments/101' in call.args[0] for call in a[4].call_args_list)
+    with a[2]() as db:
+        assert db.query(m.Pagamento).count() == 1
+        assert db.get(m.Pagamento, pid).aprovado_em is None
+        assert [(c.id, c.data_inicio, c.data_fim) for c in db.query(m.ContratacaoCurso)] == antes
+        assert [(d.id, d.data_fim) for d in db.query(m.DemonstracaoCurso)] == demos
+        assert db.query(m.PeriodoAcessoPagamento).count() == 0
+        assert db.query(m.AcessoCurso).count() == 0
+    with a[2].kw['bind'].connect() as c:
+        rows = {r['id']: r for r in c.execute(select(inbox)).mappings()}
+        assert rows[1]['estado'] == 'ERRO' and rows[1]['tentativas'] == 2
+        assert all(rows[i]['estado'] == 'CONCLUIDO' and rows[i]['tentativas'] == 1 for i in (5, 6))
+    a[4].reset_mock()
+    for ident in (5, 987):
+        assert a[1].post('/admin/financeiro/notificacoes/recuperar',
+            json={'notificacao_id': ident}).json()['resultados'] == []
+    a[4].assert_not_called()
+
+
+def test_selecao_falha_rollback_sem_avancar_fila(ambiente_compra):
+    a = ambiente_compra
+    pid = preparar_selecao(a)
+    p = a[0].app.state.protecao_financeira
+    def falha(tx, db, **kwargs):
+        db.get(m.Pagamento, pid).status = 'APPROVED'
+        db.commit()  # Deve ser somente flush dentro da unidade de recuperação.
+        raise RuntimeError('falha simulada')
+    with patch.object(p, 'processor', side_effect=falha):
+        r = a[1].post('/admin/financeiro/notificacoes/recuperar', json={'notificacao_id': 5})
+    assert r.status_code == 200 and not r.json()['resultados'][0]['processado']
+    with a[2]() as db:
+        assert db.get(m.Pagamento, pid).status == 'CANCELLED'
+        assert db.query(m.ContratacaoCurso).count() == 0
+    with a[2].kw['bind'].connect() as c:
+        rows = {r['id']: r for r in c.execute(select(inbox)).mappings()}
+        assert rows[5]['estado'] == 'ERRO' and rows[5]['tentativas'] == 1
+        assert rows[6]['estado'] == 'PENDENTE' and rows[6]['tentativas'] == 0
+        assert rows[1]['tentativas'] == 2
+    assert a[1].post('/admin/financeiro/notificacoes/recuperar',
+        json={'notificacao_id': 5}).json()['resultados'][0]['processado']
+
+
+@pytest.mark.parametrize('ident', [0, -1, True, '5', 1.5])
+def test_selecao_id_invalido(ambiente_compra, ident):
+    a = ambiente_compra
+    admin(a)
+    assert a[1].post('/admin/financeiro/notificacoes/recuperar',
+        json={'notificacao_id': ident}).status_code == 422
+    a[4].assert_not_called()
+
+
+def test_selecao_preserva_autorizacao_e_modo(ambiente_compra):
+    a = ambiente_compra
+    preparar_selecao(a)
+    a[0].app.dependency_overrides[a[0].get_usuario_atual] = lambda: SimpleNamespace(id=1, is_admin=False)
+    assert a[1].post('/admin/financeiro/notificacoes/recuperar', json={'notificacao_id': 5}).status_code == 403
+    a[0].app.dependency_overrides.pop(a[0].get_usuario_atual)
+    assert a[1].post('/admin/financeiro/notificacoes/recuperar', json={'notificacao_id': 5}).status_code == 401
+    admin(a)
+    assert modo(a, 'PAUSADO').status_code == 200
+    r = a[1].post('/admin/financeiro/notificacoes/recuperar', json={'notificacao_id': 5})
+    assert r.status_code == 503
+    with a[2]() as db: assert db.query(m.ContratacaoCurso).count() == 0

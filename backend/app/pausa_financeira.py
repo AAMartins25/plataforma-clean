@@ -49,6 +49,7 @@ class Modo(BaseModel):
 
 class Recuperar(BaseModel):
     limite: int = Field(default=1, ge=1, le=5)
+    notificacao_id: int | None = Field(default=None, gt=0, strict=True)
 
 
 class Reconciliar(BaseModel):
@@ -287,14 +288,18 @@ class Protecao:
                     ATUAL.reset(token)
                 return {'id':ident, 'processado':False, 'erro_codigo':codigo}
 
-    def recuperar(self, limite, prazo=None):
+    def recuperar(self, limite, prazo=None, notificacao_id=None):
         if not self.definitivo:
             raise HTTPException(409, 'Recuperação exige o backend definitivo após 014/015.')
         if not 1 <= limite <= 5:
             raise HTTPException(422, 'Utilize lotes de um a cinco eventos.')
+        if notificacao_id is not None and (type(notificacao_id) is not int or notificacao_id <= 0):
+            raise HTTPException(422, 'Informe um ID de notificação positivo.')
+        consulta = select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO')
+        if notificacao_id is not None:
+            consulta = consulta.where(inbox.c.id == notificacao_id)
         with self.engine.connect() as c:
-            ids = list(c.execute(select(inbox.c.id).where(inbox.c.estado != 'CONCLUIDO')
-                .order_by(inbox.c.id).limit(limite)).scalars())
+            ids = list(c.execute(consulta.order_by(inbox.c.id).limit(limite)).scalars())
         prazo = min(prazo, monotonic()+self.duracao) if prazo is not None else monotonic()+self.duracao
         resultados = []
         for ident in ids:
@@ -425,7 +430,7 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
     @app.post('/admin/financeiro/notificacoes/recuperar')
     async def recuperar(payload: Recuperar, usuario=Depends(admin)):
         prazo = monotonic()+protecao.duracao
-        tarefa = asyncio.create_task(asyncio.to_thread(protecao.recuperar, payload.limite, prazo))
+        tarefa = asyncio.create_task(asyncio.to_thread(protecao.recuperar, payload.limite, prazo, payload.notificacao_id))
         # O thread pode terminar uma consulta externa, mas o prazo compartilhado
         # impede novas gravações/commits. Não cancelar e abandonar uma transação.
         tarefa.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)

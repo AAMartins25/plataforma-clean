@@ -206,3 +206,25 @@ with TestClient(main.app) as c:
     result=subprocess.run([sys.executable,'-c',script,url,str(destino/'backend/app/main.py')],env=env,
         cwd=destino,capture_output=True,text=True,timeout=40)
     assert result.returncode==0,result.stderr
+
+
+def test_selecao_id_concorrente_duas_instancias(ambiente_compra, motor):
+    from test_pausa_financeira import preparar_selecao
+    a = ambiente_compra
+    preparar_selecao(a)
+    p = a[0].app.state.protecao_financeira
+    outra = Protecao(motor, a[2], p.processor, consulta=p.consulta)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(protecao.recuperar, 5, notificacao_id=5) for protecao in (p, outra)]
+        results = [future.result(timeout=10) for future in futures]
+    assert sum(r['processado'] for result in results for r in result['resultados']) == 1
+    with motor.connect() as c:
+        rows = {r['id']: r for r in c.execute(select(inbox)).mappings()}
+        assert rows[5]['estado'] == 'CONCLUIDO' and rows[5]['tentativas'] == 1
+        assert rows[6]['estado'] == 'PENDENTE' and rows[6]['tentativas'] == 0
+        assert rows[1]['estado'] == 'ERRO' and rows[1]['tentativas'] == 2
+    with a[2]() as db:
+        assert db.query(m.Pagamento).count() == 1
+        assert db.query(m.ContratacaoCurso).count() == 0
+        assert db.query(m.PeriodoAcessoPagamento).count() == 0
+        assert db.query(m.AcessoCurso).count() == 0
