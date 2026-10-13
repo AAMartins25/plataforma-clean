@@ -416,11 +416,16 @@ class OportunidadeCompra(Base):
 class Pagamento(Base):
     __tablename__ = "pagamentos"
     __table_args__ = (
+        Index("uq_pagamentos_checkout_identidade", "checkout_identidade", unique=True),
         CheckConstraint("pagamento_origem_id IS NULL OR pagamento_origem_id <> id", name="ck_pagamentos_origem_distinta"),
         Index("uq_pagamentos_mp_payment_id", "mp_payment_id", unique=True,
               postgresql_where=text("mp_payment_id IS NOT NULL"),
               sqlite_where=text("mp_payment_id IS NOT NULL")),
     )
+
+    checkout_identidade = Column(String(43), nullable=True)
+    checkout_recebedor_id = Column(String(64), nullable=True)
+    checkout_meses = Column(Integer, nullable=True)
 
     pagamento_origem_id = Column(Integer, ForeignKey("pagamentos.id"), nullable=True, index=True)
 

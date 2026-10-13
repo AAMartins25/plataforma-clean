@@ -216,7 +216,7 @@ def test_orm_e_sql_diretos_na_sessao_nao_contornam_pausa(ambiente_compra,motor):
     with a[2]() as db:assert db.get(m.Pagamento,pid).status=='PENDENTE'
 
 
-def test_checkout_externo_incerto_reconciliacao_preserva_identidade(ambiente_compra,motor):
+def test_checkout_externo_incerto_nao_inventa_preferencia(ambiente_compra,motor):
     from unittest.mock import Mock
     from datetime import datetime
     a=ambiente_compra
@@ -224,12 +224,12 @@ def test_checkout_externo_incerto_reconciliacao_preserva_identidade(ambiente_com
     r=a[1].post('/checkout/mercadopago',json={'tempo_acesso_id':1})
     assert r.status_code==502
     with a[2]() as db:
-        raiz=db.query(m.Pagamento).one();pid=raiz.id
+        raiz=db.query(m.Pagamento).one();pid=raiz.id;identidade=raiz.checkout_identidade
         assert raiz.status=='CHECKOUT_INDEFINIDO' and raiz.mp_preference_id is None
         assert db.query(m.ContratacaoCurso).count()==0
     assert a[1].post('/checkout/mercadopago',json={'tempo_acesso_id':1}).status_code==409
     assert post.call_count==1
-    external=f'user:1|curso:1|tempo:1|pagamento:{pid}'
+    external='checkout:'+identidade
     def api(url,**kwargs):
         r=Mock(status_code=200)
         if '/merchant_orders/' in url:
@@ -237,14 +237,15 @@ def test_checkout_externo_incerto_reconciliacao_preserva_identidade(ambiente_com
                 'external_reference':external,'payments':[{'id':101}]}
         else:r.json.return_value={'id':'101','status':'approved','payment_method_id':'pix',
             'transaction_amount':49.9,'currency_id':'BRL','order':{'id':'ordem'},
-            'external_reference':external,'date_approved':datetime.utcnow().isoformat()+'Z'}
+            'external_reference':external,'collector_id':123456,'live_mode':True,'date_approved':datetime.utcnow().isoformat()+'Z'}
         return r
     a[4].side_effect=api
-    assert a[1].post('/pagamentos/confirmar',json={'payment_id':'101','curso_id':1}).status_code==200
+    assert a[1].post('/pagamentos/confirmar',json={'payment_id':'101','curso_id':1}).status_code==409
     with a[2]() as db:
         assert db.query(m.Pagamento).count()==1
-        assert db.get(m.Pagamento,pid).mp_preference_id=='pref_recuperada'
-        assert db.query(m.PeriodoAcessoPagamento).count()==1
+        assert db.get(m.Pagamento,pid).mp_preference_id is None
+        assert db.get(m.Pagamento,pid).mp_payment_id is None
+        assert db.query(m.PeriodoAcessoPagamento).count()==0
 
 
 def test_limite_http_nao_abandona_gravacao_apos_prazo(ambiente_compra,motor):

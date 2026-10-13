@@ -1,3 +1,4 @@
+from app.checkout_seguro import referencia_compra, validar_identidade
 from time import monotonic
 from .diagnostico_financeiro import falha, transporte
 from app.financeiro_transacional import protegido, timeout_financeiro
@@ -47,7 +48,7 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
     if str(dados.get("id")) != pid:
         raise HTTPException(409, "Identificador retornado pelo Mercado Pago incompatível.")
     referencias = {}
-    for parte in str(dados.get("external_reference") or "").split("|"):
+    for parte in referencia_compra(db, dados).split("|"):
         if ":" in parte:
             chave, valor = parte.split(":", 1)
             if chave in referencias:
@@ -73,6 +74,7 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
         raise HTTPException(404, "Pagamento não encontrado.")
     if raiz.pagamento_origem_id is not None:
         raise HTTPException(409, "Referência deve identificar o pagamento original.")
+    segura = validar_identidade(raiz, dados)
     if (uid, cid, tid) != (raiz.usuario_id, raiz.curso_id, raiz.tempo_acesso_id):
         raise HTTPException(409, "Pagamento não corresponde à compra registrada.")
     try:
@@ -109,13 +111,16 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
     if raiz.mp_payment_id is None:
         if raiz.status == 'CHECKOUT_INDEFINIDO' and raiz.mp_preference_id is None:
             # Identidade local persistida antes de envio externo incerto.
+            if segura:
+                raise HTTPException(409, "Checkout sem preferência comprovada; verificar antes de processar.")
             raiz.mp_preference_id = verificar_ordem_mp(dados, pid, headers)
         raiz.mp_payment_id = pid
         atualizar_estado_mp(raiz, dados)
         return raiz
     if oportunidade is None or not raiz.mp_preference_id or "pagamento" not in referencias:
         raise HTTPException(409, "Não foi possível comprovar outra tentativa desta compra.")
-    verificar_ordem_mp(dados, pid, headers, raiz.mp_preference_id)
+    if not segura:
+        verificar_ordem_mp(dados, pid, headers, raiz.mp_preference_id)
     campos = ("usuario_id", "curso_id", "oportunidade_id", "tempo_acesso_id",
               "valor_cents", "provedor", "moeda", "mp_preference_id", "tipo_compra",
               "vencimento_original", "codigo_cupom", "vendedor_id", "qr_code_id")

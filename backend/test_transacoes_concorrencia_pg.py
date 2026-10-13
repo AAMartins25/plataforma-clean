@@ -81,6 +81,7 @@ def test_migration_antiga_idempotente_preserva_dados(ambiente_compra, motor):
 def test_migration_duplicados_interrompe_sem_escrita(ambiente_compra, motor):
     preparar(ambiente_compra)
     with ambiente_compra[2].begin() as c:
+        c.execute(text('DROP TRIGGER IF EXISTS proteger_checkout_identidade ON pagamentos'))
         c.execute(text('DROP TRIGGER IF EXISTS validar_origem_transacao_pagamento ON pagamentos'))
         c.execute(text('ALTER TABLE pagamentos DROP COLUMN pagamento_origem_id CASCADE'))
         c.execute(text('DROP INDEX uq_pagamentos_mp_payment_id'))

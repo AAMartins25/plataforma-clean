@@ -22,7 +22,8 @@ def motor():
     engine.dispose()
 
 @pytest.fixture
-def ambiente_compra(motor):
+def ambiente_compra(motor, monkeypatch):
+    monkeypatch.setenv("MP_COLLECTOR_ID", "123456")
     tabelas={modelo.__table__ for modelo in (m.Usuario,m.Curso,m.TempoAcessoCurso,m.ContratacaoCurso,
         m.DemonstracaoCurso,m.AcessoCurso,m.Vendedor,m.CupomDesconto,m.OportunidadeCompra,
         m.Pagamento,m.PeriodoAcessoPagamento,m.ConcessaoAcessoAdmin,
@@ -39,7 +40,7 @@ def ambiente_compra(motor):
         with motor.connect() as c:
             c.connection.driver_connection.execute((Path(__file__).parent/
                 'migrations/016_pausa_financeira_webhooks.sql').read_text())
-            for script in ('014_pagamentos_multiplas_transacoes.sql','015_reembolsos_manual_auditoria.sql'):
+            for script in ('014_pagamentos_multiplas_transacoes.sql','015_reembolsos_manual_auditoria.sql','017_checkout_identidade_segura.sql'):
                 c.connection.driver_connection.execute((Path(__file__).parent/'migrations'/script).read_text())
     else:
         metadata.create_all(motor)
@@ -58,7 +59,7 @@ def ambiente_compra(motor):
     with carregar_main_isolado(factory,motor) as main:
         main.MP_ACCESS_TOKEN="simulado-sem-validade"
         main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=1,email='1@teste.local',is_admin=False)
-        response=Mock(status_code=201);response.json.return_value={'id':'pref_teste','init_point':'https://example.com/simulado'}
+        response=Mock(status_code=201);response.json.return_value={'id':'pref_teste','init_point':'https://example.com/simulado','collector_id':123456}
         with patch.object(main.requests,'post',return_value=response) as post,patch.object(main.requests,'get',return_value=response) as get:
             with TestClient(main.app) as client: yield main,client,factory,post,get
         main.app.dependency_overrides.clear()
@@ -197,10 +198,12 @@ def test_confirmacao_webhook_idempotencia_e_cobranca_legada(ambiente_compra):
     main,c,factory,_,get=ambiente_compra
     compra=c.post('/checkout/mercadopago',json={'tempo_acesso_id':1}).json()
     pid=compra['pagamento_id']
+    with factory() as db:
+        identidade = db.get(m.Pagamento, pid).checkout_identidade
     def aprovado(pagamento):
         return {'id':'801','status':'approved','date_approved':datetime.utcnow().isoformat()+'Z',
             'transaction_amount':49.90,'currency_id':'BRL',
-            'external_reference':f'user:1|curso:1|tempo:1|pagamento:{pagamento}'}
+            'external_reference':('checkout:'+identidade if pagamento==pid else f'user:1|curso:1|tempo:1|pagamento:{pagamento}'), 'collector_id':123456,'live_mode':True}
     get.return_value.status_code=200;get.return_value.json.return_value=aprovado(pid)
     from test_pausa_financeira import enviar
     with patch.object(main,'validar_assinatura_mercadopago',return_value=True):

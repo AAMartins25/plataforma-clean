@@ -1,3 +1,4 @@
+from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
 from app.financeiro_transacional import protegido, timeout_financeiro
 from .transacoes_mp import consultar_pagamento, resolver_transacao
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
@@ -4213,7 +4214,7 @@ def criar_checkout_mp(
             raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
         resultado = {"preference_id": str(pendente.mp_preference_id), "pagamento_id": pendente.id,
             "init_point": preferencia["init_point"], "sandbox_init_point": preferencia.get("sandbox_init_point"),
-            "curso_id": curso.id, "tempo_acesso_id": tempo.id, "meses": tempo.meses,
+            "curso_id": curso.id, "tempo_acesso_id": tempo.id, "meses": pendente.checkout_meses or tempo.meses,
             "valor_cents": valor_cents, "valor_original_cents": valor_original_cents,
             "valor_desconto_cents": valor_desconto_cents, "percentual_desconto": percentual_desconto,
             "codigo_cupom": codigo_cupom_usado, "vendedor_id": vendedor_id}
@@ -4243,6 +4244,8 @@ def criar_checkout_mp(
             detail="Limite de oito títulos atingido para esta oportunidade."
         )
 
+    identidade_checkout = nova_identidade()
+    recebedor_checkout = recebedor_esperado()
     pagamento_id = db.execute(text("""
         INSERT INTO pagamentos (
             usuario_id,
@@ -4255,7 +4258,12 @@ def criar_checkout_mp(
             tipo_compra,
             vencimento_original,
             contratacao_id,
-            oportunidade_id
+            oportunidade_id,
+            checkout_identidade,
+            checkout_recebedor_id,
+            checkout_meses,
+            moeda,
+            provedor
         )
         VALUES (
             :u,
@@ -4268,7 +4276,12 @@ def criar_checkout_mp(
             :tipo_compra,
             :vencimento_original,
             :contratacao_id,
-            :oportunidade_id
+            :oportunidade_id,
+            :checkout_identidade,
+            :checkout_recebedor_id,
+            :checkout_meses,
+            'BRL',
+            'MERCADO_PAGO'
         )
         RETURNING id
     """), {
@@ -4281,7 +4294,10 @@ def criar_checkout_mp(
         "tipo_compra": tipo_compra,
         "vencimento_original": vencimento_original,
         "contratacao_id": contratacao_id,
-        "oportunidade_id": oportunidade.id
+        "oportunidade_id": oportunidade.id,
+        "checkout_identidade": identidade_checkout,
+        "checkout_recebedor_id": recebedor_checkout,
+        "checkout_meses": tempo.meses
     }).scalar()
 
     db.flush()
@@ -4298,7 +4314,7 @@ def criar_checkout_mp(
             "currency_id": "BRL"
         }],
         "payer": {"email": user.email},
-        "external_reference": f"user:{user.id}|curso:{curso.id}|tempo:{tempo.id}|pagamento:{pagamento_id}",
+        "external_reference": "checkout:" + identidade_checkout,
         "back_urls": {
             "success": f"{base}/pagamento_sucesso.html",
             "failure": f"{base}/curso-info.html?curso_id={curso.id}&curso_nome={quote(curso.nome)}",
@@ -4337,22 +4353,35 @@ def criar_checkout_mp(
 
     try:
         resp = requests.post(url, headers=headers, json=payload_mp, timeout=timeout_financeiro())
-    except requests.RequestException as e:
+    except requests.RequestException:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"Falha de rede ao chamar MP: {e}")
+        raise HTTPException(status_code=502, detail="Falha de comunicação ao abrir checkout; resultado exige verificação.")
 
     if resp.status_code >= 400:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"Erro MP {resp.status_code}: {resp.text}")
+        raise HTTPException(status_code=502, detail="Não foi possível abrir checkout; resultado exige verificação.")
 
-    data = resp.json()
+    try:
+        data = resp.json()
+    except ValueError:
+        db.rollback()
+        raise HTTPException(502, "Resposta inválida ao abrir checkout; resultado exige verificação.")
+    if not isinstance(data, dict):
+        db.rollback()
+        raise HTTPException(502, "Resposta inválida ao abrir checkout; resultado exige verificação.")
 
     pref_id = data.get("id")
     init_point = data.get("init_point")
 
     if not pref_id or not init_point:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"MP retornou sem pref_id/init_point: {data}")
+        raise HTTPException(status_code=502, detail="Resposta incompleta ao abrir checkout; resultado exige verificação.")
+
+    if (type(data.get("collector_id")) not in (str, int)
+            or str(data["collector_id"]) != recebedor_checkout
+            or ("external_reference" in data and data["external_reference"] != payload_mp["external_reference"])):
+        db.rollback()
+        raise HTTPException(502, "Resposta de preferência sem vínculo confiável; resultado exige verificação.")
 
     db.execute(text("""
         UPDATE pagamentos
@@ -4531,7 +4560,7 @@ def confirmar_pagamento(
         else:
             data_inicio = datetime.utcnow()
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(
             db, pagamento, data_inicio, data_fim
@@ -4724,7 +4753,7 @@ def processar_pagamento_mp(payment_id, db, resposta_mp=None):
         raise
 
     status = (pagamento_mp.get("status") or "desconhecido").upper()
-    external_reference = pagamento_mp.get("external_reference") or ""
+    external_reference = referencia_compra(db, pagamento_mp)
 
     user_id = None
     curso_id = None
@@ -4871,7 +4900,7 @@ def processar_pagamento_mp(payment_id, db, resposta_mp=None):
         else:
             data_inicio = datetime.utcnow()
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(db, pagamento, data_inicio, data_fim)
 
@@ -5232,7 +5261,7 @@ def admin_revalidar_pagamento(
         else:
             data_inicio = data_aprovacao
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(
             db, pagamento, data_inicio, data_fim

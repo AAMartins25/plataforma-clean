@@ -131,7 +131,7 @@ def test_reconciliacao_preserva_confirmacao_manual(ambiente_compra, canal, estad
         raiz=db.get(m.Pagamento,pagamento.pagamento_origem_id)
         resposta={'id':pagamento.mp_payment_id,'status':estado,'payment_method_id':'pix',
             'transaction_amount':49.90,'currency_id':'BRL',
-            'external_reference':f'user:1|curso:1|tempo:1|pagamento:{raiz.id}'}
+            'external_reference':'checkout:'+raiz.checkout_identidade,'collector_id':123456,'live_mode':True}
         rf=db.get(m.ReembolsoFinanceiro,rid);confirmado=rf.confirmado_em
         acesso=db.query(m.AcessoCurso).one();snapshot=(acesso.ativo,acesso.data_fim)
         with patch.object(main,'consultar_pagamento') as api,patch.object(main,'validar_assinatura_mercadopago',return_value=True):
@@ -159,7 +159,7 @@ def test_estado_provedor_nao_confirma_pix_manual(ambiente_compra,estado):
     with factory() as db:
         p=db.get(m.Pagamento,pid);raiz=p.pagamento_origem_id
         dados={'id':'102','status':estado,'transaction_amount':49.90,'currency_id':'BRL',
-            'external_reference':f'user:1|curso:1|tempo:1|pagamento:{raiz}'}
+            'external_reference':'checkout:'+db.get(m.Pagamento,raiz).checkout_identidade,'collector_id':123456,'live_mode':True}
         with patch.object(main,'consultar_pagamento') as api:
             api.return_value.status_code=200;api.return_value.json.return_value=dados
             main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True))
@@ -180,7 +180,7 @@ def test_ocorrencia_reconcilia_sem_inventar_devolucao_manual(ambiente_compra,can
         p=db.get(m.Pagamento,pid);raiz=p.pagamento_origem_id
         acesso=db.query(m.AcessoCurso).one();snapshot=(acesso.ativo,acesso.data_fim)
         dados={'id':'102','status':estado,'transaction_amount':49.90,'currency_id':'BRL',
-            'external_reference':f'user:1|curso:1|tempo:1|pagamento:{raiz}'}
+            'external_reference':'checkout:'+db.get(m.Pagamento,raiz).checkout_identidade,'collector_id':123456,'live_mode':True}
         with patch.object(main,'consultar_pagamento') as api,patch.object(main,'validar_assinatura_mercadopago',return_value=True):
             api.return_value.status_code=200;api.return_value.json.return_value=dados
             if canal=='admin':r=main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True))

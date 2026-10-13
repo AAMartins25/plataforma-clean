@@ -11,7 +11,7 @@ from test_transacoes_mp import preparar, confirmar
     ('external_reference', 'user:1|curso:1|tempo:2|pagamento:{pid}', 409),
 ])
 def test_rejeita_pagamento_incompativel(ambiente_compra,campo,valor,codigo):
-    pid,_,tx,_=preparar(ambiente_compra)
+    pid,_,tx,_=preparar(ambiente_compra, legado=True)
     tx['101'][campo]=valor.format(pid=pid) if isinstance(valor,str) else valor
     assert confirmar(ambiente_compra,101).status_code==codigo
     with ambiente_compra[2]() as db:

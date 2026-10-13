@@ -10,7 +10,7 @@ from app import models as m
 from test_compras_fluxo import ambiente_compra, motor, contrato, demo
 
 
-def preparar(ambiente, renovacao=False, cupom=False):
+def preparar(ambiente, renovacao=False, cupom=False, legado=False):
     main, client, factory, _, get = ambiente
     payload = {'tempo_acesso_id': 1}
     with factory() as db:
@@ -21,17 +21,28 @@ def preparar(ambiente, renovacao=False, cupom=False):
             payload['demonstracao_id'] = demo(db)
     if cupom:
         payload['codigo_cupom'] = 'AW265'
-    r = client.post('/checkout/mercadopago', json=payload)
-    assert r.status_code == 200, r.text
-    pid = r.json()['pagamento_id']
+    if legado:
+        from app.oportunidades import obter_oportunidade
+        with factory() as db:
+            op = obter_oportunidade(db, 1, 1, 'NOVA', demonstracao_id=payload.get('demonstracao_id'))
+            antigo = m.Pagamento(usuario_id=1,curso_id=1,tempo_acesso_id=1,
+                valor_cents=4990,status='PENDENTE',tipo_compra='NOVA',
+                oportunidade_id=op.id,mp_preference_id='pref_legada')
+            db.add(antigo);db.commit();pid=antigo.id
+    else:
+        r = client.post('/checkout/mercadopago', json=payload)
+        assert r.status_code == 200, r.text
+        pid = r.json()['pagamento_id']
     with factory() as db:
         raiz = db.get(m.Pagamento, pid)
         valor, pref = raiz.valor_cents / 100, raiz.mp_preference_id
+        identidade = raiz.checkout_identidade
     def dados(tx, status='pending'):
         return {'id': str(tx), 'status': status, 'payment_method_id': 'pix',
                 'transaction_amount': valor, 'currency_id': 'BRL',
                 'date_approved': datetime.utcnow().isoformat() + 'Z',
-                'external_reference': f'user:1|curso:1|tempo:1|pagamento:{pid}',
+                'external_reference': ('checkout:'+identidade if identidade else f'user:1|curso:1|tempo:1|pagamento:{pid}'),
+                'collector_id':123456,'live_mode':True,
                 'order': {'id': 'ordem'}}
     transacoes = {str(i): dados(i) for i in (101, 102, 103)}
     ordem = {'id': 'ordem', 'preference_id': pref,
@@ -105,7 +116,7 @@ def test_aprovacoes_unicas_e_duplicadas(ambiente_compra, primeira, renovacao):
 
 @pytest.mark.parametrize('erro', ['pref', 'reference', 'order_id', 'payments', 'id', 'user', 'course', 'amount', 'currency', 'missing_order'])
 def test_vinculos_invalidos_nao_criam_linha(ambiente_compra, erro):
-    pid, _, transacoes, ordem = preparar(ambiente_compra)
+    pid, _, transacoes, ordem = preparar(ambiente_compra, legado=True)
     assert confirmar(ambiente_compra, 101).status_code == 200
     p = transacoes['102']
     if erro == 'pref': ordem['preference_id'] = 'outra'
@@ -149,7 +160,7 @@ def test_admin_descobre_nova_transacao(ambiente_compra):
 
 
 def test_historico_sem_oportunidade_nao_inferido(ambiente_compra):
-    pid, _, _, _ = preparar(ambiente_compra)
+    pid, _, _, _ = preparar(ambiente_compra, legado=True)
     assert confirmar(ambiente_compra, 101).status_code == 200
     with ambiente_compra[2]() as db:
         db.get(m.Pagamento, pid).oportunidade_id = None
@@ -190,7 +201,7 @@ def test_tentativas_nao_consumem_limite_de_titulos(ambiente_compra):
 
 
 def test_webhook_historico_sem_referencia_da_raiz(ambiente_compra):
-    pid, _, tx, _ = preparar(ambiente_compra)
+    pid, _, tx, _ = preparar(ambiente_compra, legado=True)
     assert confirmar(ambiente_compra, 101).status_code == 200
     with ambiente_compra[2]() as db:
         db.get(m.Pagamento, pid).oportunidade_id = None
@@ -203,7 +214,7 @@ def test_webhook_historico_sem_referencia_da_raiz(ambiente_compra):
 
 
 def test_indisponibilidade_da_ordem_nao_cria_tentativa(ambiente_compra):
-    pid, _, _, _ = preparar(ambiente_compra)
+    pid, _, _, _ = preparar(ambiente_compra, legado=True)
     assert confirmar(ambiente_compra, 101).status_code == 200
     get = ambiente_compra[4]
     api = get.side_effect
