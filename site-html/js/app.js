@@ -2565,7 +2565,7 @@ async function pageCursoInfo() {
 
 const anoAtualCursoInfo = document.getElementById("ano_atual");
 if (anoAtualCursoInfo) {
-  anoAtualCursoInfo.textContent = new Date().getFullYear();
+  anoAtualCursoInfo.textContent = 2026;
 }
 
 // Dispatcher
