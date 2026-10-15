@@ -306,7 +306,7 @@ class EmailsPagamentos:
             inst = instrucoes(d,ctx['valor'],self.clock)
             aviso = 'Estas instruções correspondem somente a esta cobrança. Se você já concluiu a compra, não efetue outro pagamento.'
             validade = esc(data_iso(inst['vencimento']).strftime('%d/%m/%Y %H:%M UTC'))
-            payload['subject'] = 'Pagamento pendente no Resumão Online'
+            payload['subject'] = 'Compra processada - pagamento pendente'
             payload['text'] = (f"Olá!\n{aviso}\nCurso: {ctx['curso']}\nValor: {valor}\n"
                 f"Cobrança: #{ctx['pid']}\nValidade/vencimento: {validade}\n" +
                 (f"Pix Copia e Cola: {inst['codigo']}\nQR Code anexado." if inst['modo']=='Pix'
@@ -323,7 +323,7 @@ class EmailsPagamentos:
                    and ctx['acesso'] and ctx['op_concluida'] and ctx['mp_status']=='APPROVED')
             forma = metodo(d)
             meses = ctx['raiz'].checkout_meses
-            payload['subject'] = 'Compra aprovada no Resumão Online!'
+            payload['subject'] = 'Compra concluída - pagamento confirmado'
             payload['text'] = ("Olá!\n\nObrigado por comprar no Resumão Online! 🎉\n\n"
                 "Seu pagamento foi confirmado com sucesso e seu curso já está disponível na plataforma na área 'Meus Cursos'.\n\n"
                 "Acessar: https://resumaoonline.com.br\n\nDados da sua compra:\n"

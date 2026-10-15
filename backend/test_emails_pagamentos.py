@@ -89,6 +89,8 @@ def test_pix_completo_aceito_persistente_mensagem_e_repeticao(emails):
     s.rodada()
     assert job(s,pid)['estado']=='ACEITO' and job(s,pid)['tentativas']==1
     corpo=post.call_args.kwargs['json']
+    assert corpo['from']==s.config.remetente
+    assert corpo['subject']=='Compra processada - pagamento pendente'
     assert corpo['to']==['1@teste.local'] and corpo['attachments'][0]['content_id']=='pix-qrcode'
     assert tx['101']['point_of_interaction']['transaction_data']['qr_code'] in corpo['text']
     assert 'R$ 49,90' in corpo['text']
@@ -102,6 +104,8 @@ def test_boleto_completo_sem_login(emails):
     assert confirmar(a,101).status_code==200
     s.rodada();assert job(s,pid)['estado']=='ACEITO'
     corpo=post.call_args.kwargs['json']
+    assert corpo['from']==s.config.remetente
+    assert corpo['subject']=='Compra processada - pagamento pendente'
     assert boleto_linha(barcode(),4990) in corpo['text']
     assert tx['101']['transaction_details']['external_resource_url'] in corpo['text']
     assert 'access_token' not in corpo['text'] and 'login' not in corpo['text']
@@ -184,7 +188,8 @@ def test_aprovado_depois_do_acesso_sem_browser_duplicata_excluida(emails,metodo,
         assert db.query(m.PeriodoAcessoPagamento).count()==1
     assert post.call_count==1
     corpo=post.call_args.kwargs['json']
-    assert corpo['subject']=='Compra aprovada no Resumão Online!'
+    assert corpo['from']==s.config.remetente
+    assert corpo['subject']=='Compra concluída - pagamento confirmado'
     assert '4 meses' in corpo['text'] and 'R$ 49,90' in corpo['text'] and forma in corpo['text']
     assert "'Meus Cursos'" in corpo['text']
     assert job(s,pid,'APROVADO')['estado']=='ACEITO'
