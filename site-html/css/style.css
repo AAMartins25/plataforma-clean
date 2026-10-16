@@ -7498,7 +7498,7 @@ header.ro-header {
   max-width: 100%;
   padding: 4px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.25;
   color: inherit;
@@ -7517,7 +7517,7 @@ header.ro-header {
     content: attr(data-nome-ampliado);
     display: block;
     margin-top: 2px;
-    font-size: 0.625rem;
+    font-size: 0.8125rem;
     font-weight: 400;
     line-height: 1.2;
     letter-spacing: normal;
