@@ -7519,24 +7519,14 @@ header.ro-header {
   display: none;
 }
 
-/* A marca e o acesso da Home conservam a organização centralizada. */
-header.home-header.ro-header {
-  grid-template-columns: minmax(0, 1fr);
+/* Home: marca central e controles à direita, no mesmo padrão das demais páginas. */
+.home-header.ro-header .home-icon-btn {
+  font-size: 1.5rem;
 }
 
-.home-header.ro-header .ro-header-titles,
-.home-header.ro-header .ro-header-navigation {
-  grid-column: 1;
-}
-
-.home-header.ro-header .ro-header-navigation {
-  grid-row: 2;
-  justify-content: center;
-  width: 100%;
-}
-
-.home-header.ro-header--identified .ro-header-navigation {
-  grid-row: 3;
+.home-header.ro-header .ro-header-navigation,
+.home-header.ro-header .ro-header-navigation :is(div, nav) {
+  justify-content: flex-end;
 }
 
 @media (max-width: 900px) {
@@ -7562,5 +7552,12 @@ header.home-header.ro-header {
 
   .ro-header--identified .ro-header-navigation {
     grid-row: 2 !important;
+  }
+}
+
+/* O viewport real não deve somar o recuo da grade à coluna mínima em 320 px. */
+@media (max-width: 350px) {
+  .home-page #lista-cursos-publicos {
+    padding-left: 0 !important;
   }
 }
