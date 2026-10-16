@@ -7683,3 +7683,36 @@ header.ro-header {
     min-height: 44px;
   }
 }
+
+/* Anotações e Mensagens: textos extensos respeitam a largura do conteúdo. */
+.minhas-anotacoes-page main.container,
+.mensagens-prof-page main.container,
+#lista_anotacoes,
+#lista_mensagens {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .minhas-anotacoes-page .minhas-anotacoes-filtro-grupo,
+  .mensagens-prof-page .mensagens-prof-filtro-grupo {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .minhas-anotacoes-page .minhas-anotacoes-select,
+  .mensagens-prof-page .mensagens-prof-select {
+    max-width: 100%;
+    min-height: 44px;
+  }
+
+  .minhas-anotacoes-page .minhas-anotacoes-btn,
+  .mensagens-prof-page .mensagens-prof-btn-final,
+  .mensagens-prof-page .mensagens-prof-btn-enviar {
+    min-height: 44px;
+  }
+
+  .minhas-anotacoes-page .minhas-anotacoes-navegacao-final,
+  .mensagens-prof-page .mensagens-prof-navegacao-final {
+    flex-wrap: wrap;
+  }
+}
