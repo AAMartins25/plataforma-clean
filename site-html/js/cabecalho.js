@@ -5,6 +5,10 @@
   function organizar(cabecalho) {
     if (cabecalho.classList.contains("ro-header")) return;
 
+    // O acesso à área do usuário é independente das ações Voltar/Sair da Home.
+    const acesso = cabecalho.matches(".home-header") ? cabecalho.querySelector(".home-nav-center") : null;
+    acesso?.remove();
+
     const titulos = document.createElement("div");
     titulos.className = "ro-header-titles";
     const navegacao = document.createElement("div");
@@ -23,6 +27,10 @@
 
     cabecalho.classList.add("ro-header");
     cabecalho.append(titulos, navegacao);
+    if (acesso) {
+      acesso.classList.add("ro-header-access");
+      cabecalho.append(acesso);
+    }
     for (const controle of navegacao.querySelectorAll("a, button")) {
       if (!controle.hasAttribute("aria-label") && controle.title) {
         controle.setAttribute("aria-label", controle.title);
