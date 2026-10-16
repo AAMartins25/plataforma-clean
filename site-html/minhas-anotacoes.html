@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <script src="js/sessao.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minhas anotações</title>
 
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/cabecalho.js" defer></script>
 </head>
 
 <body
@@ -151,7 +153,7 @@ if (tituloCursoMinhasAnotacoes) {
 
 function logout() {
 
-  localStorage.removeItem("access_token");
+  Sessao.encerrar();
 
   window.location.href = "index.html";
 }
@@ -184,7 +186,7 @@ async function apiGet(path) {
 
   const token = getToken();
 
-  const res = await fetch(
+  const res = await Sessao.fetch(
     `${API_BASE}${comContexto(path)}`,
     {
       headers: {
@@ -204,6 +206,7 @@ async function apiGet(path) {
 }
 
 async function exibirNomeUsuarioLogadoAnotacoes() {
+  const sessaoOrigem = Sessao.snapshot();
   const token = getToken();
 
   if (!token) {
@@ -212,6 +215,7 @@ async function exibirNomeUsuarioLogadoAnotacoes() {
 
   try {
     const me = await apiGet("/me");
+        if (!Sessao.mesma(sessaoOrigem)) return;
 
     if (!me || !me.nome) {
       return;
@@ -730,7 +734,7 @@ async function excluirAnotacaoConfirmada(id) {
 async function apiPut(path, body) {
   const token = getToken();
 
-  const res = await fetch(
+  const res = await Sessao.fetch(
     `${API_BASE}${comContexto(path)}`,
     {
       method: "PUT",
@@ -752,7 +756,7 @@ async function apiPut(path, body) {
 async function apiDelete(path) {
   const token = getToken();
 
-  const res = await fetch(
+  const res = await Sessao.fetch(
     `${API_BASE}${comContexto(path)}`,
     {
       method: "DELETE",

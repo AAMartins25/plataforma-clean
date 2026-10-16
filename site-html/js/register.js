@@ -124,8 +124,11 @@
   // se já está logado, manda direto
   const token = localStorage.getItem("access_token");
   if (token) {
+    const sessaoOrigem = Sessao.snapshot();
     show("Você já está logado. Redirecionando...", true);
-    setTimeout(() => (window.location.href = "cursos.html"), 600);
+    setTimeout(() => {
+      if (Sessao.mesma(sessaoOrigem)) window.location.href = "cursos.html";
+    }, 600);
     return;
   }
 
@@ -295,6 +298,7 @@
     }
 
     show("Criando conta... aguarde.", true);
+    const tentativa = Sessao.iniciarAutenticacao();
 
     try {
       const res = await fetch(`${API_BASE}/register`, {
@@ -304,6 +308,7 @@
       });
 
       const txt = await res.text();
+      if (!Sessao.autenticacaoAtual(tentativa)) return;
       let data = null;
       try { data = txt ? JSON.parse(txt) : null; } catch { data = txt; }
 
@@ -318,10 +323,8 @@
       const accessToken = data?.access_token;
 
       if (accessToken) {
-        localStorage.setItem(
-          "access_token",
-          accessToken
-        );
+        const aceita = Sessao.aceitarAutenticacao(tentativa, accessToken);
+        if (!aceita) return;
 
         show(
           "✅ Conta criada e login efetuado! Redirecionando...",
@@ -335,6 +338,7 @@
 
         setTimeout(
           () => {
+            if (!Sessao.autenticacaoAtual(aceita)) return;
             window.location.href =
               destino ||
               "cursos.html";
@@ -455,6 +459,7 @@
       `;
 
     } catch (err) {
+      if (!Sessao.autenticacaoAtual(tentativa)) return;
       const erroTexto = String(
         err?.message || err || ""
       );

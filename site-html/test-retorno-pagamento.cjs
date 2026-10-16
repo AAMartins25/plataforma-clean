@@ -9,7 +9,11 @@ function ambiente(pagina='pagamento_sucesso.html',search='?payment_id=123&status
  localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
  window:{addEventListener:(t,f)=>eventos[t]=f,location:{search,pathname:'/checkout.html',href:pagina,replace(url){this.href=url}},history:{replaceState(...args){s.historico=args}}},
  document:{title:'Pagamento',body:{dataset:{},style:{}},addEventListener(){},querySelector:()=>s.radio,getElementById:id=>elementos[id]??={style:{},value:'',textContent:'',disabled:false,addEventListener(t,fn){this[t]=fn}}}};
- vm.createContext(s);vm.runInContext(app,s);
+ s.Headers=Headers;s.TextEncoder=TextEncoder;s.crypto=require('node:crypto').webcrypto;
+ s.document.querySelectorAll=()=>[];
+ vm.createContext(s);vm.runInContext(fs.readFileSync(__dirname+'/js/sessao.js','utf8'),s);
+ s.Sessao=s.window.Sessao;
+ vm.runInContext(app,s);
  s.apiPostAuth=async(url,payload)=>{pedidos.push({url,payload});return s.resultado};
  const html=fs.readFileSync(__dirname+'/'+pagina,'utf8');
  const script=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1].replace('    carregarCheckout();','').replace('    verificarPagamento();','');
