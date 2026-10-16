@@ -7466,7 +7466,7 @@ header.ro-header {
   overflow-wrap: anywhere;
 }
 
-.ro-header :is(a, button, summary):focus-visible {
+.ro-header :is(a, button):focus-visible {
   outline: 2px solid var(--azul);
   outline-offset: 3px;
 }
@@ -7492,25 +7492,15 @@ header.ro-header {
 }
 
 .ro-header .ro-identity {
+  display: block;
+  min-width: 44px;
+  min-height: 44px;
   max-width: 100%;
+  padding: 10px 4px;
   font-family: inherit;
   color: inherit;
   text-align: right;
-}
-
-.ro-header .ro-identity summary {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 10px 4px;
-  cursor: pointer;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.ro-header .ro-identity-expanded {
-  position: static;
-  max-width: min(32rem, 100%);
-  padding: 4px;
+  cursor: default;
   white-space: normal;
   overflow-wrap: anywhere;
 }
