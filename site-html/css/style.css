@@ -7716,3 +7716,36 @@ header.ro-header {
     flex-wrap: wrap;
   }
 }
+
+/* Login e auxiliares: mensagens extensas respeitam a largura do conteúdo. */
+.login-page main.container,
+.auth-page main.container,
+body[data-page="curso-info"] main.container {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  /* O mínimo inline de 240px excede a área interna da recuperação no celular. */
+  .login-page #recuperarLogin {
+    flex: 1 1 240px !important;
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  .login-page main input,
+  .auth-page main input,
+  .login-page main button,
+  .auth-page main button,
+  .home-page #buscaCurso,
+  body[data-page="curso-info"] #codigo_cupom_desconto,
+  body[data-page="curso-info"] #btnAplicarCupom,
+  .retorno-pagamento-page main .btn {
+    min-height: 44px;
+  }
+
+  .login-page #toggleSenha,
+  .auth-page button[id^="toggle"] {
+    min-width: 44px;
+    right: 0 !important;
+  }
+}
