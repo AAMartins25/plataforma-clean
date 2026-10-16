@@ -7561,3 +7561,29 @@ header.ro-header {
     padding-left: 0 !important;
   }
 }
+
+/* Acesso à área do usuário: central sob a marca, separado de Voltar/Sair. */
+.home-header.ro-header .ro-header-access {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: center;
+}
+
+.home-header.ro-header--identified .ro-header-access {
+  grid-row: 3;
+}
+
+.home-header.ro-header .ro-header-access .home-icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .home-header.ro-header .ro-header-access {
+    grid-row: 3;
+  }
+
+  .home-header.ro-header--identified .ro-header-access {
+    grid-row: 4;
+  }
+}
