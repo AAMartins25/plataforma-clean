@@ -9,9 +9,13 @@ function ambiente(search='?curso_id=1&demonstracao_id=2&origem=cursos',checkout=
   confirm:()=>true,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
   window:{addEventListener(){},location:{search,pathname:'/checkout.html',href:'https://example.com/checkout.html'+search,replace(url){this.href=url}}},
   document:{getElementById(id){return elementos[id]??={style:{},value:'',textContent:''}},querySelector(){return s.radio},addEventListener(){},body:{dataset:{},style:{}}},
-  fetch:async(url,opts)=>{pedidos.push({url,opts});return{ok:true,json:async()=>url.includes('validar')?{codigo_cupom:'AW265',percentual_desconto:12,vendedor_id:1}:{init_point:'https://example.com/pagamento'}}},
+  fetch:async(url,opts)=>{pedidos.push({url,opts});return{ok:true,text:async()=>'',json:async()=>url.includes('validar')?{codigo_cupom:'AW265',percentual_desconto:12,vendedor_id:1}:{init_point:'https://example.com/pagamento'}}},
  };
- vm.createContext(s);vm.runInContext(app,s);
+ s.Headers=Headers;s.TextEncoder=TextEncoder;s.crypto=require('node:crypto').webcrypto;
+ s.document.querySelectorAll=()=>[];
+ vm.createContext(s);vm.runInContext(fs.readFileSync(__dirname+'/js/sessao.js','utf8'),s);
+ s.Sessao=s.window.Sessao;
+ vm.runInContext(app,s);
  if(checkout){const script=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1].replace('    carregarCheckout();','');vm.runInContext(script,s);vm.runInContext('dadosCheckout={id:1,tempos_acesso:[{id:1,meses:4,valor_cents:4990},{id:2,meses:8,valor_cents:9980},{id:3,meses:12,valor_cents:14970}]}',s);}
  else vm.runInContext('dadosCursoInfo={id:1}',s);
  return{s,elementos,store,pedidos};
@@ -38,13 +42,13 @@ test('renovação mantém contrato e não oferece demo',async()=>{
 });
 test('validação atrasada não reaplica cupom após troca',async()=>{
  const {s,elementos}=ambiente();let concluir;
- s.fetch=()=>new Promise(resolve=>concluir=()=>resolve({ok:true,json:async()=>({codigo_cupom:'AW265',percentual_desconto:12})}));
+ s.fetch=()=>new Promise(resolve=>concluir=()=>resolve({ok:true,text:async()=>'',json:async()=>({codigo_cupom:'AW265',percentual_desconto:12})}));
  s.radio={value:'tempo_1',dataset:{tempoId:'1',valorCents:'4990'}};elementos.codigo_cupom_desconto.value='AW265';
  const aplicacao=s.aplicarCupomCursoInfo();s.controleAvisoDemo();concluir();await aplicacao;
  assert.equal(vm.runInContext('cupomAplicadoCursoInfo',s),null);
 });
 test('cupom inválido não é aplicado',async()=>{
- const {s,elementos}=ambiente();s.fetch=async()=>({ok:false,status:400,text:async()=>'Cupom inválido'});
+ const {s,elementos}=ambiente();s.fetch=async()=>({ok:false,status:400,json:async()=>({}),text:async()=>'Cupom inválido'});
  s.radio={value:'tempo_1',dataset:{tempoId:'1',valorCents:'4990'}};elementos.codigo_cupom_desconto.value='XXXXX';
  await s.aplicarCupomCursoInfo();assert.equal(vm.runInContext('cupomAplicadoCursoInfo',s),null);assert.match(elementos.msgCupomDesconto.textContent,/inválido/);
 });
@@ -55,7 +59,7 @@ test('compra normal usa mesmo cupom',async()=>{
 });
 test('mensagem do limite gratuito preservada',async()=>{
  const {s,elementos}=ambiente('?curso_id=1',false);s.radio={value:'demo',dataset:{}};
- s.fetch=async()=>({ok:false,status:409,text:async()=>JSON.stringify({detail:'Você já possui acesso gratuito a 3 cursos.'})});
+ s.fetch=async()=>({ok:false,status:409,json:async()=>({}),text:async()=>JSON.stringify({detail:'Você já possui acesso gratuito a 3 cursos.'})});
  await s.adquirirAgoraCursoInfo();assert.match(elementos.msgCursoInfo.textContent,/3 cursos/);
 });
 test('navegação e confirmação de logout',()=>{

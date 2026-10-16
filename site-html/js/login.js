@@ -51,7 +51,9 @@
     msg.textContent = text;
   }
 
-  async function redirectDepoisDoLogin() {
+  async function redirectDepoisDoLogin(sessaoOrigem, tentativa = null) {
+    const atual = () => Sessao.mesma(sessaoOrigem) && (!tentativa || Sessao.autenticacaoAtual(tentativa));
+    if (!atual()) return;
     // 1) Redirect explícito recebido pela URL
     const nextUrl =
       new URLSearchParams(
@@ -170,7 +172,7 @@
       }
 
       const r =
-        await fetch(
+        await Sessao.fetch(
           `${API_BASE}/me`,
           {
             headers: {
@@ -181,9 +183,12 @@
         );
 
       if (!r.ok) {
-        localStorage.removeItem(
-          "access_token"
-        );
+        if (tentativa && tentativa.id !== localStorage.getItem("auth_attempt")) return;
+        if (r.status === 401 && localStorage.getItem("access_token")) return;
+        if (r.status !== 401) {
+          show("Não foi possível validar a sessão. Tente novamente.");
+          return;
+        }
 
         window.location.href =
           "login.html";
@@ -193,6 +198,7 @@
 
       const me =
         await r.json();
+      if (!atual()) return;
 
       const quantidadeAreas =
         Number(!!me?.is_admin) +
@@ -242,17 +248,13 @@
         "index.html";
 
     } catch (e) {
+      if (!atual()) return;
       console.error(
         "Erro ao identificar o perfil do usuário:",
         e
       );
 
-      localStorage.removeItem(
-        "access_token"
-      );
-
-      window.location.href =
-        "login.html";
+      show("Não foi possível validar a sessão. Tente novamente.");
     }
     
   }
@@ -260,9 +262,10 @@
   // Se já tem token, pode ir direto
   const tokenExistente = localStorage.getItem("access_token");
   if (tokenExistente) {
+    const sessaoOrigem = Sessao.snapshot();
     show("Você já está logado. Redirecionando...", true);
     setTimeout(() => {
-      redirectDepoisDoLogin();
+      redirectDepoisDoLogin(sessaoOrigem);
     }, 300);
     return;
   }
@@ -272,6 +275,7 @@
 
     const email = document.getElementById("email").value.trim();
     const senha = document.getElementById("senha").value;
+    const tentativa = Sessao.iniciarAutenticacao();
 
     try {
       const body = new URLSearchParams();
@@ -283,6 +287,7 @@
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body
       });
+      if (!Sessao.autenticacaoAtual(tentativa)) return;
 
       if (!res.ok) {
         let mensagemErro =
@@ -307,16 +312,19 @@
       }
 
       const data = await res.json();
+      if (!Sessao.autenticacaoAtual(tentativa)) return;
       if (!data.access_token) throw new Error("Login sem token. Verifique o backend.");
 
-      localStorage.setItem("access_token", data.access_token);
+      const aceita = Sessao.aceitarAutenticacao(tentativa, data.access_token);
+      if (!aceita) return;
       show("Login efetuado com sucesso! Redirecionando...", true);
 
       setTimeout(() => {
-        redirectDepoisDoLogin();
+        redirectDepoisDoLogin(aceita.sessao, aceita);
       }, 200);
 
     } catch (err) {
+      if (!Sessao.autenticacaoAtual(tentativa)) return;
       showErroLogin(
         err.message ||
         "Não foi possível realizar o login."

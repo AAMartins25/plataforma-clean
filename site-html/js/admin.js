@@ -32,7 +32,7 @@ async function apiGetAuth(path) {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     headers: { "Authorization": `Bearer ${token}` }
   });
 
@@ -51,7 +51,7 @@ async function apiPostAuth(path, body) {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -76,7 +76,7 @@ async function apiGetAuth(path) {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     headers: { "Authorization": `Bearer ${token}` }
   });
 
@@ -95,7 +95,7 @@ async function apiPostAuth(path, body) {
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -127,12 +127,12 @@ async function requireAdmin() {
     }
 
     // Reaproveita API_BASE do app.js
-    const res = await fetch(`${API_BASE}/me`, {
+    const res = await Sessao.fetch(`${API_BASE}/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (!res.ok) {
-      localStorage.removeItem("access_token");
+      if (res.status !== 401) throw new Error(`Erro HTTP ${res.status} ao validar permissões`);
       alert("Sessão expirada. Faça login novamente.");
       window.location.href = "../login.html";
       return false;
