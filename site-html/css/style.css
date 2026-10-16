@@ -7663,3 +7663,23 @@ header.ro-header {
     align-items: center;
   }
 }
+
+/* Questões Críticas: os filtros se reorganizam dentro do card no celular. */
+@media (max-width: 767px) {
+  .questoes-criticas-page .questoes-criticas-filtros {
+    flex-wrap: wrap;
+  }
+
+  .questoes-criticas-page .questoes-criticas-filtro-grupo {
+    flex: 0 1 205px;
+    width: 205px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .questoes-criticas-page .questoes-criticas-select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
+}
