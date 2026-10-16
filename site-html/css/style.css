@@ -7605,3 +7605,61 @@ header.ro-header {
     grid-row: 4;
   }
 }
+
+/* Estudo: conteúdo extenso não deve ampliar a página. */
+.teoria-page #area_estudo,
+.questoes-pratica-page main.container,
+.sprint-header ~ .container {
+  overflow-wrap: anywhere;
+}
+
+.teoria-page .questoes-bateria-info {
+  min-width: min(220px, 100%);
+}
+
+@media (max-width: 1023px) {
+  /* As seções passam para uma linha própria dentro da área de estudo. */
+  .teoria-page .area-estudo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .teoria-page .menu-estudo-lateral {
+    position: static;
+    grid-row: 2;
+    flex-direction: row;
+    gap: 8px;
+    margin: 0 0 24px;
+  }
+
+  .teoria-page .botao-estudo-lateral {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    min-height: 44px;
+    padding: 8px 4px;
+    flex-direction: row;
+    gap: 0;
+    border-radius: 10px;
+  }
+
+  .teoria-page .icone-menu-lateral {
+    margin: 0 5px 0 0;
+  }
+
+  .teoria-page #detalhes_aula .btn,
+  .questoes-pratica-page .questoes-pratica-btn,
+  .questoes-pratica-page .questoes-pratica-filtro,
+  .questoes-pratica-page .questoes-pratica-rever label,
+  .questoes-pratica-page .questoes-pratica-dificuldade-opcoes label,
+  .sprint-header ~ .container .sprint-dificuldade-opcao,
+  .sprint-header ~ .container .btn,
+  .sprint-header ~ .container label:has(input[type="checkbox"]) {
+    min-height: 44px;
+  }
+
+  .sprint-header ~ .container label:has(input[type="checkbox"]) {
+    display: inline-flex;
+    align-items: center;
+  }
+}
