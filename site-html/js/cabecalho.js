@@ -2,15 +2,6 @@
 (() => {
   "use strict";
 
-  const mouse = window.matchMedia("(hover: hover) and (pointer: fine)");
-  function atualizarHover() {
-    for (const nome of document.querySelectorAll(".ro-identity")) {
-      if (mouse.matches) nome.title = nome.dataset.nomeAmpliado;
-      else nome.removeAttribute("title");
-    }
-  }
-  mouse.addEventListener("change", atualizarHover);
-
   function organizar(cabecalho) {
     if (cabecalho.classList.contains("ro-header")) return;
 
@@ -61,7 +52,6 @@
     nome.className = "ro-identity";
     nome.textContent = primeiroNome;
     nome.dataset.nomeAmpliado = ampliado;
-    if (mouse.matches) nome.title = ampliado;
     origem.removeAttribute("title");
     origem.replaceChildren(nome);
     origem.classList.add("ro-header-identity");
