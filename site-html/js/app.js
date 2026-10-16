@@ -23,11 +23,11 @@ function getToken() {
 }
 
 function setToken(token) {
-  localStorage.setItem("access_token", token);
+  Sessao.definirToken(token);
 }
 
 function clearToken() {
-  localStorage.removeItem("access_token");
+  Sessao.encerrar();
 }
 
 // GET com Bearer token
@@ -35,7 +35,7 @@ async function apiGetAuth(path) {
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     headers: {
       "Authorization": `Bearer ${token}`
     }
@@ -43,7 +43,7 @@ async function apiGetAuth(path) {
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `Erro HTTP ${res.status}`);
+    throw Object.assign(new Error(txt || `Erro HTTP ${res.status}`), { status: res.status });
   }
   return res.json();
 }
@@ -53,6 +53,7 @@ function erroApiCompra(txt, status) {
   try { detalhe = JSON.parse(txt).detail ?? txt; } catch (_) {}
   const erro = new Error(typeof detalhe === "string" ? detalhe : detalhe.mensagem || `Erro HTTP ${status}`);
   erro.detail = detalhe;
+  erro.status = status;
   return erro;
 }
 
@@ -79,7 +80,7 @@ async function apiPostAuth(path, body) {
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -305,7 +306,7 @@ async function apiPutAuth(path, body) {
     throw new Error("Você não está logado.");
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -316,7 +317,7 @@ async function apiPutAuth(path, body) {
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `Erro HTTP ${res.status}`);
+    throw Object.assign(new Error(txt || `Erro HTTP ${res.status}`), { status: res.status });
   }
 
   return res.json();
@@ -330,7 +331,7 @@ async function apiDeleteAuth(path) {
     throw new Error("Você não está logado.");
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await Sessao.fetch(`${API_BASE}${path}`, {
     method: "DELETE",
     headers: {
       "Authorization": `Bearer ${token}`
@@ -339,7 +340,7 @@ async function apiDeleteAuth(path) {
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `Erro HTTP ${res.status}`);
+    throw Object.assign(new Error(txt || `Erro HTTP ${res.status}`), { status: res.status });
   }
 
   return true;
@@ -390,37 +391,15 @@ function showError(containerId, err) {
 // ===============================
 
 async function getMeSafe() {
-  const token = getToken();
-  if (!token) return null;
-
-  // cache simples (30s) para não bater no /me a cada clique
-  try {
-    const cached = localStorage.getItem("me_cache");
-    if (cached) {
-      const obj = JSON.parse(cached);
-      if (obj && obj.ts && (Date.now() - obj.ts) < 30_000 && obj.me) {
-        return obj.me;
-      }
-    }
-  } catch { /* ignore */ }
-
-  try {
-    const res = await fetch(`${API_BASE}/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) return null;
-
-    const me = await res.json();
-    try {
-      localStorage.setItem("me_cache", JSON.stringify({ ts: Date.now(), me }));
-    } catch { /* ignore */ }
-    return me;
-  } catch {
+  try { return await Sessao.obterMe(`${API_BASE}/me`); }
+  catch (err) {
+    if (err.name !== "SessaoAlteradaError") console.warn("Falha ao consultar identificação:", err);
     return null;
   }
 }
 
 async function exibirNomeUsuarioLogado() {
+  const sessaoOrigem = Sessao.snapshot();
   const token =
     getToken();
 
@@ -432,7 +411,7 @@ async function exibirNomeUsuarioLogado() {
     const me =
       await getMeSafe();
 
-    if (!me || !me.nome) {
+    if (!Sessao.mesma(sessaoOrigem) || !me || !me.nome) {
       return;
     }
 
@@ -700,8 +679,9 @@ window.entrarEEstudar = async function entrarEEstudar() {
     );
 
 
-    // Token inválido ou expirado.
-    clearToken();
+    // Falhas transitórias não comprovam expiração.
+    if (err.status !== 401) return;
+    if (getToken()) return;
 
 
     localStorage.setItem(
@@ -2595,8 +2575,7 @@ window.onload = () => {
 };
 
 function logout() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("me_cache");
+  Sessao.encerrar();
 
   const inAdmin = window.location.pathname.includes("/admin/");
   window.location.href = inAdmin ? "../index.html" : "index.html";

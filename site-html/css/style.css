@@ -7387,3 +7387,180 @@ body[data-page="curso-info"]
   border-color: #dfc94f;
   cursor: pointer;
 }
+
+/* Cabeçalhos compartilhados: somente apresentação e identificação. */
+header.ro-header {
+  display: grid;
+  grid-template-columns: minmax(144px, 1fr) minmax(0, 3fr) minmax(144px, 1fr);
+  align-items: center;
+  gap: 10px 16px;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 16px 24px !important;
+}
+
+.ro-header .ro-header-titles {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.ro-header .ro-header-titles > * {
+  position: static !important;
+  margin: 0 !important;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ro-header .ro-header-titles :is(h1, h2) {
+  margin: 0 !important;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.ro-header .ro-header-titles {
+  overflow-wrap: anywhere;
+}
+
+.ro-header .ro-header-navigation {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ro-header .ro-header-navigation :is(div, nav) {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px !important;
+}
+
+/* Não força display: controles ocultos pelas páginas continuam ocultos. */
+.ro-header .ro-header-navigation :is(a, button) {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  height: auto !important;
+  max-width: 100%;
+  padding: 4px 10px !important;
+  margin: 0 !important;
+  transform: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ro-header :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 3px;
+}
+
+.ro-header .ro-header-identity {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: end;
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  white-space: normal !important;
+  text-align: right;
+}
+
+.ro-header--identified .ro-header-titles,
+.ro-header--identified .ro-header-navigation {
+  grid-row: 2;
+}
+
+.ro-header .ro-identity {
+  max-width: 100%;
+  font-family: inherit;
+  color: inherit;
+  text-align: right;
+}
+
+.ro-header .ro-identity summary {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 4px;
+  cursor: pointer;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ro-header .ro-identity-expanded {
+  position: static;
+  max-width: min(32rem, 100%);
+  padding: 4px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ro-header #nome_aluno_logado:empty {
+  display: none;
+}
+
+/* A marca e o acesso da Home conservam a organização centralizada. */
+header.home-header.ro-header {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.home-header.ro-header .ro-header-titles,
+.home-header.ro-header .ro-header-navigation {
+  grid-column: 1;
+}
+
+.home-header.ro-header .ro-header-navigation {
+  grid-row: 2;
+  justify-content: center;
+  width: 100%;
+}
+
+.home-header.ro-header--identified .ro-header-navigation {
+  grid-row: 3;
+}
+
+@media (max-width: 900px) {
+  header.ro-header {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 16px !important;
+  }
+
+  .ro-header .ro-header-titles {
+    grid-column: 1;
+    grid-row: 2 !important;
+  }
+
+  .ro-header .ro-header-navigation {
+    grid-column: 1;
+    grid-row: 1 !important;
+    justify-content: center;
+  }
+
+  .ro-header--identified .ro-header-titles {
+    grid-row: 3 !important;
+  }
+
+  .ro-header--identified .ro-header-navigation {
+    grid-row: 2 !important;
+  }
+}

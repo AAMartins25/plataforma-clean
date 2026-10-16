@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+  <script src="../js/sessao.js"></script>
   <meta charset="UTF-8">
 
   <meta
@@ -15,6 +16,7 @@
     rel="stylesheet"
     href="../css/style.css"
   >
+  <script src="../js/cabecalho.js" defer></script>
 </head>
 
 <body>
@@ -233,7 +235,7 @@
     async function apiGetAdmin(path) {
       const token = getToken();
 
-      const res = await fetch(
+      const res = await Sessao.fetch(
         `${API_BASE}${path}`,
         {
           headers: {
@@ -260,7 +262,7 @@
     ) {
       const token = getToken();
 
-      const res = await fetch(
+      const res = await Sessao.fetch(
         `${API_BASE}${path}`,
         {
           method: "POST",
