@@ -1,5 +1,5 @@
 // js/register.js
-(function () {
+(async function () {
   const form = document.getElementById("formRegister");
   const msg = document.getElementById("msg");
   const campoCpf = document.getElementById("cpf");
@@ -119,6 +119,16 @@
     msg.style.border = "1px solid #ddd";
     msg.style.background = ok ? "#e7f7ee" : "#fde8e8";
     msg.style.whiteSpace = "pre-line";
+  }
+
+  // Compatibilidade com HTML anterior à inclusão da dependência de sessão.
+  if (!window.Sessao) {
+    // Sem o handler pronto, o formulário não pode enviar credenciais por navegação nativa.
+    const aguardarSessao = event => event.preventDefault();
+    form.addEventListener("submit", aguardarSessao);
+    try { await carregarSessao(); }
+    catch (err) { show(err.message); return; }
+    form.removeEventListener("submit", aguardarSessao);
   }
 
   // se já está logado, manda direto

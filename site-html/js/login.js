@@ -1,5 +1,5 @@
 // js/login.js
-(function () {
+(async function () {
   const form = document.getElementById("formLogin");
   const msg = document.getElementById("msg");
 
@@ -257,6 +257,16 @@
       show("Não foi possível validar a sessão. Tente novamente.");
     }
     
+  }
+
+  // Compatibilidade com HTML anterior à inclusão da dependência de sessão.
+  if (!window.Sessao) {
+    // Sem o handler pronto, o formulário não pode enviar credenciais por navegação nativa.
+    const aguardarSessao = event => event.preventDefault();
+    form.addEventListener("submit", aguardarSessao);
+    try { await carregarSessao(); }
+    catch (err) { show(err.message); return; }
+    form.removeEventListener("submit", aguardarSessao);
   }
 
   // Se já tem token, pode ir direto
