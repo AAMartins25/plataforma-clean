@@ -100,11 +100,21 @@ async def settle(page):
 
 async def identity(page, name):
     first = name.split()[0].upper()
-    await page.wait_for_function('(first) => document.querySelector("header summary")?.textContent === first', arg=first, timeout=5000)
-    assert await page.locator('header .ro-identity').count() == 1
-    # A API retorna o nome completo; a apresentação preserva primeiro + último nome.
-    expanded = await page.locator('header .ro-identity-expanded').text_content()
-    assert expanded == (name.split()[0] + ' ' + name.split()[-1]).upper()
+    await page.wait_for_function('(first) => document.querySelector("header .ro-identity")?.textContent === first', arg=first, timeout=5000)
+    label = page.locator('header .ro-identity')
+    assert await label.count() == 1
+    assert await label.get_attribute('data-nome-ampliado') == (name.split()[0] + ' ' + name.split()[-1]).upper()
+    assert not await page.locator('header details, header summary, header .ro-identity-expanded').count()
+    assert await label.get_attribute('title') is None
+    mouse = await page.evaluate('matchMedia("(hover: hover) and (pointer: fine)").matches')
+    await page.mouse.move(0, 0)
+    assert await label.evaluate('e => getComputedStyle(e, "::after").visibility !== "visible" || getComputedStyle(e, "::after").display === "none"')
+    await label.hover()
+    if mouse:
+        assert await label.evaluate('e => getComputedStyle(e, "::after").visibility === "visible" && getComputedStyle(e, "::after").content.includes(e.dataset.nomeAmpliado)')
+    else:
+        assert await label.evaluate('e => getComputedStyle(e, "::after").display === "none"')
+    await page.mouse.move(0, 0)
 
 
 async def clean(page):
@@ -141,13 +151,8 @@ async def main():
             assert 'Curso simulado' in await page.locator('#lista').inner_text()
             assert 'Sessao is not defined' not in await page.locator('body').inner_text()
             await identity(page, e.name)
-            await page.locator('header summary').focus()
-            await page.keyboard.press('Enter')
-            assert await page.locator('header details').get_attribute('open') is not None
-            await page.locator('header summary').click()
-            assert await page.locator('header details').get_attribute('open') is None
             # Todos os controles apresentados devem permanecer dentro da viewport.
-            assert await page.evaluate('''() => [...document.querySelectorAll('header a,header button,header summary')].every(e=>{
+            assert await page.evaluate('''() => [...document.querySelectorAll('header a,header button')].every(e=>{
                 const r=e.getBoundingClientRect();return !r.width || (r.left>=0 && r.right<=innerWidth+1 && r.top>=0);
             })''')
             assert not await page.evaluate('document.documentElement.scrollWidth > innerWidth')

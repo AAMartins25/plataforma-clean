@@ -1589,6 +1589,41 @@ footer {
     translateX(0);
 }
 
+/* Tooltips permanecem dentro da tela, inclusive quando estão ocultos. */
+@media (max-width: 767px) {
+  .curso-page .curso-tooltip::after {
+    left: 0;
+    top: calc(100% + 8px);
+    width: min(320px, calc(100vw - 112px));
+    overflow-wrap: anywhere;
+    transform: translateX(-4px);
+  }
+
+  .curso-page .curso-tooltip:hover::after {
+    transform: translateX(0);
+  }
+
+  .curso-page .curso-tooltip::before {
+    left: 12px;
+    top: calc(100% + 4px);
+    transform: rotate(135deg);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .curso-page .curso-tooltip::before,
+  .curso-page .curso-tooltip::after {
+    display: none;
+  }
+}
+
+/* URLs extensas não devem alargar o conteúdo de questões ou checkout. */
+.questoes-criticas-page main.container,
+#area_questoes_rever,
+#infoCurso {
+  overflow-wrap: anywhere;
+}
+
 /* =========================================================
    DISCIPLINAS - maquiagem visual
    ========================================================= */
