@@ -1,0 +1,38 @@
+/* Estilos exclusivos das telas administrativas; não altera as regras de acesso. */
+main {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  main select,
+  main textarea {
+    min-width: 0;
+    max-width: 100%;
+    min-height: 44px;
+  }
+
+  main button,
+  main .btn {
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 100%;
+  }
+
+  /* Estes dois mínimos também são definidos inline no formulário de concessão. */
+  #concessaoCurso,
+  #concessaoDataFim {
+    min-height: 44px !important;
+  }
+
+  main a[href^="http"] {
+    display: inline-block;
+    min-height: 44px;
+    max-width: 100%;
+  }
+
+  /* Os campos já reservam 48px à direita para o botão de mostrar senha. */
+  main button[id^="toggle"] {
+    right: 0 !important;
+  }
+}
