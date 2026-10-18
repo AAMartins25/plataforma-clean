@@ -1619,7 +1619,6 @@ footer {
 
 /* URLs extensas não devem alargar o conteúdo de questões ou checkout. */
 .questoes-criticas-page main.container,
-#area_questoes_rever,
 #infoCurso {
   overflow-wrap: anywhere;
 }
