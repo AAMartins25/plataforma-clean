@@ -98,7 +98,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+# O segredo JWT fornecido pelo ambiente prevalece sobre o .env local.
+# As demais variáveis mantêm a precedência já existente.
+_secret_key_ambiente = os.environ.get("SECRET_KEY")
 load_dotenv(dotenv_path=ENV_PATH, override=True)
+if _secret_key_ambiente is not None:
+    os.environ["SECRET_KEY"] = _secret_key_ambiente
+del _secret_key_ambiente
 
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
 
