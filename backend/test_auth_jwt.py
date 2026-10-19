@@ -174,7 +174,20 @@ def test_http_login_rotacao_permissoes_e_acesso_pago():
     tables = [model.__table__ for model in (m.Usuario, m.Vendedor, m.Curso,
               m.AcessoCurso, m.ContratacaoCurso, m.DemonstracaoCurso,
               m.CursoDisciplinaPropria)]
-    m.Base.metadata.create_all(engine, tables=tables)
+    # Autorização por compra consulta contestações e períodos, além do cache.
+    tables = set(tables) | {model.__table__ for model in (
+        m.Pagamento, m.ContestacaoPagamento, m.PeriodoAcessoPagamento,
+        m.ConcessaoAcessoAdmin)}
+    while True:
+        dependencias = {fk.column.table for table in tables for fk in table.foreign_keys}
+        if dependencias <= tables:
+            break
+        tables |= dependencias
+    from sqlalchemy import event
+    @event.listens_for(engine, 'connect')
+    def sqlite_funcoes(connection, _):
+        connection.create_function('BTRIM', 1, lambda value: value.strip() if value else value)
+    m.Base.metadata.create_all(engine, tables=list(tables))
     metadata.create_all(engine)
     with engine.begin() as connection:
         connection.execute(controle.insert().values(id=1, modo='NORMAL', geracao=0,

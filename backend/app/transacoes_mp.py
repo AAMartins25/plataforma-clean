@@ -37,6 +37,15 @@ def atualizar_estado_mp(pagamento, dados):
     pagamento.mp_status = status
 
 
+def registrar_estado_mp(db, pagamento, dados):
+    atualizar_estado_mp(pagamento, dados)
+    if str(dados.get('status') or '').strip().upper() == 'CHARGED_BACK':
+        # Abrange webhook, confirmação e revalidação, sob os mesmos locks.
+        # Não confirma devolução, não bloqueia e não altera o status de reembolso.
+        from app.contestacoes import registrar_observacao
+        registrar_observacao(db, pagamento)
+
+
 @protegido
 def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id=None):
     """Chamador confirma/commita tudo junto; exceções deixam a transação sem commit.
@@ -106,7 +115,7 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
                   "vendedor_id", "qr_code_id", "vencimento_original", "moeda", "provedor")
         if any(getattr(existente, k) != getattr(raiz, k) for k in campos):
             raise HTTPException(409, "Dados comerciais da transação incompatíveis com a origem.")
-        atualizar_estado_mp(existente, dados)
+        registrar_estado_mp(db, existente, dados)
         return existente
     if raiz.mp_payment_id is None:
         if raiz.status == 'CHECKOUT_INDEFINIDO' and raiz.mp_preference_id is None:
@@ -115,7 +124,7 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
                 raise HTTPException(409, "Checkout sem preferência comprovada; verificar antes de processar.")
             raiz.mp_preference_id = verificar_ordem_mp(dados, pid, headers)
         raiz.mp_payment_id = pid
-        atualizar_estado_mp(raiz, dados)
+        registrar_estado_mp(db, raiz, dados)
         return raiz
     if oportunidade is None or not raiz.mp_preference_id or "pagamento" not in referencias:
         raise HTTPException(409, "Não foi possível comprovar outra tentativa desta compra.")
@@ -127,9 +136,9 @@ def resolver_transacao(db, payment_id, dados, headers, usuario_id=None, curso_id
     tentativa = Pagamento(**{k: getattr(raiz, k) for k in campos},
         pagamento_origem_id=raiz.id, mp_payment_id=pid, status="PENDENTE",
         contratacao_id=raiz.contratacao_id if raiz.tipo_compra == "RENOVACAO" else None)
-    atualizar_estado_mp(tentativa, dados)
     db.add(tentativa)
     db.flush()
+    registrar_estado_mp(db, tentativa, dados)
     return tentativa
 
 

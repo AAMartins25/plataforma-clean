@@ -539,7 +539,15 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
             raise HTTPException(401, 'Assinatura do Mercado Pago inválida.')
         try:
             data = await request.json()
-            if not isinstance(data, dict) or (data.get('type') or request.query_params.get('type')) != 'payment':
+            tipo = (data.get('type') or request.query_params.get('type')) if isinstance(data, dict) else None
+            if tipo in ('topic_chargebacks_wh', 'chargebacks'):
+                if str((data.get('data') or {}).get('id')) != pid:
+                    raise HTTPException(400, 'Identificador da contestação incompatível.')
+                from app.contestacoes import processar_caso
+                # Não reutilizar o ID de caso como ID de pagamento na inbox.
+                # Falhas retornam não-2xx: MP poderá entregar novamente, sem efeitos duplicados.
+                return await run_in_threadpool(processar_caso, pid, factory, headers())
+            if not isinstance(data, dict) or tipo != 'payment':
                 raise HTTPException(400, 'Tipo de notificação inválido.')
             if str((data.get('data') or {}).get('id')) != pid:
                 raise HTTPException(400, 'Identificador da notificação incompatível.')

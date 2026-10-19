@@ -25,6 +25,16 @@ SessionTest = None
 
 @contextmanager
 def carregar_main_isolado(session_factory, test_engine):
+    # A aplicação instala a barreira financeira também em SQLite. A fixture
+    # precisa do controle local; nunca utiliza DATABASE_URL nem migrações.
+    if test_engine.dialect.name == 'sqlite':
+        from app.pausa_financeira import metadata, controle, agora
+        from sqlalchemy import select
+        metadata.create_all(test_engine)
+        with test_engine.begin() as c:
+            if c.execute(select(controle.c.id).where(controle.c.id == 1)).first() is None:
+                c.execute(controle.insert().values(id=1, modo='NORMAL', geracao=0,
+                    alterado_em=agora(), motivo='fixture isolada'))
     stub = types.ModuleType('app.database')
     stub.SessionLocal = session_factory
     stub.engine = test_engine

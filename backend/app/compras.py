@@ -10,13 +10,15 @@ COMPRA_DUPLICADA = 'Você já possui acesso a este curso. A renovação estará 
 
 
 def pagamento_vigente(db, usuario_id, curso_id, agora):
-    return db.query(m.ContratacaoCurso).filter(
+    contratos = db.query(m.ContratacaoCurso).filter(
         m.ContratacaoCurso.usuario_id == usuario_id,
         m.ContratacaoCurso.curso_id == curso_id,
         m.ContratacaoCurso.origem == 'PAGAMENTO',
         m.ContratacaoCurso.data_inicio <= agora,
         or_(m.ContratacaoCurso.data_fim.is_(None), m.ContratacaoCurso.data_fim > agora),
-    ).order_by(m.ContratacaoCurso.data_fim.desc().nullsfirst(), m.ContratacaoCurso.id.desc()).first()
+    ).order_by(m.ContratacaoCurso.data_fim.desc().nullsfirst(), m.ContratacaoCurso.id.desc()).all()
+    from app.direitos_acesso import contrato_vigente
+    return next((c for c in contratos if contrato_vigente(db, c, agora)), None)
 
 
 def validar_nova_compra(db, usuario_id, curso_id, agora):

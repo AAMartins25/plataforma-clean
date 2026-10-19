@@ -85,6 +85,7 @@ from app.models import (
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
 from app.models import CursoAssuntoProprio
+from app.direitos_acesso import contrato_vigente, curso_vigente
 from app.models import ContratacaoCurso
 from app.schemas import AulaUpdate
 
@@ -230,7 +231,7 @@ def validar_contexto_estudo(
             .first()
         )
 
-        if not contratacao:
+        if not contratacao or not contrato_vigente(db, contratacao, agora):
             raise HTTPException(
                 status_code=403,
                 detail="Contratação inválida ou sem acesso ativo a este curso."
@@ -440,7 +441,7 @@ def admin_criar_acesso(
 
     u = db.query(Usuario).filter(
         Usuario.id == payload.usuario_id
-    ).first()
+    ).with_for_update().first()
 
     if not u:
         raise HTTPException(
@@ -737,6 +738,10 @@ def meus_cursos(
             .order_by(models.ContratacaoCurso.data_fim.asc())
             .all()
         )
+
+        contratacoes = [c for c in contratacoes if contrato_vigente(db, c, agora)]
+        if not curso_vigente(db, usuario.id, a.curso_id, agora):
+            continue
 
         contratos_resposta = []
 
@@ -3248,6 +3253,18 @@ def editar_material(
         "ativo": material.ativo
     }
 
+
+def exigir_acesso_pasta(db, usuario, pasta_id):
+    pasta = db.get(Pasta, pasta_id)
+    if not pasta:
+        raise HTTPException(404, "Pasta não encontrada")
+    if usuario.is_admin:
+        return
+    assunto = db.get(CursoAssuntoProprio, pasta.curso_assunto_proprio_id)
+    disciplina = db.get(CursoDisciplinaPropria, assunto.curso_disciplina_propria_id) if assunto else None
+    if not disciplina or not curso_vigente(db, usuario.id, disciplina.curso_id):
+        raise HTTPException(403, "Sem direito de acesso vigente a este curso")
+
 def validar_pasta_interatividade(db: Session, pasta_id: int):
     pasta = db.query(Pasta).filter(Pasta.id == pasta_id).first()
     if not pasta:
@@ -3257,7 +3274,7 @@ def validar_pasta_interatividade(db: Session, pasta_id: int):
     return pasta, None
 
 @app.post("/quiz-ia")
-def criar_quiz_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_quiz_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     titulo = payload.get("titulo")
     itens = payload.get("itens", [])
@@ -3297,7 +3314,8 @@ def criar_quiz_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": quiz.id, "pasta_id": quiz.pasta_id, "titulo": quiz.titulo}
 
 @app.get("/pastas/{pasta_id}/quiz-ia")
-def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     quizzes = db.query(QuizIA).filter(QuizIA.pasta_id == pasta_id).order_by(QuizIA.id.desc()).all()
     retorno = []
     for q in quizzes:
@@ -3319,7 +3337,7 @@ def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db)):
     return retorno
 
 @app.post("/cartoes-ia")
-def criar_cartao_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_cartao_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     frente = payload.get("frente")
     verso = payload.get("verso")
@@ -3343,12 +3361,13 @@ def criar_cartao_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": novo.id, "pasta_id": novo.pasta_id, "ordem": novo.ordem}
 
 @app.get("/pastas/{pasta_id}/cartoes-ia")
-def listar_cartoes_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_cartoes_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     cartoes = db.query(CartaoIA).filter(CartaoIA.pasta_id == pasta_id).order_by(CartaoIA.ordem.asc()).all()
     return [{"id": c.id, "frente": c.frente, "verso": c.verso, "ordem": c.ordem} for c in cartoes]
 
 @app.post("/questoes-ia")
-def criar_questoes_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_questoes_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     titulo = payload.get("titulo")
     itens = payload.get("itens", [])
@@ -3386,7 +3405,8 @@ def criar_questoes_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": cab.id, "pasta_id": cab.pasta_id, "titulo": cab.titulo}
 
 @app.get("/pastas/{pasta_id}/questoes-ia")
-def listar_questoes_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_questoes_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     cabecalhos = db.query(QuestoesIA).filter(QuestoesIA.pasta_id == pasta_id).order_by(QuestoesIA.id.desc()).all()
     retorno = []
     for cab in cabecalhos:
@@ -3594,6 +3614,10 @@ def me(
         is not None
     )
 
+
+    if tem_cursos:
+        tem_cursos = any(curso_vigente(db, usuario.id, a.curso_id) for a in
+            db.query(AcessoCurso).filter_by(usuario_id=usuario.id, ativo=True).all())
 
     is_aluno = (
         usuario.perfil_inicial == "ALUNO"
@@ -4129,6 +4153,9 @@ def criar_checkout_mp(
                 status_code=409,
                 detail="Contrato vigente não encontrado para renovação."
             )
+
+        if contratacao and not contrato_vigente(db, contratacao, agora):
+            raise HTTPException(409, "Contratação sem direito vigente; conferência necessária.")
 
         if not renovacao_disponivel(contratacao.data_fim, agora):
             raise HTTPException(
@@ -6267,7 +6294,7 @@ def obter_pasta_teoria_assunto_proprio(
         AcessoCurso.ativo == True
     ).first()
 
-    if not usuario.is_admin and not tem_acesso:
+    if not usuario.is_admin and (not tem_acesso or not curso_vigente(db, usuario.id, disciplina.curso_id)):
         raise HTTPException(status_code=403, detail="Sem acesso a este curso")
 
     pasta = (
@@ -9434,3 +9461,7 @@ def listar_emails_pagamentos(db: Session = Depends(get_db), usuario=Depends(get_
             fila_emails.c.estado, fila_emails.c.tentativas, fila_emails.c.aceito_em,
             fila_emails.c.erro_codigo).order_by(fila_emails.c.criado_em.desc()).limit(100)).mappings().all()
     return {'emails': [dict(r) for r in registros]}
+
+
+from app.contestacoes import instalar as instalar_contestacoes
+instalar_contestacoes(app, get_db, get_usuario_atual, mp_headers)
