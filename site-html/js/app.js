@@ -2693,17 +2693,10 @@ function renderizarCursosPublicos() {
     cursos = cursos.filter(c => c.nome.toUpperCase().includes(busca));
   }
 
-  const limiteInicial = 15;
+  const limiteInicial = 4;
   const cursosVisiveis = mostrarTodosCursos
     ? cursos
     : cursos.slice(0, limiteInicial);
-
-  el.style.display = "grid";
-  el.style.paddingLeft = "39px";
-  el.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, max-content))";
-  el.style.gridAutoFlow = "column";
-  el.style.gridTemplateRows = "repeat(5, auto)";
-  el.style.gap = "4px 90px";
 
   el.innerHTML = cursosVisiveis.map(c => `
     <a
@@ -2719,14 +2712,14 @@ function renderizarCursosPublicos() {
   if (maisBox) {
     if (cursos.length > limiteInicial && !mostrarTodosCursos) {
       maisBox.innerHTML = `
-        <button class="btn" onclick="mostrarTodosCursos = true; renderizarCursosPublicos();">
+        <button class="btn" aria-controls="lista-cursos-publicos" aria-expanded="false" onclick="mostrarTodosCursos = true; renderizarCursosPublicos();">
           Mais cursos
         </button>
       `;
     } else if (cursos.length > limiteInicial && mostrarTodosCursos) {
       maisBox.innerHTML = `
-        <button class="btn" onclick="mostrarTodosCursos = false; renderizarCursosPublicos();">
-          Mostrar menos
+        <button class="btn" aria-controls="lista-cursos-publicos" aria-expanded="true" onclick="mostrarTodosCursos = false; renderizarCursosPublicos();">
+          Menos cursos
         </button>
       `;
     } else {

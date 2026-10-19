@@ -674,6 +674,22 @@ footer {
    Cursos públicos - Home
    ========================================================= */
 
+.home-page #lista-cursos-publicos {
+  display: grid;
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+  gap: 4px;
+}
+
+.home-page #lista-cursos-publicos .curso-publico-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.home-page #mais-cursos-box {
+  text-align: center;
+}
+
 .home-page .curso-publico-card {
   display: flex;
 
