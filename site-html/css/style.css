@@ -7799,3 +7799,53 @@ body[data-page="curso-info"] main.container {
     right: 0 !important;
   }
 }
+
+/* Home: a identificação divide a faixa de controles sem criar uma linha extra. */
+header.home-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  column-gap: 8px;
+}
+
+.home-header.ro-header .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+}
+
+.home-header.ro-header .ro-header-navigation {
+  grid-column: 3;
+  grid-row: 2 !important;
+}
+
+.home-header.ro-header .ro-header-access {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.home-header.ro-header .ro-header-identity {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  min-width: 0;
+  text-align: left;
+}
+
+.home-header.ro-header .ro-identity {
+  box-sizing: border-box;
+  height: 44px;
+  min-width: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-header.ro-header .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-header.ro-header .ro-header-navigation .home-icon-btn {
+  box-sizing: border-box;
+  height: 44px !important;
+  line-height: 1;
+}
