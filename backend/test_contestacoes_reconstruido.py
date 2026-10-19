@@ -35,9 +35,18 @@ def compra(db, inicio=None, fim=None, contrato=None, renovacao=False, mp='101'):
     return p.id, contrato.id
 
 
-def caso(db, pagamento_id):
+def caso(db, pagamento_id, comprovado=True):
     p=db.get(m.Pagamento,pagamento_id)
-    c=registrar_observacao(db,p);db.commit();return c.id
+    c=registrar_observacao(db,p,{'id':str(9000+pagamento_id)} if comprovado else None)
+    if comprovado:
+        # Fixture explícita de consulta canônica integral já processada.
+        from app.pausa_financeira import inbox, agora
+        db.execute(inbox.insert().values(chave=f'c:fixture-{pagamento_id}',
+            payment_id=c.mp_dispute_id,fonte='WEBHOOK',recebida_em=agora(),
+            estado='CONCLUIDO',tentativas=1,resultado={'tipo':'CONTESTACAO',
+            'escopo':'INTEGRAL_VERIFICADO','pagamentos_mp':[p.mp_payment_id],
+            'moeda':'BRL','valor_cents':p.valor_cents}))
+    db.commit();return c.id
 
 
 def admin(main):
@@ -152,10 +161,10 @@ def test_registro_duplicado_preserva_auditoria(ambiente_compra):
     with f() as db:
         original=db.get(m.ContestacaoPagamento,ident)
         data=original.devolucao_confirmada_em
-        for _ in range(2):registrar_observacao(db,db.get(m.Pagamento,pid),{'id':'999','reason':'fraud'})
+        for _ in range(2):registrar_observacao(db,db.get(m.Pagamento,pid),{'id':str(9000+pid),'reason':'fraud'})
         db.commit()
         assert db.query(m.ContestacaoPagamento).count()==1
-        assert original.mp_dispute_id=='999' and original.devolucao_confirmada_em==data
+        assert original.mp_dispute_id==str(9000+pid) and original.devolucao_confirmada_em==data
         with pytest.raises(HTTPException):registrar_observacao(db,db.get(m.Pagamento,pid),{'id':'998'})
 
 
@@ -192,8 +201,11 @@ def test_webhook_caso_canonico(ambiente_compra,problema):
     # O corpo do evento não é fonte de identidade/valor: consulta autenticada.
     with patch.object(main,'validar_assinatura_mercadopago',return_value=problema!='assinatura'),patch('app.contestacoes.requests.get',side_effect=[resp_caso,resp_payment]*2):
         r=c.post('/webhooks/mercadopago?data.id=999',json=payload)
-        if problema:
-            assert r.status_code in (400,401,409,502)
+        if problema=='assinatura':
+            assert r.status_code==401
+        elif problema:
+            assert r.status_code==200 and r.json()['armazenado']
+            assert not r.json()['processado']
         else:
             assert r.status_code==200,r.text
             assert c.post('/webhooks/mercadopago?data.id=999',json=payload).status_code==200

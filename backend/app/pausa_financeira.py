@@ -271,13 +271,16 @@ class Protecao:
             op.verificar()
         return {'ids': ids, 'revogado': revogar_id is not None, 'geracao': payload.geracao}
 
-    def armazenar(self, payment_id, chave, fonte):
+    def armazenar(self, payment_id, chave, fonte, metadados=None):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
         from sqlalchemy.dialects.sqlite import insert as sqlite_insert
         insert = pg_insert if self.engine.dialect.name == 'postgresql' else sqlite_insert
         with self.engine.begin() as c:
+            if chave.startswith('c:'):
+                from app.contestacoes import travar_escopo
+                travar_escopo(c, payment_id)
             c.execute(insert(inbox).values(chave=chave, payment_id=payment_id, fonte=fonte,
-                recebida_em=agora(), estado='PENDENTE', tentativas=0)
+                recebida_em=agora(), estado='PENDENTE', tentativas=0, resultado=metadados)
                 .on_conflict_do_nothing(index_elements=['chave']))
             row = c.execute(select(inbox.c.id, inbox.c.payment_id).where(inbox.c.chave == chave)).one()
             if row.payment_id != payment_id:
@@ -302,6 +305,11 @@ class Protecao:
             if prazo is not None:
                 op.prazo = min(op.prazo, prazo)
             try:
+                with self.engine.connect() as conn:
+                    chave = conn.execute(select(inbox.c.chave).where(inbox.c.id == ident)).scalar()
+                if chave and chave.startswith('c:'):
+                    from app.contestacoes import processar_pendente
+                    return processar_pendente(ident, self, op)
                 # Consulta externa antes de qualquer lock da transação financeira.
                 resposta = None
                 if self.consulta is not None:
@@ -448,6 +456,7 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
     from fastapi import Request
     protecao = Protecao(engine, factory, processor, definitivo, consulta)
     app.state.protecao_financeira = protecao
+    protecao.headers_contestacoes = headers
     # Colocar dentro do CORS: respostas 503 mantêm os mesmos headers de origem.
     from starlette.middleware import Middleware
     app.user_middleware.append(Middleware(GateMiddleware, protecao=protecao))
@@ -538,15 +547,38 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
         if not re.fullmatch(r'[0-9]{1,64}', pid) or not assinatura(request, pid):
             raise HTTPException(401, 'Assinatura do Mercado Pago inválida.')
         try:
-            data = await request.json()
-            tipo = (data.get('type') or request.query_params.get('type')) if isinstance(data, dict) else None
+            tipo_query = request.query_params.get('type')
+            try:
+                data = await request.json()
+            except ValueError:
+                if tipo_query not in ('topic_chargebacks_wh', 'chargebacks'):
+                    raise
+                data = {'type':tipo_query, 'data':None}
+            tipo = (data.get('type') or tipo_query) if isinstance(data, dict) else tipo_query
+            if tipo in ('topic_chargebacks_wh', 'chargebacks') and not isinstance(data, dict):
+                data = {'type':tipo, 'data':None}
             if tipo in ('topic_chargebacks_wh', 'chargebacks'):
-                if str((data.get('data') or {}).get('id')) != pid:
-                    raise HTTPException(400, 'Identificador da contestação incompatível.')
-                from app.contestacoes import processar_caso
-                # Não reutilizar o ID de caso como ID de pagamento na inbox.
-                # Falhas retornam não-2xx: MP poderá entregar novamente, sem efeitos duplicados.
-                return await run_in_threadpool(processar_caso, pid, factory, headers())
+                evento = str(data.get('id') or request.headers.get('x-request-id') or '')
+                # Mesmo envelope inconclusivo é persistido: chave baseada em
+                # identificadores, sem armazenar payloads, tokens ou assinatura.
+                identidade_valida = bool(evento) and len(evento) <= 200
+                if not identidade_valida:
+                    # Não fundir recebimentos sem identidade com um evento
+                    # concluído anteriormente, nem usá-los como comprovação.
+                    from uuid import uuid4
+                    evento = uuid4().hex
+                valido = identidade_valida and isinstance(data.get('data'), dict) and str(data['data'].get('id')) == pid
+                digest = hashlib.sha256(f'{pid}|{evento}'.encode()).hexdigest()
+                ident = await run_in_threadpool(protecao.armazenar, pid, f'c:{digest}', 'WEBHOOK',
+                    {'tipo':'CONTESTACAO', 'envelope_valido':valido,
+                     'escopo':'CONFERENCIA_NECESSARIA'})
+                try:
+                    resultado = await run_in_threadpool(protecao.processar, ident)
+                except HTTPException as exc:
+                    if exc.status_code != 503:
+                        raise
+                    resultado = {'processado':False}
+                return {'ok':True, 'armazenado':True, **resultado}
             if not isinstance(data, dict) or tipo != 'payment':
                 raise HTTPException(400, 'Tipo de notificação inválido.')
             if str((data.get('data') or {}).get('id')) != pid:

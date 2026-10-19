@@ -4,11 +4,11 @@ const fs=require('node:fs'),vm=require('node:vm');
 const codigo=fs.readFileSync(__dirname+'/js/admin-contestacoes.js','utf8');
 const flush=()=>new Promise(r=>setImmediate(r));
 const base={id:1,pagamento_id:5,curso:'Curso',aluno:'Aluno',valor_cents:4990,status:'ABERTA',situacao_acesso:'AGUARDANDO_DEVOLUCAO'};
-async function tela(casos=[base],admin=true){
+async function tela(casos=[base],admin=true,pendencias=[]){
  const handlers={}, chamadas=[], alertas=[];
  const lista={innerHTML:'',querySelectorAll:()=>[],addEventListener:(tipo,fn)=>{handlers[tipo]=fn;}};
  const ctx={document:{getElementById:()=>lista},confirm:()=>true,alert:m=>alertas.push(m),
- apiGetAuth:async url=>{chamadas.push(['GET',url]);return url==='/me'?{is_admin:admin}:{contestacoes:casos,tem_proxima:false};},
+ apiGetAuth:async url=>{chamadas.push(['GET',url]);return url==='/me'?{is_admin:admin}:{contestacoes:casos,pendencias,tem_proxima:false};},
  apiPostAuth:async(url,payload)=>{chamadas.push(['POST',url,payload]);return {};}};
  vm.runInNewContext(codigo,ctx);await flush();return {ctx,lista,handlers,chamadas,alertas};
 }
@@ -55,4 +55,14 @@ test('cliques duplicados não repetem operação e falha só relê',async()=>{
 test('falha de releitura remove ações até recarregar',async()=>{
  const t=await tela();t.ctx.apiGetAuth=async()=>{throw Error('offline');};
  submit(t);await flush();assert.match(t.lista.innerHTML,/Consulta indisponível/);assert.doesNotMatch(t.lista.innerHTML,/<button/);
+});
+
+test('pendência sem compra identificada é visível, escapada e sem ações financeiras',async()=>{
+ const t=await tela([],true,[{notificacao_id:10,caso_mp:'999',pagamentos_mp:['101','102'],motivo:'<script>erro</script>',tentativas:2}]);
+ assert.match(t.lista.innerHTML,/Pendências de recebimento/);
+ assert.match(t.lista.innerHTML,/CONFERENCIA_NECESSARIA/);
+ assert.match(t.lista.innerHTML,/101, 102/);
+ assert.match(t.lista.innerHTML,/&lt;script&gt;/);
+ assert.doesNotMatch(t.lista.innerHTML,/<script>|data-bloquear|data-confirmar/);
+ assert.equal(t.chamadas.filter(c=>c[0]==='POST').length,0);
 });

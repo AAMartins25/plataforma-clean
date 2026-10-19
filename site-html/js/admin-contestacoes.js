@@ -17,7 +17,7 @@
     return `<div class="assunto"><h3>${esc(c.curso)}</h3>
       <p>Aluno: ${esc(c.aluno)} — ${esc(c.email)}<br>
       Pagamento: ${esc(c.pagamento_id)} • Transação MP: ${esc(c.mp_payment_id)}<br>
-      Contestação MP: ${esc(c.mp_dispute_id)} • Valor: ${esc(dinheiro(c.valor_cents))}<br>
+      Contestação MP: ${esc(c.mp_dispute_id)} • Valor da compra: ${esc(dinheiro(c.valor_cents))}<br>
       Situação do caso: ${esc(c.status)} • Pagamento: ${esc(c.status_pagamento)} • MP: ${esc(c.mp_status)}<br>
       Motivo: ${esc(c.motivo)}<br>Aprovação da compra: ${esc(data(c.aprovado_em))}<br>
       Registro do caso na plataforma: ${esc(data(c.criada_em))}<br>
@@ -28,16 +28,24 @@
       ${c.situacao_acesso === 'CONFERENCIA_NECESSARIA' ? '<p>CONFERENCIA_NECESSARIA: os vínculos ou períodos históricos não permitem um bloqueio seguro. Nenhum bloqueio presumido será executado.</p>' : ''}
       ${!confirmado ? `<form data-confirmar="${c.id}"><p>Este registro não realiza devolução nem bloqueia acesso.</p>
         <label>Referência do comprovante ou extrato <input name="referencia" required maxlength="255"></label>
-        <label><input type="checkbox" name="conferido" required> Conferi a devolução efetiva ao cartão do cliente.</label>
+        <label><input type="checkbox" name="conferido" required> Conferi no extrato a devolução integral do valor desta compra ao cartão do cliente.</label>
         <button class="btn" type="submit">Confirmar devolução</button></form>` : ''}
       ${confirmado && !c.bloqueio_executado_em ? `<p>${aviso}</p><button class="btn" data-bloquear="${c.id}"
         ${c.situacao_acesso !== 'BLOQUEIO_DISPONIVEL' ? 'disabled' : ''}>Bloquear acesso</button>` : ''}</div>`;
+  }
+  function pendencia(p) {
+    return `<div class="assunto"><h3>CONFERENCIA_NECESSARIA</h3>
+      <p>Evento preservado: ${esc(p.notificacao_id)} • Caso MP: ${esc(p.caso_mp)}<br>
+      Recebido em: ${esc(data(p.recebida_em))} • Tentativas: ${esc(p.tentativas)}<br>
+      Pagamentos informados pelo caso: ${esc((p.pagamentos_mp || []).join(', '))}<br>
+      Motivo: ${esc(p.motivo)}</p><p>Sem bloqueio disponível. Conferir no Mercado Pago e recuperar a notificação pelo controle financeiro administrativo quando aplicável.</p></div>`;
   }
   async function carregar() {
     const r = await apiGetAuth(`/admin/contestacoes?pagina=${pagina}`);
     if (!Array.isArray(r.contestacoes)) throw new Error('Resposta de consulta inválida.');
     lista.innerHTML = `<p>Contestação ou CHARGED_BACK não bloqueiam acesso automaticamente. Confirmação financeira e bloqueio são ações separadas.</p>` +
       (r.contestacoes.length ? r.contestacoes.map(card).join('') : '<p>Nenhuma contestação registrada nesta página.</p>') +
+      ((r.pendencias || []).length ? '<h2>Pendências de recebimento</h2>' + r.pendencias.map(pendencia).join('') : '') +
       `<button class="btn" data-pagina="${pagina-1}" ${pagina === 1 ? 'disabled' : ''}>Anterior</button>
        <button class="btn" data-pagina="${pagina+1}" ${!r.tem_proxima ? 'disabled' : ''}>Próxima</button>`;
   }
@@ -62,7 +70,7 @@
     if (ocupado || !autorizado || !Number.isSafeInteger(id) || id <= 0) return;
     const referencia = form.elements.referencia.value.trim();
     if (!referencia || !form.elements.conferido.checked) return;
-    if (!confirm('Confirma a devolução efetiva ao cartão? Esta ação não bloqueia acesso.')) return;
+    if (!confirm('Confirma a devolução integral do valor desta compra ao cartão? Esta ação não bloqueia acesso.')) return;
     operar(`/admin/contestacoes/${id}/confirmar-devolucao`, {referencia_devolucao:referencia, confirmacao_devolucao:true});
   });
   lista.addEventListener('click', async event => {

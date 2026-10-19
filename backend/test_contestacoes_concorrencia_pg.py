@@ -123,3 +123,48 @@ def test_renovacao_concorrente_ao_bloqueio_preserva_periodo(pg):
         assert len(periodos)==2
         assert contrato_vigente(db,con,periodos[1].data_inicio+timedelta(days=1))
         assert not contrato_vigente(db,con,periodos[0].data_inicio+timedelta(days=1))
+
+
+def test_recebimento_concorrente_impede_bloqueio_com_prova_antiga(pg):
+    from threading import Event
+    from unittest.mock import patch
+    from sqlalchemy.orm import Session
+    from fastapi import HTTPException
+    from app.contestacoes import travar_escopo as trava_real
+    main,f=pg
+    with f() as db:
+        pid,cid=compra(db,mp='105');ident=caso(db,pid)
+        caso_id=db.get(m.ContestacaoPagamento,ident).mp_dispute_id
+    actor=SimpleNamespace(id=2,is_admin=True)
+    with f() as db:
+        endpoint(main,'/confirmar-devolucao')(ident,
+            Confirmacao(referencia_devolucao='extrato corrida',confirmacao_devolucao=True),db,actor)
+    recebido=Event();liberar=Event();tentando_bloquear=Event()
+    def monitorar(db,caso):
+        if isinstance(db,Session):
+            tentando_bloquear.set()
+            return trava_real(db,caso)
+        trava_real(db,caso)
+        recebido.set()
+        assert liberar.wait(timeout=8)
+    def bloquear():
+        with f() as db:
+            try:
+                endpoint(main,'/bloquear-acesso')(ident,True,db,actor)
+                return 200
+            except HTTPException as e:
+                return e.status_code
+    protecao=main.app.state.protecao_financeira
+    with patch('app.contestacoes.travar_escopo',side_effect=monitorar),ThreadPoolExecutor(max_workers=2) as pool:
+        entrada=pool.submit(protecao.armazenar,caso_id,'c:pendencia-concorrente','WEBHOOK',
+            {'tipo':'CONTESTACAO','envelope_valido':True,'escopo':'CONFERENCIA_NECESSARIA'})
+        try:
+            assert recebido.wait(timeout=5)
+            decisao=pool.submit(bloquear)
+            assert tentando_bloquear.wait(timeout=5)
+        finally:
+            liberar.set()
+        assert entrada.result(timeout=10)>0
+        assert decisao.result(timeout=10)==409
+    with f() as db:
+        assert db.get(m.ContestacaoPagamento,ident).bloqueio_executado_em is None
