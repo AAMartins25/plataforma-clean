@@ -36,3 +36,4 @@ env/
 backend/.env.postgres.local
 backend/docker-compose.local.yml
 proxy_local.py
+/.pgsocket/

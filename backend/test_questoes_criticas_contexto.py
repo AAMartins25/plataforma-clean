@@ -1,8 +1,17 @@
 import os
 
+import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+
+from conftest import postgres_descartavel_url, postgres_test_fixture_disponivel
+
+_TEST_DATABASE_URL = postgres_descartavel_url()
+if not _TEST_DATABASE_URL:
+    pytest.skip("Requer PostgreSQL local descartável", allow_module_level=True)
+if not postgres_test_fixture_disponivel(require_contract=False):
+    pytest.skip("Requer esquema e usuário/curso-base locais", allow_module_level=True)
 
 from app.main import listar_questoes_criticas
 
@@ -10,8 +19,8 @@ from app.main import listar_questoes_criticas
 def test_questoes_criticas_isola_contexto():
     assert os.getenv("AMBIENTE_TESTE") == "1"
 
-    url = os.environ["DATABASE_URL"]
-    assert "localhost" in url or "127.0.0.1" in url
+    url = _TEST_DATABASE_URL
+    assert url == os.environ["DATABASE_URL"]
 
     engine = create_engine(url)
     conexao = engine.connect()

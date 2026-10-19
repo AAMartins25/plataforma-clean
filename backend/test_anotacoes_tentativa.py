@@ -31,10 +31,20 @@ def test_duplicata_e_nova_tentativa(api):
     db,c=api
     assert criar(c).status_code==200
     assert criar(c).status_code==409
-    assert criar(c,2).status_code==200
-    assert db.query(m.AnotacaoAlunoQuestao).count()==2
+    assert criar(c,2).status_code==409
+    assert db.query(m.AnotacaoAlunoQuestao).count()==1
     rows=c.get('/me/minhas-anotacoes?demonstracao_id=1&curso_id=1').json()
-    assert {r['tentativa_id'] for r in rows}=={1,2}
+    assert {r['tentativa_id'] for r in rows}=={1}
+
+
+def test_nova_anotacao_apos_exclusao(api):
+    db,c=api
+    antiga=criar(c).json()
+    assert c.delete(f"/me/anotacoes-questoes/{antiga['id']}?demonstracao_id=1").status_code==200
+    nova=criar(c,2)
+    assert nova.status_code==200,nova.text
+    assert db.query(m.AnotacaoAlunoQuestao).count()==1
+    assert db.query(m.AnotacaoAlunoQuestao).one().tentativa_id==2
 
 def test_contexto_edicao_exclusao_e_validacao(api):
     db,c=api

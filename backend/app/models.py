@@ -825,6 +825,24 @@ class MensagemConversaQuestao(Base):
 
     conversa = relationship("ConversaQuestaoProfessor", backref="mensagens")
 
+
+class ReformulacaoConversaOperacao(Base):
+    """Idempotency metadata only; never stores prior or replacement message text."""
+    __tablename__ = "reformulacoes_conversa_operacoes"
+    __table_args__ = (
+        CheckConstraint("curso_id > 0", name="ck_reformulacao_curso_positivo"),
+        CheckConstraint("(contratacao_id IS NULL) <> (demonstracao_id IS NULL)", name="ck_reformulacao_contexto_exclusivo"),
+        CheckConstraint("length(fingerprint) = 64", name="ck_reformulacao_fingerprint"),
+        UniqueConstraint("conversa_nova_id", name="uq_reformulacao_conversa_nova"),
+    )
+    operacao_id = Column(String(36), primary_key=True)
+    curso_id = Column(Integer, nullable=False)
+    contratacao_id = Column(Integer, nullable=True)
+    demonstracao_id = Column(Integer, nullable=True)
+    conversa_nova_id = Column(Integer, nullable=False)
+    fingerprint = Column(String(64), nullable=False)
+    criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)
+
 class QuestaoPraticaAssunto(Base):
     __tablename__ = "questoes_pratica_assunto"
 

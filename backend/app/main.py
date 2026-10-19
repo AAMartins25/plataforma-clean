@@ -58,7 +58,7 @@ from app.contratacoes import (
     registrar_ocorrencia_financeira,
 )
 from app.renovacao import renovacao_disponivel
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from fastapi import HTTPException
 import requests
 from sqlalchemy.exc import IntegrityError
@@ -137,7 +137,7 @@ app = FastAPI(title="Plataforma de Cursos")
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.auth import hash_senha, verificar_senha, criar_token, decodificar_token
+from app.auth import hash_senha, verificar_senha, criar_token, decodificar_token, SECRET_KEY as CHAVE_ASSINATURA_SESSAO
 from app.models import Usuario
 from app.schemas import UsuarioCreate, UsuarioResponse, TokenResponse
 from sqlalchemy import or_
@@ -7599,6 +7599,17 @@ from app.revisoes import registrar_rotas as registrar_rotas_revisoes
 registrar_rotas_revisoes(app, get_db, get_usuario_atual, validar_contexto_estudo)
 
 
+def bloquear_registro_questao(db, tipo, usuario_id, questao_id, contratacao_id, demonstracao_id):
+    """Serialize context-specific registration and conversation operations in PostgreSQL."""
+    if db.get_bind().dialect.name != "postgresql":
+        return
+    chave = ":".join(str(v) for v in (
+        "registro-questao", tipo, usuario_id, questao_id,
+        contratacao_id or 0, demonstracao_id or 0,
+    ))
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": chave})
+
+
 @app.post("/me/anotacoes-questoes")
 def criar_anotacao_questao(
     payload: schemas.AnotacaoQuestaoCreate,
@@ -7743,6 +7754,9 @@ def criar_anotacao_questao(
         demonstracao_id=demonstracao_id,
     )
 
+    bloquear_registro_questao(db, "anotacao", usuario_atual.id, questao_id,
+                              contratacao_id, demonstracao_id)
+
     tentativa = db.query(TentativaBateria).filter_by(
         id=payload["tentativa_id"], usuario_id=usuario_atual.id,
         bateria_id=bateria_id, contratacao_id=contratacao_id,
@@ -7756,9 +7770,10 @@ def criar_anotacao_questao(
     ).first():
         raise HTTPException(404, "Tentativa/resposta da questão não encontrada")
     existente = db.query(AnotacaoAlunoQuestao).filter_by(
-        tentativa_id=tentativa.id, questao_id=questao_id).first()
+        usuario_id=usuario_atual.id, questao_id=questao_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).first()
     if existente:
-        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
+        raise HTTPException(409, "Já existe anotação para esta questão neste contexto")
 
     nova = AnotacaoAlunoQuestao(
         tentativa_id=tentativa.id,
@@ -7775,7 +7790,7 @@ def criar_anotacao_questao(
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
+        raise HTTPException(409, "Já existe anotação para esta questão neste contexto")
     db.refresh(nova)
 
     return {
@@ -8351,6 +8366,55 @@ def _contexto_conversa(db, conversa, vigente=False):
     return acesso
 
 
+def _assinar_dados_conversa(dados):
+    import json
+    conteudo = json.dumps(dados, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hmac.new(CHAVE_ASSINATURA_SESSAO.encode("utf-8"), conteudo.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def _estado_conversa(db, conversa):
+    mensagens = db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).order_by(
+        MensagemConversaQuestao.id).all()
+    return _assinar_dados_conversa({
+        "conversa_id": conversa.id, "status": conversa.status,
+        "atualizado_em": conversa.atualizado_em.isoformat() if conversa.atualizado_em else None,
+        "mensagens": [[m.id, m.autor, m.criada_em.isoformat() if m.criada_em else None, m.texto]
+                      for m in mensagens],
+    })
+
+
+def _fingerprint_reformulacao(usuario_id, conversa_id, curso_id, contratacao_id,
+                             demonstracao_id, texto, estado, confirmado):
+    return _assinar_dados_conversa({
+        "usuario_id": usuario_id, "conversa_id": conversa_id, "curso_id": curso_id,
+        "contratacao_id": contratacao_id, "demonstracao_id": demonstracao_id,
+        "texto": texto, "estado_conversa": estado, "confirmado": confirmado,
+    })
+
+
+def _bloquear_chave_transacional(db, chave):
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": chave})
+
+
+def _travar_conversa_contextualizada(db, conversa_id, usuario_id=None,
+                                    contratacao_id=None, demonstracao_id=None):
+    query = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id)
+    if usuario_id is not None:
+        query = query.filter_by(usuario_id=usuario_id)
+    if contratacao_id is not None or demonstracao_id is not None:
+        query = query.filter_by(contratacao_id=contratacao_id, demonstracao_id=demonstracao_id)
+    inicial = query.first()
+    if not inicial or (inicial.contratacao_id is None) == (inicial.demonstracao_id is None):
+        raise HTTPException(404, "Conversa não encontrada")
+    bloquear_registro_questao(db, "conversa", inicial.usuario_id, inicial.questao_id,
+                              inicial.contratacao_id, inicial.demonstracao_id)
+    atual = query.populate_existing().with_for_update().first()
+    if not atual:
+        raise HTTPException(404, "Conversa não encontrada")
+    return atual
+
+
 def _resultado_conversa(db, conversa):
     questao, bateria, assunto, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
     aluno = db.get(Usuario, conversa.usuario_id)
@@ -8359,6 +8423,7 @@ def _resultado_conversa(db, conversa):
         MensagemConversaQuestao.criada_em, MensagemConversaQuestao.id).all()
     return {'conversa_id': conversa.id, 'tentativa_id': conversa.tentativa_id,
         'status': conversa.status, 'contratacao_id': conversa.contratacao_id, 'demonstracao_id': conversa.demonstracao_id,
+        'estado_conversa': _estado_conversa(db, conversa),
         'aluno_id': conversa.usuario_id, 'aluno_nome': aluno.nome if aluno else '',
         'curso_id': disciplina.curso_id, 'curso_nome': curso.nome if curso else '',
         'disciplina_id': disciplina.id, 'disciplina_nome': disciplina.nome, 'disciplina_ordem': disciplina.ordem,
@@ -8375,6 +8440,8 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
                          usuario: Usuario = Depends(get_usuario_atual)):
     _, _, _, disciplina = _estrutura_conversa(db, dados.questao_id, dados.bateria_id)
     validar_contexto_estudo(db, usuario, disciplina.curso_id, dados.contratacao_id, dados.demonstracao_id)
+    bloquear_registro_questao(db, "conversa", usuario.id, dados.questao_id,
+                              dados.contratacao_id, dados.demonstracao_id)
     tentativa = db.query(TentativaBateria).filter_by(id=dados.tentativa_id, usuario_id=usuario.id,
         bateria_id=dados.bateria_id, contratacao_id=dados.contratacao_id, demonstracao_id=dados.demonstracao_id).with_for_update().first()
     resposta = db.query(RespostaAlunoQuestao).filter_by(tentativa_id=dados.tentativa_id, questao_id=dados.questao_id,
@@ -8382,8 +8449,10 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
         demonstracao_id=dados.demonstracao_id, respondida=True).first()
     if not tentativa or not resposta or not resposta.resposta_marcada:
         raise HTTPException(404, 'Tentativa/resposta da questão não encontrada')
-    if db.query(ConversaQuestaoProfessor).filter_by(tentativa_id=tentativa.id, questao_id=dados.questao_id).first():
-        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+    if db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
+            questao_id=dados.questao_id, contratacao_id=dados.contratacao_id,
+            demonstracao_id=dados.demonstracao_id).first():
+        raise HTTPException(409, 'Já existe conversa para esta questão neste contexto')
     conversa = ConversaQuestaoProfessor(usuario_id=usuario.id, questao_id=dados.questao_id,
         bateria_id=dados.bateria_id, tentativa_id=tentativa.id, contratacao_id=dados.contratacao_id,
         demonstracao_id=dados.demonstracao_id, status='ABERTA')
@@ -8394,7 +8463,7 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+        raise HTTPException(409, 'Já existe conversa para esta questão neste contexto')
     return _resultado_conversa(db, conversa)
 
 
@@ -8416,6 +8485,84 @@ def minhas_conversas_prof(curso_id: int | None = None, contratacao_id: int | Non
         _contexto_conversa(db, c)
         resultado.append(_resultado_conversa(db, c))
     return resultado
+
+
+@app.post('/me/mensagens-prof/{conversa_id}/reformular')
+def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversaProfessor,
+        contratacao_id: int | None = None, demonstracao_id: int | None = None,
+        db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if (contratacao_id is None) == (demonstracao_id is None):
+        raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
+    operacao_id = str(dados.operacao_id)
+    _bloquear_chave_transacional(db, 'reformulacao-operacao:' + operacao_id)
+
+    operacao = db.get(models.ReformulacaoConversaOperacao, operacao_id)
+    if operacao:
+        fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, operacao.curso_id,
+            contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+        if not hmac.compare_digest(operacao.fingerprint, fingerprint):
+            raise HTTPException(409, 'Identificador de operação já utilizado com outros parâmetros.')
+        nova = db.query(ConversaQuestaoProfessor).filter_by(id=operacao.conversa_nova_id,
+            usuario_id=usuario.id, contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id).first()
+        if not nova:
+            raise HTTPException(409, 'Esta reformulação já foi substituída. Atualize a conversa.')
+        nova = _travar_conversa_contextualizada(db, nova.id, usuario.id,
+            contratacao_id, demonstracao_id)
+        acesso = _contexto_conversa(db, nova, vigente=True)
+        _, _, _, disciplina = _estrutura_conversa(db, nova.questao_id, nova.bateria_id)
+        if acesso.curso_id != operacao.curso_id or disciplina.curso_id != operacao.curso_id:
+            raise HTTPException(404, 'Conversa não encontrada')
+        return _resultado_conversa(db, nova)
+
+    conversa = _travar_conversa_contextualizada(db, conversa_id, usuario.id,
+        contratacao_id, demonstracao_id)
+    acesso = _contexto_conversa(db, conversa, vigente=True)
+    questao, bateria, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
+    if acesso.curso_id != disciplina.curso_id:
+        raise HTTPException(404, 'Conversa não encontrada')
+    if conversa.status not in {'ABERTA', 'AGUARDANDO_RESPOSTA_FINAL', 'ENCERRADA'}:
+        raise HTTPException(409, 'Estado da conversa não permite reformulação.')
+    fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, disciplina.curso_id,
+        contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+    atual = db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
+        questao_id=conversa.questao_id, contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id).order_by(ConversaQuestaoProfessor.id.desc()).first()
+    if not atual or atual.id != conversa_id:
+        raise HTTPException(409, 'A conversa foi atualizada. Recarregue e confirme novamente.')
+    if not hmac.compare_digest(_estado_conversa(db, conversa), dados.estado_conversa):
+        raise HTTPException(409, 'A conversa foi atualizada. Recarregue e confirme novamente.')
+
+    tentativa = db.query(TentativaBateria).filter_by(id=conversa.tentativa_id,
+        usuario_id=usuario.id, bateria_id=conversa.bateria_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).first()
+    resposta = db.query(RespostaAlunoQuestao).filter_by(tentativa_id=conversa.tentativa_id,
+        usuario_id=usuario.id, bateria_id=conversa.bateria_id, questao_id=conversa.questao_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id, respondida=True).first()
+    if not tentativa or not resposta or not resposta.resposta_marcada:
+        raise HTTPException(409, 'A tentativa ou resposta vinculada não está mais disponível.')
+
+    try:
+        db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).delete(synchronize_session=False)
+        db.delete(conversa)
+        db.flush()
+        nova = ConversaQuestaoProfessor(usuario_id=usuario.id, questao_id=questao.id,
+            bateria_id=bateria.id, tentativa_id=tentativa.id,
+            contratacao_id=contratacao_id, demonstracao_id=demonstracao_id, status='ABERTA')
+        db.add(nova)
+        db.flush()
+        db.add(MensagemConversaQuestao(conversa_id=nova.id, autor='ALUNO', texto=dados.texto))
+        db.add(models.ReformulacaoConversaOperacao(operacao_id=operacao_id,
+            curso_id=disciplina.curso_id, contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id, conversa_nova_id=nova.id,
+            fingerprint=fingerprint))
+        db.flush()
+        resultado = _resultado_conversa(db, nova)
+        db.commit()
+        return resultado
+    except Exception:
+        db.rollback()
+        raise
 
 
 def _responder_conversa(db, conversa, texto, autor):
@@ -8441,10 +8588,8 @@ def continuar_conversa_prof(conversa_id: int, dados: schemas.MensagemProfessorTe
         db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if (contratacao_id is None) == (demonstracao_id is None):
         raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
-    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id, usuario_id=usuario.id,
-        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).with_for_update().first()
-    if not conversa:
-        raise HTTPException(404, 'Conversa não encontrada')
+    conversa = _travar_conversa_contextualizada(db, conversa_id, usuario.id,
+        contratacao_id, demonstracao_id)
     _contexto_conversa(db, conversa, vigente=True)
     return _responder_conversa(db, conversa, dados.texto, 'ALUNO')
 
@@ -8454,7 +8599,11 @@ def conversas_prof_admin(curso_id: int | None = None, disciplina_id: int | None 
         concluidas: bool = False, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if not usuario.is_admin:
         raise HTTPException(403, 'Acesso restrito')
-    query = db.query(ConversaQuestaoProfessor)
+    query = db.query(ConversaQuestaoProfessor).filter(or_(
+        and_(ConversaQuestaoProfessor.contratacao_id.isnot(None),
+             ConversaQuestaoProfessor.demonstracao_id.is_(None)),
+        and_(ConversaQuestaoProfessor.contratacao_id.is_(None),
+             ConversaQuestaoProfessor.demonstracao_id.isnot(None))))
     query = query.filter(ConversaQuestaoProfessor.status == 'ENCERRADA') if concluidas else query.filter(ConversaQuestaoProfessor.status != 'ENCERRADA')
     resultado = []
     for conversa in query.order_by(ConversaQuestaoProfessor.criado_em, ConversaQuestaoProfessor.id):
@@ -8470,9 +8619,7 @@ def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfe
         db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if not usuario.is_admin:
         raise HTTPException(403, 'Acesso restrito')
-    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id).with_for_update().first()
-    if not conversa:
-        raise HTTPException(404, 'Conversa não encontrada')
+    conversa = _travar_conversa_contextualizada(db, conversa_id)
     _contexto_conversa(db, conversa)
     return _responder_conversa(db, conversa, dados.texto, 'PROFESSOR')
 
@@ -8481,6 +8628,10 @@ def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfe
 def historico_conversas_prof(curso_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     resultado = []
     for conversa in db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id).order_by(ConversaQuestaoProfessor.id.desc()):
+        # Conversas legadas sem contexto exclusivo (ou com contexto ambíguo)
+        # permanecem armazenadas, mas não pertencem ao histórico contextualizado.
+        if (conversa.contratacao_id is None) == (conversa.demonstracao_id is None):
+            continue
         _, _, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
         if disciplina.curso_id != curso_id:
             continue

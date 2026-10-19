@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, StrictBool
+from pydantic.types import UUID4
 
 class CursoCreate(BaseModel):
     nome: str
@@ -698,3 +699,17 @@ class ConversaProfessorCreate(MensagemProfessorTexto):
     tentativa_id: int = Field(gt=0)
     contratacao_id: int | None = Field(default=None, gt=0)
     demonstracao_id: int | None = Field(default=None, gt=0)
+
+
+class ReformularConversaProfessor(MensagemProfessorTexto):
+    model_config = {"extra": "forbid"}
+    operacao_id: UUID4
+    estado_conversa: str = Field(pattern=r"^[0-9a-f]{64}$")
+    confirmado: StrictBool
+
+    @field_validator("confirmado")
+    @classmethod
+    def exigir_confirmacao_expressa(cls, value):
+        if value is not True:
+            raise ValueError("A reformulação exige confirmação expressa")
+        return value

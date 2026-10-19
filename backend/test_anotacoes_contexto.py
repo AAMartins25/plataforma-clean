@@ -4,18 +4,22 @@ from types import SimpleNamespace
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
+import pytest
 
 from app import models
 from app.schemas import AnotacaoQuestaoCreate, AnotacaoTexto
+from conftest import _valid_local_test_database_url, postgres_test_fixture_disponivel
 from test_questoes_pratica_patch import carregar_main_isolado
 
 
 
 def test_anotacoes_isolam_contexto():
     assert os.getenv("AMBIENTE_TESTE") == "1"
+    if not postgres_test_fixture_disponivel():
+        pytest.skip("fixture PostgreSQL local não possui a massa-base descartável exigida")
 
     url = os.environ["DATABASE_URL"]
-    assert "localhost" in url or "127.0.0.1" in url
+    assert _valid_local_test_database_url(url), "recusado: banco fora do PostgreSQL descartável desta worktree"
 
     engine = create_engine(url)
     conexao = engine.connect()

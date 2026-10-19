@@ -141,6 +141,8 @@ const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let conversas = [];
+const reformulacoesPendentes = new Map();
+const AVISO_REFORMULACAO = "Ao enviar esta nova mensagem, a conversa anterior será apagada. Copie trechos que considerar importantes da conversa atual e cole na nova mensagem a ser enviada ao professor.";
 
 const tituloCursoMensagensProf =
   document.getElementById(
@@ -177,7 +179,8 @@ function contextoMensagens(path) {
   const params = new URLSearchParams(location.search);
   const query = new URLSearchParams();
   for (const key of ['curso_id','contratacao_id','demonstracao_id']) if (params.get(key)) query.set(key,params.get(key));
-  return path + '?' + query;
+  if (!query.toString()) return path;
+  return path + (path.includes("?") ? "&" : "?") + query;
 }
 
 async function apiGet(path) {
@@ -190,7 +193,9 @@ async function apiGet(path) {
   });
 
   if (!res.ok) {
-    throw new Error(`Erro ${res.status}`);
+    const erro = new Error(`Erro HTTP ${res.status}`);
+    erro.status = res.status;
+    throw erro;
   }
 
   return await res.json();
@@ -363,7 +368,11 @@ async function apiPost(path, body) {
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || `Erro ${res.status}`);
+    let detalhe = txt;
+    try { detalhe = JSON.parse(txt).detail ?? txt; } catch (_) {}
+    const erro = new Error(typeof detalhe === "string" ? detalhe : `Erro ${res.status}`);
+    erro.status = res.status;
+    throw erro;
   }
 
   return await res.json();
@@ -624,8 +633,93 @@ function montarCardConversa(c) {
               : ""
       }
 
+      ${montarAreaReformulacao(c)}
+
     </div>
   `;
+}
+
+function montarAreaReformulacao(c) {
+  const p = reformulacoesPendentes.get(Number(c.conversa_id));
+  if (!p) return `<div style="margin-top:16px"><button class="btn mensagens-prof-btn-enviar" onclick="abrirReformulacao(${Number(c.conversa_id)})">Reformular mensagem ao prof</button></div>`;
+  const bloqueada = p.fase === "incerta";
+  return `<section class="card" style="margin-top:16px" id="reformulacao_${Number(c.conversa_id)}">
+    <p role="note">${AVISO_REFORMULACAO}</p>
+    <label for="reformulacao_texto_${Number(c.conversa_id)}">Nova mensagem ao professor</label>
+    <textarea id="reformulacao_texto_${Number(c.conversa_id)}" maxlength="6000" placeholder="Escreva sua nova mensagem..."
+      style="width:100%;min-height:120px;padding:12px;border:1px solid #ddd;border-radius:6px" ${bloqueada ? "readonly" : ""}>${esc(p.texto)}</textarea>
+    ${p.mensagem ? `<p role="status">${esc(p.mensagem)}</p>` : ""}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn mensagens-prof-btn-enviar" ${p.fase === "enviando" ? "disabled" : ""} onclick="confirmarReformulacao(${Number(c.conversa_id)})">${bloqueada ? "Tentar novamente com segurança" : "Confirmar e enviar"}</button>
+      ${p.fase === "editar" ? `<button class="btn" onclick="cancelarReformulacao(${Number(c.conversa_id)})">Cancelar</button>` : ""}
+    </div>
+  </section>`;
+}
+
+function novoIdOperacaoReformulacao() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  if (!window.crypto?.getRandomValues) throw new Error("Este navegador não oferece geração segura de identificadores.");
+  const b = new Uint8Array(16); window.crypto.getRandomValues(b); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+  const h = [...b].map(v => v.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+
+function abrirReformulacao(conversaId) {
+  const c = conversas.find(x => Number(x.conversa_id) === Number(conversaId));
+  if (!c) return;
+  reformulacoesPendentes.set(Number(conversaId), { texto: "", estado: c.estado_conversa, operacaoId: null, fase: "editar", mensagem: "" });
+  renderizarConversas();
+  document.getElementById(`reformulacao_texto_${conversaId}`)?.focus();
+}
+
+function cancelarReformulacao(conversaId) {
+  const p = reformulacoesPendentes.get(Number(conversaId));
+  if (!p || p.fase !== "editar") return;
+  reformulacoesPendentes.delete(Number(conversaId));
+  renderizarConversas();
+}
+
+async function confirmarReformulacao(conversaId) {
+  const id = Number(conversaId), p = reformulacoesPendentes.get(id);
+  const c = conversas.find(x => Number(x.conversa_id) === id);
+  const field = document.getElementById(`reformulacao_texto_${id}`);
+  if (!p || !c || !field || p.fase === "enviando") return;
+  const texto = (p.fase === "incerta" ? p.texto : field.value).trim();
+  const palavras = texto.split(/\s+/).filter(Boolean).length;
+  if (!texto || palavras > 300) { alert(!texto ? "Escreva a nova mensagem antes de confirmar." : "A mensagem deve ter no máximo 300 palavras."); return; }
+  try {
+    p.texto = texto; if (!p.operacaoId) p.operacaoId = novoIdOperacaoReformulacao();
+    if (!p.estado) p.estado = c.estado_conversa;
+    p.fase = "enviando"; p.mensagem = "Enviando a nova mensagem..."; renderizarConversas();
+    await apiPost(`/me/mensagens-prof/${id}/reformular`, {
+      texto, operacao_id: p.operacaoId, estado_conversa: p.estado, confirmado: true
+    });
+    reformulacoesPendentes.delete(id);
+    await carregarMensagens();
+  } catch (err) {
+    p.fase = "editar"; p.mensagem = "";
+    if (err.status === 409) {
+      try {
+        await carregarMensagens();
+        const atual = conversas.find(x => Number(x.conversa_id) === id);
+        if (atual) {
+          p.estado = atual.estado_conversa; p.operacaoId = null;
+          p.mensagem = "A conversa mudou enquanto você escrevia. Confira as mensagens atualizadas e confirme novamente.";
+          reformulacoesPendentes.set(id, p); renderizarConversas(); return;
+        }
+      } catch (_) {}
+      reformulacoesPendentes.delete(id);
+      alert("Esta conversa foi substituída ou não está mais disponível. A lista foi atualizada."); return;
+    }
+    if (!err.status || err.status >= 500) {
+      p.fase = "incerta";
+      p.mensagem = "Não foi possível confirmar o resultado. A conversa pode já ter sido reformulada; tente novamente com o mesmo texto para recuperar a operação com segurança.";
+    } else {
+      p.operacaoId = null;
+      p.mensagem = `Não foi possível reformular a conversa: ${err.message}`;
+    }
+    reformulacoesPendentes.set(id, p); renderizarConversas();
+  }
 }
 
 function montarMensagens(c) {

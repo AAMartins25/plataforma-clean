@@ -248,10 +248,13 @@
 
       if (!res.ok) {
         const txt = await res.text();
-
-        throw new Error(
-          txt || `Erro ${res.status}`
+        let detalhe = txt;
+        try { detalhe = JSON.parse(txt).detail ?? txt; } catch (_) {}
+        const erro = new Error(
+          typeof detalhe === "string" ? detalhe : `Erro ${res.status}`
         );
+        erro.status = res.status;
+        throw erro;
       }
 
       return await res.json();
@@ -284,10 +287,13 @@
 
       if (!res.ok) {
         const txt = await res.text();
-
-        throw new Error(
-          txt || `Erro ${res.status}`
+        let detalhe = txt;
+        try { detalhe = JSON.parse(txt).detail ?? txt; } catch (_) {}
+        const erro = new Error(
+          typeof detalhe === "string" ? detalhe : `Erro ${res.status}`
         );
+        erro.status = res.status;
+        throw erro;
       }
 
       return await res.json();
@@ -866,6 +872,12 @@
 
       } catch (err) {
         console.error(err);
+
+        if (err.status === 404 || err.status === 409) {
+          await carregarMensagens();
+          alert("Esta conversa foi substituída ou atualizada. A lista foi atualizada; confira a conversa atual antes de responder.");
+          return;
+        }
 
         alert(
           "Erro ao enviar resposta: " +

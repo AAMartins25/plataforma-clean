@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app import models as m
+from app.pausa_financeira import controle as controle_financeiro
 from app.revisoes import registrar_rotas, programar_primeira
 from test_questoes_pratica_patch import carregar_main_isolado
 
@@ -20,6 +21,14 @@ TABLES = [m.Curso.__table__, m.CursoDisciplinaPropria.__table__, m.CursoAssuntoP
 def env():
     engine=create_engine('sqlite://',connect_args={'check_same_thread':False},poolclass=StaticPool)
     m.Base.metadata.create_all(engine,tables=TABLES)
+    # O código transacional consulta a tabela real de pausa em cada escrita.
+    # Esta cópia existe somente no SQLite descartável utilizado por estes testes.
+    controle_financeiro.create(engine, checkfirst=True)
+    with engine.begin() as conn:
+        conn.execute(controle_financeiro.insert().values(
+            id=1, modo='NORMAL', geracao=0, alterado_em=datetime.utcnow(),
+            alterado_por=None, motivo='fixture de testes'
+        ))
     factory=sessionmaker(bind=engine, autoflush=False)
     db=factory()
     db.add(m.Curso(id=1,nome='Curso'))
