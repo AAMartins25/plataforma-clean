@@ -8353,3 +8353,151 @@ body.teoria-page {
     max-width: 100%;
   }
 }
+
+/* Baterias: apresentação exclusiva de sprint.html. */
+body:has(> .sprint-header) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.sprint-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.sprint-header .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sprint-header.ro-header .sprint-header-identificacao {
+  width: auto;
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.sprint-header #titulo_bateria {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.sprint-header #subtitulo_bateria {
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.sprint-header .sprint-header-identificacao {
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+
+.sprint-header .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.sprint-header .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.sprint-header .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sprint-header .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sprint-header.ro-header .sprint-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.sprint-header ~ main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.sprint-header ~ footer {
+  flex-shrink: 0;
+  margin-top: 0 !important;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .sprint-header #titulo_bateria {
+    font-size: 1rem;
+  }
+
+  .sprint-header #subtitulo_bateria {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sprint-header .ro-header-titles {
+    /* O nome permanece acima; disciplina e assunto podem usar a largura da tela. */
+    padding-top: 44px;
+  }
+
+  .sprint-header.ro-header .sprint-header-identificacao {
+    max-width: 100%;
+  }
+}
+
+
+.teoria-page .ro-identity,
+.sprint-header .ro-identity {
+  text-transform: uppercase;
+}
+
+.sprint-header ~ .container {
+  width: 100%;
+  min-width: 0;
+}
+
+.sprint-header ~ main + .container {
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+/* O rótulo inteiro e o rádio devem caber juntos em todos os níveis. */
+.sprint-header ~ main .sprint-dificuldade-opcao {
+  width: max-content;
+  min-width: 104px;
+  max-width: 100%;
+  min-height: 44px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+@media (max-width: 480px) {
+  .sprint-header .ro-header-identity,
+  .teoria-page .ro-header-identity {
+    grid-column: 1 / -1;
+    max-width: 100% !important;
+  }
+}
