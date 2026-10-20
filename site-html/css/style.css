@@ -7800,7 +7800,7 @@ body[data-page="curso-info"] main.container {
   }
 }
 
-/* Home: a identificação divide a faixa de controles sem criar uma linha extra. */
+/* Home: identificação no alto à direita, sem criar uma linha extra. */
 header.home-header.ro-header {
   grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
   column-gap: 8px;
@@ -7822,18 +7822,21 @@ header.home-header.ro-header {
 }
 
 .home-header.ro-header .ro-header-identity {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: start;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
   min-width: 0;
-  text-align: left;
+  /* Reserva espaço para a marca central mesmo em telas de 320 px. */
+  max-width: calc(100% - 36px) !important;
+  text-align: right;
 }
 
 .home-header.ro-header .ro-identity {
   box-sizing: border-box;
   height: 44px;
   min-width: 0;
-  text-align: left;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
