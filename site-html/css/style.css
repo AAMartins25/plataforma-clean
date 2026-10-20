@@ -8130,3 +8130,106 @@ body.disciplinas-page[data-page="disciplinas"] {
 .disciplinas-page[data-page="disciplinas"] .disciplina-curso-nome {
   overflow-wrap: anywhere;
 }
+
+/* Assuntos da disciplina: cabeçalho compacto e rodapé no fluxo da página. */
+body.assuntos-page[data-page="assuntos"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.assuntos-page[data-page="assuntos"] .assuntos-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.assuntos-page[data-page="assuntos"] .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assuntos-page[data-page="assuntos"] .assuntos-header.ro-header .ro-header-titles > div {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.assuntos-page[data-page="assuntos"] .assuntos-header.ro-header h1 {
+  font-size: 1.3rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.assuntos-page[data-page="assuntos"] .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.assuntos-page[data-page="assuntos"] .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.assuntos-page[data-page="assuntos"] .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assuntos-page[data-page="assuntos"] .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assuntos-page[data-page="assuntos"] .assuntos-header.ro-header .assuntos-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.assuntos-page[data-page="assuntos"] main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.assuntos-page[data-page="assuntos"] > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header h1 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+}
+
+/* Nomes extensos continuam dentro do card, sem deslocar o botão Abrir. */
+.assuntos-page[data-page="assuntos"] .assunto-curso-nome {
+  overflow-wrap: anywhere;
+}
+
+.assuntos-page[data-page="assuntos"] .assuntos-disciplina-card h2 {
+  overflow-wrap: anywhere;
+}
+
+.assuntos-page[data-page="assuntos"] .assunto-curso-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
