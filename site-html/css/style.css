@@ -9114,3 +9114,109 @@ body.questoes-criticas-page {
     max-width: 100% !important;
   }
 }
+
+/* Minhas anotações: cabeçalho compacto e rodapé, sem alterar os cards. */
+body.minhas-anotacoes-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.minhas-anotacoes-page .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-header.ro-header .ro-header-titles > div {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-header-identificacao h1 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-header-identificacao h2 {
+  margin-top: 3px !important;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.minhas-anotacoes-page .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.minhas-anotacoes-page .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.minhas-anotacoes-page .ro-identity {
+  font-weight: 400;
+  height: 44px;
+  min-width: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.minhas-anotacoes-page .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.minhas-anotacoes-page .ro-header .minhas-anotacoes-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.minhas-anotacoes-page main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.minhas-anotacoes-page > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .minhas-anotacoes-page .ro-header-titles {
+    padding-top: 44px;
+  }
+
+  .minhas-anotacoes-page .minhas-anotacoes-header.ro-header .ro-header-titles > div {
+    max-width: 100%;
+  }
+
+  .minhas-anotacoes-page .ro-header-identity {
+    grid-column: 1 / -1;
+    max-width: 100% !important;
+  }
+}
+
+.minhas-anotacoes-page .ro-header-identity {
+  color: #4b5563;
+  opacity: 0.78;
+  letter-spacing: 0.4px;
+}
