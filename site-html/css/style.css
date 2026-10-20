@@ -9220,3 +9220,109 @@ body.minhas-anotacoes-page {
   opacity: 0.78;
   letter-spacing: 0.4px;
 }
+
+/* Mensagens ao prof: cabeçalho compacto e rodapé, sem alterar os cards. */
+body.mensagens-prof-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.mensagens-prof-page .mensagens-prof-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.mensagens-prof-page .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mensagens-prof-page .mensagens-prof-header.ro-header .ro-header-titles > div {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.mensagens-prof-page .mensagens-prof-header-identificacao h1 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.mensagens-prof-page .mensagens-prof-header-identificacao h2 {
+  margin-top: 3px !important;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.mensagens-prof-page .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.mensagens-prof-page .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.mensagens-prof-page .ro-identity {
+  font-weight: 400;
+  height: 44px;
+  min-width: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mensagens-prof-page .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mensagens-prof-page .ro-header .mensagens-prof-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.mensagens-prof-page main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.mensagens-prof-page > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .mensagens-prof-page .ro-header-titles {
+    padding-top: 44px;
+  }
+
+  .mensagens-prof-page .mensagens-prof-header.ro-header .ro-header-titles > div {
+    max-width: 100%;
+  }
+
+  .mensagens-prof-page .ro-header-identity {
+    grid-column: 1 / -1;
+    max-width: 100% !important;
+  }
+}
+
+.mensagens-prof-page .ro-header-identity {
+  color: #4b5563;
+  opacity: 0.78;
+  letter-spacing: 0.4px;
+}
