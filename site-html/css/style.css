@@ -7852,3 +7852,98 @@ header.home-header.ro-header {
   height: 44px !important;
   line-height: 1;
 }
+
+/* Meus Cursos: cabeçalho compacto e rodapé após o conteúdo. */
+body.cursos-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.cursos-page .cursos-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  column-gap: 8px;
+  flex-shrink: 0;
+}
+
+.cursos-page .cursos-header.ro-header .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cursos-page .cursos-header.ro-header h1 {
+  font-size: 1.3rem;
+  line-height: 1.3;
+}
+
+.cursos-page .cursos-header.ro-header .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.cursos-page .cursos-header.ro-header .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: calc(100% - 52px) !important;
+}
+
+.cursos-page .cursos-header.ro-header .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cursos-page .cursos-header.ro-header .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cursos-page .cursos-header.ro-header .cursos-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.cursos-page main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.cursos-page > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+.cursos-page #lista,
+.cursos-page #lista_expirados {
+  overflow-wrap: anywhere;
+}
+
+/* O botão Voltar pode receber display:inline-block da própria página. */
+.cursos-page .cursos-header.ro-header .cursos-header-acoes .btn {
+  align-content: center;
+}
+
+@media (max-width: 480px) {
+  .cursos-page :is(#lista, #lista_expirados) .disciplina > div {
+    flex-wrap: wrap;
+  }
+
+  .cursos-page :is(#lista, #lista_expirados) .disciplina > div > div:first-child {
+    flex-basis: 100% !important;
+  }
+}
