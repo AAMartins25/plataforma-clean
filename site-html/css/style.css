@@ -7864,13 +7864,14 @@ body.cursos-page {
 .cursos-page .cursos-header.ro-header {
   grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
   column-gap: 8px;
+  row-gap: 6px;
   flex-shrink: 0;
 }
 
 .cursos-page .cursos-header.ro-header .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 52px;
+  min-height: 44px;
   display: flex;
   justify-content: center;
   align-items: center;
