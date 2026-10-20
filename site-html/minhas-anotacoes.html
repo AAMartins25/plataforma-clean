@@ -634,6 +634,9 @@ function editarAnotacao(id) {
     return;
   }
 
+  box.closest(".minhas-anotacoes-anotacao-card")
+    .querySelector(".minhas-anotacoes-acoes").style.display = "none";
+
   box.innerHTML = `
     <div class="minhas-anotacoes-bloco-aluno-titulo">
       Editar minha anotação:
