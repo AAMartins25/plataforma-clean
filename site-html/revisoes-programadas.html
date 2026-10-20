@@ -12,6 +12,8 @@
 <body class="revisoes-programadas-page">
 <header class="revisoes-programadas-header">
 
+  <div id="nome_aluno_logado"></div>
+
   <div class="revisoes-programadas-header-identificacao">
 
     <h1 id="titulo_curso"></h1>
@@ -185,6 +187,26 @@ async function carregar() {
   } catch(e) { document.querySelector('main').textContent='Erro ao carregar revisões: '+e.message; }
 }
 carregar();
+</script>
+
+
+<script>
+// Identificação visual: reutiliza o cache e a proteção de sessão compartilhados.
+(async () => {
+  const origem = Sessao.snapshot();
+  try {
+    const aluno = await Sessao.obterMe(`${API_BASE}/me`);
+    if (!Sessao.mesma(origem)) return;
+    const partes = String(aluno?.nome || "").trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return;
+    const nome = document.getElementById("nome_aluno_logado");
+    nome.textContent = partes[0];
+    nome.title = partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : partes[0];
+  } catch (erro) {
+    // A identificação não deve impedir a apresentação das revisões.
+    console.warn("Não foi possível apresentar a identificação do aluno.");
+  }
+})();
 </script>
 
 </body>
