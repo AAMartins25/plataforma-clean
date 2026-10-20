@@ -8233,3 +8233,123 @@ body.assuntos-page[data-page="assuntos"] {
   align-items: center;
   justify-content: center;
 }
+
+/* Estudo: identificação centralizada e rodapé após o conteúdo e o menu. */
+body.teoria-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.teoria-page .teoria-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.teoria-page .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teoria-page .teoria-header.ro-header .teoria-header-identificacao {
+  width: auto;
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.teoria-page .teoria-header-disciplina #titulo_disciplina {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.teoria-page .teoria-header-assunto #titulo_assunto_header {
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.teoria-page .teoria-header-identificacao {
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+
+.teoria-page .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.teoria-page .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.teoria-page .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teoria-page .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teoria-page .teoria-header.ro-header .teoria-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.teoria-page main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.teoria-page > footer {
+  flex-shrink: 0;
+  margin-top: 0 !important;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .teoria-page .teoria-header-disciplina #titulo_disciplina {
+    font-size: 1rem;
+  }
+
+  .teoria-page .teoria-header-assunto #titulo_assunto_header {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .teoria-page .area-estudo {
+    /* Os três controles laterais absolutos também precisam caber antes do rodapé. */
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .teoria-page .ro-header-titles {
+    /* O nome permanece acima; disciplina e assunto podem usar a largura da tela. */
+    padding-top: 44px;
+  }
+
+  .teoria-page .teoria-header.ro-header .teoria-header-identificacao {
+    max-width: 100%;
+  }
+}
