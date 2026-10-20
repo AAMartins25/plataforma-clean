@@ -8038,3 +8038,95 @@ body.curso-page[data-page="curso"] {
     line-height: 1.35;
   }
 }
+
+/* Disciplinas do aluno: cabeçalho compacto e rodapé no fluxo da página. */
+body.disciplinas-page[data-page="disciplinas"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.disciplinas-page[data-page="disciplinas"] .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header .ro-header-titles > div {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header h1 {
+  font-size: 1.3rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.disciplinas-page[data-page="disciplinas"] .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.disciplinas-page[data-page="disciplinas"] .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.disciplinas-page[data-page="disciplinas"] .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.disciplinas-page[data-page="disciplinas"] .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header .disciplinas-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.disciplinas-page[data-page="disciplinas"] main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.disciplinas-page[data-page="disciplinas"] > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header h1 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+}
+
+/* Nomes extensos continuam dentro do card, sem deslocar o botão Abrir. */
+.disciplinas-page[data-page="disciplinas"] .disciplina-curso-nome {
+  overflow-wrap: anywhere;
+}
