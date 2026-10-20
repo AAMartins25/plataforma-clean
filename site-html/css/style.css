@@ -7948,3 +7948,93 @@ body.cursos-page {
     flex-basis: 100% !important;
   }
 }
+
+/* Funcionalidades do curso: somente esta página, sem afetar retornos de pagamento. */
+body.curso-page[data-page="curso"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.curso-page[data-page="curso"] .curso-header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.curso-page[data-page="curso"] .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.curso-page[data-page="curso"] .curso-header.ro-header .curso-header-titulo {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+
+.curso-page[data-page="curso"] .curso-header.ro-header h1 {
+  font-size: 1.3rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.curso-page[data-page="curso"] .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+
+.curso-page[data-page="curso"] .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+}
+
+.curso-page[data-page="curso"] .ro-identity {
+  height: 44px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.curso-page[data-page="curso"] .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.curso-page[data-page="curso"] .curso-header.ro-header .curso-header-acoes .btn {
+  height: 44px !important;
+  line-height: 1;
+}
+
+.curso-page[data-page="curso"] main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.curso-page[data-page="curso"] > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+
+@media (max-width: 480px) {
+  .curso-page[data-page="curso"] .curso-header.ro-header h1 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+}
