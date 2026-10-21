@@ -68,12 +68,17 @@ def test_expirado_historico_legado_e_isolamento(api):
     for a in db.query(m.AnotacaoAlunoQuestao): a.criado_em=acesso.data_fim-timedelta(minutes=1)
     db.commit()
     assert c.get('/me/minhas-anotacoes?demonstracao_id=1').status_code==403
-    rows=c.get('/me/cursos-expirados/1/anotacoes').json()
+    contrato=db.get(m.ContratacaoCurso,1)
+    contrato.data_fim=acesso.data_fim
+    for a in db.query(m.AnotacaoAlunoQuestao):
+        a.contratacao_id=1; a.demonstracao_id=None
+    db.commit()
+    rows=c.get('/me/cursos-expirados/1/anotacoes?contratacao_id=1').json()
     assert len(rows)==2 and any(r['tentativa_id'] is None for r in rows)
-    assert c.get('/me/cursos-expirados/2/anotacoes').json()==[]
+    assert c.get('/me/cursos-expirados/2/anotacoes?contratacao_id=1').status_code==403
     aid=rows[0]['anotacao_id']
-    assert c.delete(f'/me/anotacoes-questoes/{aid}?demonstracao_id=1').status_code==403
-    assert c.put(f'/me/anotacoes-questoes/{aid}?demonstracao_id=1',json={'texto':'x'}).status_code==403
+    assert c.delete(f'/me/anotacoes-questoes/{aid}?contratacao_id=1').status_code==403
+    assert c.put(f'/me/anotacoes-questoes/{aid}?contratacao_id=1',json={'texto':'x'}).status_code==403
 
 def test_indice_unico_e_legados_sem_tentativa(api):
     from sqlalchemy.exc import IntegrityError
@@ -95,4 +100,4 @@ def test_tentativa_revisao_e_nao_expor_texto_fora_da_vigencia(api):
     acesso=db.get(m.DemonstracaoCurso,1)
     acesso.data_fim=datetime.utcnow()-timedelta(seconds=1)
     db.commit()
-    assert c.get('/me/cursos-expirados/1/anotacoes').json()==[]
+    assert c.get('/me/cursos-expirados/1/anotacoes?demonstracao_id=1').status_code==403

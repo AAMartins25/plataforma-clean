@@ -1,3 +1,4 @@
+from app.desempenho import validar_contexto_historico
 from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
 from app.financeiro_transacional import protegido, timeout_financeiro
 from .transacoes_mp import consultar_pagamento, resolver_transacao
@@ -1065,20 +1066,12 @@ def criar_disciplina_propria(
 @app.get("/me/cursos-expirados/{curso_id}/disciplinas")
 def listar_disciplinas_curso_expirado(
     curso_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    acesso_expirado = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == False
-    ).first()
-
-    if not acesso_expirado:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem histórico de acesso a este curso"
-        )
+    validar_contexto_historico(db, usuario, curso_id, contratacao_id, demonstracao_id)
 
     disciplinas = (
         db.query(CursoDisciplinaPropria)
@@ -8349,22 +8342,13 @@ def _consultar_anotacoes(db, usuario_id, curso_id, contratacao_id, demonstracao_
 
 
 @app.get("/me/cursos-expirados/{curso_id}/anotacoes")
-def anotacoes_curso_expirado(curso_id: int, db: Session = Depends(get_db),
+def anotacoes_curso_expirado(curso_id: int, contratacao_id: int | None = None,
+                            demonstracao_id: int | None = None, db: Session = Depends(get_db),
                             usuario_atual: Usuario = Depends(get_usuario_atual)):
-    agora = datetime.utcnow()
-    resultado = []
-    for modelo, campo in [(ContratacaoCurso, "contratacao_id"), (DemonstracaoCurso, "demonstracao_id")]:
-        contextos = db.query(modelo).filter(modelo.usuario_id == usuario_atual.id,
-            modelo.curso_id == curso_id, modelo.data_fim.isnot(None),
-            modelo.data_fim <= agora, modelo.data_inicio <= modelo.data_fim).all()
-        for acesso in contextos:
-            if campo == "contratacao_id" and acesso.origem not in {"ADMIN", "PAGAMENTO"}:
-                continue
-            registros = _consultar_anotacoes(db, usuario_atual.id, curso_id,
-                acesso.id if campo == "contratacao_id" else None,
-                acesso.id if campo == "demonstracao_id" else None)
-            resultado.extend(r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim)
-    return sorted(resultado, key=lambda r: r["criado_em"], reverse=True)
+    acesso = validar_contexto_historico(db, usuario_atual, curso_id, contratacao_id, demonstracao_id)
+    registros = _consultar_anotacoes(db, usuario_atual.id, curso_id, acesso.id, None)
+    return sorted((r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim),
+                  key=lambda r: r["criado_em"], reverse=True)
 
 
 def _estrutura_conversa(db, questao_id, bateria_id):
@@ -8652,9 +8636,14 @@ def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfe
 
 
 @app.get('/me/cursos-expirados/{curso_id}/mensagens-prof')
-def historico_conversas_prof(curso_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+def historico_conversas_prof(curso_id: int, contratacao_id: int | None = None,
+                             demonstracao_id: int | None = None,
+                             db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    acesso_selecionado = validar_contexto_historico(db, usuario, curso_id, contratacao_id, demonstracao_id)
     resultado = []
-    for conversa in db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id).order_by(ConversaQuestaoProfessor.id.desc()):
+    for conversa in db.query(ConversaQuestaoProfessor).filter_by(
+            usuario_id=usuario.id, contratacao_id=acesso_selecionado.id,
+            demonstracao_id=None).order_by(ConversaQuestaoProfessor.id.desc()):
         # Conversas legadas sem contexto exclusivo (ou com contexto ambíguo)
         # permanecem armazenadas, mas não pertencem ao histórico contextualizado.
         if (conversa.contratacao_id is None) == (conversa.demonstracao_id is None):

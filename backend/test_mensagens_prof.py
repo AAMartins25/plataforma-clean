@@ -209,7 +209,7 @@ def test_contexto_usuario_curso_e_palavras(api):
     assert c.post(f'/me/mensagens-prof/{rid}/responder?contratacao_id=1',json={'texto':'x'}).status_code==404
     a.id=2
     assert c.get('/me/mensagens-prof?demonstracao_id=1').status_code==403
-    assert c.get('/me/cursos-expirados/1/mensagens-prof').json()==[]
+    assert c.get('/me/cursos-expirados/1/mensagens-prof').status_code==400
 
 def test_expiracao_historico_admin_e_indice(api):
     db,c,a=api
@@ -217,8 +217,12 @@ def test_expiracao_historico_admin_e_indice(api):
     db.get(m.DemonstracaoCurso,1).data_fim=datetime.utcnow()-timedelta(seconds=1)
     db.get(m.ConversaQuestaoProfessor,rid).criado_em=datetime.utcnow()-timedelta(minutes=1);db.commit()
     assert c.get('/me/mensagens-prof?demonstracao_id=1').status_code==403
-    assert len(c.get('/me/cursos-expirados/1/mensagens-prof').json())==1
-    assert c.get('/me/cursos-expirados/2/mensagens-prof').json()==[]
+    contrato=db.get(m.ContratacaoCurso,1)
+    contrato.data_fim=db.get(m.DemonstracaoCurso,1).data_fim
+    conversa=db.get(m.ConversaQuestaoProfessor,rid)
+    conversa.contratacao_id=1; conversa.demonstracao_id=None; db.commit()
+    assert len(c.get('/me/cursos-expirados/1/mensagens-prof?contratacao_id=1').json())==1
+    assert c.get('/me/cursos-expirados/2/mensagens-prof?contratacao_id=1').status_code==403
     a.is_admin=True
     assert c.post(f'/admin/mensagens-questoes/{rid}/responder',json={'texto':'Resposta histórica'}).status_code==200
     assert c.get('/admin/mensagens-questoes').status_code==200
@@ -237,7 +241,11 @@ def test_historico_expirado_ignora_legada_e_preserva_contextual(api):
         tentativa_id=None,contratacao_id=None,demonstracao_id=None,status="ABERTA")
     db.add(legado);db.commit()
 
-    resposta=c.get('/me/cursos-expirados/1/mensagens-prof')
+    contrato=db.get(m.ContratacaoCurso,1)
+    contrato.data_fim=db.get(m.DemonstracaoCurso,1).data_fim
+    conversa=db.get(m.ConversaQuestaoProfessor,rid)
+    conversa.contratacao_id=1; conversa.demonstracao_id=None; db.commit()
+    resposta=c.get('/me/cursos-expirados/1/mensagens-prof?contratacao_id=1')
     assert resposta.status_code==200,resposta.text
     assert [item['conversa_id'] for item in resposta.json()]==[rid]
     assert db.get(m.ConversaQuestaoProfessor,legado.id) is not None
