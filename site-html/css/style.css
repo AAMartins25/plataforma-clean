@@ -5031,6 +5031,7 @@ footer p {
   color: var(--azul);
 }
 
+:is(.consulta-expirada-page, .desempenho-expirado-page) .historico-header-identificacao h2,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-identificacao h2 {
   margin: 7px 0 0;
@@ -5056,6 +5057,7 @@ footer p {
   gap: 20px;
 }
 
+:is(.consulta-expirada-page, .desempenho-expirado-page) .ro-header-icon-actions .btn,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-acoes .btn {
   width: auto;
@@ -5083,6 +5085,7 @@ footer p {
   box-shadow: none;
 }
 
+:is(.consulta-expirada-page, .desempenho-expirado-page) .ro-header-icon-actions .btn:hover,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-acoes .btn:hover {
   background: transparent;
