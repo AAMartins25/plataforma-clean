@@ -98,3 +98,11 @@ body.admin-shell {
     max-width: 100% !important;
   }
 }
+
+/* Reembolsos: neutraliza o seletor legado compartilhado com a página do aluno. */
+body.admin-shell:has(#listaReembolsos) header nav .btn {
+  font-size: 0.82rem;
+}
+body.admin-shell:has(#listaReembolsos) header nav {
+  gap: 8px !important;
+}
