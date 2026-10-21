@@ -6854,6 +6854,7 @@ footer p {
   margin-top: 26px;
 }
 
+.mensagens-prof-page section[id^="reformulacao_"] > div > .btn,
 .mensagens-prof-page
 .mensagens-prof-btn-final {
   min-width: 120px;
@@ -6877,6 +6878,7 @@ footer p {
 
 }
 
+.mensagens-prof-page section[id^="reformulacao_"] > div > .btn:hover,
 .mensagens-prof-page
 .mensagens-prof-btn-final:hover {
   background: #f8e66f;
@@ -7756,6 +7758,7 @@ header.ro-header {
   }
 
   .minhas-anotacoes-page .minhas-anotacoes-btn,
+  .mensagens-prof-page section[id^="reformulacao_"] > div > .btn,
   .mensagens-prof-page .mensagens-prof-btn-final,
   .mensagens-prof-page .mensagens-prof-btn-enviar {
     min-height: 44px;
@@ -9325,4 +9328,10 @@ body.mensagens-prof-page {
   color: #4b5563;
   opacity: 0.78;
   letter-spacing: 0.4px;
+}
+
+/* Reformulação: mesmo alinhamento e intervalo da navegação inferior. */
+.mensagens-prof-page section[id^="reformulacao_"] > div {
+  align-items: center;
+  gap: 19px !important;
 }
