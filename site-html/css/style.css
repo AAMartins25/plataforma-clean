@@ -5057,7 +5057,7 @@ footer p {
   gap: 20px;
 }
 
-:is(.consulta-expirada-page, .desempenho-expirado-page) .ro-header-icon-actions .btn,
+:is(.consulta-expirada-page, .desempenho-expirado-page, .atendimento-page) .ro-header-icon-actions .btn,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-acoes .btn {
   width: auto;
@@ -5085,7 +5085,7 @@ footer p {
   box-shadow: none;
 }
 
-:is(.consulta-expirada-page, .desempenho-expirado-page) .ro-header-icon-actions .btn:hover,
+:is(.consulta-expirada-page, .desempenho-expirado-page, .atendimento-page) .ro-header-icon-actions .btn:hover,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-acoes .btn:hover {
   background: transparent;
@@ -6947,7 +6947,7 @@ body:has(#btnSairFaleClean) header nav .btn {
   border: none;
   border-radius: 0;
   color: var(--azul);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 400;
   text-decoration: none;
   box-shadow: none;
@@ -6960,7 +6960,7 @@ body:has(#btnSairFaleClean) header nav .btn:hover {
 }
 
 body:has(#btnSairFaleClean) header nav {
-  gap: 23px !important;
+  gap: 8px !important;
 }
 
 /* =========================================================
@@ -7188,7 +7188,7 @@ body:has(#formMeusDados) header nav .btn {
   border: none;
   border-radius: 0;
   color: var(--azul);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 400;
   text-decoration: none;
   box-shadow: none;
@@ -7202,7 +7202,7 @@ body:has(#formMeusDados) header nav .btn:hover {
 }
 
 body:has(#formMeusDados) header nav {
-  gap: 22px !important;
+  gap: 8px !important;
 }
 
 .meus-dados-btn-atualizar {
@@ -9341,20 +9341,20 @@ body.mensagens-prof-page {
 
 
 /* Meu desempenho (acesso ativo e expirado): cabeçalho compacto e rodapé, sem alterar os cards. */
-body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) {
+body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100svh;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) header.ro-header {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) header.ro-header {
   grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
   gap: 6px 8px;
   flex-shrink: 0;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-titles {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
   min-height: 44px;
@@ -9363,28 +9363,28 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
   justify-content: center;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) header.ro-header .ro-header-titles > * {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) header.ro-header .ro-header-titles > * {
   max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-titles h1 {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-titles h1 {
   font-size: 1.25rem;
   line-height: 1.3;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-titles h2 {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-titles h2 {
   margin-top: 3px !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-navigation {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-navigation {
   grid-column: 1 / -1;
   grid-row: 2 !important;
   justify-content: flex-end;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-identity {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-identity {
   grid-column: 3;
   grid-row: 1;
   align-self: start;
@@ -9392,7 +9392,7 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
   max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-identity {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-identity {
   font-weight: 400;
   height: 44px;
   min-width: 0;
@@ -9402,46 +9402,71 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
   text-overflow: ellipsis;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-identity::after {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-identity::after {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header .ro-header-navigation .btn {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header .ro-header-navigation .btn {
   height: 44px !important;
   line-height: 1;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) main.container {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) main.container {
   flex: 1 0 auto;
   width: 100%;
   margin-bottom: 0;
   padding-bottom: 24px;
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) > footer {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) > footer {
   flex-shrink: 0;
   margin-top: 0;
   padding: 24px 15px;
 }
 
 @media (max-width: 480px) {
-  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-titles {
+  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-titles {
     padding-top: 44px;
   }
 
-  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) header.ro-header .ro-header-titles > * {
+  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) header.ro-header .ro-header-titles > * {
     max-width: 100%;
   }
 
-  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-identity {
+  :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-identity {
     grid-column: 1 / -1;
     max-width: 100% !important;
   }
 }
 
-:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page) .ro-header-identity {
+:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page) .ro-header-identity {
   color: #4b5563;
   opacity: 0.78;
   letter-spacing: 0.4px;
+}
+
+/* Atendimento: mantém controles anônimos ocultos e o título sem recuos legados. */
+.atendimento-page:not(:has(.ro-header-identity)) .atendimento-auth-exit {
+  display: none !important;
+}
+.atendimento-page .ro-header-titles h1 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+.atendimento-page .ro-header-navigation .btn:hover {
+  opacity: 0.72;
+}
+
+/* Preserva o ocultamento existente e centraliza os controles exibidos por script. */
+.atendimento-page .ro-header-navigation a[style*="inline-block"] {
+  display: inline-flex !important;
+}
+
+/* Reembolso do aluno: não altera o cabeçalho administrativo com o mesmo ID. */
+body.atendimento-page:has(#listaReembolsos) header nav .btn {
+  font-size: 0.82rem;
+}
+body.atendimento-page:has(#listaReembolsos) header nav {
+  gap: 8px !important;
 }

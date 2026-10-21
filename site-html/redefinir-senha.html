@@ -19,7 +19,7 @@
   <script src="js/cabecalho.js" defer></script>
 </head>
 
-<body class="auth-page">
+<body class="auth-page atendimento-page">
 
   <header
     style="
@@ -37,15 +37,15 @@
       "
     >
       <h1
-        style="
-          margin:-6px 0 0 0;
-          font-size:1.55rem;
-          text-align:center;
-        "
       >
         🔐 Redefinir senha
       </h1>
     </div>
+    <nav class="ro-header-icon-actions">
+      <a class="btn" href="login.html" title="Voltar" aria-label="Voltar">⇦</a>
+      <a class="btn" href="index.html" title="Início" aria-label="Início">⌂</a>
+      <a class="btn atendimento-auth-exit" href="#" onclick="sairComConfirmacao(); return false;" title="Sair" aria-label="Sair">⎋</a>
+    </nav>
   </header>
 
   <main class="container">
