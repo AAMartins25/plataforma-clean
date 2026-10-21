@@ -9,8 +9,9 @@
   <script src="js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="desempenho-expirado-page">
   <header>
+    <div id="nome_aluno_logado"></div>
     <h1 id="titulo_topo">📘 Curso</h1>
 
     <nav style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
@@ -126,7 +127,11 @@
 
     async function carregarDesempenhoExpirado() {
       try {
-        await apiGet("/me");
+        const aluno = await apiGet("/me");
+        const nome = document.getElementById("nome_aluno_logado");
+        const partes = String(aluno?.nome || "").trim().split(/\s+/).filter(Boolean);
+        nome.textContent = partes[0] || "";
+        nome.title = partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : (partes[0] || "");
 
         const cursoId = qs("curso_id");
         const cursoNome = qs("curso_nome") || "Curso";
