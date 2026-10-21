@@ -1,12 +1,23 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import os
-SECRET_KEY = os.getenv("SECRET_KEY", "DEV_INSECURE_CHANGE_ME")
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-# ⚠️ Troque depois por variável de ambiente
-SECRET_KEY = "TROQUE_ISSO_PARA_UMA_CHAVE_FORTE"
+
+def _carregar_secret_key():
+    value = os.environ.get("SECRET_KEY")
+    # Comprimento não prova entropia: a chave deve ser gerada aleatoriamente.
+    if (not value or len(value) < 32 or not value.isascii()
+            or any(not 33 <= ord(char) <= 126 for char in value)):
+        raise RuntimeError(
+            "SECRET_KEY ausente ou inadequada. Configure uma chave aleatória "
+            "com pelo menos 32 caracteres ASCII imprimíveis, sem espaços."
+        )
+    return value
+
+
+SECRET_KEY = _carregar_secret_key()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 dia
 

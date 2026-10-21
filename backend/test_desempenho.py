@@ -59,10 +59,10 @@ def test_rotas_expiracao_sem_escrita(env):
             assert c.get('/me/cursos-expirados/1/desempenho?demonstracao_id=1').status_code==403
             d=db.get(m.DemonstracaoCurso,1);d.data_fim=datetime.utcnow()-timedelta(seconds=1);db.commit()
             before=(d.ativo,d.data_inicio,d.data_fim)
-            assert c.get('/me/cursos-expirados/1/desempenho?demonstracao_id=1').status_code==200
+            assert c.get('/me/cursos-expirados/1/desempenho?demonstracao_id=1').status_code==403
             assert c.get('/me/cursos/1/desempenho?demonstracao_id=1').status_code==403
             assert c.get('/me/cursos-expirados/1/desempenho?demonstracao_id=1&contratacao_id=1').status_code==400
-            assert len(c.get('/me/desempenho/contextos-expirados').json())==1
+            assert c.get('/me/desempenho/contextos-expirados').json()==[]
             actor.id=2
             assert c.get('/me/cursos-expirados/1/desempenho?demonstracao_id=1').status_code==403
             assert c.get('/me/desempenho/contextos-expirados').json()==[]

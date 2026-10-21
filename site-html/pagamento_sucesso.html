@@ -83,9 +83,12 @@
           limparContextoCompraConfirmada();
           setTimeout(() => { window.location.href = "cursos.html"; }, 900);
         } else if (["PENDING", "PENDENTE"].includes(status)) {
-          // Etapa 2: orientar a consulta ao e-mail somente após confirmação confiável do envio.
-          apresentarPagamento("Pagamento pendente", "Seu pagamento ainda não foi confirmado.",
-            "O acesso ao curso será liberado após a confirmação!");
+          if (resultado.email_instrucoes_aceito === true) {
+            apresentarPagamento("Pagamento pendente", "Enviamos para seu e-mail as instruções para continuar o pagamento. Consulte sua caixa de entrada e, se necessário, a pasta de spam.");
+          } else {
+            apresentarPagamento("Pagamento pendente", "Seu pagamento ainda não foi confirmado.",
+              "O acesso ao curso será liberado após a confirmação!");
+          }
         } else if (["IN_PROCESS", "IN_MEDIATION"].includes(status)) {
           apresentarPagamento("Pagamento em processamento", "Seu pagamento está sendo processado. Aguarde a confirmação!");
         } else if (status === "REJECTED") {

@@ -5,6 +5,22 @@ from app import models as m
 from app.revisoes import disponiveis
 
 
+def validar_contexto_historico(db, usuario, curso_id, contratacao_id=None, demonstracao_id=None):
+    """Histórico de compras/concessões expiradas, exclusivo do acesso selecionado."""
+    if (contratacao_id is None) == (demonstracao_id is None):
+        raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
+    if demonstracao_id is not None:
+        raise HTTPException(403, 'Teste gratuito não possui consulta histórica após o vencimento.')
+    acesso = db.query(m.ContratacaoCurso).filter_by(
+        id=contratacao_id, usuario_id=usuario.id, curso_id=curso_id).first()
+    agora = datetime.utcnow()
+    if (not acesso or acesso.origem not in ('ADMIN', 'PAGAMENTO') or
+            acesso.data_fim is None or acesso.data_fim > agora or
+            acesso.data_inicio > acesso.data_fim):
+        raise HTTPException(403, 'Contexto histórico expirado não encontrado')
+    return acesso
+
+
 def ultima_concluida(db, usuario_id, bateria_id, cid, did, exigidas):
     candidatas = db.query(m.TentativaBateria).filter_by(
         usuario_id=usuario_id, bateria_id=bateria_id, contratacao_id=cid,
@@ -53,14 +69,16 @@ def registrar_rotas(app, get_db, get_usuario, validar):
     def contextos(db=Depends(get_db), usuario=Depends(get_usuario)):
         agora = datetime.utcnow()
         rows = []
-        for modelo, campo in [(m.ContratacaoCurso, 'contratacao_id'), (m.DemonstracaoCurso, 'demonstracao_id')]:
-            for acesso in db.query(modelo).filter(modelo.usuario_id == usuario.id, modelo.data_fim <= agora, modelo.data_inicio <= agora):
-                if campo == 'contratacao_id' and acesso.origem not in ('ADMIN', 'PAGAMENTO'):
-                    continue
-                curso = db.get(m.Curso, acesso.curso_id)
-                if curso:
-                    rows.append({'curso_id': curso.id, 'nome_curso': curso.nome, 'ativo': False,
-                                 campo: acesso.id, 'data_inicio': acesso.data_inicio, 'data_fim': acesso.data_fim})
+        for acesso in db.query(m.ContratacaoCurso).filter(
+                m.ContratacaoCurso.usuario_id == usuario.id,
+                m.ContratacaoCurso.origem.in_(('ADMIN', 'PAGAMENTO')),
+                m.ContratacaoCurso.data_fim <= agora,
+                m.ContratacaoCurso.data_inicio <= m.ContratacaoCurso.data_fim):
+            curso = db.get(m.Curso, acesso.curso_id)
+            if curso:
+                rows.append({'curso_id': curso.id, 'nome_curso': curso.nome, 'ativo': False,
+                             'contratacao_id': acesso.id, 'data_inicio': acesso.data_inicio,
+                             'data_fim': acesso.data_fim})
         return sorted(rows, key=lambda x: x['data_inicio'], reverse=True)
 
     @app.get('/me/cursos/{curso_id}/desempenho')
@@ -72,13 +90,5 @@ def registrar_rotas(app, get_db, get_usuario, validar):
     @app.get('/me/cursos-expirados/{curso_id}/desempenho')
     def expirado(curso_id: int, contratacao_id: int | None = None, demonstracao_id: int | None = None,
                  db=Depends(get_db), usuario=Depends(get_usuario)):
-        if (contratacao_id is None) == (demonstracao_id is None):
-            raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
-        modelo, rid = (m.ContratacaoCurso, contratacao_id) if contratacao_id is not None else (m.DemonstracaoCurso, demonstracao_id)
-        acesso = db.query(modelo).filter_by(id=rid, usuario_id=usuario.id, curso_id=curso_id).first()
-        agora = datetime.utcnow()
-        if not acesso or acesso.data_fim is None or acesso.data_fim > agora or acesso.data_inicio > agora:
-            raise HTTPException(403, 'Contexto histórico expirado não encontrado')
-        if contratacao_id is not None and acesso.origem not in ('ADMIN', 'PAGAMENTO'):
-            raise HTTPException(403, 'Contratação inválida')
+        validar_contexto_historico(db, usuario, curso_id, contratacao_id, demonstracao_id)
         return consultar(db, usuario.id, curso_id, contratacao_id, demonstracao_id)

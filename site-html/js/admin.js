@@ -29,6 +29,7 @@ async function apiPost(path, body) {
 }
 
 async function apiGetAuth(path) {
+  if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
@@ -48,6 +49,7 @@ async function apiGetAuth(path) {
 }
 
 async function apiPostAuth(path, body) {
+  if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
@@ -73,6 +75,7 @@ async function apiPostAuth(path, body) {
 
 
 async function apiGetAuth(path) {
+  if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
@@ -92,6 +95,7 @@ async function apiGetAuth(path) {
 }
 
 async function apiPostAuth(path, body) {
+  if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
 
@@ -119,6 +123,7 @@ async function apiPostAuth(path, body) {
 // ======= GUARDA DO ADMIN =======
 async function requireAdmin() {
   try {
+    if (!window.Sessao) await carregarSessao();
     const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Você precisa estar logado para acessar o Admin.");

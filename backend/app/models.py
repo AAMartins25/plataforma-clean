@@ -415,6 +415,19 @@ class OportunidadeCompra(Base):
 
 class Pagamento(Base):
     __tablename__ = "pagamentos"
+    __table_args__ = (
+        Index("uq_pagamentos_checkout_identidade", "checkout_identidade", unique=True),
+        CheckConstraint("pagamento_origem_id IS NULL OR pagamento_origem_id <> id", name="ck_pagamentos_origem_distinta"),
+        Index("uq_pagamentos_mp_payment_id", "mp_payment_id", unique=True,
+              postgresql_where=text("mp_payment_id IS NOT NULL"),
+              sqlite_where=text("mp_payment_id IS NOT NULL")),
+    )
+
+    checkout_identidade = Column(String(43), nullable=True)
+    checkout_recebedor_id = Column(String(64), nullable=True)
+    checkout_meses = Column(Integer, nullable=True)
+
+    pagamento_origem_id = Column(Integer, ForeignKey("pagamentos.id"), nullable=True, index=True)
 
     contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=True, index=True)
     oportunidade_id = Column(Integer, ForeignKey("oportunidades_compra.id"), nullable=True, index=True)
@@ -424,6 +437,7 @@ class Pagamento(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
 
+    mp_status = Column(String(30), nullable=True)
     status = Column(String(50), nullable=False)
     valor_cents = Column(Integer, nullable=False, default=0)
 
@@ -522,6 +536,7 @@ class ReembolsoFinanceiro(Base):
 
     criado_em = Column(DateTime, default=datetime.utcnow)
     confirmado_em = Column(DateTime, nullable=True)
+    confirmado_por = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
 
     pagamento = relationship("Pagamento")
 
@@ -809,6 +824,24 @@ class MensagemConversaQuestao(Base):
     criada_em = Column(DateTime, default=datetime.utcnow)
 
     conversa = relationship("ConversaQuestaoProfessor", backref="mensagens")
+
+
+class ReformulacaoConversaOperacao(Base):
+    """Idempotency metadata only; never stores prior or replacement message text."""
+    __tablename__ = "reformulacoes_conversa_operacoes"
+    __table_args__ = (
+        CheckConstraint("curso_id > 0", name="ck_reformulacao_curso_positivo"),
+        CheckConstraint("(contratacao_id IS NULL) <> (demonstracao_id IS NULL)", name="ck_reformulacao_contexto_exclusivo"),
+        CheckConstraint("length(fingerprint) = 64", name="ck_reformulacao_fingerprint"),
+        UniqueConstraint("conversa_nova_id", name="uq_reformulacao_conversa_nova"),
+    )
+    operacao_id = Column(String(36), primary_key=True)
+    curso_id = Column(Integer, nullable=False)
+    contratacao_id = Column(Integer, nullable=True)
+    demonstracao_id = Column(Integer, nullable=True)
+    conversa_nova_id = Column(Integer, nullable=False)
+    fingerprint = Column(String(64), nullable=False)
+    criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 class QuestaoPraticaAssunto(Base):
     __tablename__ = "questoes_pratica_assunto"

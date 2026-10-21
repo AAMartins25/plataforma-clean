@@ -5,6 +5,10 @@
   function organizar(cabecalho) {
     if (cabecalho.classList.contains("ro-header")) return;
 
+    // O acesso à área do usuário é independente das ações Voltar/Sair da Home.
+    const acesso = cabecalho.matches(".home-header") ? cabecalho.querySelector(".home-nav-center") : null;
+    acesso?.remove();
+
     const titulos = document.createElement("div");
     titulos.className = "ro-header-titles";
     const navegacao = document.createElement("div");
@@ -23,6 +27,10 @@
 
     cabecalho.classList.add("ro-header");
     cabecalho.append(titulos, navegacao);
+    if (acesso) {
+      acesso.classList.add("ro-header-access");
+      cabecalho.append(acesso);
+    }
     for (const controle of navegacao.querySelectorAll("a, button")) {
       if (!controle.hasAttribute("aria-label") && controle.title) {
         controle.setAttribute("aria-label", controle.title);
@@ -38,17 +46,14 @@
     if (!primeiroNome) return;
 
     // Reutiliza a identificação ampliada já produzida pela página.
-    const ampliado = origem.title || origem.querySelector("div")?.textContent.trim() || primeiroNome;
-    const detalhes = document.createElement("details");
-    detalhes.className = "ro-identity";
-    const resumo = document.createElement("summary");
-    resumo.textContent = primeiroNome;
-    resumo.setAttribute("aria-label", `Identificação de ${primeiroNome}`);
-    const nome = document.createElement("div");
-    nome.className = "ro-identity-expanded";
-    nome.textContent = ampliado;
-    detalhes.append(resumo, nome);
-    origem.replaceChildren(detalhes);
+    const partes = (origem.title || origem.querySelector("div")?.textContent.trim() || primeiroNome).trim().split(/\s+/);
+    const ampliado = partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : partes[0];
+    const nome = document.createElement("span");
+    nome.className = "ro-identity";
+    nome.textContent = primeiroNome;
+    nome.dataset.nomeAmpliado = ampliado;
+    origem.removeAttribute("title");
+    origem.replaceChildren(nome);
     origem.classList.add("ro-header-identity");
     cabecalho.prepend(origem);
     cabecalho.classList.add("ro-header--identified");

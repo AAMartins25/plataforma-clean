@@ -127,7 +127,7 @@
 
 <footer>
   <p>
-    © <span id="ano_atual"></span> - Quality Estudos
+    © <span id="ano_atual">2026</span> RO
   </p>
 </footer>
 
@@ -634,6 +634,9 @@ function editarAnotacao(id) {
     return;
   }
 
+  box.closest(".minhas-anotacoes-anotacao-card")
+    .querySelector(".minhas-anotacoes-acoes").style.display = "none";
+
   box.innerHTML = `
     <div class="minhas-anotacoes-bloco-aluno-titulo">
       Editar minha anotação:
@@ -780,7 +783,7 @@ const anoAtual =
 
 if (anoAtual) {
   anoAtual.textContent =
-    new Date().getFullYear();
+    2026;
 }
 
 exibirNomeUsuarioLogadoAnotacoes();

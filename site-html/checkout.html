@@ -151,7 +151,7 @@
   </main>
 
   <footer style="margin-top:4px;">
-    <p>© <span id="ano_atual"></span> - Quality Estudos</p>
+    <p>© <span id="ano_atual">2026</span> RO</p>
   </footer>
 
   <script src="js/app.js?v=aceite-1"></script>
@@ -330,6 +330,7 @@
         }
 
         const aceite = await Juridico.payload();
+        if (sequencia !== sequenciaCheckout) return;
         const tempoId = selecionado.dataset.tempoId;
 
         msg.textContent = "Abrindo checkout do Mercado Pago...";
@@ -404,7 +405,7 @@
     }
 
     const anoAtual = document.getElementById("ano_atual");
-    if (anoAtual) anoAtual.textContent = new Date().getFullYear();
+    if (anoAtual) anoAtual.textContent = 2026;
 
     document.getElementById("btnAplicarCupom").onclick = aplicarCupomCursoInfo;
     document.getElementById("codigo_cupom_desconto").oninput = invalidarCupomDigitado;

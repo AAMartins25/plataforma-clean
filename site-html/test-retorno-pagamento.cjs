@@ -13,6 +13,8 @@ function ambiente(pagina='pagamento_sucesso.html',search='?payment_id=123&status
  s.document.querySelectorAll=()=>[];
  vm.createContext(s);vm.runInContext(fs.readFileSync(__dirname+'/js/sessao.js','utf8'),s);
  s.Sessao=s.window.Sessao;
+ // Política desativada nesta fixture: mantém o fluxo financeiro original.
+ s.Juridico={payload:async()=>({}),erro:async()=>{}};
  vm.runInContext(app,s);
  s.apiPostAuth=async(url,payload)=>{pedidos.push({url,payload});return s.resultado};
  const html=fs.readFileSync(__dirname+'/'+pagina,'utf8');
@@ -68,7 +70,7 @@ for(const search of ['?curso_id=1&demonstracao_id=2&origem=cursos','?curso_id=1&
 });
 test('restauração ignora resposta antiga sem redirecionar ou alterar nova operação',async()=>{
  const x=ambiente('checkout.html','?curso_id=1');let resolver;x.s.apiPostAuth=()=>new Promise(r=>resolver=r);
- const abertura=x.s.adquirirAgora();x.eventos.pageshow({persisted:true});resolver({init_point:'https://example.com/antigo'});await abertura;assert.equal(x.s.window.location.href,'checkout.html');assert.equal(x.elementos.btnAdquirirAgora.disabled,false);
+ const abertura=x.s.adquirirAgora();await new Promise(resolve=>setImmediate(resolve));x.eventos.pageshow({persisted:true});resolver({init_point:'https://example.com/antigo'});await abertura;assert.equal(x.s.window.location.href,'checkout.html');assert.equal(x.elementos.btnAdquirirAgora.disabled,false);
 });
 test('falha de abertura restaura botão e permite nova tentativa',async()=>{
  const x=ambiente('checkout.html','?curso_id=1');x.s.apiPostAuth=async()=>{throw Error('Falha de rede')};await x.s.adquirirAgora();assert.equal(x.elementos.btnAdquirirAgora.disabled,false);assert.match(x.elementos.msgCheckout.textContent,/Falha de rede/);
@@ -96,4 +98,23 @@ test('consulta inicial preservada e nenhuma promessa fictícia de e-mail',async(
  assert.equal(x.pedidos.length,1);assert.equal(x.timers.length,0);
  assert.doesNotMatch(x.elementos.msg.textContent,/e-mail/);
  assert.doesNotMatch(x.elementos.msgComplemento.textContent,/e-mail/);
+});
+
+for(const flag of [false,undefined,'true',true])test('mensagem de e-mail depende de aceitação persistente booleana '+String(flag),async()=>{
+ const x=ambiente();x.s.resultado=resultado('PENDING',{email_instrucoes_aceito:flag});await x.s.verificarPagamento();
+ assert.equal(x.elementos.msg.textContent,flag===true?'Enviamos para seu e-mail as instruções para continuar o pagamento. Consulte sua caixa de entrada e, se necessário, a pasta de spam.':'Seu pagamento ainda não foi confirmado.');
+ if(flag!==true)assert.equal(x.elementos.msgComplemento.textContent,'O acesso ao curso será liberado após a confirmação!');
+});
+test('aprovação não acrescenta promessa de e-mail',async()=>{
+ const x=ambiente();x.s.resultado=resultado('APPROVED',{email_instrucoes_aceito:true});await x.s.verificarPagamento();
+ assert.doesNotMatch(x.elementos.msg.textContent,/e-mail/);
+});
+
+
+test('restauração durante consulta jurídica cancela abertura antes de chamar pagamento',async()=>{
+ const x=ambiente('checkout.html','?curso_id=1');let confirmarAceite;
+ x.s.Juridico.payload=()=>new Promise(resolve=>confirmarAceite=resolve);
+ const abertura=x.s.adquirirAgora();x.eventos.pageshow({persisted:true});
+ confirmarAceite({});await abertura;
+ assert.equal(x.pedidos.length,0);assert.equal(x.elementos.btnAdquirirAgora.disabled,false);
 });

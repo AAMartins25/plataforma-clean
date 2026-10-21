@@ -17,7 +17,7 @@ const {execFileSync} = require('node:child_process');
    const url=new URL(route.request().url());
    if(url.hostname==='127.0.0.1') {
     if(baseline && [file,'js/app.js'].includes(url.pathname.slice(1))) {
-     return route.fulfill({body:execFileSync('git',['show',`HEAD:site-html${url.pathname}`]),contentType:url.pathname.endsWith('.js')?'application/javascript':'text/html'});
+     return route.fulfill({body:execFileSync('git',['show',`${process.env.ACEITE_BASE_REF || "HEAD"}:site-html${url.pathname}`]),contentType:url.pathname.endsWith('.js')?'application/javascript':'text/html'});
     }
     const arquivo=path.join(process.cwd(),'site-html',url.pathname);
     if(!fs.existsSync(arquivo)) return route.fulfill({status:404,body:''});

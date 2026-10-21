@@ -9,36 +9,25 @@
   <script src="js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="consulta-expirada-page">
 
 <header>
-  <h1 id="titulo_topo">📘 Curso</h1>
+    <div id="nome_aluno_logado"></div>
+  <div class="historico-header-identificacao">
+      <h1 id="titulo_topo">📘 Curso</h1>
+      <h2>Mensagens que enviei ao prof</h2>
+    </div>
 
-  <nav style="
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
-  ">
-    <a class="btn"
-       href="javascript:void(0)"
-       onclick="voltarCursoExpirado()">
-      Voltar
-    </a>
-
-    <a href="javascript:void(0)"
-       class="btn"
-       onclick="logout()">
-      Sair
-    </a>
-  </nav>
+  <nav class="ro-header-icon-actions">
+      <a class="btn" href="javascript:void(0)" onclick="voltarCursoExpirado()" title="Voltar" aria-label="Voltar">⇦</a>
+      <a class="btn" href="index.html" title="Início" aria-label="Início">⌂</a>
+      <a class="btn" href="javascript:void(0)" onclick="logout()" title="Sair" aria-label="Sair">⎋</a>
+    </nav>
 </header>
 
 <main class="container">
 
   <div class="card">
-    <h2>💬 Mensagens que enviei ao prof</h2>
 
     <div id="lista_mensagens" class="list">
       <p>Carregando mensagens...</p>
@@ -48,7 +37,7 @@
 </main>
 
 <footer>
-  <p>© 2026 - Plataforma Quality Estudos</p>
+  <p>© 2026 RO</p>
 </footer>
 
 <script>
@@ -64,7 +53,12 @@ function getToken(){
     return localStorage.getItem("access_token");
 }
 
-function logout(){
+function contextoExpirado() {
+      return new URLSearchParams(['contratacao_id', 'demonstracao_id']
+        .filter(key => qs(key)).map(key => [key, qs(key)])).toString();
+    }
+
+    function logout(){
     Sessao.encerrar();
     window.location.href="index.html";
 }
@@ -87,7 +81,7 @@ function voltarCursoExpirado(){
         `curso-expirado.html?curso_id=${encodeURIComponent(cursoId)}`
         +`&curso_nome=${encodeURIComponent(cursoNome)}`
         +`&data_inicio=${encodeURIComponent(dataInicio)}`
-        +`&data_fim=${encodeURIComponent(dataFim)}`;
+        +`&data_fim=${encodeURIComponent(dataFim)}&${contextoExpirado()}`;
 }
 
 async function apiGet(path){
@@ -116,7 +110,11 @@ async function carregarMensagens(){
 
     try{
 
-        await apiGet("/me");
+        const aluno = await apiGet("/me");
+        const nome = document.getElementById("nome_aluno_logado");
+        const partes = String(aluno?.nome || "").trim().split(/\s+/).filter(Boolean);
+        nome.textContent = partes[0] || "";
+        nome.title = partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : (partes[0] || "");
 
         const cursoId=qs("curso_id");
 
@@ -135,7 +133,7 @@ async function carregarMensagens(){
 
         const conversas=
             await apiGet(
-                `/me/cursos-expirados/${cursoId}/mensagens-prof`
+                `/me/cursos-expirados/${cursoId}/mensagens-prof?${contextoExpirado()}`
             );
 
         if(!conversas || conversas.length===0){

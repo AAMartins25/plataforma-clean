@@ -14,10 +14,11 @@
     rel="stylesheet"
     href="../css/style.css"
   />
+  <link rel="stylesheet" href="../css/admin-shell.css" />
   <script src="../js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="admin-shell">
 
   <header
     style="
@@ -149,13 +150,6 @@
 
           <a
             class="btn"
-            href="reembolsos.html"
-          >
-            Reembolso
-          </a>
-
-          <a
-            class="btn"
             href="atendimento.html"
           >
             Atendimento
@@ -211,6 +205,11 @@
           Cupons
         </a>
 
+        <a class="btn" href="reembolsos.html">
+          Reembolsos Solicitados
+        </a>
+        <a class="btn" href="contestacoes.html">Contestações de Cartão</a>
+
       </div>
 
       </section>
@@ -241,7 +240,7 @@
 
   <footer>
     <p>
-      © <span id="ano_atual"></span> - Quality Estudos
+      © <span id="ano_atual">2026</span> RO
     </p>
   </footer>
 
@@ -264,7 +263,7 @@
     const anoAtual = document.getElementById("ano_atual");
 
     if (anoAtual) {
-      anoAtual.textContent = new Date().getFullYear();
+      anoAtual.textContent = 2026;
     }
 
     requireAdmin();

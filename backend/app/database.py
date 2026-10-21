@@ -1,5 +1,6 @@
 import os
 from urllib.parse import quote_plus, urlparse
+from app.financeiro_transacional import configuracao_pool
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.models import Base, TABELAS_JURIDICAS
@@ -56,7 +57,8 @@ else:
 if is_cloud:
     engine = create_engine(
         DATABASE_URL,
-        connect_args={"prepare_threshold": None}
+        **configuracao_pool(),
+        connect_args={"prepare_threshold": None, "connect_timeout": 5}
     )
 else:
     engine = create_engine(DATABASE_URL)

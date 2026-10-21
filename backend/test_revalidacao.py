@@ -1,247 +1,55 @@
-from datetime import datetime, timedelta
+"""Revalidação com identidade real em banco isolado e MP simulado."""
+from datetime import datetime,timedelta
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
-from dateutil.relativedelta import relativedelta
-from app.models import PeriodoAcessoPagamento
-from app.main import admin_revalidar_pagamento
-
-
-def preparar_db_revalidacao(pagamento, acesso_atual, meses=4):
-    db = MagicMock()
-
-    pag = {
-        "id": pagamento.id,
-        "usuario_id": pagamento.usuario_id,
-        "curso_id": pagamento.curso_id,
-        "tempo_acesso_id": pagamento.tempo_acesso_id,
-        "aprovado_em": pagamento.aprovado_em,
-        "criado_em": pagamento.criado_em,
-    }
-
-    db.execute.return_value.mappings.return_value.first.return_value = pag
-    db.execute.return_value.scalar_one.return_value = "PENDENTE"
-
-    # Usuario: lock de serialização.
-    db.query.return_value.filter.return_value.with_for_update.return_value.one.return_value = (
-        SimpleNamespace(id=pagamento.usuario_id)
-    )
-
-    # Pagamento: objeto ORM usado pela implementação atual.
-    db.query.return_value.filter.return_value.with_for_update.return_value.populate_existing.return_value.one.return_value = (
-        pagamento
-    )
-
-    # Consultas simples: acesso atual e prazo contratado.
-    db.query.return_value.filter.return_value.first.side_effect = [
-        acesso_atual,
-        SimpleNamespace(meses=meses),
-    ]
-
-    return db
-
-
-def resposta_mp(payment_id, pagamento_id, data_aprovacao):
-    resposta = MagicMock()
-    resposta.status_code = 200
-    resposta.json.return_value = {
-        "id": payment_id,
-        "status": "approved",
-        "external_reference": (
-            f"user:87|curso:1|tempo:1|pagamento:{pagamento_id}"
-        ),
-        "date_approved": data_aprovacao,
-        "transaction_amount": 49.90,
-        "currency_id": "BRL",
-    }
-    return resposta
-
-
-def novo_pagamento(id_pagamento, criado_em):
-    return SimpleNamespace(
-        id=id_pagamento,
-        usuario_id=87,
-        curso_id=1,
-        tempo_acesso_id=1,
-        valor_cents=4990,
-        tipo_compra="NOVA",
-        vencimento_original=None,
-        ocorrencia_financeira=None,
-        oportunidade_id=None,
-        contratacao_id=None,
-        mp_payment_id=None,
-        aprovado_em=None,
-        status="PENDENTE",
-        criado_em=criado_em,
-        atualizado_em=None,
-    )
-
-
-def test_compra_vencida_nao_reativa_acesso():
-    data_aprovacao = datetime.utcnow() - timedelta(days=200)
-    pagamento = novo_pagamento(154, data_aprovacao)
-    db = preparar_db_revalidacao(pagamento, None)
-
-    resposta = resposta_mp(
-        "pagamento_teste",
-        154,
-        data_aprovacao.isoformat() + "Z",
-    )
-
-    with (
-        patch("app.main.requests.get", return_value=resposta),
-        patch("app.main.mp_headers", return_value={}),
-    ):
-        resultado = admin_revalidar_pagamento(
-            payload={"mp_payment_id": "pagamento_teste"},
-            db=db,
-            usuario=SimpleNamespace(is_admin=True),
-        )
-
-    comandos = [
-        str(chamada.args[0])
-        for chamada in db.execute.call_args_list
-    ]
-
-    assert resultado["status"] == "APPROVED"
-    assert resultado["liberou_acesso"] is False
-    assert not any("INSERT INTO acessos_curso" in sql for sql in comandos)
-    assert pagamento.aprovado_em == data_aprovacao
-    db.commit.assert_called_once()
-
-
-def test_compra_vigente_libera_acesso():
-    data_aprovacao = datetime.utcnow() - timedelta(days=1)
-    pagamento = novo_pagamento(155, datetime.utcnow())
-    db = preparar_db_revalidacao(pagamento, None)
-
-    resposta = resposta_mp(
-        "pagamento_teste_vigente",
-        155,
-        data_aprovacao.isoformat() + "Z",
-    )
-
-    with (
-        patch("app.main.requests.get", return_value=resposta),
-        patch("app.main.mp_headers", return_value={}),
-    ):
-        resultado = admin_revalidar_pagamento(
-            payload={"mp_payment_id": "pagamento_teste_vigente"},
-            db=db,
-            usuario=SimpleNamespace(is_admin=True),
-        )
-
-    comandos = [
-        str(chamada.args[0])
-        for chamada in db.execute.call_args_list
-    ]
-
-    assert resultado["status"] == "APPROVED"
-    assert resultado["liberou_acesso"] is True
-    assert any("INSERT INTO acessos_curso" in sql for sql in comandos)
-    assert pagamento.aprovado_em == data_aprovacao
-    db.commit.assert_called_once()
-
-    assert db.add.call_count == 2
-    tipos = {
-        type(chamada.args[0]).__name__
-        for chamada in db.add.call_args_list
-    }
-    assert tipos == {"ContratacaoCurso", "PeriodoAcessoPagamento"}
-
-    periodo = db.add.call_args.args[0]
-
-    assert isinstance(periodo, PeriodoAcessoPagamento)
-    assert periodo.pagamento_id == 155
-    assert periodo.usuario_id == 87
-    assert periodo.curso_id == 1
-    assert periodo.data_fim == (
-        periodo.data_inicio + relativedelta(months=4)
-    )
-
-
-def test_compra_antiga_nao_reduz_prazo_atual():
-    data_aprovacao = datetime.utcnow() - timedelta(days=30)
-    pagamento = novo_pagamento(156, datetime.utcnow())
-
-    inicio_atual = datetime.utcnow() - timedelta(days=10)
-    fim_atual = datetime.utcnow() + timedelta(days=300)
-
-    acesso_atual = SimpleNamespace(
-        data_inicio=inicio_atual,
-        data_fim=fim_atual,
-    )
-
-    db = preparar_db_revalidacao(pagamento, acesso_atual)
-
-    resposta = resposta_mp(
-        "pagamento_antigo",
-        156,
-        data_aprovacao.isoformat() + "Z",
-    )
-
-    with (
-        patch("app.main.requests.get", return_value=resposta),
-        patch("app.main.mp_headers", return_value={}),
-    ):
-        resultado = admin_revalidar_pagamento(
-            payload={"mp_payment_id": "pagamento_antigo"},
-            db=db,
-            usuario=SimpleNamespace(is_admin=True),
-        )
-
-    insercoes = [
-        chamada
-        for chamada in db.execute.call_args_list
-        if "INSERT INTO acessos_curso" in str(chamada.args[0])
-    ]
-
-    assert len(insercoes) == 1
-
-    sql = str(insercoes[0].args[0])
-    parametros = insercoes[0].args[1]
-
-    # A nova compra envia seu próprio período ao UPSERT.
-    # O CASE do SQL é quem preserva o acesso agregado mais longo já existente.
-    assert parametros["inicio"] == data_aprovacao
-    assert parametros["fim"] < fim_atual
-    assert "acessos_curso.data_fim > :fim" in sql
-    assert "THEN acessos_curso.data_inicio" in sql
-    assert "THEN acessos_curso.data_fim" in sql
-    assert resultado["status"] == "APPROVED"
-    db.commit.assert_called_once()
-
-
 import pytest
 from fastapi import HTTPException
+from app import models as m
+from test_compras_fluxo import ambiente_compra,motor,contrato
+from test_transacoes_mp import preparar
 
+def revalidar(ambiente):
+    with ambiente[2]() as db:
+        try:
+            return ambiente[0].admin_revalidar_pagamento({'mp_payment_id':'101'},db,SimpleNamespace(is_admin=True))
+        except Exception:
+            db.rollback();raise
 
-@pytest.mark.parametrize(
-    "status_reembolso",
-    ["REFUND_REQUESTED", "REFUND_IN_PROCESS", "REFUNDED"],
-)
-def test_pagamento_reembolsado_nao_pode_ser_revalidado(status_reembolso):
-    db = MagicMock()
+@pytest.mark.parametrize('dias,libera',[(200,False),(1,True)])
+def test_compra_vencida_ou_vigente(ambiente_compra,dias,libera):
+    pid,dados,tx,_=preparar(ambiente_compra);tx['101']=dados(101,'approved')
+    aprovacao=datetime.utcnow()-timedelta(days=dias)
+    tx['101']['date_approved']=aprovacao.isoformat()+'Z'
+    r=revalidar(ambiente_compra)
+    assert r['liberou_acesso']==libera
+    with ambiente_compra[2]() as db:
+        assert db.query(m.PeriodoAcessoPagamento).one().data_inicio==aprovacao
+        assert db.get(m.Pagamento,pid).aprovado_em==aprovacao
+    assert revalidar(ambiente_compra)['liberou_acesso'] is False
 
-    pagamento = {
-        "id": 157,
-        "usuario_id": 87,
-        "curso_id": 1,
-        "tempo_acesso_id": 1,
-        "aprovado_em": datetime.utcnow(),
-        "criado_em": datetime.utcnow(),
-    }
+@pytest.mark.parametrize('status',['REFUND_REQUESTED','REFUND_IN_PROCESS','REFUNDED'])
+def test_reconciliacao_nao_sobrescreve_reembolso(ambiente_compra,status):
+    pid,_,_,_=preparar(ambiente_compra)
+    with ambiente_compra[2]() as db:
+        db.get(m.Pagamento,pid).status=status;db.commit()
+    retorno=revalidar(ambiente_compra)
+    assert retorno['status']==status and not retorno['liberou_acesso']
+    with ambiente_compra[2]() as db:
+        assert db.get(m.Pagamento,pid).status==status
+        assert db.get(m.Pagamento,pid).mp_payment_id == '101'
+        assert db.get(m.Pagamento,pid).mp_status == 'PENDING'
 
-    db.execute.return_value.mappings.return_value.first.return_value = pagamento
-    db.execute.return_value.scalar_one.return_value = status_reembolso
+def test_compra_antiga_nao_reduz_prazo_atual(ambiente_compra):
+    _,dados,tx,_=preparar(ambiente_compra)
+    tx['101']=dados(101,'approved')
+    tx['101']['date_approved']=(datetime.utcnow()-timedelta(days=60)).isoformat()+'Z'
+    with ambiente_compra[2]() as db:
+        limite=datetime.utcnow()+timedelta(days=300)
+        db.add(m.AcessoCurso(usuario_id=1,curso_id=1,ativo=True,data_inicio=datetime.utcnow(),data_fim=limite));db.commit()
+    revalidar(ambiente_compra)
+    with ambiente_compra[2]() as db:assert db.query(m.AcessoCurso).one().data_fim==limite
 
-    with patch("app.main.requests.get") as consulta_mp:
+def test_revalidacao_exige_admin(ambiente_compra):
+    with ambiente_compra[2]() as db:
         with pytest.raises(HTTPException) as erro:
-            admin_revalidar_pagamento(
-                payload={"mp_payment_id": "pagamento_reembolsado"},
-                db=db,
-                usuario=SimpleNamespace(is_admin=True),
-            )
-
-    assert erro.value.status_code == 409
-    consulta_mp.assert_not_called()
-    db.commit.assert_not_called()
+            ambiente_compra[0].admin_revalidar_pagamento({'mp_payment_id':'101'},db,SimpleNamespace(is_admin=False))
+    assert erro.value.status_code==403

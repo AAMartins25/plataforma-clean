@@ -9,19 +9,17 @@
   <script src="js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="consulta-expirada-page">
   <header>
-    <h1 id="titulo_curso">📘 Curso</h1>
+    <div id="nome_aluno_logado"></div>
+    <div class="historico-header-identificacao">
+      <h1 id="titulo_curso">📘 Curso</h1>
+    </div>
 
-    <nav style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
-      <a
-        class="btn"
-        href="javascript:void(0)"
-        onclick="voltarParaCursosExpirados()"
-      >
-        Voltar
-      </a>
-      <a href="javascript:void(0)" class="btn" onclick="logout()">Sair</a>
+    <nav class="ro-header-icon-actions">
+      <a class="btn" href="javascript:void(0)" onclick="voltarParaCursosExpirados()" title="Voltar" aria-label="Voltar">⇦</a>
+      <a class="btn" href="index.html" title="Início" aria-label="Início">⌂</a>
+      <a class="btn" href="javascript:void(0)" onclick="logout()" title="Sair" aria-label="Sair">⎋</a>
     </nav>
   </header>
 
@@ -44,12 +42,17 @@
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>© 2026 RO</p>
   </footer>
 
   <script>
     function qs(name) {
       return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function contextoExpirado() {
+      return new URLSearchParams(['contratacao_id', 'demonstracao_id']
+        .filter(key => qs(key)).map(key => [key, qs(key)])).toString();
     }
 
     function logout() {
@@ -95,13 +98,13 @@
       `disciplinas-expirado.html?curso_id=${encodeURIComponent(cursoId)}` +
       `&curso_nome=${encodeURIComponent(cursoNome)}` +
       `&data_inicio=${encodeURIComponent(dataInicioRaw)}` +
-      `&data_fim=${encodeURIComponent(dataFimRaw)}`;
+      `&data_fim=${encodeURIComponent(dataFimRaw)}` + `&${contextoExpirado()}`;
 
     document.getElementById("link_anotacoes").href =
-      `minhas-anotacoes-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+      `minhas-anotacoes-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}` + `&${contextoExpirado()}`;
 
     document.getElementById("link_mensagens").href =
-      `mensagens-prof-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}`;
+      `mensagens-prof-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}` + `&${contextoExpirado()}`;
 
     document.getElementById("link_desempenho").href =
       `desempenho-expirado.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}&data_inicio=${encodeURIComponent(dataInicioRaw)}&data_fim=${encodeURIComponent(dataFimRaw)}&${new URLSearchParams(['contratacao_id','demonstracao_id'].filter(k => qs(k)).map(k => [k, qs(k)]))}`;
@@ -111,6 +114,22 @@
       window.location.href = "cursos.html";
     }
 
+  </script>
+<script>
+    // Identificação visual pelo mecanismo de sessão compartilhado.
+    (async () => {
+      const origem = Sessao.snapshot();
+      try {
+        const aluno = await Sessao.obterMe("https://plataforma-quality-backend.onrender.com/me");
+        if (!Sessao.mesma(origem)) return;
+        const partes = String(aluno?.nome || "").trim().split(/\s+/).filter(Boolean);
+        const nome = document.getElementById("nome_aluno_logado");
+        nome.textContent = partes[0] || "";
+        nome.title = partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : (partes[0] || "");
+      } catch (_) {
+        // A identificação não impede a apresentação das consultas.
+      }
+    })();
   </script>
 </body>
 </html>

@@ -9,7 +9,7 @@
   <script src="js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="atendimento-page">
   <header
     style="
       padding-top:8px;
@@ -26,18 +26,12 @@
       "
     >
       <h1
-        style="
-          margin:-6px 0 0 0;
-          font-size:1.5rem;
-          text-align:center;
-          transform:translateY(-5px);
-        "
       >
         Falar com a Quality
       </h1>
     </div>
 
-    <nav
+    <nav class="ro-header-icon-actions"
       style="
         position:absolute;
         right:24px;
@@ -111,7 +105,7 @@
 
   <footer>
     <p>
-      © <span id="ano_atual"></span> - Quality Estudos
+      © <span id="ano_atual">2026</span> RO
     </p>
   </footer>
 
@@ -416,7 +410,7 @@
 
     if (anoAtual) {
       anoAtual.textContent =
-        new Date().getFullYear();
+        2026;
     }
   </script>
 </body>

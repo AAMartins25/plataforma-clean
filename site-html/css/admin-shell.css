@@ -1,0 +1,108 @@
+/* Estrutura visual administrativa, ativada apenas por adesão explícita da página.
+   Reutiliza cabecalho.js e as variáveis de identidade do style.css. */
+body.admin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+.admin-shell header.ro-header {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+.admin-shell .ro-header .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 1 !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-shell .ro-header .ro-header-titles > * {
+  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+}
+.admin-shell .ro-header .ro-header-titles h1 {
+  font-size: 1.25rem !important; /* Substitui somente o tamanho inline legado. */
+  line-height: 1.3;
+}
+.admin-shell .ro-header .ro-header-navigation {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+  justify-content: flex-end;
+}
+.admin-shell .ro-header .ro-header-identity {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  min-width: 0;
+  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  color: #4b5563;
+  opacity: 0.78;
+  letter-spacing: 0.4px;
+}
+.admin-shell .ro-header .ro-identity {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  height: 44px;
+  min-width: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-shell .ro-header .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-shell .ro-header .ro-header-navigation .btn {
+  height: 44px !important;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--azul);
+  font-size: 0.82rem;
+  font-weight: 400;
+  text-decoration: none;
+  box-shadow: none;
+}
+.admin-shell .ro-header .ro-header-navigation .btn:hover {
+  background: transparent;
+  color: var(--azul);
+  opacity: 0.72;
+  text-decoration: none;
+  transform: none;
+  box-shadow: none;
+}
+.admin-shell main.container {
+  flex: 1 0 auto;
+  width: 100%;
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+.admin-shell > footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 24px 15px;
+}
+@media (max-width: 480px) {
+  .admin-shell .ro-header .ro-header-titles {
+    padding-top: 44px;
+  }
+  .admin-shell .ro-header .ro-header-titles > * {
+    max-width: 100%;
+  }
+  .admin-shell .ro-header .ro-header-identity {
+    grid-column: 1 / -1;
+    max-width: 100% !important;
+  }
+}
+
+/* Reembolsos: neutraliza o seletor legado compartilhado com a página do aluno. */
+body.admin-shell:has(#listaReembolsos) header nav .btn {
+  font-size: 0.82rem;
+}
+body.admin-shell:has(#listaReembolsos) header nav {
+  gap: 8px !important;
+}

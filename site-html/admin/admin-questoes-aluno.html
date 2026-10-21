@@ -7,10 +7,12 @@
     <title>Questões para o aluno</title>
 
     <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin-responsivo.css">
+  <link rel="stylesheet" href="../css/admin-shell.css" />
   <script src="../js/cabecalho.js" defer></script>
 </head>
 
-<body>
+<body class="admin-shell">
 
 <header
   style="
@@ -126,7 +128,7 @@
 
 <footer>
   <p>
-    © <span id="ano_atual"></span> - Quality Estudos
+    © <span id="ano_atual">2026</span> RO
   </p>
 </footer>
 
@@ -149,7 +151,7 @@ AdminQuestoesAluno.init();
   const anoAtual = document.getElementById("ano_atual");
 
   if (anoAtual) {
-    anoAtual.textContent = new Date().getFullYear();
+    anoAtual.textContent = 2026;
   }
 </script>
 

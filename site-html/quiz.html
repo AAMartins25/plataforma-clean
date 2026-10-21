@@ -25,7 +25,7 @@
   </main>
 
   <footer>
-    <p>© 2026 - Plataforma Quality Estudos</p>
+    <p>© 2026 RO</p>
   </footer>
 
   <script>
@@ -40,7 +40,7 @@
     }
     async function apiGet(path){
       const url = `${API_BASE}${path}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {headers: {Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`}});
       if(!res.ok){
         const txt = await res.text();
         throw new Error(`Erro ${res.status} em ${url}\n${txt}`);

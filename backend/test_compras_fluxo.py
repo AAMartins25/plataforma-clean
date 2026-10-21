@@ -15,20 +15,38 @@ from test_questoes_pratica_patch import carregar_main_isolado
 def motor():
     engine=create_engine('sqlite://',connect_args={'check_same_thread':False},poolclass=StaticPool)
     @event.listens_for(engine,'connect')
-    def fk(c,_): c.execute('PRAGMA foreign_keys=ON')
+    def fk(c,_):
+        c.execute('PRAGMA foreign_keys=ON')
+        c.create_function('BTRIM',1,lambda value:value.strip() if value is not None else None)
     yield engine
     engine.dispose()
 
 @pytest.fixture
-def ambiente_compra(motor):
+def ambiente_compra(motor, monkeypatch):
+    monkeypatch.setenv("MP_COLLECTOR_ID", "123456")
     tabelas={modelo.__table__ for modelo in (m.Usuario,m.Curso,m.TempoAcessoCurso,m.ContratacaoCurso,
         m.DemonstracaoCurso,m.AcessoCurso,m.Vendedor,m.CupomDesconto,m.OportunidadeCompra,
-        m.Pagamento,m.PeriodoAcessoPagamento,m.ConcessaoAcessoAdmin)}
+        m.Pagamento,m.PeriodoAcessoPagamento,m.ConcessaoAcessoAdmin,
+        m.ReembolsoFinanceiro,m.ContestacaoPagamento)}
     while True:
         dependencias={fk.column.table for tabela in tabelas for fk in tabela.foreign_keys}
         if dependencias <= tabelas: break
         tabelas |= dependencias
     m.Base.metadata.create_all(motor,tables=list(tabelas))
+    # Estruturas operacionais somente no banco isolado fornecido pela fixture.
+    from app.pausa_financeira import metadata, controle, agora
+    if motor.dialect.name == 'postgresql':
+        from pathlib import Path
+        with motor.connect() as c:
+            c.connection.driver_connection.execute((Path(__file__).parent/
+                'migrations/016_pausa_financeira_webhooks.sql').read_text())
+            for script in ('014_pagamentos_multiplas_transacoes.sql','015_reembolsos_manual_auditoria.sql','017_checkout_identidade_segura.sql','018_isolamento_notificacoes_historicas.sql'):
+                c.connection.driver_connection.execute((Path(__file__).parent/'migrations'/script).read_text())
+    else:
+        metadata.create_all(motor)
+        with motor.begin() as c:
+            c.execute(controle.insert().values(id=1,modo='NORMAL',geracao=0,
+                alterado_em=agora(),motivo='fixture isolada'))
     with motor.begin() as c: c.execute(text('CREATE UNIQUE INDEX test_acesso_unico ON acessos_curso(usuario_id,curso_id)'))
     factory=sessionmaker(bind=motor,autoflush=False)
     with factory() as db:
@@ -41,7 +59,7 @@ def ambiente_compra(motor):
     with carregar_main_isolado(factory,motor) as main:
         main.MP_ACCESS_TOKEN="simulado-sem-validade"
         main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=1,email='1@teste.local',is_admin=False)
-        response=Mock(status_code=201);response.json.return_value={'id':'pref_teste','init_point':'https://example.com/simulado'}
+        response=Mock(status_code=201);response.json.return_value={'id':'pref_teste','init_point':'https://example.com/simulado','collector_id':123456}
         with patch.object(main.requests,'post',return_value=response) as post,patch.object(main.requests,'get',return_value=response) as get:
             with TestClient(main.app) as client: yield main,client,factory,post,get
         main.app.dependency_overrides.clear()
@@ -149,13 +167,16 @@ def test_pendente_reutilizado_sem_cobrar_novamente(ambiente_compra):
     assert post.call_count==1 and get.call_count==1
     with factory() as db:assert db.query(m.Pagamento).count()==1
 
-def test_falha_mp_rollback(ambiente_compra):
+def test_falha_mp_preserva_identidade_e_bloqueia_reenvio(ambiente_compra):
     _,c,factory,post,_=ambiente_compra
     post.return_value.status_code=500;post.return_value.text='simulado'
     assert c.post('/checkout/mercadopago',json={'tempo_acesso_id':1}).status_code==502
     with factory() as db:
-        assert db.query(m.Pagamento).count()==0
-        assert db.query(m.OportunidadeCompra).count()==0
+        assert db.query(m.Pagamento).one().status=='CHECKOUT_INDEFINIDO'
+        assert db.query(m.OportunidadeCompra).count()==1
+        assert db.query(m.ContratacaoCurso).count()==0
+    assert c.post('/checkout/mercadopago',json={'tempo_acesso_id':1}).status_code==409
+    assert post.call_count==1
 
 def test_concessao_admin_sem_limite_e_preserva_historico(ambiente_compra):
     main,c,factory,_,_=ambiente_compra
@@ -177,16 +198,19 @@ def test_confirmacao_webhook_idempotencia_e_cobranca_legada(ambiente_compra):
     main,c,factory,_,get=ambiente_compra
     compra=c.post('/checkout/mercadopago',json={'tempo_acesso_id':1}).json()
     pid=compra['pagamento_id']
+    with factory() as db:
+        identidade = db.get(m.Pagamento, pid).checkout_identidade
     def aprovado(pagamento):
-        return {'id':'mp_simulado','status':'approved','date_approved':datetime.utcnow().isoformat()+'Z',
+        return {'id':'801','status':'approved','date_approved':datetime.utcnow().isoformat()+'Z',
             'transaction_amount':49.90,'currency_id':'BRL',
-            'external_reference':f'user:1|curso:1|tempo:1|pagamento:{pagamento}'}
+            'external_reference':('checkout:'+identidade if pagamento==pid else f'user:1|curso:1|tempo:1|pagamento:{pagamento}'), 'collector_id':123456,'live_mode':True}
     get.return_value.status_code=200;get.return_value.json.return_value=aprovado(pid)
+    from test_pausa_financeira import enviar
     with patch.object(main,'validar_assinatura_mercadopago',return_value=True):
         for _ in range(2):
-            r=c.post('/webhooks/mercadopago?type=payment&data.id=mp_simulado',json={'type':'payment'})
+            r=enviar(ambiente_compra,801,'evento-legado-1')
             assert r.status_code==200,r.text
-        r=c.post('/pagamentos/confirmar',json={'payment_id':'mp_simulado','curso_id':1})
+        r=c.post('/pagamentos/confirmar',json={'payment_id':'801','curso_id':1})
         assert r.status_code==200,r.text
         with factory() as db:
             assert db.query(m.ContratacaoCurso).count()==1
@@ -196,7 +220,8 @@ def test_confirmacao_webhook_idempotencia_e_cobranca_legada(ambiente_compra):
                 tipo_compra='NOVA',oportunidade_id=original.oportunidade_id,mp_preference_id='legado')
             db.add(legado);db.commit();segundo=legado.id
         get.return_value.json.return_value=aprovado(segundo)
-        r=c.post('/webhooks/mercadopago?type=payment&data.id=outro_simulado',json={'type':'payment'})
+        get.return_value.json.return_value['id']='802'
+        r=enviar(ambiente_compra,802,'evento-legado-2')
         assert r.status_code==200,r.text
         assert r.json()['ocorrencia_financeira']=='COBRANCA_DUPLICADA'
     with factory() as db:

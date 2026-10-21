@@ -1,6 +1,38 @@
 // js/app.js
 const API_BASE = "https://plataforma-quality-backend.onrender.com";
 
+// HTMLs mantidos em cache podem anteceder a inclusão de sessao.js no <head>.
+// Resolve a dependência a partir deste app.js, inclusive nas páginas /admin/.
+const origemScriptsCompartilhados = document.currentScript?.src;
+let carregamentoSessao;
+function carregarSessao() {
+  if (window.Sessao) return Promise.resolve(window.Sessao);
+  if (!carregamentoSessao) {
+    carregamentoSessao = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = new URL("sessao.js", origemScriptsCompartilhados).href;
+      script.onload = () => {
+        if (!window.Sessao) {
+          reject(new Error("Não foi possível inicializar a sessão. Atualize a página."));
+          return;
+        }
+        // O mesmo HTML antigo também não declara o cabeçalho acessível.
+        const possuiCabecalho = Array.from(document.scripts).some(el =>
+          el.src && new URL(el.src).pathname === new URL("cabecalho.js", origemScriptsCompartilhados).pathname);
+        if (!possuiCabecalho) {
+          const cabecalho = document.createElement("script");
+          cabecalho.src = new URL("cabecalho.js", origemScriptsCompartilhados).href;
+          document.head.appendChild(cabecalho);
+        }
+        resolve(window.Sessao);
+      };
+      script.onerror = () => reject(new Error("Não foi possível carregar a sessão. Atualize a página."));
+      document.head.appendChild(script);
+    });
+  }
+  return carregamentoSessao;
+}
+
 // helpers
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
@@ -23,15 +55,22 @@ function getToken() {
 }
 
 function setToken(token) {
-  Sessao.definirToken(token);
+  if (window.Sessao) return Sessao.definirToken(token);
+  const origem = { token: getToken(), generation: localStorage.getItem("auth_generation") };
+  return carregarSessao().then(sessao => {
+    if (sessao.mesma(origem)) return sessao.definirToken(token);
+  });
 }
 
 function clearToken() {
-  Sessao.encerrar();
+  if (window.Sessao) return Sessao.encerrar();
+  const origem = { token: getToken(), generation: localStorage.getItem("auth_generation") };
+  return carregarSessao().then(sessao => sessao.encerrar(origem));
 }
 
 // GET com Bearer token
 async function apiGetAuth(path) {
+  if (!window.Sessao) await carregarSessao();
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
 
@@ -78,6 +117,7 @@ function invalidarCupomDigitado() {
 
 // POST com Bearer token
 async function apiPostAuth(path, body) {
+  if (!window.Sessao) await carregarSessao();
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
 
@@ -302,6 +342,7 @@ async function aplicarCupomCursoInfo() {
 }
 
 async function apiPutAuth(path, body) {
+  if (!window.Sessao) await carregarSessao();
 
   const token = getToken();
 
@@ -327,6 +368,7 @@ async function apiPutAuth(path, body) {
 }
 
 async function apiDeleteAuth(path) {
+  if (!window.Sessao) await carregarSessao();
 
   const token = getToken();
 
@@ -394,7 +436,10 @@ function showError(containerId, err) {
 // ===============================
 
 async function getMeSafe() {
-  try { return await Sessao.obterMe(`${API_BASE}/me`); }
+  try {
+    if (!window.Sessao) await carregarSessao();
+    return await Sessao.obterMe(`${API_BASE}/me`);
+  }
   catch (err) {
     if (err.name !== "SessaoAlteradaError") console.warn("Falha ao consultar identificação:", err);
     return null;
@@ -402,6 +447,12 @@ async function getMeSafe() {
 }
 
 async function exibirNomeUsuarioLogado() {
+  try {
+    if (!window.Sessao) await carregarSessao();
+  } catch (err) {
+    console.warn("Falha ao carregar identificação:", err);
+    return;
+  }
   const sessaoOrigem = Sessao.snapshot();
   const token =
     getToken();
@@ -2558,7 +2609,7 @@ async function pageCursoInfo() {
 
 const anoAtualCursoInfo = document.getElementById("ano_atual");
 if (anoAtualCursoInfo) {
-  anoAtualCursoInfo.textContent = new Date().getFullYear();
+  anoAtualCursoInfo.textContent = 2026;
 }
 
 // Dispatcher
@@ -2587,8 +2638,10 @@ window.onload = () => {
   bindBotaoEntrarEEstudarSeExistir();
 };
 
-function logout() {
-  Sessao.encerrar();
+async function logout() {
+  const origem = { token: getToken(), generation: localStorage.getItem("auth_generation") };
+  if (!window.Sessao) await carregarSessao();
+  if (!Sessao.encerrar(origem)) return;
 
   const inAdmin = window.location.pathname.includes("/admin/");
   window.location.href = inAdmin ? "../index.html" : "index.html";
@@ -2653,17 +2706,10 @@ function renderizarCursosPublicos() {
     cursos = cursos.filter(c => c.nome.toUpperCase().includes(busca));
   }
 
-  const limiteInicial = 15;
+  const limiteInicial = 4;
   const cursosVisiveis = mostrarTodosCursos
     ? cursos
     : cursos.slice(0, limiteInicial);
-
-  el.style.display = "grid";
-  el.style.paddingLeft = "39px";
-  el.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, max-content))";
-  el.style.gridAutoFlow = "column";
-  el.style.gridTemplateRows = "repeat(5, auto)";
-  el.style.gap = "4px 90px";
 
   el.innerHTML = cursosVisiveis.map(c => `
     <a
@@ -2679,14 +2725,14 @@ function renderizarCursosPublicos() {
   if (maisBox) {
     if (cursos.length > limiteInicial && !mostrarTodosCursos) {
       maisBox.innerHTML = `
-        <button class="btn" onclick="mostrarTodosCursos = true; renderizarCursosPublicos();">
+        <button class="btn" aria-controls="lista-cursos-publicos" aria-expanded="false" onclick="mostrarTodosCursos = true; renderizarCursosPublicos();">
           Mais cursos
         </button>
       `;
     } else if (cursos.length > limiteInicial && mostrarTodosCursos) {
       maisBox.innerHTML = `
-        <button class="btn" onclick="mostrarTodosCursos = false; renderizarCursosPublicos();">
-          Mostrar menos
+        <button class="btn" aria-controls="lista-cursos-publicos" aria-expanded="true" onclick="mostrarTodosCursos = false; renderizarCursosPublicos();">
+          Menos cursos
         </button>
       `;
     } else {

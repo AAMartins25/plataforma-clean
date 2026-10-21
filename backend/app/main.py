@@ -1,3 +1,7 @@
+from app.desempenho import validar_contexto_historico
+from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
+from app.financeiro_transacional import protegido, timeout_financeiro
+from .transacoes_mp import consultar_pagamento, resolver_transacao
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -55,7 +59,7 @@ from app.contratacoes import (
     registrar_ocorrencia_financeira,
 )
 from app.renovacao import renovacao_disponivel
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from fastapi import HTTPException
 import requests
 from sqlalchemy.exc import IntegrityError
@@ -82,6 +86,7 @@ from app.models import (
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
 from app.models import CursoAssuntoProprio
+from app.direitos_acesso import contrato_vigente, curso_vigente
 from app.models import ContratacaoCurso
 from app.schemas import AulaUpdate
 
@@ -95,7 +100,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+# O segredo JWT fornecido pelo ambiente prevalece sobre o .env local.
+# As demais variáveis mantêm a precedência já existente.
+_secret_key_ambiente = os.environ.get("SECRET_KEY")
 load_dotenv(dotenv_path=ENV_PATH, override=True)
+if _secret_key_ambiente is not None:
+    os.environ["SECRET_KEY"] = _secret_key_ambiente
+del _secret_key_ambiente
 
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
 
@@ -128,7 +139,7 @@ app = FastAPI(title="Plataforma de Cursos")
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.auth import hash_senha, verificar_senha, criar_token, decodificar_token
+from app.auth import hash_senha, verificar_senha, criar_token, decodificar_token, SECRET_KEY as CHAVE_ASSINATURA_SESSAO
 from app.models import Usuario
 from app.schemas import UsuarioCreate, UsuarioResponse, TokenResponse
 from sqlalchemy import or_
@@ -221,7 +232,7 @@ def validar_contexto_estudo(
             .first()
         )
 
-        if not contratacao:
+        if not contratacao or not contrato_vigente(db, contratacao, agora):
             raise HTTPException(
                 status_code=403,
                 detail="Contratação inválida ou sem acesso ativo a este curso."
@@ -290,6 +301,8 @@ def consultar_direitos_acesso_apos_reembolso(
         Pagamento.curso_id == curso_id,
         Pagamento.id != pagamento_reembolsado_id,
         Pagamento.aprovado_em.isnot(None),
+        or_(Pagamento.ocorrencia_financeira.is_(None),
+            Pagamento.ocorrencia_financeira.notin_(["COBRANCA_DUPLICADA", "APROVACAO_FORA_PRAZO"])),
         or_(
             Pagamento.status != "REFUNDED",
             Pagamento.id.in_(pagamentos_contestados_sem_bloqueio),
@@ -358,6 +371,7 @@ def consultar_direitos_acesso_apos_reembolso(
         "maior_data_fim": max(datas_fim) if datas_fim else None,
     }
 
+@protegido
 def recalcular_acesso_apos_reembolso(
     db: Session,
     usuario_id: int,
@@ -414,6 +428,7 @@ def recalcular_acesso_apos_reembolso(
     }
 
 @app.post("/admin/acessos", tags=["Acessos"])
+@protegido
 def admin_criar_acesso(
     payload: AcessoCursoCreate,
     db: Session = Depends(get_db),
@@ -427,7 +442,7 @@ def admin_criar_acesso(
 
     u = db.query(Usuario).filter(
         Usuario.id == payload.usuario_id
-    ).first()
+    ).with_for_update().first()
 
     if not u:
         raise HTTPException(
@@ -604,12 +619,15 @@ def listar_compras_reembolso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    limite_7_dias = datetime.utcnow() - timedelta(days=7)
+    agora = datetime.utcnow()
+    limite_7_dias = agora - timedelta(days=7)
 
     compras_elegiveis = db.query(Pagamento).filter(
         Pagamento.usuario_id == usuario.id,
         Pagamento.status.in_(["APPROVED", "approved", "PAGO"]),
-        Pagamento.criado_em >= limite_7_dias
+        Pagamento.aprovado_em.isnot(None),
+        Pagamento.aprovado_em >= limite_7_dias,
+        Pagamento.aprovado_em <= agora
     ).order_by(Pagamento.criado_em.desc()).all()
 
     if compras_elegiveis:
@@ -618,9 +636,13 @@ def listar_compras_reembolso(
             "compras": [
                 {
                     "pagamento_id": p.id,
+                    "mp_payment_id": p.mp_payment_id,
+                    "ocorrencia_financeira": p.ocorrencia_financeira,
                     "curso_id": p.curso_id,
                     "nome_curso": p.curso.nome if p.curso else "Curso",
                     "data_compra": p.criado_em,
+                    "data_aprovacao": p.aprovado_em,
+                    "data_limite_reembolso": (p.aprovado_em + timedelta(days=7)).isoformat() + "Z",
                     "data_solicitacao": p.atualizado_em,
                     "valor_cents": p.valor_cents,
                     "status": p.status
@@ -640,9 +662,13 @@ def listar_compras_reembolso(
             "compras": [
                 {
                     "pagamento_id": compra_recente.id,
+                    "mp_payment_id": compra_recente.mp_payment_id,
+                    "ocorrencia_financeira": compra_recente.ocorrencia_financeira,
                     "curso_id": compra_recente.curso_id,
                     "nome_curso": compra_recente.curso.nome if compra_recente.curso else "Curso",
                     "data_compra": compra_recente.criado_em,
+                    "data_aprovacao": compra_recente.aprovado_em,
+                    "data_limite_reembolso": ((compra_recente.aprovado_em + timedelta(days=7)).isoformat() + "Z") if (compra_recente.status in ["APPROVED", "approved", "PAGO"] and compra_recente.aprovado_em is not None and compra_recente.aprovado_em <= agora) else None,
                     "data_solicitacao": compra_recente.atualizado_em,
                     "valor_cents": compra_recente.valor_cents,
                     "status": compra_recente.status
@@ -713,6 +739,10 @@ def meus_cursos(
             .order_by(models.ContratacaoCurso.data_fim.asc())
             .all()
         )
+
+        contratacoes = [c for c in contratacoes if contrato_vigente(db, c, agora)]
+        if not curso_vigente(db, usuario.id, a.curso_id, agora):
+            continue
 
         contratos_resposta = []
 
@@ -1036,20 +1066,12 @@ def criar_disciplina_propria(
 @app.get("/me/cursos-expirados/{curso_id}/disciplinas")
 def listar_disciplinas_curso_expirado(
     curso_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    acesso_expirado = db.query(AcessoCurso).filter(
-        AcessoCurso.usuario_id == usuario.id,
-        AcessoCurso.curso_id == curso_id,
-        AcessoCurso.ativo == False
-    ).first()
-
-    if not acesso_expirado:
-        raise HTTPException(
-            status_code=403,
-            detail="Sem histórico de acesso a este curso"
-        )
+    validar_contexto_historico(db, usuario, curso_id, contratacao_id, demonstracao_id)
 
     disciplinas = (
         db.query(CursoDisciplinaPropria)
@@ -3224,6 +3246,18 @@ def editar_material(
         "ativo": material.ativo
     }
 
+
+def exigir_acesso_pasta(db, usuario, pasta_id):
+    pasta = db.get(Pasta, pasta_id)
+    if not pasta:
+        raise HTTPException(404, "Pasta não encontrada")
+    if usuario.is_admin:
+        return
+    assunto = db.get(CursoAssuntoProprio, pasta.curso_assunto_proprio_id)
+    disciplina = db.get(CursoDisciplinaPropria, assunto.curso_disciplina_propria_id) if assunto else None
+    if not disciplina or not curso_vigente(db, usuario.id, disciplina.curso_id):
+        raise HTTPException(403, "Sem direito de acesso vigente a este curso")
+
 def validar_pasta_interatividade(db: Session, pasta_id: int):
     pasta = db.query(Pasta).filter(Pasta.id == pasta_id).first()
     if not pasta:
@@ -3233,7 +3267,7 @@ def validar_pasta_interatividade(db: Session, pasta_id: int):
     return pasta, None
 
 @app.post("/quiz-ia")
-def criar_quiz_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_quiz_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     titulo = payload.get("titulo")
     itens = payload.get("itens", [])
@@ -3273,7 +3307,8 @@ def criar_quiz_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": quiz.id, "pasta_id": quiz.pasta_id, "titulo": quiz.titulo}
 
 @app.get("/pastas/{pasta_id}/quiz-ia")
-def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     quizzes = db.query(QuizIA).filter(QuizIA.pasta_id == pasta_id).order_by(QuizIA.id.desc()).all()
     retorno = []
     for q in quizzes:
@@ -3295,7 +3330,7 @@ def listar_quiz_ia(pasta_id: int, db: Session = Depends(get_db)):
     return retorno
 
 @app.post("/cartoes-ia")
-def criar_cartao_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_cartao_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     frente = payload.get("frente")
     verso = payload.get("verso")
@@ -3319,12 +3354,13 @@ def criar_cartao_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": novo.id, "pasta_id": novo.pasta_id, "ordem": novo.ordem}
 
 @app.get("/pastas/{pasta_id}/cartoes-ia")
-def listar_cartoes_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_cartoes_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     cartoes = db.query(CartaoIA).filter(CartaoIA.pasta_id == pasta_id).order_by(CartaoIA.ordem.asc()).all()
     return [{"id": c.id, "frente": c.frente, "verso": c.verso, "ordem": c.ordem} for c in cartoes]
 
 @app.post("/questoes-ia")
-def criar_questoes_ia(payload: dict, db: Session = Depends(get_db)):
+def criar_questoes_ia(payload: dict, db: Session = Depends(get_db), usuario=Depends(exigir_admin_aulas)):
     pasta_id = payload.get("pasta_id")
     titulo = payload.get("titulo")
     itens = payload.get("itens", [])
@@ -3362,7 +3398,8 @@ def criar_questoes_ia(payload: dict, db: Session = Depends(get_db)):
     return {"id": cab.id, "pasta_id": cab.pasta_id, "titulo": cab.titulo}
 
 @app.get("/pastas/{pasta_id}/questoes-ia")
-def listar_questoes_ia(pasta_id: int, db: Session = Depends(get_db)):
+def listar_questoes_ia(pasta_id: int, db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    exigir_acesso_pasta(db, usuario, pasta_id)
     cabecalhos = db.query(QuestoesIA).filter(QuestoesIA.pasta_id == pasta_id).order_by(QuestoesIA.id.desc()).all()
     retorno = []
     for cab in cabecalhos:
@@ -3570,6 +3607,10 @@ def me(
         is not None
     )
 
+
+    if tem_cursos:
+        tem_cursos = any(curso_vigente(db, usuario.id, a.curso_id) for a in
+            db.query(AcessoCurso).filter_by(usuario_id=usuario.id, ativo=True).all())
 
     is_aluno = (
         usuario.perfil_inicial == "ALUNO"
@@ -3895,6 +3936,7 @@ def salvar_config_publica_curso(
     return {"ok": True}
 
 @app.post("/cursos/{curso_id}/demonstracao")
+@protegido
 def iniciar_demonstracao_curso(
     curso_id: int,
     db: Session = Depends(get_db),
@@ -4004,6 +4046,7 @@ from app.juridico import registrar_rotas as registrar_juridico, validar_aceite, 
 registrar_juridico(app, get_db)
 
 @app.post("/checkout/mercadopago")
+@protegido
 def criar_checkout_mp(
     payload: dict,
     db: Session = Depends(get_db),
@@ -4108,6 +4151,9 @@ def criar_checkout_mp(
                 detail="Contrato vigente não encontrado para renovação."
             )
 
+        if contratacao and not contrato_vigente(db, contratacao, agora):
+            raise HTTPException(409, "Contratação sem direito vigente; conferência necessária.")
+
         if not renovacao_disponivel(contratacao.data_fim, agora):
             raise HTTPException(
                 status_code=409,
@@ -4166,14 +4212,25 @@ def criar_checkout_mp(
         codigo_cupom_usado = cupom.codigo
 
     # Reabrir a mesma seleção pendente evita criar outra preferência em duplo clique.
+    from sqlalchemy.orm import aliased
+    tentativa_pendente = aliased(Pagamento)
     pendente = db.query(Pagamento).filter(
         Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.pagamento_origem_id.is_(None),
         Pagamento.tempo_acesso_id == tempo.id,
         Pagamento.valor_cents == valor_cents,
         Pagamento.codigo_cupom == codigo_cupom_usado,
-        Pagamento.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+        or_(
+            Pagamento.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+            db.query(tentativa_pendente.id).filter(
+                tentativa_pendente.pagamento_origem_id == Pagamento.id,
+                tentativa_pendente.status.in_(["PENDENTE", "PENDING", "IN_PROCESS"]),
+            ).exists(),
+        ),
         Pagamento.mp_preference_id.isnot(None),
     ).order_by(Pagamento.id.desc()).first()
+    if pendente and not pendente.checkout_identidade:
+        raise HTTPException(409, 'Existe uma intenção de compra legada pendente. Conferir antes de iniciar outra cobrança.')
     if pendente:
         registrar_aceite(db, documentos_aceitos, user.id, curso.id, tempo, oportunidade.id,
             tipo_compra, valor_original_cents, valor_cents, pendente.id,
@@ -4181,7 +4238,7 @@ def criar_checkout_mp(
         try:
             resposta = requests.get(
                 f"https://api.mercadopago.com/checkout/preferences/{pendente.mp_preference_id}",
-                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}, timeout=20)
+                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}, timeout=timeout_financeiro())
             if resposta.status_code >= 400:
                 raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
             preferencia = resposta.json()
@@ -4192,15 +4249,27 @@ def criar_checkout_mp(
             raise HTTPException(502, "Não foi possível reabrir o checkout pendente. Tente novamente.")
         resultado = {"preference_id": str(pendente.mp_preference_id), "pagamento_id": pendente.id,
             "init_point": preferencia["init_point"], "sandbox_init_point": preferencia.get("sandbox_init_point"),
-            "curso_id": curso.id, "tempo_acesso_id": tempo.id, "meses": tempo.meses,
+            "curso_id": curso.id, "tempo_acesso_id": tempo.id, "meses": pendente.checkout_meses or tempo.meses,
             "valor_cents": valor_cents, "valor_original_cents": valor_original_cents,
             "valor_desconto_cents": valor_desconto_cents, "percentual_desconto": percentual_desconto,
             "codigo_cupom": codigo_cupom_usado, "vendedor_id": vendedor_id}
         db.commit()
         return resultado
 
+    indefinido = db.query(Pagamento).filter(
+        Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.status == 'CHECKOUT_INDEFINIDO',
+        Pagamento.mp_preference_id.is_(None)
+    ).first()
+    if indefinido:
+        from app.financeiro_transacional import esperar_checkout
+        if esperar_checkout(db, indefinido.id):
+            return criar_checkout_mp(payload, db, user)
+        raise HTTPException(409, 'A abertura anterior do checkout precisa ser verificada no provedor antes de outra tentativa.')
+
     titulos_gerados = db.query(Pagamento).filter(
         Pagamento.oportunidade_id == oportunidade.id,
+        Pagamento.pagamento_origem_id.is_(None),
         Pagamento.mp_preference_id.isnot(None)
     ).count()
 
@@ -4210,8 +4279,11 @@ def criar_checkout_mp(
             detail="Limite de oito títulos atingido para esta oportunidade."
         )
 
+    identidade_checkout = nova_identidade()
+    recebedor_checkout = recebedor_esperado()
     pagamento_id = db.execute(text("""
         INSERT INTO pagamentos (
+            criado_em,
             usuario_id,
             curso_id,
             tempo_acesso_id,
@@ -4222,23 +4294,35 @@ def criar_checkout_mp(
             tipo_compra,
             vencimento_original,
             contratacao_id,
-            oportunidade_id
+            oportunidade_id,
+            checkout_identidade,
+            checkout_recebedor_id,
+            checkout_meses,
+            moeda,
+            provedor
         )
         VALUES (
+            :criado_em,
             :u,
             :c,
             :t,
-            'PENDENTE',
+            'CHECKOUT_INDEFINIDO',
             :v,
             :codigo_cupom,
             :vendedor_id,
             :tipo_compra,
             :vencimento_original,
             :contratacao_id,
-            :oportunidade_id
+            :oportunidade_id,
+            :checkout_identidade,
+            :checkout_recebedor_id,
+            :checkout_meses,
+            'BRL',
+            'MERCADO_PAGO'
         )
         RETURNING id
     """), {
+        "criado_em": datetime.utcnow(),
         "u": user.id,
         "c": curso.id,
         "t": tempo.id,
@@ -4248,7 +4332,10 @@ def criar_checkout_mp(
         "tipo_compra": tipo_compra,
         "vencimento_original": vencimento_original,
         "contratacao_id": contratacao_id,
-        "oportunidade_id": oportunidade.id
+        "oportunidade_id": oportunidade.id,
+        "checkout_identidade": identidade_checkout,
+        "checkout_recebedor_id": recebedor_checkout,
+        "checkout_meses": tempo.meses
     }).scalar()
 
     db.flush()
@@ -4268,7 +4355,7 @@ def criar_checkout_mp(
             "currency_id": "BRL"
         }],
         "payer": {"email": user.email},
-        "external_reference": f"user:{user.id}|curso:{curso.id}|tempo:{tempo.id}|pagamento:{pagamento_id}",
+        "external_reference": "checkout:" + identidade_checkout,
         "back_urls": {
             "success": f"{base}/pagamento_sucesso.html",
             "failure": f"{base}/curso-info.html?curso_id={curso.id}&curso_nome={quote(curso.nome)}",
@@ -4300,28 +4387,46 @@ def criar_checkout_mp(
         "Content-Type": "application/json"
     }
 
+    # Identidade durável antes do efeito externo; não confirma pagamento ou acesso.
+    db.commit()
+    # Preservar a serialização comercial; revalidar modo/geração após o commit.
+    db.query(models.Usuario).filter(models.Usuario.id == user.id).with_for_update().one()
+
     try:
-        resp = requests.post(url, headers=headers, json=payload_mp, timeout=20)
-    except requests.RequestException as e:
+        resp = requests.post(url, headers=headers, json=payload_mp, timeout=timeout_financeiro())
+    except requests.RequestException:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"Falha de rede ao chamar MP: {e}")
+        raise HTTPException(status_code=502, detail="Falha de comunicação ao abrir checkout; resultado exige verificação.")
 
     if resp.status_code >= 400:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"Erro MP {resp.status_code}: {resp.text}")
+        raise HTTPException(status_code=502, detail="Não foi possível abrir checkout; resultado exige verificação.")
 
-    data = resp.json()
+    try:
+        data = resp.json()
+    except ValueError:
+        db.rollback()
+        raise HTTPException(502, "Resposta inválida ao abrir checkout; resultado exige verificação.")
+    if not isinstance(data, dict):
+        db.rollback()
+        raise HTTPException(502, "Resposta inválida ao abrir checkout; resultado exige verificação.")
 
     pref_id = data.get("id")
     init_point = data.get("init_point")
 
     if not pref_id or not init_point:
         db.rollback()
-        raise HTTPException(status_code=502, detail=f"MP retornou sem pref_id/init_point: {data}")
+        raise HTTPException(status_code=502, detail="Resposta incompleta ao abrir checkout; resultado exige verificação.")
+
+    if (type(data.get("collector_id")) not in (str, int)
+            or str(data["collector_id"]) != recebedor_checkout
+            or ("external_reference" in data and data["external_reference"] != payload_mp["external_reference"])):
+        db.rollback()
+        raise HTTPException(502, "Resposta de preferência sem vínculo confiável; resultado exige verificação.")
 
     db.execute(text("""
         UPDATE pagamentos
-        SET mp_preference_id = :pid
+        SET mp_preference_id = :pid, status = 'PENDENTE'
         WHERE id = :pag_id
     """), {
         "pid": str(pref_id),
@@ -4359,7 +4464,26 @@ def criar_checkout_mp(
 
 from fastapi import HTTPException
 
+@protegido
+def reconciliar_sem_conceder_acesso(db, pagamento):
+    """Estado do provedor não substitui uma decisão administrativa de devolução."""
+    manual = pagamento.status in {
+        "REFUND_REQUESTED", "REFUND_IN_PROCESS", "REFUNDED", "REFUND_DENIED", "REFUND_ERROR"
+    }
+    if not manual and pagamento.ocorrencia_financeira is None:
+        return False
+    if not manual:
+        pagamento.status = pagamento.mp_status
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    return True
+
+
 @app.post("/pagamentos/confirmar")
+@protegido
 def confirmar_pagamento(
     payload: dict,
     db: Session = Depends(get_db),
@@ -4371,11 +4495,7 @@ def confirmar_pagamento(
     if not payment_id or not curso_id:
         raise HTTPException(status_code=400, detail="Informe payment_id e curso_id")
 
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    r = consultar_pagamento(payment_id, mp_headers())
 
     if r.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"Erro MP: {r.text}")
@@ -4383,85 +4503,14 @@ def confirmar_pagamento(
     p = r.json()
     status = (p.get("status") or "").lower()
 
-    external_reference = p.get("external_reference") or ""
+    pagamento = resolver_transacao(db, payment_id, p, mp_headers(), user.id, curso_id)
 
-    referencias = {}
-    for parte in external_reference.split("|"):
-        if ":" in parte:
-            chave, valor = parte.split(":", 1)
-            referencias[chave] = valor
-
-    try:
-        usuario_ref = int(referencias["user"])
-        curso_ref = int(referencias["curso"])
-        tempo_ref = int(referencias["tempo"])
-        pagamento_ref = int(referencias["pagamento"])
-    except (KeyError, ValueError):
-        raise HTTPException(
-            status_code=400,
-            detail="Referência do pagamento ausente ou inválida."
-        )
-
-    if usuario_ref != user.id or curso_ref != int(curso_id):
-        raise HTTPException(
-            status_code=403,
-            detail="O pagamento não corresponde ao usuário e curso informados."
-        )
-
-    db.query(models.Usuario).filter(
-        models.Usuario.id == user.id
-    ).with_for_update().one()
-
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_ref,
-        Pagamento.usuario_id == user.id,
-        Pagamento.curso_id == curso_ref
-    ).with_for_update().populate_existing().first()
-
-    if pagamento and pagamento.mp_payment_id not in (None, str(payment_id)):
-        raise HTTPException(
-            status_code=409,
-            detail="Esta compra já está vinculada a outra transação."
-        )
-
-    if not pagamento:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado.")
-
-    if tempo_ref != pagamento.tempo_acesso_id:
-        raise HTTPException(
-            status_code=409,
-            detail="O período de acesso não corresponde à compra registrada."
-        )
-
-    from decimal import Decimal, InvalidOperation
-
-    try:
-        valor_mp = Decimal(str(p["transaction_amount"])) * 100
-
-        if not valor_mp.is_finite() or valor_mp != valor_mp.to_integral_value():
-            raise ValueError("Valor monetário inválido")
-
-        valor_mp_cents = int(valor_mp)
-    except (KeyError, TypeError, ValueError, InvalidOperation):
-        raise HTTPException(
-            status_code=400,
-            detail="Valor do pagamento ausente ou inválido no Mercado Pago."
-        )
-
-    if (
-        p.get("currency_id") != "BRL"
-        or valor_mp_cents != pagamento.valor_cents
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Valor ou moeda não corresponde à compra registrada."
-        )
-
-    if pagamento.ocorrencia_financeira is not None:
+    if reconciliar_sem_conceder_acesso(db, pagamento):
         return {
             "ok": True,
             "payment_method_id": p.get("payment_method_id"),
             "status": pagamento.status,
+            "mp_status": pagamento.mp_status,
             "curso_id": curso_id,
             "liberou_acesso": False,
             "ocorrencia_financeira": pagamento.ocorrencia_financeira,
@@ -4552,7 +4601,7 @@ def confirmar_pagamento(
         else:
             data_inicio = datetime.utcnow()
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(
             db, pagamento, data_inicio, data_fim
@@ -4608,6 +4657,7 @@ def confirmar_pagamento(
         concluir_oportunidade(db, oportunidade)
         liberou = True
 
+    pagamento_email_id = pagamento.id
     try:
         db.commit()
     except Exception:
@@ -4619,7 +4669,8 @@ def confirmar_pagamento(
         "payment_method_id": p.get("payment_method_id"),
         "status": status.upper(),
         "curso_id": curso_id,
-        "liberou_acesso": liberou
+        "liberou_acesso": liberou,
+        "email_instrucoes_aceito": app.state.emails_pagamentos.aceito(pagamento_email_id, p)
     }
 
 from fastapi import Request, HTTPException
@@ -4713,11 +4764,16 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
             "msg": "Notificação legada não processada"
         }
 
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    from starlette.concurrency import run_in_threadpool
+    return await run_in_threadpool(processar_pagamento_mp, str(payment_id), db)
+
+
+@protegido
+def processar_pagamento_mp(payment_id, db, resposta_mp=None):
+    from app.diagnostico_financeiro import falha
+    from time import monotonic
+    inicio_diagnostico = monotonic()
+    r = resposta_mp if resposta_mp is not None else consultar_pagamento(payment_id, mp_headers())
 
     if r.status_code == 404:
         return {
@@ -4727,15 +4783,20 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         }
 
     if r.status_code >= 400:
+        falha("consulta_pagamento", "http", inicio_diagnostico, r.status_code)
         raise HTTPException(
             status_code=502,
             detail=f"Erro ao consultar pagamento no Mercado Pago: {r.status_code}"
         )
 
-    pagamento_mp = r.json()
+    try:
+        pagamento_mp = r.json()
+    except ValueError:
+        falha("consulta_pagamento", "json_invalido", inicio_diagnostico, r.status_code)
+        raise
 
     status = (pagamento_mp.get("status") or "desconhecido").upper()
-    external_reference = pagamento_mp.get("external_reference") or ""
+    external_reference = referencia_compra(db, pagamento_mp)
 
     user_id = None
     curso_id = None
@@ -4764,80 +4825,14 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         }
 
     if user_id and curso_id:
-        db.query(models.Usuario).filter(
-            models.Usuario.id == user_id
-        ).with_for_update().one()
-
-        if pagamento_id:
-            pagamento = db.query(Pagamento).filter(
-                Pagamento.id == pagamento_id,
-                Pagamento.usuario_id == user_id,
-                Pagamento.curso_id == curso_id
-            ).with_for_update().populate_existing().first()
-        else:
-            pagamento = db.query(Pagamento).filter(
-                Pagamento.mp_payment_id == str(payment_id),
-                Pagamento.usuario_id == user_id,
-                Pagamento.curso_id == curso_id
-            ).with_for_update().populate_existing().first()
-
-        if (
-            pagamento
-            and pagamento.mp_payment_id
-            and pagamento.mp_payment_id != str(payment_id)
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail="Pagamento já associado a outra transação"
-            )
+        pagamento = resolver_transacao(db, payment_id, pagamento_mp, mp_headers(), user_id, curso_id)
 
         if pagamento:
-            from decimal import Decimal, InvalidOperation
-
-            # Confere o período de acesso da compra.
-            if (
-                tempo_acesso_id is None
-                or tempo_acesso_id != pagamento.tempo_acesso_id
-            ):
-                raise HTTPException(
-                    status_code=409,
-                    detail="O período de acesso não corresponde à compra registrada."
-                )
-
-            # Confere o valor recebido do Mercado Pago.
-            try:
-                valor_mp = (
-                    Decimal(str(pagamento_mp["transaction_amount"])) * 100
-                )
-
-                if (
-                    not valor_mp.is_finite()
-                    or valor_mp != valor_mp.to_integral_value()
-                ):
-                    raise ValueError("Valor monetário inválido")
-
-                valor_mp_cents = int(valor_mp)
-
-            except (KeyError, TypeError, ValueError, InvalidOperation):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Valor do pagamento ausente ou inválido."
-                )
-
-            # Confere o valor e a moeda da compra.
-            if (
-                pagamento_mp.get("currency_id") != "BRL"
-                or valor_mp_cents != pagamento.valor_cents
-            ):
-                raise HTTPException(
-                    status_code=409,
-                    detail="Valor ou moeda não corresponde à compra registrada."
-                )
-
-            if pagamento.ocorrencia_financeira is not None:
+            if reconciliar_sem_conceder_acesso(db, pagamento):
                 return {
                     "ok": True,
                     "status": pagamento.status,
+                    "mp_status": pagamento.mp_status,
                     "liberou_acesso": False,
                     "ocorrencia_financeira": pagamento.ocorrencia_financeira,
                 }
@@ -4948,7 +4943,7 @@ async def webhook_mercadopago(request: Request, db: Session = Depends(get_db)):
         else:
             data_inicio = datetime.utcnow()
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(db, pagamento, data_inicio, data_fim)
 
@@ -5175,10 +5170,26 @@ def admin_listar_reembolsos(
             p.atualizado_em AS data_solicitacao,
             p.valor_cents,
             p.mp_payment_id,
-            p.mp_preference_id
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
+            p.mp_preference_id,
+            rf.id AS reembolso_id,
+            rf.status AS reembolso_status,
+            rf.metodo AS reembolso_metodo,
+            rf.valor_cents AS reembolso_valor_cents,
+            rf.referencia_comprovante,
+            rf.confirmado_em,
+            rf.confirmado_por
         FROM pagamentos p
         JOIN usuarios u ON u.id = p.usuario_id
         JOIN cursos c ON c.id = p.curso_id
+        LEFT JOIN reembolsos_financeiros rf ON rf.id = (
+            SELECT r.id FROM reembolsos_financeiros r
+            WHERE r.pagamento_id = p.id
+            ORDER BY r.id DESC LIMIT 1
+        )
         WHERE p.status IN (
             'REFUND_REQUESTED',
             'REFUND_IN_PROCESS',
@@ -5192,6 +5203,7 @@ def admin_listar_reembolsos(
     return [dict(r) for r in rows]
 
 @app.post("/admin/pagamentos/revalidar", tags=["Admin Pagamentos"])
+@protegido
 def admin_revalidar_pagamento(
     payload: dict,
     db: Session = Depends(get_db),
@@ -5204,119 +5216,22 @@ def admin_revalidar_pagamento(
     if not mp_payment_id:
         raise HTTPException(status_code=400, detail="Informe mp_payment_id")
 
-    # 1) acha pagamento no banco (pelo mp_payment_id)
-    pag = db.execute(text("""
-        SELECT id, usuario_id, curso_id, tempo_acesso_id, aprovado_em, criado_em
-        FROM pagamentos
-        WHERE mp_payment_id = :pid
-        ORDER BY id DESC
-        LIMIT 1
-    """), {"pid": mp_payment_id}).mappings().first()
-
-    if not pag:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado no banco para esse mp_payment_id")
-
-    user_id = int(pag["usuario_id"])
-    curso_id = int(pag["curso_id"])
-
-    # Serializa a revalidação com a confirmação direta e o webhook.
-    db.query(models.Usuario).filter(
-        models.Usuario.id == user_id
-    ).with_for_update().one()
-
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == int(pag["id"])
-    ).with_for_update().populate_existing().one()
-
-    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
-
-
-    # Impede a revalidação de pagamentos envolvidos em reembolso.
-    status_atual = db.execute(
-        text("SELECT status FROM pagamentos WHERE id = :id"),
-        {"id": int(pag["id"])}
-    ).scalar_one()
-
-    if status_atual in (
-        "REFUND_REQUESTED",
-        "REFUND_IN_PROCESS",
-        "REFUNDED",
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Este pagamento está envolvido em um processo de "
-                "reembolso e não pode ser revalidado."
-            ),
-        )
-
-    ja_aprovado = pagamento.aprovado_em is not None
-
-    # 2) consulta no Mercado Pago
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{mp_payment_id}",
-        headers=mp_headers(),
-        timeout=20
-    )
+    r = consultar_pagamento(mp_payment_id, mp_headers())
     if r.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"Erro MP: {r.text}")
-
     p = r.json()
-    status_mp = (p.get("status") or "").lower().strip()  # approved/pending/rejected...
+    status_mp = (p.get("status") or "").lower().strip()
+    pagamento = resolver_transacao(db, mp_payment_id, p, mp_headers())
+    user_id, curso_id = pagamento.usuario_id, pagamento.curso_id
+    pag = {"id": pagamento.id, "tempo_acesso_id": pagamento.tempo_acesso_id}
+    oportunidade = bloquear_oportunidade_pagamento(db, pagamento)
+    ja_aprovado = pagamento.aprovado_em is not None
 
-    # Confere a identidade e o valor da compra antes de alterar o banco.
-    referencia = str(p.get("external_reference") or "")
-    referencias = {}
-
-    for parte in referencia.split("|"):
-        if ":" in parte:
-            chave, valor = parte.split(":", 1)
-            referencias[chave] = valor
-
-    try:
-        usuario_ref = int(referencias["user"])
-        curso_ref = int(referencias["curso"])
-        tempo_ref = int(referencias["tempo"])
-        pagamento_ref = int(referencias["pagamento"])
-    except (KeyError, ValueError):
-        raise HTTPException(
-            status_code=400,
-            detail="Referência do pagamento ausente ou inválida.",
-        )
-
-    if (
-        usuario_ref != user_id
-        or curso_ref != curso_id
-        or tempo_ref != pagamento.tempo_acesso_id
-        or pagamento_ref != pagamento.id
-        or str(p.get("id")) != mp_payment_id
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Pagamento não corresponde à compra registrada.",
-        )
-
-    try:
-        valor_mp = Decimal(str(p["transaction_amount"])) * 100
-        if not valor_mp.is_finite() or valor_mp != valor_mp.to_integral_value():
-            raise ValueError("Valor monetário inválido")
-        valor_mp_cents = int(valor_mp)
-    except (KeyError, TypeError, ValueError, InvalidOperation):
-        raise HTTPException(
-            status_code=400,
-            detail="Valor inválido no Mercado Pago.",
-        )
-
-    if p.get("currency_id") != "BRL" or valor_mp_cents != pagamento.valor_cents:
-        raise HTTPException(
-            status_code=409,
-            detail="Valor ou moeda não corresponde à compra registrada.",
-        )
-
-    if pagamento.ocorrencia_financeira is not None:
+    if reconciliar_sem_conceder_acesso(db, pagamento):
         return {
             "ok": True,
             "status": pagamento.status,
+            "mp_status": pagamento.mp_status,
             "liberou_acesso": False,
             "ocorrencia_financeira": pagamento.ocorrencia_financeira,
         }
@@ -5389,7 +5304,7 @@ def admin_revalidar_pagamento(
         else:
             data_inicio = data_aprovacao
 
-        data_fim = data_inicio + relativedelta(months=tempo.meses)
+        data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(
             db, pagamento, data_inicio, data_fim
@@ -5486,6 +5401,10 @@ def admin_listar_pagamentos(
             p.moeda,
             p.mp_preference_id,
             p.mp_payment_id,
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
             p.criado_em,
             p.atualizado_em
         FROM pagamentos p
@@ -5873,6 +5792,7 @@ def redefinir_senha(
     }
 
 @app.post("/me/reembolso/{pagamento_id}")
+@protegido
 def solicitar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -5886,30 +5806,35 @@ def solicitar_reembolso(
     if not pagamento:
         raise HTTPException(status_code=404, detail="Pagamento não encontrado")
 
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
+    if pagamento.usuario_id != usuario.id:
+        raise HTTPException(404, "Pagamento não encontrado")
+
     if pagamento.status not in ["APPROVED", "approved", "PAGO"]:
         raise HTTPException(
             status_code=400,
             detail="Este pagamento não está elegível para solicitação de reembolso"
         )
 
-    data_referencia = (
-        pagamento.aprovado_em
-        or pagamento.criado_em
-    )
+    agora = datetime.utcnow()
+    if pagamento.aprovado_em is None or pagamento.aprovado_em > agora:
+        raise HTTPException(400, "Data de aprovação efetiva indisponível ou inválida. É necessária conferência do pagamento.")
+
+    data_referencia = pagamento.aprovado_em
 
     limite_reembolso = (
         data_referencia
         + timedelta(days=7)
     )
 
-    if datetime.utcnow() > limite_reembolso:
+    if agora > limite_reembolso:
         raise HTTPException(
             status_code=400,
             detail="Prazo de reembolso expirado"
         )
 
     pagamento.status = "REFUND_REQUESTED"
-    pagamento.atualizado_em = datetime.utcnow()
+    pagamento.atualizado_em = agora
 
     db.commit()
 
@@ -5949,6 +5874,7 @@ def listar_meus_reembolsos(
     return [dict(r) for r in rows]
 
 @app.post("/admin/reembolsos/{pagamento_id}/aprovar")
+@protegido
 def aprovar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -5960,9 +5886,7 @@ def aprovar_reembolso(
             detail="Apenas administradores podem aprovar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -5992,6 +5916,7 @@ def aprovar_reembolso(
 
 
 @app.post("/admin/reembolsos/{pagamento_id}/recusar")
+@protegido
 def recusar_reembolso(
     pagamento_id: int,
     db: Session = Depends(get_db),
@@ -6003,9 +5928,7 @@ def recusar_reembolso(
             detail="Apenas administradores podem recusar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -6030,7 +5953,22 @@ def recusar_reembolso(
         "status": pagamento.status
     }
 
+def bloquear_pagamento_reembolso(db, pagamento_id):
+    """Mesmo início da ordem de locks do processamento financeiro: usuário, raiz.
+
+    A leitura inicial somente descobre IDs imutáveis. O status é relido sob lock.
+    """
+    inicial = db.query(Pagamento).filter(Pagamento.id == pagamento_id).first()
+    if inicial is None:
+        raise HTTPException(404, "Pagamento não encontrado")
+    db.query(Usuario).filter(Usuario.id == inicial.usuario_id).with_for_update().first()
+    raiz_id = inicial.pagamento_origem_id or inicial.id
+    db.query(Pagamento).filter(Pagamento.id == raiz_id).with_for_update().populate_existing().one()
+    return db.query(Pagamento).filter(Pagamento.id == pagamento_id).with_for_update().populate_existing().one()
+
+
 @app.post("/admin/reembolsos/{pagamento_id}/pix-manual")
+@protegido
 def registrar_reembolso_pix_manual(
     pagamento_id: int,
     dados: ReembolsoPixManualCreate,
@@ -6043,9 +5981,7 @@ def registrar_reembolso_pix_manual(
             detail="Apenas administradores podem registrar reembolsos"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == pagamento_id
-    ).with_for_update().first()
+    pagamento = bloquear_pagamento_reembolso(db, pagamento_id)
 
     if not pagamento:
         raise HTTPException(
@@ -6113,6 +6049,7 @@ def registrar_reembolso_pix_manual(
     }
 
 @app.post("/admin/reembolsos/{reembolso_id}/pix-manual/confirmar")
+@protegido
 def confirmar_reembolso_pix_manual(
     reembolso_id: int,
     confirmacao_extrato: bool,
@@ -6131,9 +6068,15 @@ def confirmar_reembolso_pix_manual(
             detail="É obrigatório confirmar a conferência do extrato bancário"
         )
 
+    inicial = db.query(ReembolsoFinanceiro).filter(
+        ReembolsoFinanceiro.id == reembolso_id
+    ).first()
+    if inicial is None:
+        raise HTTPException(404, "Reembolso financeiro não encontrado")
+    pagamento = bloquear_pagamento_reembolso(db, inicial.pagamento_id)
     reembolso = db.query(ReembolsoFinanceiro).filter(
         ReembolsoFinanceiro.id == reembolso_id
-    ).with_for_update().first()
+    ).with_for_update().populate_existing().one()
 
     if not reembolso:
         raise HTTPException(
@@ -6147,10 +6090,6 @@ def confirmar_reembolso_pix_manual(
             detail="Este reembolso não está pendente de confirmação manual"
         )
 
-    pagamento = db.query(Pagamento).filter(
-        Pagamento.id == reembolso.pagamento_id
-    ).with_for_update().first()
-
     if not pagamento or pagamento.status != "REFUND_IN_PROCESS":
         raise HTTPException(
             status_code=400,
@@ -6163,21 +6102,47 @@ def confirmar_reembolso_pix_manual(
             detail="O valor do reembolso não corresponde ao valor da compra"
         )
 
+    duplicada = pagamento.ocorrencia_financeira == "COBRANCA_DUPLICADA"
+    if duplicada and db.query(PeriodoAcessoPagamento).filter(
+        PeriodoAcessoPagamento.pagamento_id == pagamento.id
+    ).first() is not None:
+        raise HTTPException(409, "Cobrança duplicada com período de acesso vinculado. É necessária conferência antes da confirmação.")
+
+    if duplicada:
+        concessao = db.query(PeriodoAcessoPagamento).join(
+            Pagamento, Pagamento.id == PeriodoAcessoPagamento.pagamento_id
+        ).filter(
+            Pagamento.id != pagamento.id,
+            Pagamento.oportunidade_id == pagamento.oportunidade_id,
+            Pagamento.usuario_id == pagamento.usuario_id,
+            Pagamento.curso_id == pagamento.curso_id,
+            Pagamento.ocorrencia_financeira.is_(None),
+            PeriodoAcessoPagamento.usuario_id == pagamento.usuario_id,
+            PeriodoAcessoPagamento.curso_id == pagamento.curso_id,
+        ).first() if pagamento.oportunidade_id is not None else None
+        if concessao is None:
+            raise HTTPException(409, "Não foi possível identificar o período concedido pela compra. É necessária conferência antes da confirmação.")
+
     agora = datetime.utcnow()
 
     reembolso.status = "CONFIRMADO"
     reembolso.confirmado_em = agora
+    reembolso.confirmado_por = admin.id
 
     pagamento.status = "REFUNDED"
     pagamento.atualizado_em = agora
 
     try:
-        resultado_acesso = recalcular_acesso_apos_reembolso(
-            db=db,
-            usuario_id=pagamento.usuario_id,
-            curso_id=pagamento.curso_id,
-            pagamento_reembolsado_id=pagamento.id,
-        )
+        if duplicada:
+            # Esta transação não concedeu acesso: nenhum direito é recalculado.
+            resultado_acesso = {"situacao": "ACESSO_PRESERVADO"}
+        else:
+            resultado_acesso = recalcular_acesso_apos_reembolso(
+                db=db,
+                usuario_id=pagamento.usuario_id,
+                curso_id=pagamento.curso_id,
+                pagamento_reembolsado_id=pagamento.id,
+            )
 
         db.commit()
 
@@ -6222,6 +6187,11 @@ def historico_compras_usuario(
     rows = db.execute(text("""
         SELECT
             p.id AS pagamento_id,
+            p.mp_payment_id,
+            p.mp_status,
+            p.pagamento_origem_id,
+            p.oportunidade_id,
+            p.ocorrencia_financeira,
             p.usuario_id,
             p.curso_id,
             c.nome AS nome_curso,
@@ -6243,14 +6213,14 @@ def historico_compras_usuario(
             LIMIT 1
         ) a ON TRUE
         WHERE p.usuario_id = :usuario_id
-          AND p.status IN (
+          AND (p.status IN (
               'APPROVED',
               'PAGO',
               'REFUND_REQUESTED',
               'REFUNDED',
               'REFUND_IN_PROCESS',
               'REFUND_ERROR'
-          )
+          ) OR p.ocorrencia_financeira IS NOT NULL)
     """), {"usuario_id": usuario.id}).mappings().all()
 
     historico = []
@@ -6273,6 +6243,11 @@ def historico_compras_usuario(
 
         historico.append({
             "pagamento_id": r["pagamento_id"],
+            "mp_payment_id": r["mp_payment_id"],
+            "mp_status": r.get("mp_status"),
+            "pagamento_origem_id": r["pagamento_origem_id"],
+            "oportunidade_id": r["oportunidade_id"],
+            "ocorrencia_financeira": r["ocorrencia_financeira"],
             "curso_id": r["curso_id"],
             "nome_curso": r["nome_curso"],
             "situacao": situacao,
@@ -6322,7 +6297,7 @@ def obter_pasta_teoria_assunto_proprio(
         AcessoCurso.ativo == True
     ).first()
 
-    if not usuario.is_admin and not tem_acesso:
+    if not usuario.is_admin and (not tem_acesso or not curso_vigente(db, usuario.id, disciplina.curso_id)):
         raise HTTPException(status_code=403, detail="Sem acesso a este curso")
 
     pasta = (
@@ -7654,6 +7629,17 @@ from app.revisoes import registrar_rotas as registrar_rotas_revisoes
 registrar_rotas_revisoes(app, get_db, get_usuario_atual, validar_contexto_estudo)
 
 
+def bloquear_registro_questao(db, tipo, usuario_id, questao_id, contratacao_id, demonstracao_id):
+    """Serialize context-specific registration and conversation operations in PostgreSQL."""
+    if db.get_bind().dialect.name != "postgresql":
+        return
+    chave = ":".join(str(v) for v in (
+        "registro-questao", tipo, usuario_id, questao_id,
+        contratacao_id or 0, demonstracao_id or 0,
+    ))
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": chave})
+
+
 @app.post("/me/anotacoes-questoes")
 def criar_anotacao_questao(
     payload: schemas.AnotacaoQuestaoCreate,
@@ -7798,6 +7784,9 @@ def criar_anotacao_questao(
         demonstracao_id=demonstracao_id,
     )
 
+    bloquear_registro_questao(db, "anotacao", usuario_atual.id, questao_id,
+                              contratacao_id, demonstracao_id)
+
     tentativa = db.query(TentativaBateria).filter_by(
         id=payload["tentativa_id"], usuario_id=usuario_atual.id,
         bateria_id=bateria_id, contratacao_id=contratacao_id,
@@ -7811,9 +7800,10 @@ def criar_anotacao_questao(
     ).first():
         raise HTTPException(404, "Tentativa/resposta da questão não encontrada")
     existente = db.query(AnotacaoAlunoQuestao).filter_by(
-        tentativa_id=tentativa.id, questao_id=questao_id).first()
+        usuario_id=usuario_atual.id, questao_id=questao_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).first()
     if existente:
-        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
+        raise HTTPException(409, "Já existe anotação para esta questão neste contexto")
 
     nova = AnotacaoAlunoQuestao(
         tentativa_id=tentativa.id,
@@ -7830,7 +7820,7 @@ def criar_anotacao_questao(
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, "Já existe anotação para esta questão nesta tentativa")
+        raise HTTPException(409, "Já existe anotação para esta questão neste contexto")
     db.refresh(nova)
 
     return {
@@ -8362,22 +8352,13 @@ def _consultar_anotacoes(db, usuario_id, curso_id, contratacao_id, demonstracao_
 
 
 @app.get("/me/cursos-expirados/{curso_id}/anotacoes")
-def anotacoes_curso_expirado(curso_id: int, db: Session = Depends(get_db),
+def anotacoes_curso_expirado(curso_id: int, contratacao_id: int | None = None,
+                            demonstracao_id: int | None = None, db: Session = Depends(get_db),
                             usuario_atual: Usuario = Depends(get_usuario_atual)):
-    agora = datetime.utcnow()
-    resultado = []
-    for modelo, campo in [(ContratacaoCurso, "contratacao_id"), (DemonstracaoCurso, "demonstracao_id")]:
-        contextos = db.query(modelo).filter(modelo.usuario_id == usuario_atual.id,
-            modelo.curso_id == curso_id, modelo.data_fim.isnot(None),
-            modelo.data_fim <= agora, modelo.data_inicio <= modelo.data_fim).all()
-        for acesso in contextos:
-            if campo == "contratacao_id" and acesso.origem not in {"ADMIN", "PAGAMENTO"}:
-                continue
-            registros = _consultar_anotacoes(db, usuario_atual.id, curso_id,
-                acesso.id if campo == "contratacao_id" else None,
-                acesso.id if campo == "demonstracao_id" else None)
-            resultado.extend(r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim)
-    return sorted(resultado, key=lambda r: r["criado_em"], reverse=True)
+    acesso = validar_contexto_historico(db, usuario_atual, curso_id, contratacao_id, demonstracao_id)
+    registros = _consultar_anotacoes(db, usuario_atual.id, curso_id, acesso.id, None)
+    return sorted((r for r in registros if acesso.data_inicio <= r["criado_em"] < acesso.data_fim),
+                  key=lambda r: r["criado_em"], reverse=True)
 
 
 def _estrutura_conversa(db, questao_id, bateria_id):
@@ -8406,6 +8387,55 @@ def _contexto_conversa(db, conversa, vigente=False):
     return acesso
 
 
+def _assinar_dados_conversa(dados):
+    import json
+    conteudo = json.dumps(dados, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hmac.new(CHAVE_ASSINATURA_SESSAO.encode("utf-8"), conteudo.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def _estado_conversa(db, conversa):
+    mensagens = db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).order_by(
+        MensagemConversaQuestao.id).all()
+    return _assinar_dados_conversa({
+        "conversa_id": conversa.id, "status": conversa.status,
+        "atualizado_em": conversa.atualizado_em.isoformat() if conversa.atualizado_em else None,
+        "mensagens": [[m.id, m.autor, m.criada_em.isoformat() if m.criada_em else None, m.texto]
+                      for m in mensagens],
+    })
+
+
+def _fingerprint_reformulacao(usuario_id, conversa_id, curso_id, contratacao_id,
+                             demonstracao_id, texto, estado, confirmado):
+    return _assinar_dados_conversa({
+        "usuario_id": usuario_id, "conversa_id": conversa_id, "curso_id": curso_id,
+        "contratacao_id": contratacao_id, "demonstracao_id": demonstracao_id,
+        "texto": texto, "estado_conversa": estado, "confirmado": confirmado,
+    })
+
+
+def _bloquear_chave_transacional(db, chave):
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))"), {"chave": chave})
+
+
+def _travar_conversa_contextualizada(db, conversa_id, usuario_id=None,
+                                    contratacao_id=None, demonstracao_id=None):
+    query = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id)
+    if usuario_id is not None:
+        query = query.filter_by(usuario_id=usuario_id)
+    if contratacao_id is not None or demonstracao_id is not None:
+        query = query.filter_by(contratacao_id=contratacao_id, demonstracao_id=demonstracao_id)
+    inicial = query.first()
+    if not inicial or (inicial.contratacao_id is None) == (inicial.demonstracao_id is None):
+        raise HTTPException(404, "Conversa não encontrada")
+    bloquear_registro_questao(db, "conversa", inicial.usuario_id, inicial.questao_id,
+                              inicial.contratacao_id, inicial.demonstracao_id)
+    atual = query.populate_existing().with_for_update().first()
+    if not atual:
+        raise HTTPException(404, "Conversa não encontrada")
+    return atual
+
+
 def _resultado_conversa(db, conversa):
     questao, bateria, assunto, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
     aluno = db.get(Usuario, conversa.usuario_id)
@@ -8414,6 +8444,7 @@ def _resultado_conversa(db, conversa):
         MensagemConversaQuestao.criada_em, MensagemConversaQuestao.id).all()
     return {'conversa_id': conversa.id, 'tentativa_id': conversa.tentativa_id,
         'status': conversa.status, 'contratacao_id': conversa.contratacao_id, 'demonstracao_id': conversa.demonstracao_id,
+        'estado_conversa': _estado_conversa(db, conversa),
         'aluno_id': conversa.usuario_id, 'aluno_nome': aluno.nome if aluno else '',
         'curso_id': disciplina.curso_id, 'curso_nome': curso.nome if curso else '',
         'disciplina_id': disciplina.id, 'disciplina_nome': disciplina.nome, 'disciplina_ordem': disciplina.ordem,
@@ -8430,6 +8461,8 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
                          usuario: Usuario = Depends(get_usuario_atual)):
     _, _, _, disciplina = _estrutura_conversa(db, dados.questao_id, dados.bateria_id)
     validar_contexto_estudo(db, usuario, disciplina.curso_id, dados.contratacao_id, dados.demonstracao_id)
+    bloquear_registro_questao(db, "conversa", usuario.id, dados.questao_id,
+                              dados.contratacao_id, dados.demonstracao_id)
     tentativa = db.query(TentativaBateria).filter_by(id=dados.tentativa_id, usuario_id=usuario.id,
         bateria_id=dados.bateria_id, contratacao_id=dados.contratacao_id, demonstracao_id=dados.demonstracao_id).with_for_update().first()
     resposta = db.query(RespostaAlunoQuestao).filter_by(tentativa_id=dados.tentativa_id, questao_id=dados.questao_id,
@@ -8437,8 +8470,10 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
         demonstracao_id=dados.demonstracao_id, respondida=True).first()
     if not tentativa or not resposta or not resposta.resposta_marcada:
         raise HTTPException(404, 'Tentativa/resposta da questão não encontrada')
-    if db.query(ConversaQuestaoProfessor).filter_by(tentativa_id=tentativa.id, questao_id=dados.questao_id).first():
-        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+    if db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
+            questao_id=dados.questao_id, contratacao_id=dados.contratacao_id,
+            demonstracao_id=dados.demonstracao_id).first():
+        raise HTTPException(409, 'Já existe conversa para esta questão neste contexto')
     conversa = ConversaQuestaoProfessor(usuario_id=usuario.id, questao_id=dados.questao_id,
         bateria_id=dados.bateria_id, tentativa_id=tentativa.id, contratacao_id=dados.contratacao_id,
         demonstracao_id=dados.demonstracao_id, status='ABERTA')
@@ -8449,7 +8484,7 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, 'Já existe conversa para esta questão nesta tentativa')
+        raise HTTPException(409, 'Já existe conversa para esta questão neste contexto')
     return _resultado_conversa(db, conversa)
 
 
@@ -8471,6 +8506,84 @@ def minhas_conversas_prof(curso_id: int | None = None, contratacao_id: int | Non
         _contexto_conversa(db, c)
         resultado.append(_resultado_conversa(db, c))
     return resultado
+
+
+@app.post('/me/mensagens-prof/{conversa_id}/reformular')
+def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversaProfessor,
+        contratacao_id: int | None = None, demonstracao_id: int | None = None,
+        db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if (contratacao_id is None) == (demonstracao_id is None):
+        raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
+    operacao_id = str(dados.operacao_id)
+    _bloquear_chave_transacional(db, 'reformulacao-operacao:' + operacao_id)
+
+    operacao = db.get(models.ReformulacaoConversaOperacao, operacao_id)
+    if operacao:
+        fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, operacao.curso_id,
+            contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+        if not hmac.compare_digest(operacao.fingerprint, fingerprint):
+            raise HTTPException(409, 'Identificador de operação já utilizado com outros parâmetros.')
+        nova = db.query(ConversaQuestaoProfessor).filter_by(id=operacao.conversa_nova_id,
+            usuario_id=usuario.id, contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id).first()
+        if not nova:
+            raise HTTPException(409, 'Esta reformulação já foi substituída. Atualize a conversa.')
+        nova = _travar_conversa_contextualizada(db, nova.id, usuario.id,
+            contratacao_id, demonstracao_id)
+        acesso = _contexto_conversa(db, nova, vigente=True)
+        _, _, _, disciplina = _estrutura_conversa(db, nova.questao_id, nova.bateria_id)
+        if acesso.curso_id != operacao.curso_id or disciplina.curso_id != operacao.curso_id:
+            raise HTTPException(404, 'Conversa não encontrada')
+        return _resultado_conversa(db, nova)
+
+    conversa = _travar_conversa_contextualizada(db, conversa_id, usuario.id,
+        contratacao_id, demonstracao_id)
+    acesso = _contexto_conversa(db, conversa, vigente=True)
+    questao, bateria, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
+    if acesso.curso_id != disciplina.curso_id:
+        raise HTTPException(404, 'Conversa não encontrada')
+    if conversa.status not in {'ABERTA', 'AGUARDANDO_RESPOSTA_FINAL', 'ENCERRADA'}:
+        raise HTTPException(409, 'Estado da conversa não permite reformulação.')
+    fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, disciplina.curso_id,
+        contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+    atual = db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
+        questao_id=conversa.questao_id, contratacao_id=contratacao_id,
+        demonstracao_id=demonstracao_id).order_by(ConversaQuestaoProfessor.id.desc()).first()
+    if not atual or atual.id != conversa_id:
+        raise HTTPException(409, 'A conversa foi atualizada. Recarregue e confirme novamente.')
+    if not hmac.compare_digest(_estado_conversa(db, conversa), dados.estado_conversa):
+        raise HTTPException(409, 'A conversa foi atualizada. Recarregue e confirme novamente.')
+
+    tentativa = db.query(TentativaBateria).filter_by(id=conversa.tentativa_id,
+        usuario_id=usuario.id, bateria_id=conversa.bateria_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).first()
+    resposta = db.query(RespostaAlunoQuestao).filter_by(tentativa_id=conversa.tentativa_id,
+        usuario_id=usuario.id, bateria_id=conversa.bateria_id, questao_id=conversa.questao_id,
+        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id, respondida=True).first()
+    if not tentativa or not resposta or not resposta.resposta_marcada:
+        raise HTTPException(409, 'A tentativa ou resposta vinculada não está mais disponível.')
+
+    try:
+        db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).delete(synchronize_session=False)
+        db.delete(conversa)
+        db.flush()
+        nova = ConversaQuestaoProfessor(usuario_id=usuario.id, questao_id=questao.id,
+            bateria_id=bateria.id, tentativa_id=tentativa.id,
+            contratacao_id=contratacao_id, demonstracao_id=demonstracao_id, status='ABERTA')
+        db.add(nova)
+        db.flush()
+        db.add(MensagemConversaQuestao(conversa_id=nova.id, autor='ALUNO', texto=dados.texto))
+        db.add(models.ReformulacaoConversaOperacao(operacao_id=operacao_id,
+            curso_id=disciplina.curso_id, contratacao_id=contratacao_id,
+            demonstracao_id=demonstracao_id, conversa_nova_id=nova.id,
+            fingerprint=fingerprint))
+        db.flush()
+        resultado = _resultado_conversa(db, nova)
+        db.commit()
+        return resultado
+    except Exception:
+        db.rollback()
+        raise
 
 
 def _responder_conversa(db, conversa, texto, autor):
@@ -8496,10 +8609,8 @@ def continuar_conversa_prof(conversa_id: int, dados: schemas.MensagemProfessorTe
         db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if (contratacao_id is None) == (demonstracao_id is None):
         raise HTTPException(400, 'Informe exatamente um contexto de acesso ao curso.')
-    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id, usuario_id=usuario.id,
-        contratacao_id=contratacao_id, demonstracao_id=demonstracao_id).with_for_update().first()
-    if not conversa:
-        raise HTTPException(404, 'Conversa não encontrada')
+    conversa = _travar_conversa_contextualizada(db, conversa_id, usuario.id,
+        contratacao_id, demonstracao_id)
     _contexto_conversa(db, conversa, vigente=True)
     return _responder_conversa(db, conversa, dados.texto, 'ALUNO')
 
@@ -8509,7 +8620,11 @@ def conversas_prof_admin(curso_id: int | None = None, disciplina_id: int | None 
         concluidas: bool = False, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if not usuario.is_admin:
         raise HTTPException(403, 'Acesso restrito')
-    query = db.query(ConversaQuestaoProfessor)
+    query = db.query(ConversaQuestaoProfessor).filter(or_(
+        and_(ConversaQuestaoProfessor.contratacao_id.isnot(None),
+             ConversaQuestaoProfessor.demonstracao_id.is_(None)),
+        and_(ConversaQuestaoProfessor.contratacao_id.is_(None),
+             ConversaQuestaoProfessor.demonstracao_id.isnot(None))))
     query = query.filter(ConversaQuestaoProfessor.status == 'ENCERRADA') if concluidas else query.filter(ConversaQuestaoProfessor.status != 'ENCERRADA')
     resultado = []
     for conversa in query.order_by(ConversaQuestaoProfessor.criado_em, ConversaQuestaoProfessor.id):
@@ -8525,17 +8640,24 @@ def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfe
         db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
     if not usuario.is_admin:
         raise HTTPException(403, 'Acesso restrito')
-    conversa = db.query(ConversaQuestaoProfessor).filter_by(id=conversa_id).with_for_update().first()
-    if not conversa:
-        raise HTTPException(404, 'Conversa não encontrada')
+    conversa = _travar_conversa_contextualizada(db, conversa_id)
     _contexto_conversa(db, conversa)
     return _responder_conversa(db, conversa, dados.texto, 'PROFESSOR')
 
 
 @app.get('/me/cursos-expirados/{curso_id}/mensagens-prof')
-def historico_conversas_prof(curso_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+def historico_conversas_prof(curso_id: int, contratacao_id: int | None = None,
+                             demonstracao_id: int | None = None,
+                             db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    acesso_selecionado = validar_contexto_historico(db, usuario, curso_id, contratacao_id, demonstracao_id)
     resultado = []
-    for conversa in db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id).order_by(ConversaQuestaoProfessor.id.desc()):
+    for conversa in db.query(ConversaQuestaoProfessor).filter_by(
+            usuario_id=usuario.id, contratacao_id=acesso_selecionado.id,
+            demonstracao_id=None).order_by(ConversaQuestaoProfessor.id.desc()):
+        # Conversas legadas sem contexto exclusivo (ou com contexto ambíguo)
+        # permanecem armazenadas, mas não pertencem ao histórico contextualizado.
+        if (conversa.contratacao_id is None) == (conversa.demonstracao_id is None):
+            continue
         _, _, _, disciplina = _estrutura_conversa(db, conversa.questao_id, conversa.bateria_id)
         if disciplina.curso_id != curso_id:
             continue
@@ -9298,3 +9420,47 @@ def copiar_assunto_entre_disciplinas(
         db, lambda: copiar_assunto_para_disciplina(db, assunto_id, dados.disciplina_destino_id),
         "assunto"
     )
+
+
+# Proteção independente de 014/015; não executa migrations na inicialização.
+from app.pausa_financeira import instalar as instalar_pausa_financeira
+from app.database import engine as motor_financeiro
+instalar_pausa_financeira(app, motor_financeiro, SessionLocal, get_db,
+    get_usuario_atual, lambda request, pid: validar_assinatura_mercadopago(request, pid),
+    processar_pagamento_mp, mp_headers, consulta=lambda pid: consultar_pagamento(pid, mp_headers()))
+
+
+# E-mails consomem somente o domínio já confirmado; desativados por padrão.
+from app.emails_pagamentos import EmailsPagamentos, Invalido as EmailInvalido
+app.state.emails_pagamentos = EmailsPagamentos(motor_financeiro, SessionLocal, mp_headers)
+app.router.add_event_handler('startup', app.state.emails_pagamentos.iniciar)
+app.router.add_event_handler('shutdown', app.state.emails_pagamentos.encerrar)
+
+@app.post('/admin/emails-pagamentos/{pagamento_id}/{tipo}/reenviar')
+def reenviar_email_pagamento(pagamento_id: int, tipo: str, db: Session = Depends(get_db),
+                            usuario=Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito ao administrador.')
+    db.expunge_all(); db.rollback()
+    try:
+        app.state.emails_pagamentos.reenviar(pagamento_id, tipo.upper())
+    except EmailInvalido:
+        raise HTTPException(409, 'Reenvio indisponível; verificar o registro e a janela de idempotência.') from None
+    return {'agendado': True}
+
+@app.get('/admin/emails-pagamentos')
+def listar_emails_pagamentos(db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
+    if not usuario.is_admin:
+        raise HTTPException(403, 'Acesso restrito ao administrador.')
+    db.expunge_all(); db.rollback()
+    from app.emails_pagamentos import fila as fila_emails
+    from sqlalchemy import select
+    with motor_financeiro.connect() as c:
+        registros = c.execute(select(fila_emails.c.pagamento_id, fila_emails.c.tipo,
+            fila_emails.c.estado, fila_emails.c.tentativas, fila_emails.c.aceito_em,
+            fila_emails.c.erro_codigo).order_by(fila_emails.c.criado_em.desc()).limit(100)).mappings().all()
+    return {'emails': [dict(r) for r in registros]}
+
+
+from app.contestacoes import instalar as instalar_contestacoes
+instalar_contestacoes(app, get_db, get_usuario_atual, mp_headers)

@@ -71,7 +71,7 @@
     </div>
 
     <footer style="margin-top:4px;">
-      <p>© <span id="ano_atual"></span> - Quality</p>
+      <p>© <span id="ano_atual">2026</span> RO</p>
     </footer>
 
     <script src="js/app.js"></script>
@@ -84,7 +84,8 @@
       let bateriaId = null;
       let tentativaAtiva = null;
       let tentativaAnotacaoId = null;
-      let anotacoesDaTentativa = new Set();
+      const cacheRegistrosQuestao = { anotacao: new Map(), mensagem: new Map() };
+      const erroRegistrosQuestao = { anotacao: false, mensagem: false };
       let modo = null;
       let reverQuestoesAluno = {};
 
@@ -845,85 +846,8 @@
                 modo === "visualizar"
                   ? ""
                   : `
-                    <div class="card" style="margin-top:16px;">
-                      <h3>Fazer anotação / enviar mensagem ao professor</h3>
-
-                      <textarea
-                        id="anotacao_${q.id}"
-                        placeholder="Escreva sua anotação ou dúvida..."
-                        style="
-                          width:100%;
-                          min-height:100px;
-
-                          margin-top:11px;
-
-                          padding:12px;
-
-                          border:1px solid #ddd;
-                          border-radius:6px;
-                        "
-                      ></textarea>
-
-                      <div class="sprint-revisao-anotacao-acoes">
-                        <button
-                          id="btn_salvar_mim_${q.id}"
-                          class="btn sprint-revisao-btn-acao"
-                          onclick="salvarAnotacaoParaMim(${q.id})"
-                        >
-                          Salvar para mim
-                        </button>
-
-                        <span
-                          id="tooltip_salvar_mim_${q.id}"
-                          style="
-                            display:none;
-                            position:absolute;
-                            margin-top:-45px;
-                            margin-left:0;
-                            background:#fff;
-                            border:1px solid #ddd;
-                            border-radius:6px;
-                            padding:6px 10px;
-                            font-size:.78rem;
-                            white-space:nowrap;
-                            box-shadow:0 2px 8px rgba(0,0,0,.08);
-                            z-index:999;
-                          "
-                        >
-                          Acesse em
-                          <b style="color:#1F4E79;">Minhas anotações</b>
-                        </span>
-
-                        <button
-                          id="btn_enviar_prof_${q.id}"
-                          class="btn sprint-revisao-btn-acao"
-                          onclick="salvarEnviarProf(${q.id})"
-                        >
-                          Enviar ao prof
-                        </button>
-
-                        <span
-                          id="tooltip_enviar_prof_${q.id}"
-                          style="
-                            display:none;
-                            position:absolute;
-                            margin-top:-45px;
-                            margin-left:0;
-                            background:#fff;
-                            border:1px solid #ddd;
-                            border-radius:6px;
-                            padding:6px 10px;
-                            font-size:.78rem;
-                            white-space:nowrap;
-                            box-shadow:0 2px 8px rgba(0,0,0,.08);
-                            z-index:999;
-                          "
-                        >
-                          Acompanhe em
-                          <b style="color:#1F4E79;">Mensagens ao prof</b>
-                        </span>
-                      </div>
-                    </div>
+                    ${htmlSecaoRegistro("anotacao", q.id, null, null, true)}
+                    ${htmlSecaoRegistro("mensagem", q.id, null, null, true)}
                   `
               }
             </div>
@@ -969,209 +893,93 @@
         recuperarAnotacoesTentativa();
       }
 
+      function linkAreaRegistro(arquivo) {
+        const origem = new URLSearchParams(window.location.search), destino = new URLSearchParams();
+        for (const chave of ["curso_id", "contratacao_id", "demonstracao_id", "curso_nome"])
+          if (origem.get(chave)) destino.set(chave, origem.get(chave));
+        const query = destino.toString();
+        return `${arquivo}${query ? `?${query}` : ""}`;
+      }
+
+      function htmlSecaoRegistro(tipo, qid, registro, erro, loading = false) {
+        const nota = tipo === "anotacao";
+        const titulo = nota ? "Fazer anotação" : "Enviar mensagem ao professor";
+        const hostId = `registro_${nota ? "anotacao" : "mensagem"}_${qid}`;
+        let corpo;
+        if (loading) corpo = `<p role="status">Verificando se já existe registro...</p>`;
+        else if (registro) corpo = nota
+          ? `Você já fez anotação nesta questão. Caso deseje editá-la, entre em <a href="${linkAreaRegistro("minhas-anotacoes.html")}">📝 Anotações</a>.`
+          : `Você já enviou mensagem ao prof a respeito desta questão. Você pode acessá-la em <a href="${linkAreaRegistro("mensagens-prof.html")}">💬 Mensagens ao prof</a>. Caso deseje, poderá reformulá-la e enviá-la novamente ao professor.`;
+        else if (erro) corpo = `<p role="status">Não foi possível verificar se já existe registro. Tente novamente.</p><button class="btn sprint-revisao-btn-acao" onclick="recarregarRegistroQuestao('${tipo}',${qid})">Tentar novamente</button>`;
+        else {
+          const id = nota ? `anotacao_texto_${qid}` : `mensagem_texto_${qid}`;
+          const placeholder = nota ? "Escreva sua anotação..." : "Escreva sua dúvida ou pergunta...";
+          const buttonId = nota ? `btn_salvar_anotacao_${qid}` : `btn_salvar_mensagem_${qid}`;
+          const action = nota ? "salvarAnotacaoParaMim" : "salvarEnviarProf";
+          const labelBotao = nota ? "Salvar" : "Enviar";
+          corpo = `<textarea id="${id}" aria-label="${titulo}" placeholder="${placeholder}" style="width:100%;min-height:100px;margin-top:11px;padding:12px;border:1px solid #ddd;border-radius:6px;"></textarea><button id="${buttonId}" class="btn sprint-revisao-btn-acao" onclick="${action}(${qid})">${labelBotao}</button>`;
+        }
+        return `<section id="${hostId}" class="card" style="margin-top:16px"><h3>${titulo}</h3>${corpo}</section>`;
+      }
+
+      function atualizarSecaoRegistro(tipo, qid) {
+        const host = document.getElementById(`registro_${tipo}_${qid}`);
+        if (host) host.outerHTML = htmlSecaoRegistro(tipo, qid, cacheRegistrosQuestao[tipo].get(Number(qid)), erroRegistrosQuestao[tipo]);
+      }
+
+      async function carregarRegistroQuestao(tipo) {
+        const url = tipo === "anotacao" ? "/me/minhas-anotacoes" : "/me/mensagens-prof";
+        const rows = await apiGetAuth(`${url}?${contextoAcessoQueryLocal()}`);
+        cacheRegistrosQuestao[tipo] = new Map(rows.map(row => [Number(row.questao_id), row]));
+        erroRegistrosQuestao[tipo] = false;
+        questoes.forEach(q => atualizarSecaoRegistro(tipo, q.id));
+      }
+
+      async function recarregarRegistroQuestao(tipo, qid) {
+        try { await carregarRegistroQuestao(tipo); }
+        catch (err) { console.error(`Erro ao verificar ${tipo}`, err); erroRegistrosQuestao[tipo] = true; atualizarSecaoRegistro(tipo, qid); }
+      }
+
       async function recuperarAnotacoesTentativa() {
-        if (!tentativaAnotacaoId) return;
-        try {
-          const rows = await apiGetAuth(`/me/minhas-anotacoes?${contextoAcessoQueryLocal()}`);
-          anotacoesDaTentativa = new Set(rows.filter(a => Number(a.tentativa_id) === Number(tentativaAnotacaoId)).map(a => a.questao_id));
-          anotacoesDaTentativa.forEach(desativarBotaoSalvarMim);
-          const conversas = await apiGetAuth(`/me/mensagens-prof?${contextoAcessoQueryLocal()}`);
-          conversas.filter(c => Number(c.tentativa_id) === Number(tentativaAnotacaoId)).forEach(c => desativarBotaoEnviarProf(c.questao_id));
-        } catch (err) { console.error("Erro ao recuperar anotações da tentativa", err); }
-      }
-
-      function desativarBotaoSalvarMim(questaoId) {
-        const btn = document.getElementById(`btn_salvar_mim_${questaoId}`);
-        const tooltip = document.getElementById(`tooltip_salvar_mim_${questaoId}`);
-
-        if (!btn) return;
-
-        btn.innerText = "Anotação salva";
-        btn.dataset.bloqueado = "1";
-
-        btn.style.opacity = ".45";
-        btn.style.cursor = "default";
-        btn.style.pointerEvents = "auto";
-        btn.style.background = "#d9e2f3";
-        btn.style.color = "#6b7280";
-        btn.style.border = "1px solid #cbd5e1";
-
-        btn.onclick = function(event) {
-          event.preventDefault();
-          return false;
-        };
-
-        btn.onmouseenter = () => {
-          btn.style.background = "#d9e2f3";
-          btn.style.color = "#6b7280";
-          if (tooltip) tooltip.style.display = "inline";
-        };
-
-        btn.onmouseleave = () => {
-          btn.style.background = "#d9e2f3";
-          btn.style.color = "#6b7280";
-          if (tooltip) tooltip.style.display = "none";
-        };
-      }
-
-      function desativarBotaoEnviarProf(questaoId) {
-        const btn = document.getElementById(`btn_enviar_prof_${questaoId}`);
-        const tooltip = document.getElementById(`tooltip_enviar_prof_${questaoId}`);
-
-        if (!btn) return;
-
-        btn.innerText = "Mensagem enviada ao prof";
-        btn.dataset.bloqueado = "1";
-
-        btn.style.opacity = ".45";
-        btn.style.cursor = "default";
-        btn.style.pointerEvents = "auto";
-        btn.style.background = "#d9e2f3";
-        btn.style.color = "#6b7280";
-        btn.style.border = "1px solid #cbd5e1";
-
-        btn.onclick = function(event) {
-          event.preventDefault();
-          return false;
-        };
-
-        btn.onmouseenter = () => {
-          btn.style.background = "#d9e2f3";
-          btn.style.color = "#6b7280";
-          if (tooltip) tooltip.style.display = "inline";
-        };
-
-        btn.onmouseleave = () => {
-          btn.style.background = "#d9e2f3";
-          btn.style.color = "#6b7280";
-          if (tooltip) tooltip.style.display = "none";
-        };
-      }
-
-      async function salvarAnotacaoParaMim(questaoId) {
-        const campo = document.getElementById(`anotacao_${questaoId}`);
-
-        if (
-          document.getElementById(`btn_salvar_mim_${questaoId}`)
-            ?.dataset.bloqueado === "1"
-        ) {
+        const tipos = ["anotacao", "mensagem"];
+        if (!tentativaAnotacaoId) {
+          tipos.forEach(tipo => { erroRegistrosQuestao[tipo] = true; questoes.forEach(q => atualizarSecaoRegistro(tipo, q.id)); });
           return;
         }
+        const resultados = await Promise.allSettled(tipos.map(carregarRegistroQuestao));
+        resultados.forEach((r, i) => { if (r.status === "rejected") { const tipo = tipos[i]; erroRegistrosQuestao[tipo] = true; console.error(`Erro ao verificar ${tipo}`, r.reason); questoes.forEach(q => atualizarSecaoRegistro(tipo, q.id)); } });
+      }
 
-        if (!campo) return;
-
+      function textoRegistroValido(campo, nome) {
         const texto = campo.value.trim();
-
-        if (!texto) {
-          alert("Escreva uma anotação antes de salvar.");
-          return;
-        }
-
-        const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
-
-        if (totalPalavras > 300) {
-          alert("A anotação deve ter no máximo 300 palavras.");
-          return;
-        }
-
-        try {
-          if (!tentativaAnotacaoId) throw new Error("Tentativa não identificada");
-          const contexto = contextoAcessoLocal();
-
-          await apiPostAuth("/me/anotacoes-questoes", {
-            questao_id: questaoId,
-            tentativa_id: tentativaAnotacaoId,
-            bateria_id: Number(bateriaId),
-            texto: texto,
-            contratacao_id: contexto.contratacao_id,
-            demonstracao_id: contexto.demonstracao_id
-          });
-
-          alert("Anotação salva com sucesso.");
-
-          campo.value = "";
-          
-          anotacoesDaTentativa.add(questaoId);
-          desativarBotaoSalvarMim(questaoId);
-
-        } catch (err) {
-          console.error(err);
-          alert("Erro ao salvar anotação: " + err.message);
-        }
+        if (!texto) throw new Error(`Escreva ${nome} antes de salvar.`);
+        if (texto.split(/\s+/).length > 300) throw new Error("O texto deve ter no máximo 300 palavras.");
+        return texto;
       }
 
-      async function salvarEnviarProf(questaoId) {
-        const campo = document.getElementById(`anotacao_${questaoId}`);
-
-        if (
-          document.getElementById(`btn_enviar_prof_${questaoId}`)
-            ?.dataset.bloqueado === "1"
-        ) {
-          return;
-        }
-
-        if (!campo) return;
-
-        const texto = campo.value.trim();
-
-        if (!texto) {
-          alert("Escreva uma mensagem antes de enviar ao professor.");
-          return;
-        }
-
-        const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
-
-        if (totalPalavras > 300) {
-          alert("A mensagem deve ter no máximo 300 palavras.");
-          return;
-        }
-
-        const confirmar = confirm(
-          "Confirma enviar esta mensagem ao professor? Após o envio, ela não poderá ser editada."
-        );
-
-        if (!confirmar) return;
-
+      async function salvarAnotacaoParaMim(qid) {
+        const campo = document.getElementById(`anotacao_texto_${qid}`), botao = document.getElementById(`btn_salvar_anotacao_${qid}`);
+        if (!campo || !botao || botao.disabled) return;
+        let texto; try { texto = textoRegistroValido(campo, "uma anotação"); } catch (e) { alert(e.message); return; }
+        if (!tentativaAnotacaoId) { alert("Tentativa não identificada."); return; }
+        const ctx = contextoAcessoLocal(); botao.disabled = true;
         try {
-          if (!tentativaAnotacaoId) throw new Error("Tentativa não identificada");
-          const contexto = contextoAcessoLocal();
+          await apiPostAuth("/me/anotacoes-questoes", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
+          alert("Anotação salva com sucesso."); cacheRegistrosQuestao.anotacao.set(Number(qid), { questao_id: qid }); atualizarSecaoRegistro("anotacao", qid);
+        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("anotacao", qid); else { botao.disabled = false; alert("Erro ao salvar anotação: " + e.message); } }
+      }
 
-          await apiPostAuth("/me/mensagens-prof", {
-            questao_id: questaoId,
-            tentativa_id: tentativaAnotacaoId,
-            bateria_id: Number(bateriaId),
-            texto: texto,
-            contratacao_id: contexto.contratacao_id,
-            demonstracao_id: contexto.demonstracao_id
-          });
-
-          alert("Mensagem enviada ao professor.");
-
-          campo.value = "";
-          
-          desativarBotaoEnviarProf(questaoId);
-
-        } catch (err) {
-          console.error(err);
-
-          const msg = String(err.message || "");
-
-          if (
-            msg.includes("já existe") ||
-            msg.includes("ja existe") ||
-            msg.includes("conversa") ||
-            msg.includes("mensagem")
-          ) {
-            alert("Mensagem já enviada ao professor.");
-
-            campo.value = "";
-
-            desativarBotaoEnviarProf(questaoId);
-            return;
-          }
-
-          alert("Erro ao enviar mensagem: " + err.message);
-        }
+      async function salvarEnviarProf(qid) {
+        const campo = document.getElementById(`mensagem_texto_${qid}`), botao = document.getElementById(`btn_salvar_mensagem_${qid}`);
+        if (!campo || !botao || botao.disabled) return;
+        let texto; try { texto = textoRegistroValido(campo, "uma mensagem"); } catch (e) { alert(e.message); return; }
+        if (!confirm("Confirma enviar esta mensagem ao professor?")) return;
+        if (!tentativaAnotacaoId) { alert("Tentativa não identificada."); return; }
+        const ctx = contextoAcessoLocal(); botao.disabled = true;
+        try {
+          await apiPostAuth("/me/mensagens-prof", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
+          alert("Mensagem enviada ao professor."); cacheRegistrosQuestao.mensagem.set(Number(qid), { questao_id: qid }); atualizarSecaoRegistro("mensagem", qid);
+        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("mensagem", qid); else { botao.disabled = false; alert("Erro ao enviar mensagem: " + e.message); } }
       }
 
       function resetarBotaoResponder(questaoId) {
@@ -1211,7 +1019,7 @@
 
       const anoAtual = document.getElementById("ano_atual");
       if (anoAtual) {
-        anoAtual.textContent = new Date().getFullYear();
+        anoAtual.textContent = 2026;
       } 
 
       carregarBateria();
