@@ -66,6 +66,7 @@ function tratarErroCompra(erro) {
 
 let versaoValidacaoCupom = 0;
 function invalidarCupomDigitado() {
+  window.Juridico?.limpar();
   versaoValidacaoCupom++;
   cupomAplicadoCursoInfo = null;
   const resumo = document.getElementById("resumoCupomDesconto");
@@ -117,6 +118,7 @@ async function apiPost(path, body) {
 }
 
 async function aplicarCupomCursoInfo() {
+  window.Juridico?.limpar();
   const campo =
     document.getElementById(
       "codigo_cupom_desconto"
@@ -206,6 +208,7 @@ async function aplicarCupomCursoInfo() {
       valorOriginalCents -
       valorDescontoCents;
 
+    window.Juridico?.limpar();
     cupomAplicadoCursoInfo = {
       codigo_cupom:
         resultado.codigo_cupom,
@@ -2287,7 +2290,9 @@ function renderizarOpcoesAcessoCursoInfo() {
   `;
 }
 
+let aquisicaoCursoInfoEmAndamento = false;
 async function adquirirAgoraCursoInfo() {
+  if (aquisicaoCursoInfoEmAndamento) return;
   const msg = document.getElementById("msgCursoInfo");
   const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
 
@@ -2320,6 +2325,8 @@ async function adquirirAgoraCursoInfo() {
     return;
   }
 
+  aquisicaoCursoInfoEmAndamento = true;
+  document.getElementById("btnAdquirirAgora").disabled = true;
   try {
     if (selecionado.value === "demo") {
       msg.textContent = "Ativando acesso gratuito...";
@@ -2331,6 +2338,7 @@ async function adquirirAgoraCursoInfo() {
       return;
     }
 
+    const aceite = await Juridico.payload();
     const tempoId = selecionado.dataset.tempoId;
 
     msg.textContent = "...";
@@ -2344,6 +2352,7 @@ async function adquirirAgoraCursoInfo() {
     const r = await apiPostAuth(
       "/checkout/mercadopago",
       {
+        ...aceite,
         tempo_acesso_id:
           Number(tempoId),
 
@@ -2373,6 +2382,7 @@ async function adquirirAgoraCursoInfo() {
       url;
 
   } catch (err) {
+    await Juridico.erro(err);
     if (tratarErroCompra(err)) return;
     console.error(err);
 
@@ -2401,6 +2411,9 @@ async function adquirirAgoraCursoInfo() {
 
     msg.style.whiteSpace = "pre-line";
     msg.style.color = "#8a1f1f";
+  } finally {
+    aquisicaoCursoInfoEmAndamento = false;
+    document.getElementById("btnAdquirirAgora").disabled = false;
   }
 }
 

@@ -1319,3 +1319,64 @@ class ContestacaoPagamento(Base):
         "Usuario",
         foreign_keys=[devolucao_confirmada_por],
     )
+
+
+# Evidências jurídicas são aditivas; nenhuma FK é adicionada a pagamentos históricos.
+class DocumentoJuridicoVersao(Base):
+    __tablename__ = "documentos_juridicos_versoes"
+    __table_args__ = (UniqueConstraint("tipo", "versao"),
+        CheckConstraint("tipo IN ('TERMOS', 'PRIVACIDADE')"),)
+    id = Column(Integer, primary_key=True)
+    tipo = Column(String(20), nullable=False)
+    versao = Column(String(40), nullable=False)
+    titulo = Column(Text, nullable=False)
+    conteudo = Column(Text, nullable=False)
+    sha256 = Column(String(64), nullable=False)
+    pdf_sha256 = Column(String(64), nullable=True)
+    publicado_em = Column(DateTime(timezone=True), nullable=False)
+
+
+class PoliticaAceiteJuridico(Base):
+    __tablename__ = "politica_aceite_juridico"
+    __table_args__ = (CheckConstraint("id = 1"),
+        CheckConstraint("NOT habilitada OR (termos_id IS NOT NULL AND privacidade_id IS NOT NULL AND termos_id <> privacidade_id)"),)
+    id = Column(Integer, primary_key=True)
+    habilitada = Column(Boolean, nullable=False, default=False)
+    termos_id = Column(Integer, ForeignKey("documentos_juridicos_versoes.id"))
+    privacidade_id = Column(Integer, ForeignKey("documentos_juridicos_versoes.id"))
+
+
+class AceiteJuridico(Base):
+    __tablename__ = "aceites_juridicos"
+    __table_args__ = (Index("ix_aceites_usuario_curso", "usuario_id", "curso_id", "aceito_em"),)
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
+    tempo_acesso_id = Column(Integer, ForeignKey("tempo_acesso_curso.id"), nullable=False)
+    oportunidade_id = Column(Integer, ForeignKey("oportunidades_compra.id"), nullable=False)
+    meses = Column(Integer, nullable=False)
+    modalidade = Column(String(20), nullable=False)
+    valor_original_cents = Column(Integer, nullable=False)
+    valor_cents = Column(Integer, nullable=False)
+    declaracao = Column(Text, nullable=False)
+    aceito_em = Column(DateTime(timezone=True), nullable=False)
+
+
+class AceiteJuridicoDocumento(Base):
+    __tablename__ = "aceites_juridicos_documentos"
+    aceite_id = Column(Integer, ForeignKey("aceites_juridicos.id"), primary_key=True)
+    documento_id = Column(Integer, ForeignKey("documentos_juridicos_versoes.id"), primary_key=True)
+
+
+class AceiteJuridicoPagamento(Base):
+    __tablename__ = "aceites_juridicos_pagamentos"
+    __table_args__ = (Index("ix_aceites_pagamento", "pagamento_id"),)
+    aceite_id = Column(Integer, ForeignKey("aceites_juridicos.id"), primary_key=True)
+    pagamento_id = Column(Integer, ForeignKey("pagamentos.id"), primary_key=True)
+
+
+# Criadas exclusivamente pela migração 021; nunca pelo create_all do startup.
+TABELAS_JURIDICAS = frozenset({
+    "documentos_juridicos_versoes", "politica_aceite_juridico", "aceites_juridicos",
+    "aceites_juridicos_documentos", "aceites_juridicos_pagamentos",
+})

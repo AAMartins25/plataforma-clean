@@ -1,0 +1,686 @@
+        POLÍTICA DE PRIVACIDADE E PROTEÇÃO DE DADOS
+                               PESSOAIS RESUMÃO ONLINE
+
+  Versão: 1.0 — Minuta para aprovação
+
+  Data de vigência: [A PREENCHER]
+
+  Site: https://resumaoonline.com.br
+
+  1. APRESENTAÇÃO
+
+  1.1. A presente Política de Privacidade e Proteção de Dados Pessoais estabelece as diretrizes adotadas
+  pelo Resumão Online para a coleta, utilização, armazenamento, compartilhamento e proteção dos
+  dados pessoais de seus usuários.
+
+  1.2. O Resumão Online compromete-se a tratar os dados pessoais em conformidade com a Lei nº
+  13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD) —, o Código de Defesa do Consumidor
+  e as demais normas aplicáveis.
+
+  1.3. Esta Política aplica-se aos visitantes do site, usuários cadastrados, alunos, compradores e demais
+  pessoas cujos dados pessoais sejam tratados no âmbito dos serviços da plataforma.
+
+  1.4. A utilização dos serviços observará também os Termos e Condições de Contratação e Uso do
+  Resumão Online.
+
+  2. IDENTIFICAÇÃO DO CONTROLADOR
+
+  2.1. O responsável pelo tratamento dos dados pessoais, nas operações em que determina as
+  finalidades e os meios essenciais do tratamento, é:
+
+  • Razão social: [A PREENCHER]
+
+  • Nome fantasia: Resumão Online
+
+  • CNPJ: [A PREENCHER]
+
+  • Endereço da sede: [A PREENCHER]
+
+  • Representante legal: [A PREENCHER]
+
+  • E-mail para assuntos de privacidade: [A PREENCHER]
+
+  2.2. Para fins desta Política, a pessoa jurídica responsável será denominada CONTROLADORA ou
+  RESUMÃO ONLINE.
+
+  2.3. O contato para assuntos relacionados à privacidade e à proteção de dados poderá ser realizado
+  pelo endereço eletrônico indicado nesta seção ou por canal específico disponibilizado na plataforma.
+
+
+  3. DADOS PESSOAIS TRATADOS
+
+  3.1. Conforme a utilização dos serviços, o Resumão Online poderá tratar as seguintes categorias de
+  dados:
+
+  I — Dados cadastrais e de identificação:
+
+  a) Nome;
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                             Página 1
+
+  b) Endereço de e-mail;
+
+  c) Identificador interno do usuário;
+
+  d) Outras informações cadastrais efetivamente solicitadas pela plataforma.
+
+  II — Dados de autenticação e segurança:
+
+  a) Informações necessárias à autenticação;
+
+  b) Senhas armazenadas por mecanismos de proteção criptográfica apropriados, sem necessidade de
+  conservação em texto simples;
+
+  c) Registros de acesso e eventos relevantes de segurança, quando coletados.
+
+  III — Dados contratuais e financeiros:
+
+  a) Identificação dos cursos adquiridos;
+
+  b) Prazo e valor da contratação;
+
+  c) Situação do pagamento;
+
+  d) Identificadores de transações;
+
+  e) Registros de cancelamentos, reembolsos e contestações;
+
+  f) Informações necessárias ao cumprimento de obrigações fiscais e contratuais.
+
+  IV — Dados de utilização e aprendizagem:
+
+  a) Cursos, disciplinas e assuntos acessados;
+
+  b) Respostas fornecidas em questões e atividades;
+
+  c) Resultados de baterias de questões;
+
+  d) Informações de desempenho;
+
+  e) Revisões programadas;
+
+  f) Marcações de dificuldade, conteúdos para revisão e demais registros de estudo disponibilizados pelo
+  sistema.
+
+  V — Dados de atendimento:
+
+  a) Solicitações encaminhadas pelo usuário;
+
+  b) Mensagens e respostas trocadas com a plataforma;
+
+  c) Informações necessárias à análise e à solução das solicitações.
+
+  VI — Dados técnicos:
+
+  a) Endereço IP, quando registrado;
+
+  b) Informações técnicas sobre navegador e dispositivo, quando coletadas;
+
+  c) Registros necessários ao funcionamento, à manutenção e à segurança dos serviços.
+
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                     Página 2
+
+  3.2. A coleta deverá limitar-se aos dados adequados, pertinentes e necessários às finalidades
+  informadas.
+
+  3.3. A plataforma não solicita, como regra geral, dados pessoais sensíveis para a prestação dos cursos.
+  Caso alguma funcionalidade futura exija esse tratamento, serão observadas as condições legais
+  específicas.
+
+  3.4. A relação definitiva dos dados coletados deverá corresponder aos campos, registros e integrações
+  efetivamente utilizados pela plataforma.
+
+
+  4. FINALIDADES DO TRATAMENTO
+
+  4.1. Os dados pessoais poderão ser tratados para as seguintes finalidades:
+
+  a) Realizar o cadastro e a identificação dos usuários;
+
+  b) Permitir a autenticação e o acesso à plataforma;
+
+  c) Processar contratações e pagamentos;
+
+  d) Liberar e administrar o acesso aos cursos;
+
+  e) Registrar atividades de estudo e apresentar resultados;
+
+  f) Disponibilizar revisões programadas e ferramentas de acompanhamento do desempenho;
+
+  g) Responder solicitações de atendimento;
+
+  h) Processar pedidos de cancelamento e reembolso;
+
+  i) Analisar contestações e prevenir fraudes;
+
+  j) Proteger a segurança e a integridade dos serviços;
+
+  k) Cumprir obrigações legais, fiscais e regulatórias;
+
+  l) Exercer regularmente direitos em processos administrativos, judiciais ou arbitrais;
+
+  m) Corrigir falhas e aprimorar o funcionamento técnico da plataforma.
+
+  4.2. Os dados pessoais não serão utilizados para finalidades incompatíveis com aquelas legitimamente
+  informadas ao titular.
+
+
+  5. BASES LEGAIS PARA O TRATAMENTO
+
+  5.1. O tratamento de dados pessoais será fundamentado nas hipóteses previstas na LGPD, conforme a
+  natureza de cada operação.
+
+  5.2. Entre as bases legais aplicáveis, poderão estar:
+
+  I — Execução de contrato e procedimentos preliminares: para cadastro, contratação, liberação de
+  acesso e disponibilização dos recursos educacionais solicitados pelo usuário.
+
+  II — Cumprimento de obrigação legal ou regulatória: para conservação de documentos e registros
+  exigidos pela legislação.
+
+  III — Exercício regular de direitos: para comprovação de contratações, defesa em reclamações,
+  contestações e processos.
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                     Página 3
+
+  IV — Legítimo interesse: quando juridicamente cabível, para atividades como prevenção de abusos e
+  proteção dos serviços, observados os direitos e as legítimas expectativas dos titulares.
+
+  V — Consentimento: quando necessário para finalidades específicas que dependam dessa
+  manifestação.
+
+  5.3. A marcação de ciência dos Termos de Contratação e desta Política não representa consentimento
+  genérico para qualquer tratamento de dados pessoais.
+
+  5.4. Quando uma finalidade depender de consentimento, a plataforma deverá solicitar manifestação
+  específica, livre, informada e inequívoca, observadas as exigências legais.
+
+
+  6. DADOS DE ESTUDO E DESEMPENHO
+
+  6.1. Para oferecer funcionalidades educacionais, o Resumão Online poderá registrar respostas, acertos,
+  erros, atividades concluídas, marcações de dificuldade e resultados de desempenho.
+
+  6.2. Esses registros serão utilizados para permitir que o aluno acompanhe seus estudos e utilize as
+  ferramentas disponibilizadas no curso contratado.
+
+  6.3. Os dados de desempenho serão associados à conta e ao contexto de estudo correspondente,
+  respeitadas as regras de acesso e segregação de informações da plataforma.
+
+  6.4. O Resumão Online não comercializará individualmente os históricos de estudo dos alunos.
+
+  6.5. O eventual uso de informações estatísticas ou agregadas para avaliação e aprimoramento dos
+  serviços deverá observar as exigências legais de proteção de dados pessoais.
+
+
+  7. PROCESSAMENTO DE PAGAMENTOS
+
+  7.1. O Resumão Online poderá utilizar prestadores especializados para processamento de pagamentos,
+  incluindo o Mercado Pago.
+
+  7.2. Durante a contratação, determinadas informações necessárias à operação poderão ser
+  encaminhadas ao prestador de pagamento.
+
+  7.3. O prestador poderá tratar informações relacionadas à transação conforme suas próprias
+  responsabilidades, obrigações legais e políticas de privacidade.
+
+  7.4. O Resumão Online utilizará as informações recebidas sobre o pagamento para identificar a
+  contratação, confirmar sua situação e administrar o acesso ao curso.
+
+  7.5. Os dados completos de cartão de crédito não deverão ser armazenados pelo Resumão Online
+  quando o processamento for realizado diretamente pelo prestador especializado.
+
+  7.6. O usuário poderá consultar a política de privacidade do prestador de pagamento para conhecer os
+  tratamentos realizados diretamente por ele.
+
+
+  8. COMPARTILHAMENTO COM PRESTADORES DE SERVIÇOS
+
+  8.1. O Resumão Online poderá compartilhar dados pessoais necessários à operação da plataforma com
+  prestadores de serviços, incluindo:
+
+  a) Processamento de pagamentos;
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 4
+
+  b) Hospedagem e infraestrutura tecnológica;
+
+  c) Armazenamento e gerenciamento de bancos de dados;
+
+  d) Serviços de autenticação e segurança;
+
+  e) Hospedagem ou distribuição de conteúdos educacionais;
+
+  f) Serviços de comunicação e suporte técnico.
+
+  8.2. O compartilhamento deverá observar a necessidade, a finalidade legítima e as medidas de
+  segurança aplicáveis.
+
+  8.3. O Resumão Online buscará utilizar prestadores que ofereçam condições adequadas de proteção de
+  dados pessoais, considerando a natureza dos serviços contratados.
+
+  8.4. Os prestadores poderão assumir diferentes papéis previstos na LGPD, conforme suas atividades e
+  responsabilidades específicas.
+
+  8.5. O Resumão Online não vende bases de dados pessoais de alunos para fins comerciais.
+
+
+  9. TRANSFERÊNCIA INTERNACIONAL DE DADOS
+
+  9.1. Determinados prestadores de infraestrutura, hospedagem, armazenamento ou tecnologia poderão
+  realizar operações de tratamento fora do território brasileiro.
+
+  9.2. Quando houver transferência internacional de dados pessoais, serão observadas as hipóteses
+  legais e os mecanismos de proteção exigidos pela LGPD e pela regulamentação aplicável.
+
+  9.3. Informações adicionais sobre transferências internacionais poderão ser solicitadas pelo titular por
+  meio do canal de privacidade.
+
+
+  10. ARMAZENAMENTO E SEGURANÇA
+
+  10.1. O Resumão Online adotará medidas técnicas e administrativas adequadas aos riscos do
+  tratamento, visando proteger os dados pessoais contra acessos não autorizados e situações acidentais
+  ou ilícitas de destruição, perda, alteração, comunicação ou divulgação.
+
+  10.2. As medidas poderão compreender, conforme a arquitetura e as funcionalidades efetivamente
+  utilizadas:
+
+  a) Controle de acesso por autenticação;
+
+  b) Proteção das credenciais de usuários;
+
+  c) Uso de conexões seguras;
+
+  d) Restrição de acesso administrativo;
+
+  e) Segregação de informações por usuário e contratação;
+
+  f) Monitoramento de eventos relevantes de segurança;
+
+  g) Atualizações e correções técnicas;
+
+  h) Mecanismos de recuperação e proteção da infraestrutura.
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 5
+
+  10.3. Nenhum ambiente tecnológico está inteiramente livre de riscos. A CONTROLADORA
+  compromete-se a adotar medidas compatíveis com suas obrigações legais e a atuar de forma diligente
+  diante de incidentes.
+
+  10.4. As medidas descritas nesta seção deverão corresponder aos controles efetivamente
+  implementados e mantidos pela plataforma.
+
+  11. INCIDENTES DE SEGURANÇA
+
+  11.1. Caso ocorra incidente de segurança envolvendo dados pessoais, o Resumão Online realizará a
+  avaliação necessária para identificar sua natureza, extensão e possíveis riscos aos titulares.
+
+  11.2. Quando o incidente puder acarretar risco ou dano relevante aos titulares, serão adotadas as
+  medidas de comunicação à Autoridade Nacional de Proteção de Dados (ANPD) e aos titulares afetados,
+  conforme os requisitos e prazos regulamentares aplicáveis.
+
+  11.3. A CONTRATADA adotará providências razoáveis para conter o incidente, mitigar seus efeitos e
+  prevenir novas ocorrências.
+
+  11.4. Os registros e procedimentos relativos aos incidentes observarão as exigências legais e
+  regulamentares pertinentes.
+
+
+  12. PRAZO DE CONSERVAÇÃO DOS DADOS
+
+  12.1. Os dados pessoais serão conservados pelo período necessário ao cumprimento das finalidades
+  para as quais foram tratados, observadas as obrigações legais e as hipóteses de conservação
+  autorizadas pela LGPD.
+
+  12.2. Os dados contratuais e financeiros poderão ser mantidos durante os prazos legalmente exigidos
+  ou necessários ao exercício regular de direitos.
+
+  12.3. Os registros de aceite dos Termos poderão ser conservados para comprovação das contratações
+  e cumprimento de obrigações legais.
+
+  12.4. Os dados de estudo e desempenho serão conservados conforme a finalidade das funcionalidades
+  disponibilizadas, as condições contratuais e as políticas de retenção adotadas pela plataforma.
+
+  12.5. Encerrada a finalidade e inexistindo fundamento legal para conservação, os dados serão
+  eliminados ou anonimizados, conforme o caso.
+
+  12.6. Os períodos específicos de retenção deverão ser definidos de acordo com as categorias de dados,
+  a legislação e os procedimentos efetivamente adotados.
+
+
+  13. DIREITOS DOS TITULARES
+
+  13.1. O titular poderá exercer os direitos previstos na LGPD, observadas as condições legais aplicáveis,
+  incluindo:
+
+  a) Confirmação da existência de tratamento;
+
+  b) Acesso aos dados pessoais;
+
+  c) Correção de dados incompletos, inexatos ou desatualizados;
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 6
+
+  d) Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em
+  desconformidade com a legislação;
+
+  e) Portabilidade, quando aplicável e conforme regulamentação;
+
+  f) Eliminação de dados tratados com consentimento, ressalvadas as hipóteses legais de conservação;
+
+  g) Informação sobre entidades públicas e privadas com as quais tenha ocorrido uso compartilhado de
+  dados;
+
+  h) Informação sobre a possibilidade de não fornecer consentimento e suas consequências;
+
+  i) Revogação do consentimento, quando essa for a base legal utilizada;
+
+  j) Oposição ao tratamento, nas hipóteses previstas em lei;
+
+  k) Revisão de decisões tomadas unicamente com base em tratamento automatizado, quando aplicável.
+
+  13.2. As solicitações poderão ser encaminhadas ao canal de privacidade informado nesta Política.
+
+  13.3. A CONTROLADORA poderá solicitar informações estritamente necessárias para verificar a
+  identidade do requerente e evitar divulgação indevida de dados pessoais.
+
+  13.4. As solicitações serão atendidas nos prazos e condições previstos na legislação.
+
+  13.5. Quando não for possível atender integralmente a uma solicitação, a CONTROLADORA apresentará
+  a justificativa pertinente, observadas as disposições legais.
+
+
+  14. EXCLUSÃO DA CONTA E DOS DADOS
+
+  14.1. O usuário poderá solicitar o encerramento de sua conta e a eliminação de dados pessoais,
+  observadas as condições legais aplicáveis.
+
+  14.2. O encerramento da conta não implica necessariamente a eliminação imediata de todos os
+  registros.
+
+  14.3. Determinadas informações poderão ser conservadas para cumprimento de obrigações legais,
+  comprovação de contratações, prevenção de fraudes ou exercício regular de direitos.
+
+  14.4. Quando cabível, os dados que não precisarem ser conservados serão eliminados ou anonimizados
+  de forma adequada.
+
+  14.5. A solicitação de exclusão não prejudicará direitos assegurados ao consumidor em relação às
+  contratações realizadas.
+
+
+  15. COOKIES E TECNOLOGIAS SEMELHANTES
+
+  15.1. O Resumão Online poderá utilizar cookies ou tecnologias semelhantes necessários ao
+  funcionamento, à autenticação, à segurança e à manutenção da sessão do usuário.
+
+  15.2. Eventual utilização de tecnologias para análise de comportamento, publicidade ou outras
+  finalidades não essenciais deverá observar os requisitos de transparência e as bases legais aplicáveis.
+
+  15.3. Quando necessário, serão disponibilizados mecanismos apropriados para gerenciamento das
+  preferências do usuário.
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 7
+
+  15.4. As categorias de cookies e tecnologias efetivamente utilizadas deverão ser identificadas e
+  descritas conforme a implementação da plataforma.
+
+
+  16. CRIANÇAS E ADOLESCENTES
+
+  16.1. Caso os serviços sejam utilizados por crianças ou adolescentes, o tratamento de seus dados
+  pessoais observará o princípio do melhor interesse e as demais exigências legais aplicáveis.
+
+  16.2. Quando necessário, serão adotadas medidas específicas de informação, segurança e participação
+  dos pais ou responsáveis legais.
+
+  16.3. A disponibilização de serviços para esse público deverá observar as condições de contratação e
+  os mecanismos de proteção efetivamente implementados.
+
+
+  17. COMUNICAÇÕES COM O USUÁRIO
+
+  17.1. O Resumão Online poderá enviar comunicações necessárias à prestação dos serviços, incluindo:
+
+  a) Confirmações de cadastro;
+
+  b) Informações sobre contratações e pagamentos;
+
+  c) Avisos relativos ao prazo de acesso;
+
+  d) Informações sobre solicitações de atendimento;
+
+  e) Comunicados relevantes de segurança;
+
+  f) Informações necessárias ao cumprimento de obrigações contratuais ou legais.
+
+  17.2. Comunicações publicitárias não essenciais deverão observar a legislação aplicável e as
+  preferências do titular, quando pertinentes.
+
+  17.3. O Resumão Online não utilizará o aceite contratual como autorização genérica para envio
+  irrestrito de publicidade.
+
+
+  18. REGISTRO ELETRÔNICO DA CIÊNCIA DOS DOCUMENTOS
+
+  18.1. Antes de prosseguir para o pagamento de um curso, o usuário deverá ter acesso aos Termos e
+  Condições de Contratação e Uso e à presente Política de Privacidade.
+
+  18.2. A declaração apresentada será:
+
+  ☐ Ciente dos Termos de Contratação e da Política de Privacidade e Proteção de Dados.
+
+  18.3. A marcação será obrigatória para prosseguimento da contratação.
+
+  18.4. A plataforma poderá registrar a identificação do usuário, a data e hora da manifestação, as
+  versões dos documentos apresentados e a contratação correspondente.
+
+  18.5. Esse registro terá finalidade de comprovação da ciência e da contratação, não representando
+  consentimento genérico para tratamentos de dados que dependam de manifestação específica.
+
+
+
+
+
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 8
+
+  19. RESPONSABILIDADE PELA PROTEÇÃO DOS DADOS
+
+  19.1. O Resumão Online compromete-se a observar os princípios de finalidade, adequação,
+  necessidade, transparência, segurança, prevenção, responsabilização e prestação de contas previstos
+  na LGPD.
+
+  19.2. A CONTROLADORA responderá pelo tratamento irregular de dados pessoais nas hipóteses
+  estabelecidas pela legislação.
+
+  19.3. A contratação de prestadores de serviços não afasta as obrigações legais que competirem à
+  CONTROLADORA.
+
+  19.4. O Resumão Online não poderá excluir genericamente sua responsabilidade por incidentes, falhas
+  de segurança ou tratamentos irregulares quando houver dever legal de reparação.
+
+  19.5. A apuração de eventual responsabilidade observará as circunstâncias do caso concreto e as
+  disposições legais aplicáveis.
+
+
+  20. ATUALIZAÇÕES DESTA POLÍTICA
+
+  20.1. Esta Política poderá ser atualizada para refletir mudanças legais, tecnológicas, operacionais ou
+  relacionadas aos serviços.
+
+  20.2. A versão atualizada será disponibilizada na plataforma, com indicação da data de vigência.
+
+  20.3. Alterações relevantes nas finalidades ou nas condições de tratamento serão comunicadas de
+  maneira apropriada, observadas as exigências legais.
+
+  20.4. Quando uma alteração exigir novo consentimento, a CONTROLADORA solicitará a manifestação
+  específica do titular.
+
+  20.5. As versões anteriores poderão ser conservadas para fins de comprovação e cumprimento de
+  obrigações legais.
+
+  21. CANAL DE CONTATO PARA PRIVACIDADE
+
+  21.1. Para exercer direitos, esclarecer dúvidas ou apresentar solicitações relacionadas ao tratamento
+  de dados pessoais, o titular poderá utilizar:
+
+  E-mail de privacidade: [A PREENCHER]
+
+  Canal de atendimento: https://resumaoonline.com.br — área de atendimento, conforme
+  disponibilidade.
+
+  21.2. A CONTROLADORA analisará as solicitações e fornecerá resposta conforme as condições e os
+  prazos legalmente aplicáveis.
+
+
+  22. DISPOSIÇÕES FINAIS
+
+  22.1. Esta Política deverá ser interpretada em conformidade com a legislação brasileira de proteção de
+  dados pessoais e de defesa do consumidor.
+
+  22.2. Nenhuma disposição poderá ser utilizada para afastar direitos legalmente assegurados aos
+  titulares.
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                  Página 9
+
+  22.3. A presente Política integra o conjunto de informações disponibilizadas ao usuário para
+  conhecimento das condições de tratamento de dados pessoais relacionadas aos serviços do Resumão
+  Online.
+
+
+
+  RESUMÃO ONLINE
+
+  Política de Privacidade e Proteção de Dados Pessoais
+
+  Versão 1.0 — Minuta sujeita a revisão e aprovação antes da publicação.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                       Página 10

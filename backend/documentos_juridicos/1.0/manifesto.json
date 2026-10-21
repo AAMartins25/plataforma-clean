@@ -1,0 +1,154 @@
+{
+  "documentos": [
+    {
+      "tipo": "PRIVACIDADE",
+      "versao": "1.0",
+      "provisoria": true,
+      "titulo": "Política de Privacidade e Proteção de Dados Pessoais",
+      "pdf": "Politica_de_Privacidade_Resumao_Online_v1.0.pdf",
+      "texto": "Politica_de_Privacidade_Resumao_Online_v1.0.txt",
+      "pdf_sha256": "ae4f075d5cbea36fe2f96f6a071e272b610224d632304f239d8b910c711708e1",
+      "texto_sha256": "945405f453cb3cf64103ace0270385a0c61c2096a5893d267b85cea0fd712e2d",
+      "pdf_bytes": 92081,
+      "texto_bytes": 22507,
+      "paginas": [
+        {
+          "pagina": 1,
+          "caracteres": 2058,
+          "campos_a_preencher": 6,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 2,
+          "caracteres": 1699,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 3,
+          "caracteres": 2284,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 4,
+          "caracteres": 2773,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 5,
+          "caracteres": 2240,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 6,
+          "caracteres": 2582,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 7,
+          "caracteres": 2659,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 8,
+          "caracteres": 2316,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 9,
+          "caracteres": 2365,
+          "campos_a_preencher": 1,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 10,
+          "caracteres": 567,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        }
+      ],
+      "campos_a_preencher": 7,
+      "extracao": "pypdf 6.21.2, extraction_mode=layout; páginas separadas por LF + FF + LF; sem edição",
+      "conferencia": "PyMuPDF 2.0, get_text(sort=True); comparação por página ignorando apenas espaços e quebras de linha",
+      "site_url": "juridico/Politica_de_Privacidade_Resumao_Online_v1.0.pdf"
+    },
+    {
+      "tipo": "TERMOS",
+      "versao": "1.0",
+      "provisoria": true,
+      "titulo": "Termos e Condições de Contratação e Uso",
+      "pdf": "Termos_de_Contratacao_Resumao_Online_v1.0.pdf",
+      "texto": "Termos_de_Contratacao_Resumao_Online_v1.0.txt",
+      "pdf_sha256": "129148a9a13d7639999056c43623d8afa949677eb866aa5710f901facd9be173",
+      "texto_sha256": "cdef5e1d658c8a6c09d6c823b02cda602f0dbbf44d8b1deb39b14549c585cf88",
+      "pdf_bytes": 91419,
+      "texto_bytes": 22416,
+      "paginas": [
+        {
+          "pagina": 1,
+          "caracteres": 1905,
+          "campos_a_preencher": 6,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 2,
+          "caracteres": 2873,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 3,
+          "caracteres": 2607,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 4,
+          "caracteres": 2222,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 5,
+          "caracteres": 2898,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 6,
+          "caracteres": 2871,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 7,
+          "caracteres": 2682,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 8,
+          "caracteres": 2581,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        },
+        {
+          "pagina": 9,
+          "caracteres": 878,
+          "campos_a_preencher": 0,
+          "extratores_concordam_sem_espacos": true
+        }
+      ],
+      "campos_a_preencher": 6,
+      "extracao": "pypdf 6.21.2, extraction_mode=layout; páginas separadas por LF + FF + LF; sem edição",
+      "conferencia": "PyMuPDF 2.0, get_text(sort=True); comparação por página ignorando apenas espaços e quebras de linha",
+      "site_url": "juridico/Termos_de_Contratacao_Resumao_Online_v1.0.pdf"
+    }
+  ]
+}

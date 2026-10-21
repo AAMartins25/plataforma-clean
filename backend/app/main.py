@@ -4000,12 +4000,16 @@ def validar_cupom_desconto(payload: dict, db: Session = Depends(get_db)):
     return {"codigo_cupom": cupom.codigo, "percentual_desconto": cupom.percentual_desconto,
             "vendedor_id": vendedor.id}
 
+from app.juridico import registrar_rotas as registrar_juridico, validar_aceite, registrar_aceite
+registrar_juridico(app, get_db)
+
 @app.post("/checkout/mercadopago")
 def criar_checkout_mp(
     payload: dict,
     db: Session = Depends(get_db),
     user=Depends(get_usuario_atual)
 ):
+    documentos_aceitos = validar_aceite(db, payload)
     tempo_acesso_id = payload.get("tempo_acesso_id")
 
     codigo_cupom = payload.get("codigo_cupom")
@@ -4171,6 +4175,9 @@ def criar_checkout_mp(
         Pagamento.mp_preference_id.isnot(None),
     ).order_by(Pagamento.id.desc()).first()
     if pendente:
+        registrar_aceite(db, documentos_aceitos, user.id, curso.id, tempo, oportunidade.id,
+            tipo_compra, valor_original_cents, valor_cents, pendente.id,
+            meses=getattr(pendente, "checkout_meses", None))
         try:
             resposta = requests.get(
                 f"https://api.mercadopago.com/checkout/preferences/{pendente.mp_preference_id}",
@@ -4245,6 +4252,9 @@ def criar_checkout_mp(
     }).scalar()
 
     db.flush()
+
+    registrar_aceite(db, documentos_aceitos, user.id, curso.id, tempo, oportunidade.id,
+        tipo_compra, valor_original_cents, valor_cents, pagamento_id)
 
     base = (APP_BASE_URL or "").rstrip("/")
     if not base:

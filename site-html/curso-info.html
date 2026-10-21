@@ -53,6 +53,11 @@
       <h2 style="margin-top:0;font-size:1.2rem;">Acesso</h2>
 
       <div id="opcoes_acesso" class="list"></div>
+      <div id="boxAceiteJuridico" hidden style="margin-top:16px;line-height:1.6;overflow-wrap:anywhere;">
+        <input type="checkbox" id="aceiteJuridico" aria-labelledby="textoAceiteJuridico" />
+        <span id="textoAceiteJuridico">Ciente dos <a id="linkTermos" target="_blank" rel="noopener noreferrer">Termos de Contratação</a> e da <a id="linkPrivacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade e Proteção de Dados</a>.</span>
+      </div>
+
 
       <div
         id="box_cupom_desconto"
@@ -170,7 +175,8 @@
     <p>© <span id="ano_atual"></span> - Quality Estudos</p>
   </footer>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=aceite-1"></script>
+  <script src="js/juridico.js?v=aceite-2"></script>
 
   <script>
   function confirmarSair() {

@@ -2,7 +2,7 @@ import os
 from urllib.parse import quote_plus, urlparse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.models import Base
+from app.models import Base, TABELAS_JURIDICAS
 
 # 1. Busca a URL da nuvem injetada pelo GitHub
 ENV_DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -66,4 +66,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # 4. Garante a criação/verificação das tabelas ao iniciar
 if os.getenv("AMBIENTE_TESTE") != "1":
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine, tables=[
+        tabela for tabela in Base.metadata.sorted_tables
+        if tabela.name not in TABELAS_JURIDICAS
+    ])
