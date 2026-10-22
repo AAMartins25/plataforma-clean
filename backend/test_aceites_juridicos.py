@@ -138,7 +138,11 @@ def test_gerador_preserva_bytes_aprovados():
     from preparar_documentos_juridicos import gerar
     original = "Fixture 'não minuta'\r\nlinha\\fim\n".encode()
     sql = gerar(original, original)
-    assert original.decode().replace("'", "''") in sql
+    import base64, re
+    cargas = re.findall(r"pg_catalog.decode\((.*?), 'base64'\)", sql, re.S)
+    assert len(cargas) == 2
+    for carga in cargas:
+        assert base64.b64decode(''.join(re.findall(r"'([A-Za-z0-9+/=]+)'", carga)), validate=True) == original
     assert sha256(original).hexdigest() in sql
     assert 'UPDATE politica' not in sql
     with pytest.raises(ValueError): gerar(b'', original)

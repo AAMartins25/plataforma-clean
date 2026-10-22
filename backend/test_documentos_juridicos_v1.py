@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from html import unescape
 import json
+import base64
 import os
 from pathlib import Path
 import re
@@ -61,7 +62,11 @@ def test_sql_preparado_sem_ativacao():
     assert (PACOTE/'documentos-1.0.sql').read_bytes().decode()==esperado
     assert esperado.count('INSERT INTO documentos_juridicos_versoes')==2
     assert 'politica_aceite_juridico' not in esperado
-    assert esperado.count('[A PREENCHER]')==13
+    cargas = re.findall(r"pg_catalog.decode\((.*?), 'base64'\)", esperado, re.S)
+    textos = [base64.b64decode(''.join(re.findall(r"'([A-Za-z0-9+/=]+)'", carga)), validate=True) for carga in cargas]
+    assert textos == [(PACOTE/t['texto']).read_bytes(), (PACOTE/p['texto']).read_bytes()]
+    assert sum(texto.count(b'[A PREENCHER]') for texto in textos) == 13
+    assert '\f' not in esperado
     assert 'UPDATE' not in esperado and 'DELETE' not in esperado
 
 

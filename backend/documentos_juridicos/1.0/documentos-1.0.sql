@@ -1,1298 +1,631 @@
 BEGIN;
 SET LOCAL standard_conforming_strings = on;
-INSERT INTO documentos_juridicos_versoes (tipo, versao, titulo, conteudo, sha256, pdf_sha256, publicado_em) VALUES ('TERMOS', '1.0', 'Termos e Condições de Contratação e Uso', '           TERMOS E CONDIÇÕES DE CONTRATAÇÃO E USO
-                                          RESUMÃO ONLINE
-
-  Versão: 1.0 — Minuta para revisão
-
-  Data de vigência: [A PREENCHER]
-
-  Site: https://resumaoonline.com.br
-
-  1. IDENTIFICAÇÃO DA CONTRATADA
-
-  1.1. A plataforma Resumão Online é operada por:
-
-  • Razão social: [A PREENCHER]
-
-  • Nome fantasia: Resumão Online
-
-  • CNPJ: [A PREENCHER]
-
-  • Endereço da sede: [A PREENCHER]
-
-  • E-mail de atendimento: [A PREENCHER]
-
-  • Representante legal: [A PREENCHER]
-
-  1.2. Para fins deste documento, a empresa será denominada CONTRATADA, e o usuário que adquirir
-  acesso aos cursos será denominado CONTRATANTE ou ALUNO.
-
-  1.3. Estes Termos regulamentam a contratação e a utilização dos serviços educacionais digitais
-  oferecidos pela CONTRATADA, observada a legislação brasileira aplicável.
-
-
-  2. OBJETO DA CONTRATAÇÃO
-
-  2.1. O objeto da contratação é a disponibilização de acesso temporário a cursos preparatórios e
-  materiais educacionais digitais oferecidos pela plataforma Resumão Online.
-
-  2.2. Os cursos poderão compreender, conforme as características de cada oferta:
-
-  a) Teorias e resumos objetivos, organizados por disciplinas e assuntos;
-
-  b) Videoaulas ou resumos em vídeo;
-
-  c) Questões de estudo e questões comentadas;
-
-  d) Baterias de questões e atividades de revisão;
-
-  e) Revisões programadas;
-
-  f) Ferramentas de acompanhamento do desempenho do aluno;
-
-  g) Outros recursos educacionais expressamente informados na apresentação do curso.
-
-  2.3. O conteúdo e os recursos efetivamente disponibilizados serão aqueles descritos na oferta
-  específica do curso adquirido.
-
-  2.4. A CONTRATADA não se obriga a disponibilizar recursos, disciplinas ou materiais que não integrem a
-  oferta contratada.
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                              Página 1
-
-  3. NATUREZA DOS CURSOS E METODOLOGIA
-
-  3.1. O Resumão Online oferece materiais de estudo com abordagem objetiva e priorização de
-  conteúdos considerados relevantes para a preparação dos alunos.
-
-  3.2. A metodologia poderá privilegiar assuntos de maior incidência em provas anteriores, conforme
-  critérios pedagógicos e análises realizadas pela CONTRATADA.
-
-  3.3. O ALUNO declara estar ciente de que os cursos poderão não abranger a totalidade dos conteúdos
-  previstos no edital do concurso ou processo seletivo correspondente.
-
-  3.4. A CONTRATADA não garante aprovação, classificação, nomeação, obtenção de nota mínima ou
-  qualquer resultado específico em concursos públicos.
-
-  3.5. Os resultados dependem de diversos fatores, incluindo dedicação individual, conhecimentos
-  prévios, desempenho na avaliação e critérios definidos pelas entidades organizadoras.
-
-  3.6. A CONTRATADA não possui vínculo com bancas examinadoras ou órgãos responsáveis pelos
-  concursos, salvo quando houver informação expressa em sentido contrário.
-
-
-  4. CADASTRO E CONTA DO ALUNO
-
-  4.1. Para utilizar os serviços, o ALUNO deverá realizar cadastro na plataforma e fornecer informações
-  verdadeiras, corretas e atualizadas.
-
-  4.2. O acesso à conta é pessoal e deverá ser protegido por credenciais individuais.
-
-  4.3. O ALUNO deverá adotar cuidados razoáveis para manter a confidencialidade de sua senha e
-  comunicar à CONTRATADA qualquer suspeita de acesso não autorizado.
-
-  4.4. É proibido utilizar a conta para práticas fraudulentas, acesso indevido a dados de terceiros ou
-  atividades contrárias à legislação.
-
-  4.5. A CONTRATADA poderá adotar medidas proporcionais de segurança diante de indícios de uso
-  irregular, assegurados os direitos do consumidor e a possibilidade de esclarecimento.
-
-
-  5. CONTRATAÇÃO DOS CURSOS
-
-  5.1. Antes da contratação, o ALUNO terá acesso às informações essenciais da oferta, incluindo
-  identificação do curso, conteúdo disponibilizado, preço, prazo de acesso e condições de pagamento.
-
-  5.2. O ALUNO deverá selecionar a opção de prazo e valor desejada, conferir as informações
-  apresentadas e manifestar ciência dos presentes Termos e da Política de Privacidade e Proteção de
-  Dados.
-
-  5.3. A manifestação eletrônica será realizada mediante marcação de campo específico, não
-  previamente selecionado.
-
-  5.4. O prosseguimento para o pagamento dependerá dessa marcação obrigatória.
-
-  5.5. A contratação estará sujeita à confirmação do pagamento ou à outra modalidade de liberação
-  expressamente autorizada pela CONTRATADA.
-
-  5.6. A CONTRATADA disponibilizará ao ALUNO a confirmação da contratação e uma versão dos termos
-  aplicáveis, em meio que permita sua consulta, conservação e reprodução.
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 2
-
-  6. PREÇO E FORMAS DE PAGAMENTO
-
-  6.1. Os preços serão apresentados em reais, conforme as opções de contratação disponíveis para cada
-  curso.
-
-  6.2. O valor devido corresponderá à opção selecionada e confirmada pelo ALUNO antes da conclusão da
-  compra.
-
-  6.3. O pagamento poderá ser realizado pelos meios disponibilizados no ambiente de contratação,
-  inclusive Pix e cartão de crédito, quando disponíveis.
-
-  6.4. O processamento dos pagamentos poderá ser realizado por empresa especializada, como o
-  Mercado Pago, observadas as regras e condições aplicáveis ao meio de pagamento escolhido.
-
-  6.5. Eventuais parcelamentos, acréscimos, descontos e condições específicas deverão ser informados
-  antes da confirmação do pagamento.
-
-  6.6. A CONTRATADA não solicitará que o ALUNO informe sua senha pessoal da plataforma a terceiros
-  para concluir pagamentos.
-
-
-  7. PRAZO DE ACESSO E VIGÊNCIA
-
-  7.1. O prazo de acesso ao curso será aquele expressamente selecionado pelo ALUNO no momento da
-  contratação.
-
-  7.2. A contagem do prazo terá início na data de efetiva liberação do acesso ao curso, conforme
-  registrada no sistema.
-
-  7.3. O acesso ao conteúdo contratado permanecerá disponível durante o prazo adquirido, ressalvadas
-  as hipóteses legalmente admitidas de suspensão ou encerramento.
-
-  7.4. Encerrado o prazo contratado, o acesso aos conteúdos sujeitos à contratação poderá ser
-  desativado, observadas as funcionalidades de consulta histórica que a plataforma disponibilizar.
-
-  7.5. A contratação não implica renovação automática, salvo se futuramente for oferecida e
-  expressamente aceita modalidade dessa natureza.
-
-  7.6. Eventual renovação deverá observar as condições e os valores informados ao ALUNO no momento
-  da nova contratação.
-
-
-  8. DISPONIBILIDADE DA PLATAFORMA
-
-  8.1. A CONTRATADA empregará esforços razoáveis para manter a plataforma disponível e funcional
-  durante o período contratado.
-
-  8.2. Poderão ocorrer interrupções temporárias decorrentes de manutenção, atualização, falhas
-  técnicas, problemas de conectividade ou situações alheias ao controle razoável da CONTRATADA.
-
-  8.3. Sempre que viável, manutenções programadas que possam afetar significativamente o acesso
-  serão comunicadas previamente.
-
-  8.4. Interrupções relevantes atribuíveis à CONTRATADA serão analisadas para adoção das providências
-  cabíveis, inclusive eventual compensação, prorrogação do acesso ou outra solução adequada, conforme
-  a legislação.
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                  Página 3
-
-  8.5. Nenhuma disposição destes Termos exclui a responsabilidade legal da CONTRATADA por falhas na
-  prestação dos serviços.
-
-
-  9. DIREITOS E DEVERES DO ALUNO
-
-  9.1. Constituem direitos do ALUNO:
-
-  a) Receber informações claras sobre o curso contratado;
-
-  b) Acessar os conteúdos e recursos incluídos na contratação durante o prazo correspondente;
-
-  c) Utilizar os canais de atendimento disponibilizados;
-
-  d) Solicitar esclarecimentos e apresentar reclamações;
-
-  e) Exercer os direitos previstos na legislação consumerista e de proteção de dados pessoais.
-
-  9.2. Constituem deveres do ALUNO:
-
-  a) Manter seus dados cadastrais atualizados;
-
-  b) Utilizar a plataforma de forma lícita;
-
-  c) Respeitar os direitos autorais dos materiais;
-
-  d) Não compartilhar indevidamente suas credenciais;
-
-  e) Não tentar comprometer a segurança, a integridade ou o funcionamento da plataforma.
-
-
-  10. PROPRIEDADE INTELECTUAL E USO DOS MATERIAIS
-
-  10.1. Os materiais disponibilizados pela CONTRATADA estão protegidos pela legislação aplicável aos
-  direitos autorais e à propriedade intelectual, ressalvados os conteúdos de terceiros e os materiais de
-  domínio público.
-
-  10.2. A contratação concede ao ALUNO autorização pessoal, limitada e não exclusiva para utilização
-  dos conteúdos disponibilizados, exclusivamente para fins de estudo.
-
-  10.3. Sem autorização expressa ou outra hipótese legalmente permitida, é vedado:
-
-  a) Comercializar ou redistribuir os materiais;
-
-  b) Reproduzir integralmente conteúdos protegidos para divulgação pública;
-
-  c) Disponibilizar vídeos, textos ou questões em plataformas externas;
-
-  d) Compartilhar materiais protegidos de forma que viole os direitos da CONTRATADA ou de terceiros.
-
-  10.4. A utilização legítima de conteúdos nas hipóteses permitidas pela legislação autoral permanece
-  assegurada.
-
-
-  11. COMPARTILHAMENTO DE CONTAS E USO INDEVIDO
-
-  11.1. A conta do ALUNO destina-se ao uso pessoal de seu titular.
-
-  11.2. O compartilhamento não autorizado de credenciais com terceiros poderá caracterizar
-  descumprimento destes Termos.
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 4
-
-  11.3. A CONTRATADA poderá utilizar mecanismos proporcionais para identificar acessos suspeitos,
-  respeitando a privacidade e a proteção dos dados pessoais.
-
-  11.4. Havendo indícios de irregularidade, a CONTRATADA poderá solicitar esclarecimentos e adotar
-  medidas necessárias à proteção da conta e dos serviços.
-
-  11.5. A suspensão ou o encerramento por uso indevido deverá observar a gravidade da conduta, as
-  circunstâncias concretas e os direitos assegurados pela legislação.
-
-
-  12. DIREITO DE ARREPENDIMENTO
-
-  12.1. Nas contratações realizadas pela internet, o ALUNO poderá exercer o direito de arrependimento
-  no prazo legal de 7 (sete) dias, conforme o artigo 49 do Código de Defesa do Consumidor.
-
-  12.2. O exercício desse direito poderá ser solicitado pelos canais eletrônicos disponibilizados pela
-  CONTRATADA, inclusive pela funcionalidade de atendimento ou cancelamento, quando disponível.
-
-  12.3. Exercido regularmente o direito de arrependimento, o ALUNO terá direito à restituição integral
-  dos valores pagos, observadas as disposições legais aplicáveis.
-
-  12.4. O simples acesso ou início de utilização dos materiais digitais não implica, por si só, renúncia ao
-  direito legal de arrependimento.
-
-  12.5. A CONTRATADA confirmará o recebimento da solicitação e adotará as providências necessárias
-  ao cancelamento e ao processamento da restituição.
-
-
-  13. CANCELAMENTO E REEMBOLSO
-
-  13.1. O ALUNO poderá solicitar cancelamento ou reembolso por meio dos canais de atendimento da
-  plataforma.
-
-  13.2. Solicitações realizadas dentro do prazo legal de arrependimento observarão integralmente as
-  condições previstas na cláusula anterior.
-
-  13.3. Após esse prazo, os pedidos serão analisados conforme as condições contratuais aplicáveis, as
-  características do serviço prestado e os direitos assegurados pelo Código de Defesa do Consumidor.
-
-  13.4. Situações envolvendo falhas relevantes na prestação do serviço, descumprimento da oferta ou
-  outras hipóteses legalmente previstas serão tratadas conforme a legislação, independentemente do
-  encerramento do prazo de arrependimento.
-
-  13.5. Quando cabível, a restituição será processada pelo meio adequado à modalidade de pagamento
-  utilizada, com informação ao ALUNO sobre seu andamento.
-
-  13.6. O cancelamento da contratação não afasta eventuais obrigações legais de conservação de
-  registros fiscais, financeiros e contratuais.
-
-
-  14. CONTESTAÇÕES DE PAGAMENTOS
-
-  14.1. Caso o ALUNO apresente contestação de pagamento junto à instituição financeira ou
-  administradora do cartão, a CONTRATADA poderá analisar a transação e fornecer as informações
-  necessárias à apuração.
-
-  14.2. A simples abertura de contestação não ocasionará bloqueio automático do acesso ao curso.
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 5
-
-  14.3. Confirmada a devolução efetiva do valor da compra ao titular do cartão, a CONTRATADA poderá
-  realizar, mediante procedimento administrativo manual, o bloqueio do acesso correspondente à
-  contratação cujo pagamento foi revertido, observados os direitos legais do consumidor.
-
-  14.4. O bloqueio referido na cláusula anterior não deverá afetar outros cursos ou direitos de acesso
-  validamente adquiridos pelo mesmo ALUNO.
-
-  14.5. O ALUNO poderá solicitar esclarecimentos e apresentar informações sobre a contestação pelos
-  canais de atendimento.
-
-
-  15. PROTEÇÃO DE DADOS PESSOAIS E RESPONSABILIDADE DA CONTRATADA
-
-  15.1. A CONTRATADA compromete-se a tratar os dados pessoais dos usuários em conformidade com a
-  Lei nº 13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD) — e demais normas aplicáveis.
-
-  15.2. Para os tratamentos cujas finalidades e meios essenciais determinar, a CONTRATADA atuará
-  como controladora dos dados pessoais.
-
-  15.3. Os dados poderão ser tratados para finalidades legítimas, incluindo:
-
-  a) Identificação e autenticação dos usuários;
-
-  b) Administração de contas e perfis;
-
-  c) Processamento e comprovação de contratações;
-
-  d) Liberação e gerenciamento de acesso aos cursos;
-
-  e) Registro de atividades educacionais, respostas e desempenho;
-
-  f) Atendimento de solicitações e reclamações;
-
-  g) Prevenção de fraudes e proteção da segurança da plataforma;
-
-  h) Cumprimento de obrigações legais e regulatórias;
-
-  i) Exercício regular de direitos em processos administrativos, judiciais ou arbitrais.
-
-  15.4. O tratamento observará as bases legais pertinentes a cada finalidade, não dependendo
-  necessariamente de consentimento quando houver outra hipótese autorizadora prevista na LGPD.
-
-  15.5. A CONTRATADA adotará medidas técnicas e administrativas adequadas e proporcionais aos riscos
-  envolvidos, destinadas a proteger os dados pessoais contra acessos não autorizados, perda, destruição,
-  alteração, divulgação indevida e outras formas de tratamento irregular.
-
-  15.6. A CONTRATADA será responsável pelo cumprimento de suas obrigações legais relativas à
-  proteção de dados e responderá pelos danos decorrentes de tratamento irregular nas hipóteses
-  previstas na legislação.
-
-  15.7. A contratação não implica autorização irrestrita para utilização, divulgação ou comercialização
-  dos dados pessoais do ALUNO.
-
-  15.8. Eventual utilização de dados para finalidades opcionais que exijam consentimento específico
-  dependerá de manifestação válida do titular, quando legalmente necessária.
-
-  15.9. O ALUNO poderá exercer seus direitos previstos na LGPD, incluindo confirmação de tratamento,
-  acesso, correção e eliminação de dados nas hipóteses legalmente cabíveis.
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 6
-
-  15.10. As informações complementares sobre categorias de dados, compartilhamento, retenção,
-  direitos dos titulares e canais de contato constarão da Política de Privacidade e Proteção de Dados
-  Pessoais, disponibilizada pela CONTRATADA.
-
-
-  16. COMPARTILHAMENTO DE DADOS COM PRESTADORES DE SERVIÇOS
-
-  16.1. Para viabilizar suas atividades, a CONTRATADA poderá compartilhar dados pessoais estritamente
-  necessários com prestadores de serviços de tecnologia, hospedagem, armazenamento, processamento
-  de pagamentos, segurança e suporte operacional.
-
-  16.2. O compartilhamento deverá observar finalidade legítima, necessidade, segurança e as demais
-  exigências da LGPD.
-
-  16.3. Prestadores de pagamento poderão tratar determinados dados de acordo com suas próprias
-  obrigações legais e responsabilidades, conforme a natureza de cada operação.
-
-  16.4. Quando houver transferência internacional de dados pessoais, serão observadas as condições e
-  garantias previstas na legislação aplicável.
-
-  16.5. A CONTRATADA não comercializará bases de dados pessoais dos alunos como produto autônomo.
-
-
-  17. REGISTROS ELETRÔNICOS E COMPROVAÇÃO DA CONTRATAÇÃO
-
-  17.1. A manifestação de ciência e aceite dos presentes Termos poderá ser registrada eletronicamente
-  pela plataforma.
-
-  17.2. Para fins de comprovação da contratação, poderão ser armazenadas informações como:
-
-  a) Identificação do usuário;
-
-  b) Data e hora do aceite;
-
-  c) Versão dos documentos apresentados;
-
-  d) Identificação do curso e da contratação;
-
-  e) Registros técnicos pertinentes, observados os princípios de necessidade e segurança.
-
-  17.3. Os registros serão utilizados para comprovação contratual, atendimento, prevenção de fraudes,
-  cumprimento de obrigações legais e exercício regular de direitos.
-
-  17.4. A conservação dos registros observará os prazos necessários às finalidades legítimas e às
-  exigências legais aplicáveis.
-
-  18. ATUALIZAÇÃO DOS CURSOS E CONTEÚDOS
-
-  18.1. A CONTRATADA poderá corrigir erros, atualizar informações, aperfeiçoar materiais e realizar
-  ajustes pedagógicos durante a disponibilização dos cursos.
-
-  18.2. Essas alterações deverão respeitar as características essenciais da oferta contratada.
-
-  18.3. A CONTRATADA não poderá modificar unilateralmente o conteúdo ou a qualidade do serviço de
-  forma a prejudicar indevidamente os direitos do ALUNO.
-
-  18.4. Eventuais mudanças substanciais que afetem a prestação do serviço contratado serão
-  comunicadas de maneira adequada, com observância dos direitos previstos na legislação.
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                 Página 7
-
-  19. ATENDIMENTO E COMUNICAÇÕES
-
-  19.1. A CONTRATADA disponibilizará canais eletrônicos para esclarecimento de dúvidas, reclamações,
-  solicitações de cancelamento e demais questões relacionadas aos serviços.
-
-  19.2. O canal principal de atendimento será informado no site e na área do usuário.
-
-  19.3. As solicitações recebidas serão registradas e respondidas conforme os prazos legalmente
-  aplicáveis.
-
-  19.4. As comunicações poderão ocorrer pela própria plataforma ou por endereço eletrônico informado
-  pelo ALUNO.
-
-  19.5. O ALUNO deverá manter seus dados de contato atualizados para possibilitar o recebimento de
-  informações relacionadas à contratação.
-
-
-  20. ALTERAÇÕES DOS TERMOS
-
-  20.1. Estes Termos poderão ser atualizados para refletir mudanças legais, operacionais ou relacionadas
-  aos serviços.
-
-  20.2. A CONTRATADA disponibilizará a versão atualizada, com identificação da data de vigência.
-
-  20.3. Alterações que afetem substancialmente direitos e obrigações decorrentes de contratos já
-  celebrados não poderão ser impostas unilateralmente em prejuízo do consumidor.
-
-  20.4. Quando necessário, a CONTRATADA solicitará nova manifestação de aceite para condições
-  contratuais futuras.
-
-  20.5. As versões anteriormente aceitas poderão ser conservadas para fins de comprovação e
-  atendimento de obrigações legais.
-
-
-  21. DISPOSIÇÕES GERAIS
-
-  21.1. Estes Termos devem ser interpretados conforme a legislação brasileira, especialmente o Código
-  de Defesa do Consumidor, o Código Civil, a LGPD e as normas aplicáveis ao comércio eletrônico.
-
-  21.2. A eventual invalidade de determinada disposição não prejudicará as demais cláusulas que
-  possam subsistir validamente.
-
-  21.3. Nenhuma disposição destes Termos será interpretada como renúncia a direitos legalmente
-  assegurados ao consumidor.
-
-  21.4. As partes poderão buscar solução administrativa e consensual para eventuais controvérsias, sem
-  prejuízo do acesso aos órgãos de defesa do consumidor e ao Poder Judiciário.
-
-  21.5. Eventuais demandas judiciais observarão as regras legais de competência, inclusive as normas
-  protetivas aplicáveis ao domicílio do consumidor.
-
-
-  22. CIÊNCIA E ACEITE ELETRÔNICO
-
-  22.1. Antes de prosseguir para o pagamento, o ALUNO terá oportunidade de consultar os presentes
-  Termos e a Política de Privacidade e Proteção de Dados Pessoais.
-
-  22.2. A manifestação eletrônica será apresentada por meio da seguinte declaração:
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 8
-
-  ☐ Ciente dos Termos de Contratação e da Política de Privacidade e Proteção de Dados.
-
-  22.3. A marcação obrigatória da declaração, associada à ação de prosseguir com a contratação,
-  constituirá manifestação eletrônica de ciência dos documentos apresentados e concordância com as
-  condições contratuais aplicáveis.
-
-  22.4. A ausência de marcação impedirá o prosseguimento para a etapa de pagamento.
-
-  22.5. O aceite será registrado eletronicamente para fins de comprovação, observadas as disposições
-  sobre proteção de dados pessoais.
-
-
-
-  RESUMÃO ONLINE
-
-  Termos e Condições de Contratação e Uso
-
-  Versão 1.0 — Minuta sujeita a revisão e aprovação antes da publicação.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 9', 'cdef5e1d658c8a6c09d6c823b02cda602f0dbbf44d8b1deb39b14549c585cf88', '129148a9a13d7639999056c43623d8afa949677eb866aa5710f901facd9be173', CURRENT_TIMESTAMP);
-INSERT INTO documentos_juridicos_versoes (tipo, versao, titulo, conteudo, sha256, pdf_sha256, publicado_em) VALUES ('PRIVACIDADE', '1.0', 'Política de Privacidade e Proteção de Dados Pessoais', '        POLÍTICA DE PRIVACIDADE E PROTEÇÃO DE DADOS
-                               PESSOAIS RESUMÃO ONLINE
-
-  Versão: 1.0 — Minuta para aprovação
-
-  Data de vigência: [A PREENCHER]
-
-  Site: https://resumaoonline.com.br
-
-  1. APRESENTAÇÃO
-
-  1.1. A presente Política de Privacidade e Proteção de Dados Pessoais estabelece as diretrizes adotadas
-  pelo Resumão Online para a coleta, utilização, armazenamento, compartilhamento e proteção dos
-  dados pessoais de seus usuários.
-
-  1.2. O Resumão Online compromete-se a tratar os dados pessoais em conformidade com a Lei nº
-  13.709/2018 — Lei Geral de Proteção de Dados Pessoais (LGPD) —, o Código de Defesa do Consumidor
-  e as demais normas aplicáveis.
-
-  1.3. Esta Política aplica-se aos visitantes do site, usuários cadastrados, alunos, compradores e demais
-  pessoas cujos dados pessoais sejam tratados no âmbito dos serviços da plataforma.
-
-  1.4. A utilização dos serviços observará também os Termos e Condições de Contratação e Uso do
-  Resumão Online.
-
-  2. IDENTIFICAÇÃO DO CONTROLADOR
-
-  2.1. O responsável pelo tratamento dos dados pessoais, nas operações em que determina as
-  finalidades e os meios essenciais do tratamento, é:
-
-  • Razão social: [A PREENCHER]
-
-  • Nome fantasia: Resumão Online
-
-  • CNPJ: [A PREENCHER]
-
-  • Endereço da sede: [A PREENCHER]
-
-  • Representante legal: [A PREENCHER]
-
-  • E-mail para assuntos de privacidade: [A PREENCHER]
-
-  2.2. Para fins desta Política, a pessoa jurídica responsável será denominada CONTROLADORA ou
-  RESUMÃO ONLINE.
-
-  2.3. O contato para assuntos relacionados à privacidade e à proteção de dados poderá ser realizado
-  pelo endereço eletrônico indicado nesta seção ou por canal específico disponibilizado na plataforma.
-
-
-  3. DADOS PESSOAIS TRATADOS
-
-  3.1. Conforme a utilização dos serviços, o Resumão Online poderá tratar as seguintes categorias de
-  dados:
-
-  I — Dados cadastrais e de identificação:
-
-  a) Nome;
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                             Página 1
-
-  b) Endereço de e-mail;
-
-  c) Identificador interno do usuário;
-
-  d) Outras informações cadastrais efetivamente solicitadas pela plataforma.
-
-  II — Dados de autenticação e segurança:
-
-  a) Informações necessárias à autenticação;
-
-  b) Senhas armazenadas por mecanismos de proteção criptográfica apropriados, sem necessidade de
-  conservação em texto simples;
-
-  c) Registros de acesso e eventos relevantes de segurança, quando coletados.
-
-  III — Dados contratuais e financeiros:
-
-  a) Identificação dos cursos adquiridos;
-
-  b) Prazo e valor da contratação;
-
-  c) Situação do pagamento;
-
-  d) Identificadores de transações;
-
-  e) Registros de cancelamentos, reembolsos e contestações;
-
-  f) Informações necessárias ao cumprimento de obrigações fiscais e contratuais.
-
-  IV — Dados de utilização e aprendizagem:
-
-  a) Cursos, disciplinas e assuntos acessados;
-
-  b) Respostas fornecidas em questões e atividades;
-
-  c) Resultados de baterias de questões;
-
-  d) Informações de desempenho;
-
-  e) Revisões programadas;
-
-  f) Marcações de dificuldade, conteúdos para revisão e demais registros de estudo disponibilizados pelo
-  sistema.
-
-  V — Dados de atendimento:
-
-  a) Solicitações encaminhadas pelo usuário;
-
-  b) Mensagens e respostas trocadas com a plataforma;
-
-  c) Informações necessárias à análise e à solução das solicitações.
-
-  VI — Dados técnicos:
-
-  a) Endereço IP, quando registrado;
-
-  b) Informações técnicas sobre navegador e dispositivo, quando coletadas;
-
-  c) Registros necessários ao funcionamento, à manutenção e à segurança dos serviços.
-
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                     Página 2
-
-  3.2. A coleta deverá limitar-se aos dados adequados, pertinentes e necessários às finalidades
-  informadas.
-
-  3.3. A plataforma não solicita, como regra geral, dados pessoais sensíveis para a prestação dos cursos.
-  Caso alguma funcionalidade futura exija esse tratamento, serão observadas as condições legais
-  específicas.
-
-  3.4. A relação definitiva dos dados coletados deverá corresponder aos campos, registros e integrações
-  efetivamente utilizados pela plataforma.
-
-
-  4. FINALIDADES DO TRATAMENTO
-
-  4.1. Os dados pessoais poderão ser tratados para as seguintes finalidades:
-
-  a) Realizar o cadastro e a identificação dos usuários;
-
-  b) Permitir a autenticação e o acesso à plataforma;
-
-  c) Processar contratações e pagamentos;
-
-  d) Liberar e administrar o acesso aos cursos;
-
-  e) Registrar atividades de estudo e apresentar resultados;
-
-  f) Disponibilizar revisões programadas e ferramentas de acompanhamento do desempenho;
-
-  g) Responder solicitações de atendimento;
-
-  h) Processar pedidos de cancelamento e reembolso;
-
-  i) Analisar contestações e prevenir fraudes;
-
-  j) Proteger a segurança e a integridade dos serviços;
-
-  k) Cumprir obrigações legais, fiscais e regulatórias;
-
-  l) Exercer regularmente direitos em processos administrativos, judiciais ou arbitrais;
-
-  m) Corrigir falhas e aprimorar o funcionamento técnico da plataforma.
-
-  4.2. Os dados pessoais não serão utilizados para finalidades incompatíveis com aquelas legitimamente
-  informadas ao titular.
-
-
-  5. BASES LEGAIS PARA O TRATAMENTO
-
-  5.1. O tratamento de dados pessoais será fundamentado nas hipóteses previstas na LGPD, conforme a
-  natureza de cada operação.
-
-  5.2. Entre as bases legais aplicáveis, poderão estar:
-
-  I — Execução de contrato e procedimentos preliminares: para cadastro, contratação, liberação de
-  acesso e disponibilização dos recursos educacionais solicitados pelo usuário.
-
-  II — Cumprimento de obrigação legal ou regulatória: para conservação de documentos e registros
-  exigidos pela legislação.
-
-  III — Exercício regular de direitos: para comprovação de contratações, defesa em reclamações,
-  contestações e processos.
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                     Página 3
-
-  IV — Legítimo interesse: quando juridicamente cabível, para atividades como prevenção de abusos e
-  proteção dos serviços, observados os direitos e as legítimas expectativas dos titulares.
-
-  V — Consentimento: quando necessário para finalidades específicas que dependam dessa
-  manifestação.
-
-  5.3. A marcação de ciência dos Termos de Contratação e desta Política não representa consentimento
-  genérico para qualquer tratamento de dados pessoais.
-
-  5.4. Quando uma finalidade depender de consentimento, a plataforma deverá solicitar manifestação
-  específica, livre, informada e inequívoca, observadas as exigências legais.
-
-
-  6. DADOS DE ESTUDO E DESEMPENHO
-
-  6.1. Para oferecer funcionalidades educacionais, o Resumão Online poderá registrar respostas, acertos,
-  erros, atividades concluídas, marcações de dificuldade e resultados de desempenho.
-
-  6.2. Esses registros serão utilizados para permitir que o aluno acompanhe seus estudos e utilize as
-  ferramentas disponibilizadas no curso contratado.
-
-  6.3. Os dados de desempenho serão associados à conta e ao contexto de estudo correspondente,
-  respeitadas as regras de acesso e segregação de informações da plataforma.
-
-  6.4. O Resumão Online não comercializará individualmente os históricos de estudo dos alunos.
-
-  6.5. O eventual uso de informações estatísticas ou agregadas para avaliação e aprimoramento dos
-  serviços deverá observar as exigências legais de proteção de dados pessoais.
-
-
-  7. PROCESSAMENTO DE PAGAMENTOS
-
-  7.1. O Resumão Online poderá utilizar prestadores especializados para processamento de pagamentos,
-  incluindo o Mercado Pago.
-
-  7.2. Durante a contratação, determinadas informações necessárias à operação poderão ser
-  encaminhadas ao prestador de pagamento.
-
-  7.3. O prestador poderá tratar informações relacionadas à transação conforme suas próprias
-  responsabilidades, obrigações legais e políticas de privacidade.
-
-  7.4. O Resumão Online utilizará as informações recebidas sobre o pagamento para identificar a
-  contratação, confirmar sua situação e administrar o acesso ao curso.
-
-  7.5. Os dados completos de cartão de crédito não deverão ser armazenados pelo Resumão Online
-  quando o processamento for realizado diretamente pelo prestador especializado.
-
-  7.6. O usuário poderá consultar a política de privacidade do prestador de pagamento para conhecer os
-  tratamentos realizados diretamente por ele.
-
-
-  8. COMPARTILHAMENTO COM PRESTADORES DE SERVIÇOS
-
-  8.1. O Resumão Online poderá compartilhar dados pessoais necessários à operação da plataforma com
-  prestadores de serviços, incluindo:
-
-  a) Processamento de pagamentos;
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 4
-
-  b) Hospedagem e infraestrutura tecnológica;
-
-  c) Armazenamento e gerenciamento de bancos de dados;
-
-  d) Serviços de autenticação e segurança;
-
-  e) Hospedagem ou distribuição de conteúdos educacionais;
-
-  f) Serviços de comunicação e suporte técnico.
-
-  8.2. O compartilhamento deverá observar a necessidade, a finalidade legítima e as medidas de
-  segurança aplicáveis.
-
-  8.3. O Resumão Online buscará utilizar prestadores que ofereçam condições adequadas de proteção de
-  dados pessoais, considerando a natureza dos serviços contratados.
-
-  8.4. Os prestadores poderão assumir diferentes papéis previstos na LGPD, conforme suas atividades e
-  responsabilidades específicas.
-
-  8.5. O Resumão Online não vende bases de dados pessoais de alunos para fins comerciais.
-
-
-  9. TRANSFERÊNCIA INTERNACIONAL DE DADOS
-
-  9.1. Determinados prestadores de infraestrutura, hospedagem, armazenamento ou tecnologia poderão
-  realizar operações de tratamento fora do território brasileiro.
-
-  9.2. Quando houver transferência internacional de dados pessoais, serão observadas as hipóteses
-  legais e os mecanismos de proteção exigidos pela LGPD e pela regulamentação aplicável.
-
-  9.3. Informações adicionais sobre transferências internacionais poderão ser solicitadas pelo titular por
-  meio do canal de privacidade.
-
-
-  10. ARMAZENAMENTO E SEGURANÇA
-
-  10.1. O Resumão Online adotará medidas técnicas e administrativas adequadas aos riscos do
-  tratamento, visando proteger os dados pessoais contra acessos não autorizados e situações acidentais
-  ou ilícitas de destruição, perda, alteração, comunicação ou divulgação.
-
-  10.2. As medidas poderão compreender, conforme a arquitetura e as funcionalidades efetivamente
-  utilizadas:
-
-  a) Controle de acesso por autenticação;
-
-  b) Proteção das credenciais de usuários;
-
-  c) Uso de conexões seguras;
-
-  d) Restrição de acesso administrativo;
-
-  e) Segregação de informações por usuário e contratação;
-
-  f) Monitoramento de eventos relevantes de segurança;
-
-  g) Atualizações e correções técnicas;
-
-  h) Mecanismos de recuperação e proteção da infraestrutura.
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 5
-
-  10.3. Nenhum ambiente tecnológico está inteiramente livre de riscos. A CONTROLADORA
-  compromete-se a adotar medidas compatíveis com suas obrigações legais e a atuar de forma diligente
-  diante de incidentes.
-
-  10.4. As medidas descritas nesta seção deverão corresponder aos controles efetivamente
-  implementados e mantidos pela plataforma.
-
-  11. INCIDENTES DE SEGURANÇA
-
-  11.1. Caso ocorra incidente de segurança envolvendo dados pessoais, o Resumão Online realizará a
-  avaliação necessária para identificar sua natureza, extensão e possíveis riscos aos titulares.
-
-  11.2. Quando o incidente puder acarretar risco ou dano relevante aos titulares, serão adotadas as
-  medidas de comunicação à Autoridade Nacional de Proteção de Dados (ANPD) e aos titulares afetados,
-  conforme os requisitos e prazos regulamentares aplicáveis.
-
-  11.3. A CONTRATADA adotará providências razoáveis para conter o incidente, mitigar seus efeitos e
-  prevenir novas ocorrências.
-
-  11.4. Os registros e procedimentos relativos aos incidentes observarão as exigências legais e
-  regulamentares pertinentes.
-
-
-  12. PRAZO DE CONSERVAÇÃO DOS DADOS
-
-  12.1. Os dados pessoais serão conservados pelo período necessário ao cumprimento das finalidades
-  para as quais foram tratados, observadas as obrigações legais e as hipóteses de conservação
-  autorizadas pela LGPD.
-
-  12.2. Os dados contratuais e financeiros poderão ser mantidos durante os prazos legalmente exigidos
-  ou necessários ao exercício regular de direitos.
-
-  12.3. Os registros de aceite dos Termos poderão ser conservados para comprovação das contratações
-  e cumprimento de obrigações legais.
-
-  12.4. Os dados de estudo e desempenho serão conservados conforme a finalidade das funcionalidades
-  disponibilizadas, as condições contratuais e as políticas de retenção adotadas pela plataforma.
-
-  12.5. Encerrada a finalidade e inexistindo fundamento legal para conservação, os dados serão
-  eliminados ou anonimizados, conforme o caso.
-
-  12.6. Os períodos específicos de retenção deverão ser definidos de acordo com as categorias de dados,
-  a legislação e os procedimentos efetivamente adotados.
-
-
-  13. DIREITOS DOS TITULARES
-
-  13.1. O titular poderá exercer os direitos previstos na LGPD, observadas as condições legais aplicáveis,
-  incluindo:
-
-  a) Confirmação da existência de tratamento;
-
-  b) Acesso aos dados pessoais;
-
-  c) Correção de dados incompletos, inexatos ou desatualizados;
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 6
-
-  d) Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em
-  desconformidade com a legislação;
-
-  e) Portabilidade, quando aplicável e conforme regulamentação;
-
-  f) Eliminação de dados tratados com consentimento, ressalvadas as hipóteses legais de conservação;
-
-  g) Informação sobre entidades públicas e privadas com as quais tenha ocorrido uso compartilhado de
-  dados;
-
-  h) Informação sobre a possibilidade de não fornecer consentimento e suas consequências;
-
-  i) Revogação do consentimento, quando essa for a base legal utilizada;
-
-  j) Oposição ao tratamento, nas hipóteses previstas em lei;
-
-  k) Revisão de decisões tomadas unicamente com base em tratamento automatizado, quando aplicável.
-
-  13.2. As solicitações poderão ser encaminhadas ao canal de privacidade informado nesta Política.
-
-  13.3. A CONTROLADORA poderá solicitar informações estritamente necessárias para verificar a
-  identidade do requerente e evitar divulgação indevida de dados pessoais.
-
-  13.4. As solicitações serão atendidas nos prazos e condições previstos na legislação.
-
-  13.5. Quando não for possível atender integralmente a uma solicitação, a CONTROLADORA apresentará
-  a justificativa pertinente, observadas as disposições legais.
-
-
-  14. EXCLUSÃO DA CONTA E DOS DADOS
-
-  14.1. O usuário poderá solicitar o encerramento de sua conta e a eliminação de dados pessoais,
-  observadas as condições legais aplicáveis.
-
-  14.2. O encerramento da conta não implica necessariamente a eliminação imediata de todos os
-  registros.
-
-  14.3. Determinadas informações poderão ser conservadas para cumprimento de obrigações legais,
-  comprovação de contratações, prevenção de fraudes ou exercício regular de direitos.
-
-  14.4. Quando cabível, os dados que não precisarem ser conservados serão eliminados ou anonimizados
-  de forma adequada.
-
-  14.5. A solicitação de exclusão não prejudicará direitos assegurados ao consumidor em relação às
-  contratações realizadas.
-
-
-  15. COOKIES E TECNOLOGIAS SEMELHANTES
-
-  15.1. O Resumão Online poderá utilizar cookies ou tecnologias semelhantes necessários ao
-  funcionamento, à autenticação, à segurança e à manutenção da sessão do usuário.
-
-  15.2. Eventual utilização de tecnologias para análise de comportamento, publicidade ou outras
-  finalidades não essenciais deverá observar os requisitos de transparência e as bases legais aplicáveis.
-
-  15.3. Quando necessário, serão disponibilizados mecanismos apropriados para gerenciamento das
-  preferências do usuário.
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                    Página 7
-
-  15.4. As categorias de cookies e tecnologias efetivamente utilizadas deverão ser identificadas e
-  descritas conforme a implementação da plataforma.
-
-
-  16. CRIANÇAS E ADOLESCENTES
-
-  16.1. Caso os serviços sejam utilizados por crianças ou adolescentes, o tratamento de seus dados
-  pessoais observará o princípio do melhor interesse e as demais exigências legais aplicáveis.
-
-  16.2. Quando necessário, serão adotadas medidas específicas de informação, segurança e participação
-  dos pais ou responsáveis legais.
-
-  16.3. A disponibilização de serviços para esse público deverá observar as condições de contratação e
-  os mecanismos de proteção efetivamente implementados.
-
-
-  17. COMUNICAÇÕES COM O USUÁRIO
-
-  17.1. O Resumão Online poderá enviar comunicações necessárias à prestação dos serviços, incluindo:
-
-  a) Confirmações de cadastro;
-
-  b) Informações sobre contratações e pagamentos;
-
-  c) Avisos relativos ao prazo de acesso;
-
-  d) Informações sobre solicitações de atendimento;
-
-  e) Comunicados relevantes de segurança;
-
-  f) Informações necessárias ao cumprimento de obrigações contratuais ou legais.
-
-  17.2. Comunicações publicitárias não essenciais deverão observar a legislação aplicável e as
-  preferências do titular, quando pertinentes.
-
-  17.3. O Resumão Online não utilizará o aceite contratual como autorização genérica para envio
-  irrestrito de publicidade.
-
-
-  18. REGISTRO ELETRÔNICO DA CIÊNCIA DOS DOCUMENTOS
-
-  18.1. Antes de prosseguir para o pagamento de um curso, o usuário deverá ter acesso aos Termos e
-  Condições de Contratação e Uso e à presente Política de Privacidade.
-
-  18.2. A declaração apresentada será:
-
-  ☐ Ciente dos Termos de Contratação e da Política de Privacidade e Proteção de Dados.
-
-  18.3. A marcação será obrigatória para prosseguimento da contratação.
-
-  18.4. A plataforma poderá registrar a identificação do usuário, a data e hora da manifestação, as
-  versões dos documentos apresentados e a contratação correspondente.
-
-  18.5. Esse registro terá finalidade de comprovação da ciência e da contratação, não representando
-  consentimento genérico para tratamentos de dados que dependam de manifestação específica.
-
-
-
-
-
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                   Página 8
-
-  19. RESPONSABILIDADE PELA PROTEÇÃO DOS DADOS
-
-  19.1. O Resumão Online compromete-se a observar os princípios de finalidade, adequação,
-  necessidade, transparência, segurança, prevenção, responsabilização e prestação de contas previstos
-  na LGPD.
-
-  19.2. A CONTROLADORA responderá pelo tratamento irregular de dados pessoais nas hipóteses
-  estabelecidas pela legislação.
-
-  19.3. A contratação de prestadores de serviços não afasta as obrigações legais que competirem à
-  CONTROLADORA.
-
-  19.4. O Resumão Online não poderá excluir genericamente sua responsabilidade por incidentes, falhas
-  de segurança ou tratamentos irregulares quando houver dever legal de reparação.
-
-  19.5. A apuração de eventual responsabilidade observará as circunstâncias do caso concreto e as
-  disposições legais aplicáveis.
-
-
-  20. ATUALIZAÇÕES DESTA POLÍTICA
-
-  20.1. Esta Política poderá ser atualizada para refletir mudanças legais, tecnológicas, operacionais ou
-  relacionadas aos serviços.
-
-  20.2. A versão atualizada será disponibilizada na plataforma, com indicação da data de vigência.
-
-  20.3. Alterações relevantes nas finalidades ou nas condições de tratamento serão comunicadas de
-  maneira apropriada, observadas as exigências legais.
-
-  20.4. Quando uma alteração exigir novo consentimento, a CONTROLADORA solicitará a manifestação
-  específica do titular.
-
-  20.5. As versões anteriores poderão ser conservadas para fins de comprovação e cumprimento de
-  obrigações legais.
-
-  21. CANAL DE CONTATO PARA PRIVACIDADE
-
-  21.1. Para exercer direitos, esclarecer dúvidas ou apresentar solicitações relacionadas ao tratamento
-  de dados pessoais, o titular poderá utilizar:
-
-  E-mail de privacidade: [A PREENCHER]
-
-  Canal de atendimento: https://resumaoonline.com.br — área de atendimento, conforme
-  disponibilidade.
-
-  21.2. A CONTROLADORA analisará as solicitações e fornecerá resposta conforme as condições e os
-  prazos legalmente aplicáveis.
-
-
-  22. DISPOSIÇÕES FINAIS
-
-  22.1. Esta Política deverá ser interpretada em conformidade com a legislação brasileira de proteção de
-  dados pessoais e de defesa do consumidor.
-
-  22.2. Nenhuma disposição poderá ser utilizada para afastar direitos legalmente assegurados aos
-  titulares.
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                  Página 9
-
-  22.3. A presente Política integra o conjunto de informações disponibilizadas ao usuário para
-  conhecimento das condições de tratamento de dados pessoais relacionadas aos serviços do Resumão
-  Online.
-
-
-
-  RESUMÃO ONLINE
-
-  Política de Privacidade e Proteção de Dados Pessoais
-
-  Versão 1.0 — Minuta sujeita a revisão e aprovação antes da publicação.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RESUMÃO ONLINE  •  Versão 1.0  •  Minuta para revisão                                                                       Página 10', '945405f453cb3cf64103ace0270385a0c61c2096a5893d267b85cea0fd712e2d', 'ae4f075d5cbea36fe2f96f6a071e272b610224d632304f239d8b910c711708e1', CURRENT_TIMESTAMP);
--- Publicar conteúdo não ativa a obrigatoriedade.
+INSERT INTO documentos_juridicos_versoes (tipo, versao, titulo, conteudo, sha256, pdf_sha256, publicado_em) VALUES ('TERMOS', '1.0', 'Termos e Condições de Contratação e Uso', pg_catalog.convert_from(pg_catalog.decode(
+    'ICAgICAgICAgICBURVJNT1MgRSBDT05EScOHw5VFUyBERSBDT05UUkFUQcOHw4NPIEUgVVNPCiAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgIFJFU1VNw4NPIE9OTElORQoKICBWZXJzw6NvOiAxLjAg4oCUIE1pbnV0YSBwYXJh' ||
+    'IHJldmlzw6NvCgogIERhdGEgZGUgdmlnw6puY2lhOiBbQSBQUkVFTkNIRVJdCgogIFNpdGU6IGh0dHBzOi8vcmVzdW1hb29u' ||
+    'bGluZS5jb20uYnIKCiAgMS4gSURFTlRJRklDQcOHw4NPIERBIENPTlRSQVRBREEKCiAgMS4xLiBBIHBsYXRhZm9ybWEgUmVz' ||
+    'dW3Do28gT25saW5lIMOpIG9wZXJhZGEgcG9yOgoKICDigKIgUmF6w6NvIHNvY2lhbDogW0EgUFJFRU5DSEVSXQoKICDigKIg' ||
+    'Tm9tZSBmYW50YXNpYTogUmVzdW3Do28gT25saW5lCgogIOKAoiBDTlBKOiBbQSBQUkVFTkNIRVJdCgogIOKAoiBFbmRlcmXD' ||
+    'p28gZGEgc2VkZTogW0EgUFJFRU5DSEVSXQoKICDigKIgRS1tYWlsIGRlIGF0ZW5kaW1lbnRvOiBbQSBQUkVFTkNIRVJdCgog' ||
+    'IOKAoiBSZXByZXNlbnRhbnRlIGxlZ2FsOiBbQSBQUkVFTkNIRVJdCgogIDEuMi4gUGFyYSBmaW5zIGRlc3RlIGRvY3VtZW50' ||
+    'bywgYSBlbXByZXNhIHNlcsOhIGRlbm9taW5hZGEgQ09OVFJBVEFEQSwgZSBvIHVzdcOhcmlvIHF1ZSBhZHF1aXJpcgogIGFj' ||
+    'ZXNzbyBhb3MgY3Vyc29zIHNlcsOhIGRlbm9taW5hZG8gQ09OVFJBVEFOVEUgb3UgQUxVTk8uCgogIDEuMy4gRXN0ZXMgVGVy' ||
+    'bW9zIHJlZ3VsYW1lbnRhbSBhIGNvbnRyYXRhw6fDo28gZSBhIHV0aWxpemHDp8OjbyBkb3Mgc2VydmnDp29zIGVkdWNhY2lv' ||
+    'bmFpcyBkaWdpdGFpcwogIG9mZXJlY2lkb3MgcGVsYSBDT05UUkFUQURBLCBvYnNlcnZhZGEgYSBsZWdpc2xhw6fDo28gYnJh' ||
+    'c2lsZWlyYSBhcGxpY8OhdmVsLgoKCiAgMi4gT0JKRVRPIERBIENPTlRSQVRBw4fDg08KCiAgMi4xLiBPIG9iamV0byBkYSBj' ||
+    'b250cmF0YcOnw6NvIMOpIGEgZGlzcG9uaWJpbGl6YcOnw6NvIGRlIGFjZXNzbyB0ZW1wb3LDoXJpbyBhIGN1cnNvcyBwcmVw' ||
+    'YXJhdMOzcmlvcyBlCiAgbWF0ZXJpYWlzIGVkdWNhY2lvbmFpcyBkaWdpdGFpcyBvZmVyZWNpZG9zIHBlbGEgcGxhdGFmb3Jt' ||
+    'YSBSZXN1bcOjbyBPbmxpbmUuCgogIDIuMi4gT3MgY3Vyc29zIHBvZGVyw6NvIGNvbXByZWVuZGVyLCBjb25mb3JtZSBhcyBj' ||
+    'YXJhY3RlcsOtc3RpY2FzIGRlIGNhZGEgb2ZlcnRhOgoKICBhKSBUZW9yaWFzIGUgcmVzdW1vcyBvYmpldGl2b3MsIG9yZ2Fu' ||
+    'aXphZG9zIHBvciBkaXNjaXBsaW5hcyBlIGFzc3VudG9zOwoKICBiKSBWaWRlb2F1bGFzIG91IHJlc3Vtb3MgZW0gdsOtZGVv' ||
+    'OwoKICBjKSBRdWVzdMO1ZXMgZGUgZXN0dWRvIGUgcXVlc3TDtWVzIGNvbWVudGFkYXM7CgogIGQpIEJhdGVyaWFzIGRlIHF1' ||
+    'ZXN0w7VlcyBlIGF0aXZpZGFkZXMgZGUgcmV2aXPDo287CgogIGUpIFJldmlzw7VlcyBwcm9ncmFtYWRhczsKCiAgZikgRmVy' ||
+    'cmFtZW50YXMgZGUgYWNvbXBhbmhhbWVudG8gZG8gZGVzZW1wZW5obyBkbyBhbHVubzsKCiAgZykgT3V0cm9zIHJlY3Vyc29z' ||
+    'IGVkdWNhY2lvbmFpcyBleHByZXNzYW1lbnRlIGluZm9ybWFkb3MgbmEgYXByZXNlbnRhw6fDo28gZG8gY3Vyc28uCgogIDIu' ||
+    'My4gTyBjb250ZcO6ZG8gZSBvcyByZWN1cnNvcyBlZmV0aXZhbWVudGUgZGlzcG9uaWJpbGl6YWRvcyBzZXLDo28gYXF1ZWxl' ||
+    'cyBkZXNjcml0b3MgbmEgb2ZlcnRhCiAgZXNwZWPDrWZpY2EgZG8gY3Vyc28gYWRxdWlyaWRvLgoKICAyLjQuIEEgQ09OVFJB' ||
+    'VEFEQSBuw6NvIHNlIG9icmlnYSBhIGRpc3BvbmliaWxpemFyIHJlY3Vyc29zLCBkaXNjaXBsaW5hcyBvdSBtYXRlcmlhaXMg' ||
+    'cXVlIG7Do28gaW50ZWdyZW0gYQogIG9mZXJ0YSBjb250cmF0YWRhLgoKCgoKCgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVy' ||
+    'c8OjbyAxLjAgIOKAoiAgTWludXRhIHBhcmEgcmV2aXPDo28gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgIFDDoWdpbmEgMQoMCiAgMy4gTkFUVVJFWkEgRE9TIENVUlNPUyBFIE1FVE9ET0xP' ||
+    'R0lBCgogIDMuMS4gTyBSZXN1bcOjbyBPbmxpbmUgb2ZlcmVjZSBtYXRlcmlhaXMgZGUgZXN0dWRvIGNvbSBhYm9yZGFnZW0g' ||
+    'b2JqZXRpdmEgZSBwcmlvcml6YcOnw6NvIGRlCiAgY29udGXDumRvcyBjb25zaWRlcmFkb3MgcmVsZXZhbnRlcyBwYXJhIGEg' ||
+    'cHJlcGFyYcOnw6NvIGRvcyBhbHVub3MuCgogIDMuMi4gQSBtZXRvZG9sb2dpYSBwb2RlcsOhIHByaXZpbGVnaWFyIGFzc3Vu' ||
+    'dG9zIGRlIG1haW9yIGluY2lkw6puY2lhIGVtIHByb3ZhcyBhbnRlcmlvcmVzLCBjb25mb3JtZQogIGNyaXTDqXJpb3MgcGVk' ||
+    'YWfDs2dpY29zIGUgYW7DoWxpc2VzIHJlYWxpemFkYXMgcGVsYSBDT05UUkFUQURBLgoKICAzLjMuIE8gQUxVTk8gZGVjbGFy' ||
+    'YSBlc3RhciBjaWVudGUgZGUgcXVlIG9zIGN1cnNvcyBwb2RlcsOjbyBuw6NvIGFicmFuZ2VyIGEgdG90YWxpZGFkZSBkb3Mg' ||
+    'Y29udGXDumRvcwogIHByZXZpc3RvcyBubyBlZGl0YWwgZG8gY29uY3Vyc28gb3UgcHJvY2Vzc28gc2VsZXRpdm8gY29ycmVz' ||
+    'cG9uZGVudGUuCgogIDMuNC4gQSBDT05UUkFUQURBIG7Do28gZ2FyYW50ZSBhcHJvdmHDp8OjbywgY2xhc3NpZmljYcOnw6Nv' ||
+    'LCBub21lYcOnw6NvLCBvYnRlbsOnw6NvIGRlIG5vdGEgbcOtbmltYSBvdQogIHF1YWxxdWVyIHJlc3VsdGFkbyBlc3BlY8Ot' ||
+    'ZmljbyBlbSBjb25jdXJzb3MgcMO6YmxpY29zLgoKICAzLjUuIE9zIHJlc3VsdGFkb3MgZGVwZW5kZW0gZGUgZGl2ZXJzb3Mg' ||
+    'ZmF0b3JlcywgaW5jbHVpbmRvIGRlZGljYcOnw6NvIGluZGl2aWR1YWwsIGNvbmhlY2ltZW50b3MKICBwcsOpdmlvcywgZGVz' ||
+    'ZW1wZW5obyBuYSBhdmFsaWHDp8OjbyBlIGNyaXTDqXJpb3MgZGVmaW5pZG9zIHBlbGFzIGVudGlkYWRlcyBvcmdhbml6YWRv' ||
+    'cmFzLgoKICAzLjYuIEEgQ09OVFJBVEFEQSBuw6NvIHBvc3N1aSB2w61uY3VsbyBjb20gYmFuY2FzIGV4YW1pbmFkb3JhcyBv' ||
+    'dSDDs3Jnw6NvcyByZXNwb25zw6F2ZWlzIHBlbG9zCiAgY29uY3Vyc29zLCBzYWx2byBxdWFuZG8gaG91dmVyIGluZm9ybWHD' ||
+    'p8OjbyBleHByZXNzYSBlbSBzZW50aWRvIGNvbnRyw6FyaW8uCgoKICA0LiBDQURBU1RSTyBFIENPTlRBIERPIEFMVU5PCgog' ||
+    'IDQuMS4gUGFyYSB1dGlsaXphciBvcyBzZXJ2acOnb3MsIG8gQUxVTk8gZGV2ZXLDoSByZWFsaXphciBjYWRhc3RybyBuYSBw' ||
+    'bGF0YWZvcm1hIGUgZm9ybmVjZXIgaW5mb3JtYcOnw7VlcwogIHZlcmRhZGVpcmFzLCBjb3JyZXRhcyBlIGF0dWFsaXphZGFz' ||
+    'LgoKICA0LjIuIE8gYWNlc3NvIMOgIGNvbnRhIMOpIHBlc3NvYWwgZSBkZXZlcsOhIHNlciBwcm90ZWdpZG8gcG9yIGNyZWRl' ||
+    'bmNpYWlzIGluZGl2aWR1YWlzLgoKICA0LjMuIE8gQUxVTk8gZGV2ZXLDoSBhZG90YXIgY3VpZGFkb3MgcmF6b8OhdmVpcyBw' ||
+    'YXJhIG1hbnRlciBhIGNvbmZpZGVuY2lhbGlkYWRlIGRlIHN1YSBzZW5oYSBlCiAgY29tdW5pY2FyIMOgIENPTlRSQVRBREEg' ||
+    'cXVhbHF1ZXIgc3VzcGVpdGEgZGUgYWNlc3NvIG7Do28gYXV0b3JpemFkby4KCiAgNC40LiDDiSBwcm9pYmlkbyB1dGlsaXph' ||
+    'ciBhIGNvbnRhIHBhcmEgcHLDoXRpY2FzIGZyYXVkdWxlbnRhcywgYWNlc3NvIGluZGV2aWRvIGEgZGFkb3MgZGUgdGVyY2Vp' ||
+    'cm9zIG91CiAgYXRpdmlkYWRlcyBjb250csOhcmlhcyDDoCBsZWdpc2xhw6fDo28uCgogIDQuNS4gQSBDT05UUkFUQURBIHBv' ||
+    'ZGVyw6EgYWRvdGFyIG1lZGlkYXMgcHJvcG9yY2lvbmFpcyBkZSBzZWd1cmFuw6dhIGRpYW50ZSBkZSBpbmTDrWNpb3MgZGUg' ||
+    'dXNvCiAgaXJyZWd1bGFyLCBhc3NlZ3VyYWRvcyBvcyBkaXJlaXRvcyBkbyBjb25zdW1pZG9yIGUgYSBwb3NzaWJpbGlkYWRl' ||
+    'IGRlIGVzY2xhcmVjaW1lbnRvLgoKCiAgNS4gQ09OVFJBVEHDh8ODTyBET1MgQ1VSU09TCgogIDUuMS4gQW50ZXMgZGEgY29u' ||
+    'dHJhdGHDp8OjbywgbyBBTFVOTyB0ZXLDoSBhY2Vzc28gw6BzIGluZm9ybWHDp8O1ZXMgZXNzZW5jaWFpcyBkYSBvZmVydGEs' ||
+    'IGluY2x1aW5kbwogIGlkZW50aWZpY2HDp8OjbyBkbyBjdXJzbywgY29udGXDumRvIGRpc3BvbmliaWxpemFkbywgcHJlw6dv' ||
+    'LCBwcmF6byBkZSBhY2Vzc28gZSBjb25kacOnw7VlcyBkZSBwYWdhbWVudG8uCgogIDUuMi4gTyBBTFVOTyBkZXZlcsOhIHNl' ||
+    'bGVjaW9uYXIgYSBvcMOnw6NvIGRlIHByYXpvIGUgdmFsb3IgZGVzZWphZGEsIGNvbmZlcmlyIGFzIGluZm9ybWHDp8O1ZXMK' ||
+    'ICBhcHJlc2VudGFkYXMgZSBtYW5pZmVzdGFyIGNpw6puY2lhIGRvcyBwcmVzZW50ZXMgVGVybW9zIGUgZGEgUG9sw610aWNh' ||
+    'IGRlIFByaXZhY2lkYWRlIGUgUHJvdGXDp8OjbyBkZQogIERhZG9zLgoKICA1LjMuIEEgbWFuaWZlc3Rhw6fDo28gZWxldHLD' ||
+    'tG5pY2Egc2Vyw6EgcmVhbGl6YWRhIG1lZGlhbnRlIG1hcmNhw6fDo28gZGUgY2FtcG8gZXNwZWPDrWZpY28sIG7Do28KICBw' ||
+    'cmV2aWFtZW50ZSBzZWxlY2lvbmFkby4KCiAgNS40LiBPIHByb3NzZWd1aW1lbnRvIHBhcmEgbyBwYWdhbWVudG8gZGVwZW5k' ||
+    'ZXLDoSBkZXNzYSBtYXJjYcOnw6NvIG9icmlnYXTDs3JpYS4KCiAgNS41LiBBIGNvbnRyYXRhw6fDo28gZXN0YXLDoSBzdWpl' ||
+    'aXRhIMOgIGNvbmZpcm1hw6fDo28gZG8gcGFnYW1lbnRvIG91IMOgIG91dHJhIG1vZGFsaWRhZGUgZGUgbGliZXJhw6fDo28K' ||
+    'ICBleHByZXNzYW1lbnRlIGF1dG9yaXphZGEgcGVsYSBDT05UUkFUQURBLgoKICA1LjYuIEEgQ09OVFJBVEFEQSBkaXNwb25p' ||
+    'YmlsaXphcsOhIGFvIEFMVU5PIGEgY29uZmlybWHDp8OjbyBkYSBjb250cmF0YcOnw6NvIGUgdW1hIHZlcnPDo28gZG9zIHRl' ||
+    'cm1vcwogIGFwbGljw6F2ZWlzLCBlbSBtZWlvIHF1ZSBwZXJtaXRhIHN1YSBjb25zdWx0YSwgY29uc2VydmHDp8OjbyBlIHJl' ||
+    'cHJvZHXDp8Ojby4KCgoKCgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAgTWludXRhIHBhcmEgcmV2' ||
+    'aXPDo28gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'UMOhZ2luYSAyCgwKICA2LiBQUkXDh08gRSBGT1JNQVMgREUgUEFHQU1FTlRPCgogIDYuMS4gT3MgcHJlw6dvcyBzZXLDo28g' ||
+    'YXByZXNlbnRhZG9zIGVtIHJlYWlzLCBjb25mb3JtZSBhcyBvcMOnw7VlcyBkZSBjb250cmF0YcOnw6NvIGRpc3BvbsOtdmVp' ||
+    'cyBwYXJhIGNhZGEKICBjdXJzby4KCiAgNi4yLiBPIHZhbG9yIGRldmlkbyBjb3JyZXNwb25kZXLDoSDDoCBvcMOnw6NvIHNl' ||
+    'bGVjaW9uYWRhIGUgY29uZmlybWFkYSBwZWxvIEFMVU5PIGFudGVzIGRhIGNvbmNsdXPDo28gZGEKICBjb21wcmEuCgogIDYu' ||
+    'My4gTyBwYWdhbWVudG8gcG9kZXLDoSBzZXIgcmVhbGl6YWRvIHBlbG9zIG1laW9zIGRpc3BvbmliaWxpemFkb3Mgbm8gYW1i' ||
+    'aWVudGUgZGUgY29udHJhdGHDp8OjbywKICBpbmNsdXNpdmUgUGl4IGUgY2FydMOjbyBkZSBjcsOpZGl0bywgcXVhbmRvIGRp' ||
+    'c3BvbsOtdmVpcy4KCiAgNi40LiBPIHByb2Nlc3NhbWVudG8gZG9zIHBhZ2FtZW50b3MgcG9kZXLDoSBzZXIgcmVhbGl6YWRv' ||
+    'IHBvciBlbXByZXNhIGVzcGVjaWFsaXphZGEsIGNvbW8gbwogIE1lcmNhZG8gUGFnbywgb2JzZXJ2YWRhcyBhcyByZWdyYXMg' ||
+    'ZSBjb25kacOnw7VlcyBhcGxpY8OhdmVpcyBhbyBtZWlvIGRlIHBhZ2FtZW50byBlc2NvbGhpZG8uCgogIDYuNS4gRXZlbnR1' ||
+    'YWlzIHBhcmNlbGFtZW50b3MsIGFjcsOpc2NpbW9zLCBkZXNjb250b3MgZSBjb25kacOnw7VlcyBlc3BlY8OtZmljYXMgZGV2' ||
+    'ZXLDo28gc2VyIGluZm9ybWFkb3MKICBhbnRlcyBkYSBjb25maXJtYcOnw6NvIGRvIHBhZ2FtZW50by4KCiAgNi42LiBBIENP' ||
+    'TlRSQVRBREEgbsOjbyBzb2xpY2l0YXLDoSBxdWUgbyBBTFVOTyBpbmZvcm1lIHN1YSBzZW5oYSBwZXNzb2FsIGRhIHBsYXRh' ||
+    'Zm9ybWEgYSB0ZXJjZWlyb3MKICBwYXJhIGNvbmNsdWlyIHBhZ2FtZW50b3MuCgoKICA3LiBQUkFaTyBERSBBQ0VTU08gRSBW' ||
+    'SUfDik5DSUEKCiAgNy4xLiBPIHByYXpvIGRlIGFjZXNzbyBhbyBjdXJzbyBzZXLDoSBhcXVlbGUgZXhwcmVzc2FtZW50ZSBz' ||
+    'ZWxlY2lvbmFkbyBwZWxvIEFMVU5PIG5vIG1vbWVudG8gZGEKICBjb250cmF0YcOnw6NvLgoKICA3LjIuIEEgY29udGFnZW0g' ||
+    'ZG8gcHJhem8gdGVyw6EgaW7DrWNpbyBuYSBkYXRhIGRlIGVmZXRpdmEgbGliZXJhw6fDo28gZG8gYWNlc3NvIGFvIGN1cnNv' ||
+    'LCBjb25mb3JtZQogIHJlZ2lzdHJhZGEgbm8gc2lzdGVtYS4KCiAgNy4zLiBPIGFjZXNzbyBhbyBjb250ZcO6ZG8gY29udHJh' ||
+    'dGFkbyBwZXJtYW5lY2Vyw6EgZGlzcG9uw612ZWwgZHVyYW50ZSBvIHByYXpvIGFkcXVpcmlkbywgcmVzc2FsdmFkYXMKICBh' ||
+    'cyBoaXDDs3Rlc2VzIGxlZ2FsbWVudGUgYWRtaXRpZGFzIGRlIHN1c3BlbnPDo28gb3UgZW5jZXJyYW1lbnRvLgoKICA3LjQu' ||
+    'IEVuY2VycmFkbyBvIHByYXpvIGNvbnRyYXRhZG8sIG8gYWNlc3NvIGFvcyBjb250ZcO6ZG9zIHN1amVpdG9zIMOgIGNvbnRy' ||
+    'YXRhw6fDo28gcG9kZXLDoSBzZXIKICBkZXNhdGl2YWRvLCBvYnNlcnZhZGFzIGFzIGZ1bmNpb25hbGlkYWRlcyBkZSBjb25z' ||
+    'dWx0YSBoaXN0w7NyaWNhIHF1ZSBhIHBsYXRhZm9ybWEgZGlzcG9uaWJpbGl6YXIuCgogIDcuNS4gQSBjb250cmF0YcOnw6Nv' ||
+    'IG7Do28gaW1wbGljYSByZW5vdmHDp8OjbyBhdXRvbcOhdGljYSwgc2Fsdm8gc2UgZnV0dXJhbWVudGUgZm9yIG9mZXJlY2lk' ||
+    'YSBlCiAgZXhwcmVzc2FtZW50ZSBhY2VpdGEgbW9kYWxpZGFkZSBkZXNzYSBuYXR1cmV6YS4KCiAgNy42LiBFdmVudHVhbCBy' ||
+    'ZW5vdmHDp8OjbyBkZXZlcsOhIG9ic2VydmFyIGFzIGNvbmRpw6fDtWVzIGUgb3MgdmFsb3JlcyBpbmZvcm1hZG9zIGFvIEFM' ||
+    'VU5PIG5vIG1vbWVudG8KICBkYSBub3ZhIGNvbnRyYXRhw6fDo28uCgoKICA4LiBESVNQT05JQklMSURBREUgREEgUExBVEFG' ||
+    'T1JNQQoKICA4LjEuIEEgQ09OVFJBVEFEQSBlbXByZWdhcsOhIGVzZm9yw6dvcyByYXpvw6F2ZWlzIHBhcmEgbWFudGVyIGEg' ||
+    'cGxhdGFmb3JtYSBkaXNwb27DrXZlbCBlIGZ1bmNpb25hbAogIGR1cmFudGUgbyBwZXLDrW9kbyBjb250cmF0YWRvLgoKICA4' ||
+    'LjIuIFBvZGVyw6NvIG9jb3JyZXIgaW50ZXJydXDDp8O1ZXMgdGVtcG9yw6FyaWFzIGRlY29ycmVudGVzIGRlIG1hbnV0ZW7D' ||
+    'p8OjbywgYXR1YWxpemHDp8OjbywgZmFsaGFzCiAgdMOpY25pY2FzLCBwcm9ibGVtYXMgZGUgY29uZWN0aXZpZGFkZSBvdSBz' ||
+    'aXR1YcOnw7VlcyBhbGhlaWFzIGFvIGNvbnRyb2xlIHJhem/DoXZlbCBkYSBDT05UUkFUQURBLgoKICA4LjMuIFNlbXByZSBx' ||
+    'dWUgdmnDoXZlbCwgbWFudXRlbsOnw7VlcyBwcm9ncmFtYWRhcyBxdWUgcG9zc2FtIGFmZXRhciBzaWduaWZpY2F0aXZhbWVu' ||
+    'dGUgbyBhY2Vzc28KICBzZXLDo28gY29tdW5pY2FkYXMgcHJldmlhbWVudGUuCgogIDguNC4gSW50ZXJydXDDp8O1ZXMgcmVs' ||
+    'ZXZhbnRlcyBhdHJpYnXDrXZlaXMgw6AgQ09OVFJBVEFEQSBzZXLDo28gYW5hbGlzYWRhcyBwYXJhIGFkb8Onw6NvIGRhcyBw' ||
+    'cm92aWTDqm5jaWFzCiAgY2Fiw612ZWlzLCBpbmNsdXNpdmUgZXZlbnR1YWwgY29tcGVuc2HDp8OjbywgcHJvcnJvZ2HDp8Oj' ||
+    'byBkbyBhY2Vzc28gb3Ugb3V0cmEgc29sdcOnw6NvIGFkZXF1YWRhLCBjb25mb3JtZQogIGEgbGVnaXNsYcOnw6NvLgoKCgoK' ||
+    'CgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAgTWludXRhIHBhcmEgcmV2aXPDo28gICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQw6FnaW5hIDMKDAogIDgu' ||
+    'NS4gTmVuaHVtYSBkaXNwb3Npw6fDo28gZGVzdGVzIFRlcm1vcyBleGNsdWkgYSByZXNwb25zYWJpbGlkYWRlIGxlZ2FsIGRh' ||
+    'IENPTlRSQVRBREEgcG9yIGZhbGhhcyBuYQogIHByZXN0YcOnw6NvIGRvcyBzZXJ2acOnb3MuCgoKICA5LiBESVJFSVRPUyBF' ||
+    'IERFVkVSRVMgRE8gQUxVTk8KCiAgOS4xLiBDb25zdGl0dWVtIGRpcmVpdG9zIGRvIEFMVU5POgoKICBhKSBSZWNlYmVyIGlu' ||
+    'Zm9ybWHDp8O1ZXMgY2xhcmFzIHNvYnJlIG8gY3Vyc28gY29udHJhdGFkbzsKCiAgYikgQWNlc3NhciBvcyBjb250ZcO6ZG9z' ||
+    'IGUgcmVjdXJzb3MgaW5jbHXDrWRvcyBuYSBjb250cmF0YcOnw6NvIGR1cmFudGUgbyBwcmF6byBjb3JyZXNwb25kZW50ZTsK' ||
+    'CiAgYykgVXRpbGl6YXIgb3MgY2FuYWlzIGRlIGF0ZW5kaW1lbnRvIGRpc3BvbmliaWxpemFkb3M7CgogIGQpIFNvbGljaXRh' ||
+    'ciBlc2NsYXJlY2ltZW50b3MgZSBhcHJlc2VudGFyIHJlY2xhbWHDp8O1ZXM7CgogIGUpIEV4ZXJjZXIgb3MgZGlyZWl0b3Mg' ||
+    'cHJldmlzdG9zIG5hIGxlZ2lzbGHDp8OjbyBjb25zdW1lcmlzdGEgZSBkZSBwcm90ZcOnw6NvIGRlIGRhZG9zIHBlc3NvYWlz' ||
+    'LgoKICA5LjIuIENvbnN0aXR1ZW0gZGV2ZXJlcyBkbyBBTFVOTzoKCiAgYSkgTWFudGVyIHNldXMgZGFkb3MgY2FkYXN0cmFp' ||
+    'cyBhdHVhbGl6YWRvczsKCiAgYikgVXRpbGl6YXIgYSBwbGF0YWZvcm1hIGRlIGZvcm1hIGzDrWNpdGE7CgogIGMpIFJlc3Bl' ||
+    'aXRhciBvcyBkaXJlaXRvcyBhdXRvcmFpcyBkb3MgbWF0ZXJpYWlzOwoKICBkKSBOw6NvIGNvbXBhcnRpbGhhciBpbmRldmlk' ||
+    'YW1lbnRlIHN1YXMgY3JlZGVuY2lhaXM7CgogIGUpIE7Do28gdGVudGFyIGNvbXByb21ldGVyIGEgc2VndXJhbsOnYSwgYSBp' ||
+    'bnRlZ3JpZGFkZSBvdSBvIGZ1bmNpb25hbWVudG8gZGEgcGxhdGFmb3JtYS4KCgogIDEwLiBQUk9QUklFREFERSBJTlRFTEVD' ||
+    'VFVBTCBFIFVTTyBET1MgTUFURVJJQUlTCgogIDEwLjEuIE9zIG1hdGVyaWFpcyBkaXNwb25pYmlsaXphZG9zIHBlbGEgQ09O' ||
+    'VFJBVEFEQSBlc3TDo28gcHJvdGVnaWRvcyBwZWxhIGxlZ2lzbGHDp8OjbyBhcGxpY8OhdmVsIGFvcwogIGRpcmVpdG9zIGF1' ||
+    'dG9yYWlzIGUgw6AgcHJvcHJpZWRhZGUgaW50ZWxlY3R1YWwsIHJlc3NhbHZhZG9zIG9zIGNvbnRlw7pkb3MgZGUgdGVyY2Vp' ||
+    'cm9zIGUgb3MgbWF0ZXJpYWlzIGRlCiAgZG9tw61uaW8gcMO6YmxpY28uCgogIDEwLjIuIEEgY29udHJhdGHDp8OjbyBjb25j' ||
+    'ZWRlIGFvIEFMVU5PIGF1dG9yaXphw6fDo28gcGVzc29hbCwgbGltaXRhZGEgZSBuw6NvIGV4Y2x1c2l2YSBwYXJhIHV0aWxp' ||
+    'emHDp8OjbwogIGRvcyBjb250ZcO6ZG9zIGRpc3BvbmliaWxpemFkb3MsIGV4Y2x1c2l2YW1lbnRlIHBhcmEgZmlucyBkZSBl' ||
+    'c3R1ZG8uCgogIDEwLjMuIFNlbSBhdXRvcml6YcOnw6NvIGV4cHJlc3NhIG91IG91dHJhIGhpcMOzdGVzZSBsZWdhbG1lbnRl' ||
+    'IHBlcm1pdGlkYSwgw6kgdmVkYWRvOgoKICBhKSBDb21lcmNpYWxpemFyIG91IHJlZGlzdHJpYnVpciBvcyBtYXRlcmlhaXM7' ||
+    'CgogIGIpIFJlcHJvZHV6aXIgaW50ZWdyYWxtZW50ZSBjb250ZcO6ZG9zIHByb3RlZ2lkb3MgcGFyYSBkaXZ1bGdhw6fDo28g' ||
+    'cMO6YmxpY2E7CgogIGMpIERpc3BvbmliaWxpemFyIHbDrWRlb3MsIHRleHRvcyBvdSBxdWVzdMO1ZXMgZW0gcGxhdGFmb3Jt' ||
+    'YXMgZXh0ZXJuYXM7CgogIGQpIENvbXBhcnRpbGhhciBtYXRlcmlhaXMgcHJvdGVnaWRvcyBkZSBmb3JtYSBxdWUgdmlvbGUg' ||
+    'b3MgZGlyZWl0b3MgZGEgQ09OVFJBVEFEQSBvdSBkZSB0ZXJjZWlyb3MuCgogIDEwLjQuIEEgdXRpbGl6YcOnw6NvIGxlZ8Ot' ||
+    'dGltYSBkZSBjb250ZcO6ZG9zIG5hcyBoaXDDs3Rlc2VzIHBlcm1pdGlkYXMgcGVsYSBsZWdpc2xhw6fDo28gYXV0b3JhbCBw' ||
+    'ZXJtYW5lY2UKICBhc3NlZ3VyYWRhLgoKCiAgMTEuIENPTVBBUlRJTEhBTUVOVE8gREUgQ09OVEFTIEUgVVNPIElOREVWSURP' ||
+    'CgogIDExLjEuIEEgY29udGEgZG8gQUxVTk8gZGVzdGluYS1zZSBhbyB1c28gcGVzc29hbCBkZSBzZXUgdGl0dWxhci4KCiAg' ||
+    'MTEuMi4gTyBjb21wYXJ0aWxoYW1lbnRvIG7Do28gYXV0b3JpemFkbyBkZSBjcmVkZW5jaWFpcyBjb20gdGVyY2Vpcm9zIHBv' ||
+    'ZGVyw6EgY2FyYWN0ZXJpemFyCiAgZGVzY3VtcHJpbWVudG8gZGVzdGVzIFRlcm1vcy4KCgoKCgoKUkVTVU3Dg08gT05MSU5F' ||
+    'ICDigKIgIFZlcnPDo28gMS4wICDigKIgIE1pbnV0YSBwYXJhIHJldmlzw6NvICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQw6FnaW5hIDQKDAogIDExLjMuIEEgQ09OVFJBVEFE' ||
+    'QSBwb2RlcsOhIHV0aWxpemFyIG1lY2FuaXNtb3MgcHJvcG9yY2lvbmFpcyBwYXJhIGlkZW50aWZpY2FyIGFjZXNzb3Mgc3Vz' ||
+    'cGVpdG9zLAogIHJlc3BlaXRhbmRvIGEgcHJpdmFjaWRhZGUgZSBhIHByb3Rlw6fDo28gZG9zIGRhZG9zIHBlc3NvYWlzLgoK' ||
+    'ICAxMS40LiBIYXZlbmRvIGluZMOtY2lvcyBkZSBpcnJlZ3VsYXJpZGFkZSwgYSBDT05UUkFUQURBIHBvZGVyw6Egc29saWNp' ||
+    'dGFyIGVzY2xhcmVjaW1lbnRvcyBlIGFkb3RhcgogIG1lZGlkYXMgbmVjZXNzw6FyaWFzIMOgIHByb3Rlw6fDo28gZGEgY29u' ||
+    'dGEgZSBkb3Mgc2VydmnDp29zLgoKICAxMS41LiBBIHN1c3BlbnPDo28gb3UgbyBlbmNlcnJhbWVudG8gcG9yIHVzbyBpbmRl' ||
+    'dmlkbyBkZXZlcsOhIG9ic2VydmFyIGEgZ3JhdmlkYWRlIGRhIGNvbmR1dGEsIGFzCiAgY2lyY3Vuc3TDom5jaWFzIGNvbmNy' ||
+    'ZXRhcyBlIG9zIGRpcmVpdG9zIGFzc2VndXJhZG9zIHBlbGEgbGVnaXNsYcOnw6NvLgoKCiAgMTIuIERJUkVJVE8gREUgQVJS' ||
+    'RVBFTkRJTUVOVE8KCiAgMTIuMS4gTmFzIGNvbnRyYXRhw6fDtWVzIHJlYWxpemFkYXMgcGVsYSBpbnRlcm5ldCwgbyBBTFVO' ||
+    'TyBwb2RlcsOhIGV4ZXJjZXIgbyBkaXJlaXRvIGRlIGFycmVwZW5kaW1lbnRvCiAgbm8gcHJhem8gbGVnYWwgZGUgNyAoc2V0' ||
+    'ZSkgZGlhcywgY29uZm9ybWUgbyBhcnRpZ28gNDkgZG8gQ8OzZGlnbyBkZSBEZWZlc2EgZG8gQ29uc3VtaWRvci4KCiAgMTIu' ||
+    'Mi4gTyBleGVyY8OtY2lvIGRlc3NlIGRpcmVpdG8gcG9kZXLDoSBzZXIgc29saWNpdGFkbyBwZWxvcyBjYW5haXMgZWxldHLD' ||
+    'tG5pY29zIGRpc3BvbmliaWxpemFkb3MgcGVsYQogIENPTlRSQVRBREEsIGluY2x1c2l2ZSBwZWxhIGZ1bmNpb25hbGlkYWRl' ||
+    'IGRlIGF0ZW5kaW1lbnRvIG91IGNhbmNlbGFtZW50bywgcXVhbmRvIGRpc3BvbsOtdmVsLgoKICAxMi4zLiBFeGVyY2lkbyBy' ||
+    'ZWd1bGFybWVudGUgbyBkaXJlaXRvIGRlIGFycmVwZW5kaW1lbnRvLCBvIEFMVU5PIHRlcsOhIGRpcmVpdG8gw6AgcmVzdGl0' ||
+    'dWnDp8OjbyBpbnRlZ3JhbAogIGRvcyB2YWxvcmVzIHBhZ29zLCBvYnNlcnZhZGFzIGFzIGRpc3Bvc2nDp8O1ZXMgbGVnYWlz' ||
+    'IGFwbGljw6F2ZWlzLgoKICAxMi40LiBPIHNpbXBsZXMgYWNlc3NvIG91IGluw61jaW8gZGUgdXRpbGl6YcOnw6NvIGRvcyBt' ||
+    'YXRlcmlhaXMgZGlnaXRhaXMgbsOjbyBpbXBsaWNhLCBwb3Igc2kgc8OzLCByZW7Dum5jaWEgYW8KICBkaXJlaXRvIGxlZ2Fs' ||
+    'IGRlIGFycmVwZW5kaW1lbnRvLgoKICAxMi41LiBBIENPTlRSQVRBREEgY29uZmlybWFyw6EgbyByZWNlYmltZW50byBkYSBz' ||
+    'b2xpY2l0YcOnw6NvIGUgYWRvdGFyw6EgYXMgcHJvdmlkw6puY2lhcyBuZWNlc3PDoXJpYXMKICBhbyBjYW5jZWxhbWVudG8g' ||
+    'ZSBhbyBwcm9jZXNzYW1lbnRvIGRhIHJlc3RpdHVpw6fDo28uCgoKICAxMy4gQ0FOQ0VMQU1FTlRPIEUgUkVFTUJPTFNPCgog' ||
+    'IDEzLjEuIE8gQUxVTk8gcG9kZXLDoSBzb2xpY2l0YXIgY2FuY2VsYW1lbnRvIG91IHJlZW1ib2xzbyBwb3IgbWVpbyBkb3Mg' ||
+    'Y2FuYWlzIGRlIGF0ZW5kaW1lbnRvIGRhCiAgcGxhdGFmb3JtYS4KCiAgMTMuMi4gU29saWNpdGHDp8O1ZXMgcmVhbGl6YWRh' ||
+    'cyBkZW50cm8gZG8gcHJhem8gbGVnYWwgZGUgYXJyZXBlbmRpbWVudG8gb2JzZXJ2YXLDo28gaW50ZWdyYWxtZW50ZSBhcwog' ||
+    'IGNvbmRpw6fDtWVzIHByZXZpc3RhcyBuYSBjbMOhdXN1bGEgYW50ZXJpb3IuCgogIDEzLjMuIEFww7NzIGVzc2UgcHJhem8s' ||
+    'IG9zIHBlZGlkb3Mgc2Vyw6NvIGFuYWxpc2Fkb3MgY29uZm9ybWUgYXMgY29uZGnDp8O1ZXMgY29udHJhdHVhaXMgYXBsaWPD' ||
+    'oXZlaXMsIGFzCiAgY2FyYWN0ZXLDrXN0aWNhcyBkbyBzZXJ2acOnbyBwcmVzdGFkbyBlIG9zIGRpcmVpdG9zIGFzc2VndXJh' ||
+    'ZG9zIHBlbG8gQ8OzZGlnbyBkZSBEZWZlc2EgZG8gQ29uc3VtaWRvci4KCiAgMTMuNC4gU2l0dWHDp8O1ZXMgZW52b2x2ZW5k' ||
+    'byBmYWxoYXMgcmVsZXZhbnRlcyBuYSBwcmVzdGHDp8OjbyBkbyBzZXJ2acOnbywgZGVzY3VtcHJpbWVudG8gZGEgb2ZlcnRh' ||
+    'IG91CiAgb3V0cmFzIGhpcMOzdGVzZXMgbGVnYWxtZW50ZSBwcmV2aXN0YXMgc2Vyw6NvIHRyYXRhZGFzIGNvbmZvcm1lIGEg' ||
+    'bGVnaXNsYcOnw6NvLCBpbmRlcGVuZGVudGVtZW50ZSBkbwogIGVuY2VycmFtZW50byBkbyBwcmF6byBkZSBhcnJlcGVuZGlt' ||
+    'ZW50by4KCiAgMTMuNS4gUXVhbmRvIGNhYsOtdmVsLCBhIHJlc3RpdHVpw6fDo28gc2Vyw6EgcHJvY2Vzc2FkYSBwZWxvIG1l' ||
+    'aW8gYWRlcXVhZG8gw6AgbW9kYWxpZGFkZSBkZSBwYWdhbWVudG8KICB1dGlsaXphZGEsIGNvbSBpbmZvcm1hw6fDo28gYW8g' ||
+    'QUxVTk8gc29icmUgc2V1IGFuZGFtZW50by4KCiAgMTMuNi4gTyBjYW5jZWxhbWVudG8gZGEgY29udHJhdGHDp8OjbyBuw6Nv' ||
+    'IGFmYXN0YSBldmVudHVhaXMgb2JyaWdhw6fDtWVzIGxlZ2FpcyBkZSBjb25zZXJ2YcOnw6NvIGRlCiAgcmVnaXN0cm9zIGZp' ||
+    'c2NhaXMsIGZpbmFuY2Vpcm9zIGUgY29udHJhdHVhaXMuCgoKICAxNC4gQ09OVEVTVEHDh8OVRVMgREUgUEFHQU1FTlRPUwoK' ||
+    'ICAxNC4xLiBDYXNvIG8gQUxVTk8gYXByZXNlbnRlIGNvbnRlc3Rhw6fDo28gZGUgcGFnYW1lbnRvIGp1bnRvIMOgIGluc3Rp' ||
+    'dHVpw6fDo28gZmluYW5jZWlyYSBvdQogIGFkbWluaXN0cmFkb3JhIGRvIGNhcnTDo28sIGEgQ09OVFJBVEFEQSBwb2RlcsOh' ||
+    'IGFuYWxpc2FyIGEgdHJhbnNhw6fDo28gZSBmb3JuZWNlciBhcyBpbmZvcm1hw6fDtWVzCiAgbmVjZXNzw6FyaWFzIMOgIGFw' ||
+    'dXJhw6fDo28uCgogIDE0LjIuIEEgc2ltcGxlcyBhYmVydHVyYSBkZSBjb250ZXN0YcOnw6NvIG7Do28gb2Nhc2lvbmFyw6Eg' ||
+    'YmxvcXVlaW8gYXV0b23DoXRpY28gZG8gYWNlc3NvIGFvIGN1cnNvLgoKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJz' ||
+    'w6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUMOhZ2luYSA1CgwKICAxNC4zLiBDb25maXJtYWRhIGEgZGV2b2x1w6fD' ||
+    'o28gZWZldGl2YSBkbyB2YWxvciBkYSBjb21wcmEgYW8gdGl0dWxhciBkbyBjYXJ0w6NvLCBhIENPTlRSQVRBREEgcG9kZXLD' ||
+    'oQogIHJlYWxpemFyLCBtZWRpYW50ZSBwcm9jZWRpbWVudG8gYWRtaW5pc3RyYXRpdm8gbWFudWFsLCBvIGJsb3F1ZWlvIGRv' ||
+    'IGFjZXNzbyBjb3JyZXNwb25kZW50ZSDDoAogIGNvbnRyYXRhw6fDo28gY3VqbyBwYWdhbWVudG8gZm9pIHJldmVydGlkbywg' ||
+    'b2JzZXJ2YWRvcyBvcyBkaXJlaXRvcyBsZWdhaXMgZG8gY29uc3VtaWRvci4KCiAgMTQuNC4gTyBibG9xdWVpbyByZWZlcmlk' ||
+    'byBuYSBjbMOhdXN1bGEgYW50ZXJpb3IgbsOjbyBkZXZlcsOhIGFmZXRhciBvdXRyb3MgY3Vyc29zIG91IGRpcmVpdG9zIGRl' ||
+    'IGFjZXNzbwogIHZhbGlkYW1lbnRlIGFkcXVpcmlkb3MgcGVsbyBtZXNtbyBBTFVOTy4KCiAgMTQuNS4gTyBBTFVOTyBwb2Rl' ||
+    'csOhIHNvbGljaXRhciBlc2NsYXJlY2ltZW50b3MgZSBhcHJlc2VudGFyIGluZm9ybWHDp8O1ZXMgc29icmUgYSBjb250ZXN0' ||
+    'YcOnw6NvIHBlbG9zCiAgY2FuYWlzIGRlIGF0ZW5kaW1lbnRvLgoKCiAgMTUuIFBST1RFw4fDg08gREUgREFET1MgUEVTU09B' ||
+    'SVMgRSBSRVNQT05TQUJJTElEQURFIERBIENPTlRSQVRBREEKCiAgMTUuMS4gQSBDT05UUkFUQURBIGNvbXByb21ldGUtc2Ug' ||
+    'YSB0cmF0YXIgb3MgZGFkb3MgcGVzc29haXMgZG9zIHVzdcOhcmlvcyBlbSBjb25mb3JtaWRhZGUgY29tIGEKICBMZWkgbsK6' ||
+    'IDEzLjcwOS8yMDE4IOKAlCBMZWkgR2VyYWwgZGUgUHJvdGXDp8OjbyBkZSBEYWRvcyBQZXNzb2FpcyAoTEdQRCkg4oCUIGUg' ||
+    'ZGVtYWlzIG5vcm1hcyBhcGxpY8OhdmVpcy4KCiAgMTUuMi4gUGFyYSBvcyB0cmF0YW1lbnRvcyBjdWphcyBmaW5hbGlkYWRl' ||
+    'cyBlIG1laW9zIGVzc2VuY2lhaXMgZGV0ZXJtaW5hciwgYSBDT05UUkFUQURBIGF0dWFyw6EKICBjb21vIGNvbnRyb2xhZG9y' ||
+    'YSBkb3MgZGFkb3MgcGVzc29haXMuCgogIDE1LjMuIE9zIGRhZG9zIHBvZGVyw6NvIHNlciB0cmF0YWRvcyBwYXJhIGZpbmFs' ||
+    'aWRhZGVzIGxlZ8OtdGltYXMsIGluY2x1aW5kbzoKCiAgYSkgSWRlbnRpZmljYcOnw6NvIGUgYXV0ZW50aWNhw6fDo28gZG9z' ||
+    'IHVzdcOhcmlvczsKCiAgYikgQWRtaW5pc3RyYcOnw6NvIGRlIGNvbnRhcyBlIHBlcmZpczsKCiAgYykgUHJvY2Vzc2FtZW50' ||
+    'byBlIGNvbXByb3Zhw6fDo28gZGUgY29udHJhdGHDp8O1ZXM7CgogIGQpIExpYmVyYcOnw6NvIGUgZ2VyZW5jaWFtZW50byBk' ||
+    'ZSBhY2Vzc28gYW9zIGN1cnNvczsKCiAgZSkgUmVnaXN0cm8gZGUgYXRpdmlkYWRlcyBlZHVjYWNpb25haXMsIHJlc3Bvc3Rh' ||
+    'cyBlIGRlc2VtcGVuaG87CgogIGYpIEF0ZW5kaW1lbnRvIGRlIHNvbGljaXRhw6fDtWVzIGUgcmVjbGFtYcOnw7VlczsKCiAg' ||
+    'ZykgUHJldmVuw6fDo28gZGUgZnJhdWRlcyBlIHByb3Rlw6fDo28gZGEgc2VndXJhbsOnYSBkYSBwbGF0YWZvcm1hOwoKICBo' ||
+    'KSBDdW1wcmltZW50byBkZSBvYnJpZ2HDp8O1ZXMgbGVnYWlzIGUgcmVndWxhdMOzcmlhczsKCiAgaSkgRXhlcmPDrWNpbyBy' ||
+    'ZWd1bGFyIGRlIGRpcmVpdG9zIGVtIHByb2Nlc3NvcyBhZG1pbmlzdHJhdGl2b3MsIGp1ZGljaWFpcyBvdSBhcmJpdHJhaXMu' ||
+    'CgogIDE1LjQuIE8gdHJhdGFtZW50byBvYnNlcnZhcsOhIGFzIGJhc2VzIGxlZ2FpcyBwZXJ0aW5lbnRlcyBhIGNhZGEgZmlu' ||
+    'YWxpZGFkZSwgbsOjbyBkZXBlbmRlbmRvCiAgbmVjZXNzYXJpYW1lbnRlIGRlIGNvbnNlbnRpbWVudG8gcXVhbmRvIGhvdXZl' ||
+    'ciBvdXRyYSBoaXDDs3Rlc2UgYXV0b3JpemFkb3JhIHByZXZpc3RhIG5hIExHUEQuCgogIDE1LjUuIEEgQ09OVFJBVEFEQSBh' ||
+    'ZG90YXLDoSBtZWRpZGFzIHTDqWNuaWNhcyBlIGFkbWluaXN0cmF0aXZhcyBhZGVxdWFkYXMgZSBwcm9wb3JjaW9uYWlzIGFv' ||
+    'cyByaXNjb3MKICBlbnZvbHZpZG9zLCBkZXN0aW5hZGFzIGEgcHJvdGVnZXIgb3MgZGFkb3MgcGVzc29haXMgY29udHJhIGFj' ||
+    'ZXNzb3MgbsOjbyBhdXRvcml6YWRvcywgcGVyZGEsIGRlc3RydWnDp8OjbywKICBhbHRlcmHDp8OjbywgZGl2dWxnYcOnw6Nv' ||
+    'IGluZGV2aWRhIGUgb3V0cmFzIGZvcm1hcyBkZSB0cmF0YW1lbnRvIGlycmVndWxhci4KCiAgMTUuNi4gQSBDT05UUkFUQURB' ||
+    'IHNlcsOhIHJlc3BvbnPDoXZlbCBwZWxvIGN1bXByaW1lbnRvIGRlIHN1YXMgb2JyaWdhw6fDtWVzIGxlZ2FpcyByZWxhdGl2' ||
+    'YXMgw6AKICBwcm90ZcOnw6NvIGRlIGRhZG9zIGUgcmVzcG9uZGVyw6EgcGVsb3MgZGFub3MgZGVjb3JyZW50ZXMgZGUgdHJh' ||
+    'dGFtZW50byBpcnJlZ3VsYXIgbmFzIGhpcMOzdGVzZXMKICBwcmV2aXN0YXMgbmEgbGVnaXNsYcOnw6NvLgoKICAxNS43LiBB' ||
+    'IGNvbnRyYXRhw6fDo28gbsOjbyBpbXBsaWNhIGF1dG9yaXphw6fDo28gaXJyZXN0cml0YSBwYXJhIHV0aWxpemHDp8Ojbywg' ||
+    'ZGl2dWxnYcOnw6NvIG91IGNvbWVyY2lhbGl6YcOnw6NvCiAgZG9zIGRhZG9zIHBlc3NvYWlzIGRvIEFMVU5PLgoKICAxNS44' ||
+    'LiBFdmVudHVhbCB1dGlsaXphw6fDo28gZGUgZGFkb3MgcGFyYSBmaW5hbGlkYWRlcyBvcGNpb25haXMgcXVlIGV4aWphbSBj' ||
+    'b25zZW50aW1lbnRvIGVzcGVjw61maWNvCiAgZGVwZW5kZXLDoSBkZSBtYW5pZmVzdGHDp8OjbyB2w6FsaWRhIGRvIHRpdHVs' ||
+    'YXIsIHF1YW5kbyBsZWdhbG1lbnRlIG5lY2Vzc8OhcmlhLgoKICAxNS45LiBPIEFMVU5PIHBvZGVyw6EgZXhlcmNlciBzZXVz' ||
+    'IGRpcmVpdG9zIHByZXZpc3RvcyBuYSBMR1BELCBpbmNsdWluZG8gY29uZmlybWHDp8OjbyBkZSB0cmF0YW1lbnRvLAogIGFj' ||
+    'ZXNzbywgY29ycmXDp8OjbyBlIGVsaW1pbmHDp8OjbyBkZSBkYWRvcyBuYXMgaGlww7N0ZXNlcyBsZWdhbG1lbnRlIGNhYsOt' ||
+    'dmVpcy4KCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUMOhZ2lu' ||
+    'YSA2CgwKICAxNS4xMC4gQXMgaW5mb3JtYcOnw7VlcyBjb21wbGVtZW50YXJlcyBzb2JyZSBjYXRlZ29yaWFzIGRlIGRhZG9z' ||
+    'LCBjb21wYXJ0aWxoYW1lbnRvLCByZXRlbsOnw6NvLAogIGRpcmVpdG9zIGRvcyB0aXR1bGFyZXMgZSBjYW5haXMgZGUgY29u' ||
+    'dGF0byBjb25zdGFyw6NvIGRhIFBvbMOtdGljYSBkZSBQcml2YWNpZGFkZSBlIFByb3Rlw6fDo28gZGUgRGFkb3MKICBQZXNz' ||
+    'b2FpcywgZGlzcG9uaWJpbGl6YWRhIHBlbGEgQ09OVFJBVEFEQS4KCgogIDE2LiBDT01QQVJUSUxIQU1FTlRPIERFIERBRE9T' ||
+    'IENPTSBQUkVTVEFET1JFUyBERSBTRVJWScOHT1MKCiAgMTYuMS4gUGFyYSB2aWFiaWxpemFyIHN1YXMgYXRpdmlkYWRlcywg' ||
+    'YSBDT05UUkFUQURBIHBvZGVyw6EgY29tcGFydGlsaGFyIGRhZG9zIHBlc3NvYWlzIGVzdHJpdGFtZW50ZQogIG5lY2Vzc8Oh' ||
+    'cmlvcyBjb20gcHJlc3RhZG9yZXMgZGUgc2VydmnDp29zIGRlIHRlY25vbG9naWEsIGhvc3BlZGFnZW0sIGFybWF6ZW5hbWVu' ||
+    'dG8sIHByb2Nlc3NhbWVudG8KICBkZSBwYWdhbWVudG9zLCBzZWd1cmFuw6dhIGUgc3Vwb3J0ZSBvcGVyYWNpb25hbC4KCiAg' ||
+    'MTYuMi4gTyBjb21wYXJ0aWxoYW1lbnRvIGRldmVyw6Egb2JzZXJ2YXIgZmluYWxpZGFkZSBsZWfDrXRpbWEsIG5lY2Vzc2lk' ||
+    'YWRlLCBzZWd1cmFuw6dhIGUgYXMgZGVtYWlzCiAgZXhpZ8OqbmNpYXMgZGEgTEdQRC4KCiAgMTYuMy4gUHJlc3RhZG9yZXMg' ||
+    'ZGUgcGFnYW1lbnRvIHBvZGVyw6NvIHRyYXRhciBkZXRlcm1pbmFkb3MgZGFkb3MgZGUgYWNvcmRvIGNvbSBzdWFzIHByw7Nw' ||
+    'cmlhcwogIG9icmlnYcOnw7VlcyBsZWdhaXMgZSByZXNwb25zYWJpbGlkYWRlcywgY29uZm9ybWUgYSBuYXR1cmV6YSBkZSBj' ||
+    'YWRhIG9wZXJhw6fDo28uCgogIDE2LjQuIFF1YW5kbyBob3V2ZXIgdHJhbnNmZXLDqm5jaWEgaW50ZXJuYWNpb25hbCBkZSBk' ||
+    'YWRvcyBwZXNzb2Fpcywgc2Vyw6NvIG9ic2VydmFkYXMgYXMgY29uZGnDp8O1ZXMgZQogIGdhcmFudGlhcyBwcmV2aXN0YXMg' ||
+    'bmEgbGVnaXNsYcOnw6NvIGFwbGljw6F2ZWwuCgogIDE2LjUuIEEgQ09OVFJBVEFEQSBuw6NvIGNvbWVyY2lhbGl6YXLDoSBi' ||
+    'YXNlcyBkZSBkYWRvcyBwZXNzb2FpcyBkb3MgYWx1bm9zIGNvbW8gcHJvZHV0byBhdXTDtG5vbW8uCgoKICAxNy4gUkVHSVNU' ||
+    'Uk9TIEVMRVRSw5ROSUNPUyBFIENPTVBST1ZBw4fDg08gREEgQ09OVFJBVEHDh8ODTwoKICAxNy4xLiBBIG1hbmlmZXN0YcOn' ||
+    'w6NvIGRlIGNpw6puY2lhIGUgYWNlaXRlIGRvcyBwcmVzZW50ZXMgVGVybW9zIHBvZGVyw6Egc2VyIHJlZ2lzdHJhZGEgZWxl' ||
+    'dHJvbmljYW1lbnRlCiAgcGVsYSBwbGF0YWZvcm1hLgoKICAxNy4yLiBQYXJhIGZpbnMgZGUgY29tcHJvdmHDp8OjbyBkYSBj' ||
+    'b250cmF0YcOnw6NvLCBwb2RlcsOjbyBzZXIgYXJtYXplbmFkYXMgaW5mb3JtYcOnw7VlcyBjb21vOgoKICBhKSBJZGVudGlm' ||
+    'aWNhw6fDo28gZG8gdXN1w6FyaW87CgogIGIpIERhdGEgZSBob3JhIGRvIGFjZWl0ZTsKCiAgYykgVmVyc8OjbyBkb3MgZG9j' ||
+    'dW1lbnRvcyBhcHJlc2VudGFkb3M7CgogIGQpIElkZW50aWZpY2HDp8OjbyBkbyBjdXJzbyBlIGRhIGNvbnRyYXRhw6fDo287' ||
+    'CgogIGUpIFJlZ2lzdHJvcyB0w6ljbmljb3MgcGVydGluZW50ZXMsIG9ic2VydmFkb3Mgb3MgcHJpbmPDrXBpb3MgZGUgbmVj' ||
+    'ZXNzaWRhZGUgZSBzZWd1cmFuw6dhLgoKICAxNy4zLiBPcyByZWdpc3Ryb3Mgc2Vyw6NvIHV0aWxpemFkb3MgcGFyYSBjb21w' ||
+    'cm92YcOnw6NvIGNvbnRyYXR1YWwsIGF0ZW5kaW1lbnRvLCBwcmV2ZW7Dp8OjbyBkZSBmcmF1ZGVzLAogIGN1bXByaW1lbnRv' ||
+    'IGRlIG9icmlnYcOnw7VlcyBsZWdhaXMgZSBleGVyY8OtY2lvIHJlZ3VsYXIgZGUgZGlyZWl0b3MuCgogIDE3LjQuIEEgY29u' ||
+    'c2VydmHDp8OjbyBkb3MgcmVnaXN0cm9zIG9ic2VydmFyw6Egb3MgcHJhem9zIG5lY2Vzc8OhcmlvcyDDoHMgZmluYWxpZGFk' ||
+    'ZXMgbGVnw610aW1hcyBlIMOgcwogIGV4aWfDqm5jaWFzIGxlZ2FpcyBhcGxpY8OhdmVpcy4KCiAgMTguIEFUVUFMSVpBw4fD' ||
+    'g08gRE9TIENVUlNPUyBFIENPTlRFw5pET1MKCiAgMTguMS4gQSBDT05UUkFUQURBIHBvZGVyw6EgY29ycmlnaXIgZXJyb3Ms' ||
+    'IGF0dWFsaXphciBpbmZvcm1hw6fDtWVzLCBhcGVyZmVpw6dvYXIgbWF0ZXJpYWlzIGUgcmVhbGl6YXIKICBhanVzdGVzIHBl' ||
+    'ZGFnw7NnaWNvcyBkdXJhbnRlIGEgZGlzcG9uaWJpbGl6YcOnw6NvIGRvcyBjdXJzb3MuCgogIDE4LjIuIEVzc2FzIGFsdGVy' ||
+    'YcOnw7VlcyBkZXZlcsOjbyByZXNwZWl0YXIgYXMgY2FyYWN0ZXLDrXN0aWNhcyBlc3NlbmNpYWlzIGRhIG9mZXJ0YSBjb250' ||
+    'cmF0YWRhLgoKICAxOC4zLiBBIENPTlRSQVRBREEgbsOjbyBwb2RlcsOhIG1vZGlmaWNhciB1bmlsYXRlcmFsbWVudGUgbyBj' ||
+    'b250ZcO6ZG8gb3UgYSBxdWFsaWRhZGUgZG8gc2VydmnDp28gZGUKICBmb3JtYSBhIHByZWp1ZGljYXIgaW5kZXZpZGFtZW50' ||
+    'ZSBvcyBkaXJlaXRvcyBkbyBBTFVOTy4KCiAgMTguNC4gRXZlbnR1YWlzIG11ZGFuw6dhcyBzdWJzdGFuY2lhaXMgcXVlIGFm' ||
+    'ZXRlbSBhIHByZXN0YcOnw6NvIGRvIHNlcnZpw6dvIGNvbnRyYXRhZG8gc2Vyw6NvCiAgY29tdW5pY2FkYXMgZGUgbWFuZWly' ||
+    'YSBhZGVxdWFkYSwgY29tIG9ic2VydsOibmNpYSBkb3MgZGlyZWl0b3MgcHJldmlzdG9zIG5hIGxlZ2lzbGHDp8Ojby4KCgoK' ||
+    'ClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUMOhZ2luYSA3CgwKICAxOS4g' ||
+    'QVRFTkRJTUVOVE8gRSBDT01VTklDQcOHw5VFUwoKICAxOS4xLiBBIENPTlRSQVRBREEgZGlzcG9uaWJpbGl6YXLDoSBjYW5h' ||
+    'aXMgZWxldHLDtG5pY29zIHBhcmEgZXNjbGFyZWNpbWVudG8gZGUgZMO6dmlkYXMsIHJlY2xhbWHDp8O1ZXMsCiAgc29saWNp' ||
+    'dGHDp8O1ZXMgZGUgY2FuY2VsYW1lbnRvIGUgZGVtYWlzIHF1ZXN0w7VlcyByZWxhY2lvbmFkYXMgYW9zIHNlcnZpw6dvcy4K' ||
+    'CiAgMTkuMi4gTyBjYW5hbCBwcmluY2lwYWwgZGUgYXRlbmRpbWVudG8gc2Vyw6EgaW5mb3JtYWRvIG5vIHNpdGUgZSBuYSDD' ||
+    'oXJlYSBkbyB1c3XDoXJpby4KCiAgMTkuMy4gQXMgc29saWNpdGHDp8O1ZXMgcmVjZWJpZGFzIHNlcsOjbyByZWdpc3RyYWRh' ||
+    'cyBlIHJlc3BvbmRpZGFzIGNvbmZvcm1lIG9zIHByYXpvcyBsZWdhbG1lbnRlCiAgYXBsaWPDoXZlaXMuCgogIDE5LjQuIEFz' ||
+    'IGNvbXVuaWNhw6fDtWVzIHBvZGVyw6NvIG9jb3JyZXIgcGVsYSBwcsOzcHJpYSBwbGF0YWZvcm1hIG91IHBvciBlbmRlcmXD' ||
+    'p28gZWxldHLDtG5pY28gaW5mb3JtYWRvCiAgcGVsbyBBTFVOTy4KCiAgMTkuNS4gTyBBTFVOTyBkZXZlcsOhIG1hbnRlciBz' ||
+    'ZXVzIGRhZG9zIGRlIGNvbnRhdG8gYXR1YWxpemFkb3MgcGFyYSBwb3NzaWJpbGl0YXIgbyByZWNlYmltZW50byBkZQogIGlu' ||
+    'Zm9ybWHDp8O1ZXMgcmVsYWNpb25hZGFzIMOgIGNvbnRyYXRhw6fDo28uCgoKICAyMC4gQUxURVJBw4fDlUVTIERPUyBURVJN' ||
+    'T1MKCiAgMjAuMS4gRXN0ZXMgVGVybW9zIHBvZGVyw6NvIHNlciBhdHVhbGl6YWRvcyBwYXJhIHJlZmxldGlyIG11ZGFuw6dh' ||
+    'cyBsZWdhaXMsIG9wZXJhY2lvbmFpcyBvdSByZWxhY2lvbmFkYXMKICBhb3Mgc2VydmnDp29zLgoKICAyMC4yLiBBIENPTlRS' ||
+    'QVRBREEgZGlzcG9uaWJpbGl6YXLDoSBhIHZlcnPDo28gYXR1YWxpemFkYSwgY29tIGlkZW50aWZpY2HDp8OjbyBkYSBkYXRh' ||
+    'IGRlIHZpZ8OqbmNpYS4KCiAgMjAuMy4gQWx0ZXJhw6fDtWVzIHF1ZSBhZmV0ZW0gc3Vic3RhbmNpYWxtZW50ZSBkaXJlaXRv' ||
+    'cyBlIG9icmlnYcOnw7VlcyBkZWNvcnJlbnRlcyBkZSBjb250cmF0b3MgasOhCiAgY2VsZWJyYWRvcyBuw6NvIHBvZGVyw6Nv' ||
+    'IHNlciBpbXBvc3RhcyB1bmlsYXRlcmFsbWVudGUgZW0gcHJlanXDrXpvIGRvIGNvbnN1bWlkb3IuCgogIDIwLjQuIFF1YW5k' ||
+    'byBuZWNlc3PDoXJpbywgYSBDT05UUkFUQURBIHNvbGljaXRhcsOhIG5vdmEgbWFuaWZlc3Rhw6fDo28gZGUgYWNlaXRlIHBh' ||
+    'cmEgY29uZGnDp8O1ZXMKICBjb250cmF0dWFpcyBmdXR1cmFzLgoKICAyMC41LiBBcyB2ZXJzw7VlcyBhbnRlcmlvcm1lbnRl' ||
+    'IGFjZWl0YXMgcG9kZXLDo28gc2VyIGNvbnNlcnZhZGFzIHBhcmEgZmlucyBkZSBjb21wcm92YcOnw6NvIGUKICBhdGVuZGlt' ||
+    'ZW50byBkZSBvYnJpZ2HDp8O1ZXMgbGVnYWlzLgoKCiAgMjEuIERJU1BPU0nDh8OVRVMgR0VSQUlTCgogIDIxLjEuIEVzdGVz' ||
+    'IFRlcm1vcyBkZXZlbSBzZXIgaW50ZXJwcmV0YWRvcyBjb25mb3JtZSBhIGxlZ2lzbGHDp8OjbyBicmFzaWxlaXJhLCBlc3Bl' ||
+    'Y2lhbG1lbnRlIG8gQ8OzZGlnbwogIGRlIERlZmVzYSBkbyBDb25zdW1pZG9yLCBvIEPDs2RpZ28gQ2l2aWwsIGEgTEdQRCBl' ||
+    'IGFzIG5vcm1hcyBhcGxpY8OhdmVpcyBhbyBjb23DqXJjaW8gZWxldHLDtG5pY28uCgogIDIxLjIuIEEgZXZlbnR1YWwgaW52' ||
+    'YWxpZGFkZSBkZSBkZXRlcm1pbmFkYSBkaXNwb3Npw6fDo28gbsOjbyBwcmVqdWRpY2Fyw6EgYXMgZGVtYWlzIGNsw6F1c3Vs' ||
+    'YXMgcXVlCiAgcG9zc2FtIHN1YnNpc3RpciB2YWxpZGFtZW50ZS4KCiAgMjEuMy4gTmVuaHVtYSBkaXNwb3Npw6fDo28gZGVz' ||
+    'dGVzIFRlcm1vcyBzZXLDoSBpbnRlcnByZXRhZGEgY29tbyByZW7Dum5jaWEgYSBkaXJlaXRvcyBsZWdhbG1lbnRlCiAgYXNz' ||
+    'ZWd1cmFkb3MgYW8gY29uc3VtaWRvci4KCiAgMjEuNC4gQXMgcGFydGVzIHBvZGVyw6NvIGJ1c2NhciBzb2x1w6fDo28gYWRt' ||
+    'aW5pc3RyYXRpdmEgZSBjb25zZW5zdWFsIHBhcmEgZXZlbnR1YWlzIGNvbnRyb3bDqXJzaWFzLCBzZW0KICBwcmVqdcOtem8g' ||
+    'ZG8gYWNlc3NvIGFvcyDDs3Jnw6NvcyBkZSBkZWZlc2EgZG8gY29uc3VtaWRvciBlIGFvIFBvZGVyIEp1ZGljacOhcmlvLgoK' ||
+    'ICAyMS41LiBFdmVudHVhaXMgZGVtYW5kYXMganVkaWNpYWlzIG9ic2VydmFyw6NvIGFzIHJlZ3JhcyBsZWdhaXMgZGUgY29t' ||
+    'cGV0w6puY2lhLCBpbmNsdXNpdmUgYXMgbm9ybWFzCiAgcHJvdGV0aXZhcyBhcGxpY8OhdmVpcyBhbyBkb21pY8OtbGlvIGRv' ||
+    'IGNvbnN1bWlkb3IuCgoKICAyMi4gQ0nDik5DSUEgRSBBQ0VJVEUgRUxFVFLDlE5JQ08KCiAgMjIuMS4gQW50ZXMgZGUgcHJv' ||
+    'c3NlZ3VpciBwYXJhIG8gcGFnYW1lbnRvLCBvIEFMVU5PIHRlcsOhIG9wb3J0dW5pZGFkZSBkZSBjb25zdWx0YXIgb3MgcHJl' ||
+    'c2VudGVzCiAgVGVybW9zIGUgYSBQb2zDrXRpY2EgZGUgUHJpdmFjaWRhZGUgZSBQcm90ZcOnw6NvIGRlIERhZG9zIFBlc3Nv' ||
+    'YWlzLgoKICAyMi4yLiBBIG1hbmlmZXN0YcOnw6NvIGVsZXRyw7RuaWNhIHNlcsOhIGFwcmVzZW50YWRhIHBvciBtZWlvIGRh' ||
+    'IHNlZ3VpbnRlIGRlY2xhcmHDp8OjbzoKCgoKCgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAgTWlu' ||
+    'dXRhIHBhcmEgcmV2aXPDo28gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgUMOhZ2luYSA4CgwKICDimJAgQ2llbnRlIGRvcyBUZXJtb3MgZGUgQ29udHJhdGHDp8OjbyBlIGRhIFBv' ||
+    'bMOtdGljYSBkZSBQcml2YWNpZGFkZSBlIFByb3Rlw6fDo28gZGUgRGFkb3MuCgogIDIyLjMuIEEgbWFyY2HDp8OjbyBvYnJp' ||
+    'Z2F0w7NyaWEgZGEgZGVjbGFyYcOnw6NvLCBhc3NvY2lhZGEgw6AgYcOnw6NvIGRlIHByb3NzZWd1aXIgY29tIGEgY29udHJh' ||
+    'dGHDp8OjbywKICBjb25zdGl0dWlyw6EgbWFuaWZlc3Rhw6fDo28gZWxldHLDtG5pY2EgZGUgY2nDqm5jaWEgZG9zIGRvY3Vt' ||
+    'ZW50b3MgYXByZXNlbnRhZG9zIGUgY29uY29yZMOibmNpYSBjb20gYXMKICBjb25kacOnw7VlcyBjb250cmF0dWFpcyBhcGxp' ||
+    'Y8OhdmVpcy4KCiAgMjIuNC4gQSBhdXPDqm5jaWEgZGUgbWFyY2HDp8OjbyBpbXBlZGlyw6EgbyBwcm9zc2VndWltZW50byBw' ||
+    'YXJhIGEgZXRhcGEgZGUgcGFnYW1lbnRvLgoKICAyMi41LiBPIGFjZWl0ZSBzZXLDoSByZWdpc3RyYWRvIGVsZXRyb25pY2Ft' ||
+    'ZW50ZSBwYXJhIGZpbnMgZGUgY29tcHJvdmHDp8Ojbywgb2JzZXJ2YWRhcyBhcyBkaXNwb3Npw6fDtWVzCiAgc29icmUgcHJv' ||
+    'dGXDp8OjbyBkZSBkYWRvcyBwZXNzb2Fpcy4KCgoKICBSRVNVTcODTyBPTkxJTkUKCiAgVGVybW9zIGUgQ29uZGnDp8O1ZXMg' ||
+    'ZGUgQ29udHJhdGHDp8OjbyBlIFVzbwoKICBWZXJzw6NvIDEuMCDigJQgTWludXRhIHN1amVpdGEgYSByZXZpc8OjbyBlIGFw' ||
+    'cm92YcOnw6NvIGFudGVzIGRhIHB1YmxpY2HDp8Ojby4KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoK' ||
+    'CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBN' ||
+    'aW51dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgUMOhZ2luYSA5', 'base64'), 'UTF8'), 'cdef5e1d658c8a6c09d6c823b02cda602f0dbbf44d8b1deb39b14549c585cf88', '129148a9a13d7639999056c43623d8afa949677eb866aa5710f901facd9be173', CURRENT_TIMESTAMP);
+INSERT INTO documentos_juridicos_versoes (tipo, versao, titulo, conteudo, sha256, pdf_sha256, publicado_em) VALUES ('PRIVACIDADE', '1.0', 'Política de Privacidade e Proteção de Dados Pessoais', pg_catalog.convert_from(pg_catalog.decode(
+    'ICAgICAgICBQT0zDjVRJQ0EgREUgUFJJVkFDSURBREUgRSBQUk9URcOHw4NPIERFIERBRE9TCiAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICBQRVNTT0FJUyBSRVNVTcODTyBPTkxJTkUKCiAgVmVyc8OjbzogMS4wIOKAlCBNaW51dGEgcGFyYSBh' ||
+    'cHJvdmHDp8OjbwoKICBEYXRhIGRlIHZpZ8OqbmNpYTogW0EgUFJFRU5DSEVSXQoKICBTaXRlOiBodHRwczovL3Jlc3VtYW9v' ||
+    'bmxpbmUuY29tLmJyCgogIDEuIEFQUkVTRU5UQcOHw4NPCgogIDEuMS4gQSBwcmVzZW50ZSBQb2zDrXRpY2EgZGUgUHJpdmFj' ||
+    'aWRhZGUgZSBQcm90ZcOnw6NvIGRlIERhZG9zIFBlc3NvYWlzIGVzdGFiZWxlY2UgYXMgZGlyZXRyaXplcyBhZG90YWRhcwog' ||
+    'IHBlbG8gUmVzdW3Do28gT25saW5lIHBhcmEgYSBjb2xldGEsIHV0aWxpemHDp8OjbywgYXJtYXplbmFtZW50bywgY29tcGFy' ||
+    'dGlsaGFtZW50byBlIHByb3Rlw6fDo28gZG9zCiAgZGFkb3MgcGVzc29haXMgZGUgc2V1cyB1c3XDoXJpb3MuCgogIDEuMi4g' ||
+    'TyBSZXN1bcOjbyBPbmxpbmUgY29tcHJvbWV0ZS1zZSBhIHRyYXRhciBvcyBkYWRvcyBwZXNzb2FpcyBlbSBjb25mb3JtaWRh' ||
+    'ZGUgY29tIGEgTGVpIG7CugogIDEzLjcwOS8yMDE4IOKAlCBMZWkgR2VyYWwgZGUgUHJvdGXDp8OjbyBkZSBEYWRvcyBQZXNz' ||
+    'b2FpcyAoTEdQRCkg4oCULCBvIEPDs2RpZ28gZGUgRGVmZXNhIGRvIENvbnN1bWlkb3IKICBlIGFzIGRlbWFpcyBub3JtYXMg' ||
+    'YXBsaWPDoXZlaXMuCgogIDEuMy4gRXN0YSBQb2zDrXRpY2EgYXBsaWNhLXNlIGFvcyB2aXNpdGFudGVzIGRvIHNpdGUsIHVz' ||
+    'dcOhcmlvcyBjYWRhc3RyYWRvcywgYWx1bm9zLCBjb21wcmFkb3JlcyBlIGRlbWFpcwogIHBlc3NvYXMgY3Vqb3MgZGFkb3Mg' ||
+    'cGVzc29haXMgc2VqYW0gdHJhdGFkb3Mgbm8gw6JtYml0byBkb3Mgc2VydmnDp29zIGRhIHBsYXRhZm9ybWEuCgogIDEuNC4g' ||
+    'QSB1dGlsaXphw6fDo28gZG9zIHNlcnZpw6dvcyBvYnNlcnZhcsOhIHRhbWLDqW0gb3MgVGVybW9zIGUgQ29uZGnDp8O1ZXMg' ||
+    'ZGUgQ29udHJhdGHDp8OjbyBlIFVzbyBkbwogIFJlc3Vtw6NvIE9ubGluZS4KCiAgMi4gSURFTlRJRklDQcOHw4NPIERPIENP' ||
+    'TlRST0xBRE9SCgogIDIuMS4gTyByZXNwb25zw6F2ZWwgcGVsbyB0cmF0YW1lbnRvIGRvcyBkYWRvcyBwZXNzb2FpcywgbmFz' ||
+    'IG9wZXJhw6fDtWVzIGVtIHF1ZSBkZXRlcm1pbmEgYXMKICBmaW5hbGlkYWRlcyBlIG9zIG1laW9zIGVzc2VuY2lhaXMgZG8g' ||
+    'dHJhdGFtZW50bywgw6k6CgogIOKAoiBSYXrDo28gc29jaWFsOiBbQSBQUkVFTkNIRVJdCgogIOKAoiBOb21lIGZhbnRhc2lh' ||
+    'OiBSZXN1bcOjbyBPbmxpbmUKCiAg4oCiIENOUEo6IFtBIFBSRUVOQ0hFUl0KCiAg4oCiIEVuZGVyZcOnbyBkYSBzZWRlOiBb' ||
+    'QSBQUkVFTkNIRVJdCgogIOKAoiBSZXByZXNlbnRhbnRlIGxlZ2FsOiBbQSBQUkVFTkNIRVJdCgogIOKAoiBFLW1haWwgcGFy' ||
+    'YSBhc3N1bnRvcyBkZSBwcml2YWNpZGFkZTogW0EgUFJFRU5DSEVSXQoKICAyLjIuIFBhcmEgZmlucyBkZXN0YSBQb2zDrXRp' ||
+    'Y2EsIGEgcGVzc29hIGp1csOtZGljYSByZXNwb25zw6F2ZWwgc2Vyw6EgZGVub21pbmFkYSBDT05UUk9MQURPUkEgb3UKICBS' ||
+    'RVNVTcODTyBPTkxJTkUuCgogIDIuMy4gTyBjb250YXRvIHBhcmEgYXNzdW50b3MgcmVsYWNpb25hZG9zIMOgIHByaXZhY2lk' ||
+    'YWRlIGUgw6AgcHJvdGXDp8OjbyBkZSBkYWRvcyBwb2RlcsOhIHNlciByZWFsaXphZG8KICBwZWxvIGVuZGVyZcOnbyBlbGV0' ||
+    'csO0bmljbyBpbmRpY2FkbyBuZXN0YSBzZcOnw6NvIG91IHBvciBjYW5hbCBlc3BlY8OtZmljbyBkaXNwb25pYmlsaXphZG8g' ||
+    'bmEgcGxhdGFmb3JtYS4KCgogIDMuIERBRE9TIFBFU1NPQUlTIFRSQVRBRE9TCgogIDMuMS4gQ29uZm9ybWUgYSB1dGlsaXph' ||
+    'w6fDo28gZG9zIHNlcnZpw6dvcywgbyBSZXN1bcOjbyBPbmxpbmUgcG9kZXLDoSB0cmF0YXIgYXMgc2VndWludGVzIGNhdGVn' ||
+    'b3JpYXMgZGUKICBkYWRvczoKCiAgSSDigJQgRGFkb3MgY2FkYXN0cmFpcyBlIGRlIGlkZW50aWZpY2HDp8OjbzoKCiAgYSkg' ||
+    'Tm9tZTsKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQw6FnaW5hIDEKDAog' ||
+    'IGIpIEVuZGVyZcOnbyBkZSBlLW1haWw7CgogIGMpIElkZW50aWZpY2Fkb3IgaW50ZXJubyBkbyB1c3XDoXJpbzsKCiAgZCkg' ||
+    'T3V0cmFzIGluZm9ybWHDp8O1ZXMgY2FkYXN0cmFpcyBlZmV0aXZhbWVudGUgc29saWNpdGFkYXMgcGVsYSBwbGF0YWZvcm1h' ||
+    'LgoKICBJSSDigJQgRGFkb3MgZGUgYXV0ZW50aWNhw6fDo28gZSBzZWd1cmFuw6dhOgoKICBhKSBJbmZvcm1hw6fDtWVzIG5l' ||
+    'Y2Vzc8OhcmlhcyDDoCBhdXRlbnRpY2HDp8OjbzsKCiAgYikgU2VuaGFzIGFybWF6ZW5hZGFzIHBvciBtZWNhbmlzbW9zIGRl' ||
+    'IHByb3Rlw6fDo28gY3JpcHRvZ3LDoWZpY2EgYXByb3ByaWFkb3MsIHNlbSBuZWNlc3NpZGFkZSBkZQogIGNvbnNlcnZhw6fD' ||
+    'o28gZW0gdGV4dG8gc2ltcGxlczsKCiAgYykgUmVnaXN0cm9zIGRlIGFjZXNzbyBlIGV2ZW50b3MgcmVsZXZhbnRlcyBkZSBz' ||
+    'ZWd1cmFuw6dhLCBxdWFuZG8gY29sZXRhZG9zLgoKICBJSUkg4oCUIERhZG9zIGNvbnRyYXR1YWlzIGUgZmluYW5jZWlyb3M6' ||
+    'CgogIGEpIElkZW50aWZpY2HDp8OjbyBkb3MgY3Vyc29zIGFkcXVpcmlkb3M7CgogIGIpIFByYXpvIGUgdmFsb3IgZGEgY29u' ||
+    'dHJhdGHDp8OjbzsKCiAgYykgU2l0dWHDp8OjbyBkbyBwYWdhbWVudG87CgogIGQpIElkZW50aWZpY2Fkb3JlcyBkZSB0cmFu' ||
+    'c2HDp8O1ZXM7CgogIGUpIFJlZ2lzdHJvcyBkZSBjYW5jZWxhbWVudG9zLCByZWVtYm9sc29zIGUgY29udGVzdGHDp8O1ZXM7' ||
+    'CgogIGYpIEluZm9ybWHDp8O1ZXMgbmVjZXNzw6FyaWFzIGFvIGN1bXByaW1lbnRvIGRlIG9icmlnYcOnw7VlcyBmaXNjYWlz' ||
+    'IGUgY29udHJhdHVhaXMuCgogIElWIOKAlCBEYWRvcyBkZSB1dGlsaXphw6fDo28gZSBhcHJlbmRpemFnZW06CgogIGEpIEN1' ||
+    'cnNvcywgZGlzY2lwbGluYXMgZSBhc3N1bnRvcyBhY2Vzc2Fkb3M7CgogIGIpIFJlc3Bvc3RhcyBmb3JuZWNpZGFzIGVtIHF1' ||
+    'ZXN0w7VlcyBlIGF0aXZpZGFkZXM7CgogIGMpIFJlc3VsdGFkb3MgZGUgYmF0ZXJpYXMgZGUgcXVlc3TDtWVzOwoKICBkKSBJ' ||
+    'bmZvcm1hw6fDtWVzIGRlIGRlc2VtcGVuaG87CgogIGUpIFJldmlzw7VlcyBwcm9ncmFtYWRhczsKCiAgZikgTWFyY2HDp8O1' ||
+    'ZXMgZGUgZGlmaWN1bGRhZGUsIGNvbnRlw7pkb3MgcGFyYSByZXZpc8OjbyBlIGRlbWFpcyByZWdpc3Ryb3MgZGUgZXN0dWRv' ||
+    'IGRpc3BvbmliaWxpemFkb3MgcGVsbwogIHNpc3RlbWEuCgogIFYg4oCUIERhZG9zIGRlIGF0ZW5kaW1lbnRvOgoKICBhKSBT' ||
+    'b2xpY2l0YcOnw7VlcyBlbmNhbWluaGFkYXMgcGVsbyB1c3XDoXJpbzsKCiAgYikgTWVuc2FnZW5zIGUgcmVzcG9zdGFzIHRy' ||
+    'b2NhZGFzIGNvbSBhIHBsYXRhZm9ybWE7CgogIGMpIEluZm9ybWHDp8O1ZXMgbmVjZXNzw6FyaWFzIMOgIGFuw6FsaXNlIGUg' ||
+    'w6Agc29sdcOnw6NvIGRhcyBzb2xpY2l0YcOnw7Vlcy4KCiAgVkkg4oCUIERhZG9zIHTDqWNuaWNvczoKCiAgYSkgRW5kZXJl' ||
+    'w6dvIElQLCBxdWFuZG8gcmVnaXN0cmFkbzsKCiAgYikgSW5mb3JtYcOnw7VlcyB0w6ljbmljYXMgc29icmUgbmF2ZWdhZG9y' ||
+    'IGUgZGlzcG9zaXRpdm8sIHF1YW5kbyBjb2xldGFkYXM7CgogIGMpIFJlZ2lzdHJvcyBuZWNlc3PDoXJpb3MgYW8gZnVuY2lv' ||
+    'bmFtZW50bywgw6AgbWFudXRlbsOnw6NvIGUgw6Agc2VndXJhbsOnYSBkb3Mgc2VydmnDp29zLgoKCgoKCgoKClJFU1VNw4NP' ||
+    'IE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFDDoWdpbmEgMgoMCiAgMy4yLiBBIGNv' ||
+    'bGV0YSBkZXZlcsOhIGxpbWl0YXItc2UgYW9zIGRhZG9zIGFkZXF1YWRvcywgcGVydGluZW50ZXMgZSBuZWNlc3PDoXJpb3Mg' ||
+    'w6BzIGZpbmFsaWRhZGVzCiAgaW5mb3JtYWRhcy4KCiAgMy4zLiBBIHBsYXRhZm9ybWEgbsOjbyBzb2xpY2l0YSwgY29tbyBy' ||
+    'ZWdyYSBnZXJhbCwgZGFkb3MgcGVzc29haXMgc2Vuc8OtdmVpcyBwYXJhIGEgcHJlc3Rhw6fDo28gZG9zIGN1cnNvcy4KICBD' ||
+    'YXNvIGFsZ3VtYSBmdW5jaW9uYWxpZGFkZSBmdXR1cmEgZXhpamEgZXNzZSB0cmF0YW1lbnRvLCBzZXLDo28gb2JzZXJ2YWRh' ||
+    'cyBhcyBjb25kacOnw7VlcyBsZWdhaXMKICBlc3BlY8OtZmljYXMuCgogIDMuNC4gQSByZWxhw6fDo28gZGVmaW5pdGl2YSBk' ||
+    'b3MgZGFkb3MgY29sZXRhZG9zIGRldmVyw6EgY29ycmVzcG9uZGVyIGFvcyBjYW1wb3MsIHJlZ2lzdHJvcyBlIGludGVncmHD' ||
+    'p8O1ZXMKICBlZmV0aXZhbWVudGUgdXRpbGl6YWRvcyBwZWxhIHBsYXRhZm9ybWEuCgoKICA0LiBGSU5BTElEQURFUyBETyBU' ||
+    'UkFUQU1FTlRPCgogIDQuMS4gT3MgZGFkb3MgcGVzc29haXMgcG9kZXLDo28gc2VyIHRyYXRhZG9zIHBhcmEgYXMgc2VndWlu' ||
+    'dGVzIGZpbmFsaWRhZGVzOgoKICBhKSBSZWFsaXphciBvIGNhZGFzdHJvIGUgYSBpZGVudGlmaWNhw6fDo28gZG9zIHVzdcOh' ||
+    'cmlvczsKCiAgYikgUGVybWl0aXIgYSBhdXRlbnRpY2HDp8OjbyBlIG8gYWNlc3NvIMOgIHBsYXRhZm9ybWE7CgogIGMpIFBy' ||
+    'b2Nlc3NhciBjb250cmF0YcOnw7VlcyBlIHBhZ2FtZW50b3M7CgogIGQpIExpYmVyYXIgZSBhZG1pbmlzdHJhciBvIGFjZXNz' ||
+    'byBhb3MgY3Vyc29zOwoKICBlKSBSZWdpc3RyYXIgYXRpdmlkYWRlcyBkZSBlc3R1ZG8gZSBhcHJlc2VudGFyIHJlc3VsdGFk' ||
+    'b3M7CgogIGYpIERpc3BvbmliaWxpemFyIHJldmlzw7VlcyBwcm9ncmFtYWRhcyBlIGZlcnJhbWVudGFzIGRlIGFjb21wYW5o' ||
+    'YW1lbnRvIGRvIGRlc2VtcGVuaG87CgogIGcpIFJlc3BvbmRlciBzb2xpY2l0YcOnw7VlcyBkZSBhdGVuZGltZW50bzsKCiAg' ||
+    'aCkgUHJvY2Vzc2FyIHBlZGlkb3MgZGUgY2FuY2VsYW1lbnRvIGUgcmVlbWJvbHNvOwoKICBpKSBBbmFsaXNhciBjb250ZXN0' ||
+    'YcOnw7VlcyBlIHByZXZlbmlyIGZyYXVkZXM7CgogIGopIFByb3RlZ2VyIGEgc2VndXJhbsOnYSBlIGEgaW50ZWdyaWRhZGUg' ||
+    'ZG9zIHNlcnZpw6dvczsKCiAgaykgQ3VtcHJpciBvYnJpZ2HDp8O1ZXMgbGVnYWlzLCBmaXNjYWlzIGUgcmVndWxhdMOzcmlh' ||
+    'czsKCiAgbCkgRXhlcmNlciByZWd1bGFybWVudGUgZGlyZWl0b3MgZW0gcHJvY2Vzc29zIGFkbWluaXN0cmF0aXZvcywganVk' ||
+    'aWNpYWlzIG91IGFyYml0cmFpczsKCiAgbSkgQ29ycmlnaXIgZmFsaGFzIGUgYXByaW1vcmFyIG8gZnVuY2lvbmFtZW50byB0' ||
+    'w6ljbmljbyBkYSBwbGF0YWZvcm1hLgoKICA0LjIuIE9zIGRhZG9zIHBlc3NvYWlzIG7Do28gc2Vyw6NvIHV0aWxpemFkb3Mg' ||
+    'cGFyYSBmaW5hbGlkYWRlcyBpbmNvbXBhdMOtdmVpcyBjb20gYXF1ZWxhcyBsZWdpdGltYW1lbnRlCiAgaW5mb3JtYWRhcyBh' ||
+    'byB0aXR1bGFyLgoKCiAgNS4gQkFTRVMgTEVHQUlTIFBBUkEgTyBUUkFUQU1FTlRPCgogIDUuMS4gTyB0cmF0YW1lbnRvIGRl' ||
+    'IGRhZG9zIHBlc3NvYWlzIHNlcsOhIGZ1bmRhbWVudGFkbyBuYXMgaGlww7N0ZXNlcyBwcmV2aXN0YXMgbmEgTEdQRCwgY29u' ||
+    'Zm9ybWUgYQogIG5hdHVyZXphIGRlIGNhZGEgb3BlcmHDp8Ojby4KCiAgNS4yLiBFbnRyZSBhcyBiYXNlcyBsZWdhaXMgYXBs' ||
+    'aWPDoXZlaXMsIHBvZGVyw6NvIGVzdGFyOgoKICBJIOKAlCBFeGVjdcOnw6NvIGRlIGNvbnRyYXRvIGUgcHJvY2VkaW1lbnRv' ||
+    'cyBwcmVsaW1pbmFyZXM6IHBhcmEgY2FkYXN0cm8sIGNvbnRyYXRhw6fDo28sIGxpYmVyYcOnw6NvIGRlCiAgYWNlc3NvIGUg' ||
+    'ZGlzcG9uaWJpbGl6YcOnw6NvIGRvcyByZWN1cnNvcyBlZHVjYWNpb25haXMgc29saWNpdGFkb3MgcGVsbyB1c3XDoXJpby4K' ||
+    'CiAgSUkg4oCUIEN1bXByaW1lbnRvIGRlIG9icmlnYcOnw6NvIGxlZ2FsIG91IHJlZ3VsYXTDs3JpYTogcGFyYSBjb25zZXJ2' ||
+    'YcOnw6NvIGRlIGRvY3VtZW50b3MgZSByZWdpc3Ryb3MKICBleGlnaWRvcyBwZWxhIGxlZ2lzbGHDp8Ojby4KCiAgSUlJIOKA' ||
+    'lCBFeGVyY8OtY2lvIHJlZ3VsYXIgZGUgZGlyZWl0b3M6IHBhcmEgY29tcHJvdmHDp8OjbyBkZSBjb250cmF0YcOnw7Vlcywg' ||
+    'ZGVmZXNhIGVtIHJlY2xhbWHDp8O1ZXMsCiAgY29udGVzdGHDp8O1ZXMgZSBwcm9jZXNzb3MuCgoKCgpSRVNVTcODTyBPTkxJ' ||
+    'TkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAgTWludXRhIHBhcmEgcmV2aXPDo28gICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQw6FnaW5hIDMKDAogIElWIOKAlCBMZWfDrXRp' ||
+    'bW8gaW50ZXJlc3NlOiBxdWFuZG8ganVyaWRpY2FtZW50ZSBjYWLDrXZlbCwgcGFyYSBhdGl2aWRhZGVzIGNvbW8gcHJldmVu' ||
+    'w6fDo28gZGUgYWJ1c29zIGUKICBwcm90ZcOnw6NvIGRvcyBzZXJ2acOnb3MsIG9ic2VydmFkb3Mgb3MgZGlyZWl0b3MgZSBh' ||
+    'cyBsZWfDrXRpbWFzIGV4cGVjdGF0aXZhcyBkb3MgdGl0dWxhcmVzLgoKICBWIOKAlCBDb25zZW50aW1lbnRvOiBxdWFuZG8g' ||
+    'bmVjZXNzw6FyaW8gcGFyYSBmaW5hbGlkYWRlcyBlc3BlY8OtZmljYXMgcXVlIGRlcGVuZGFtIGRlc3NhCiAgbWFuaWZlc3Rh' ||
+    'w6fDo28uCgogIDUuMy4gQSBtYXJjYcOnw6NvIGRlIGNpw6puY2lhIGRvcyBUZXJtb3MgZGUgQ29udHJhdGHDp8OjbyBlIGRl' ||
+    'c3RhIFBvbMOtdGljYSBuw6NvIHJlcHJlc2VudGEgY29uc2VudGltZW50bwogIGdlbsOpcmljbyBwYXJhIHF1YWxxdWVyIHRy' ||
+    'YXRhbWVudG8gZGUgZGFkb3MgcGVzc29haXMuCgogIDUuNC4gUXVhbmRvIHVtYSBmaW5hbGlkYWRlIGRlcGVuZGVyIGRlIGNv' ||
+    'bnNlbnRpbWVudG8sIGEgcGxhdGFmb3JtYSBkZXZlcsOhIHNvbGljaXRhciBtYW5pZmVzdGHDp8OjbwogIGVzcGVjw61maWNh' ||
+    'LCBsaXZyZSwgaW5mb3JtYWRhIGUgaW5lcXXDrXZvY2EsIG9ic2VydmFkYXMgYXMgZXhpZ8OqbmNpYXMgbGVnYWlzLgoKCiAg' ||
+    'Ni4gREFET1MgREUgRVNUVURPIEUgREVTRU1QRU5ITwoKICA2LjEuIFBhcmEgb2ZlcmVjZXIgZnVuY2lvbmFsaWRhZGVzIGVk' ||
+    'dWNhY2lvbmFpcywgbyBSZXN1bcOjbyBPbmxpbmUgcG9kZXLDoSByZWdpc3RyYXIgcmVzcG9zdGFzLCBhY2VydG9zLAogIGVy' ||
+    'cm9zLCBhdGl2aWRhZGVzIGNvbmNsdcOtZGFzLCBtYXJjYcOnw7VlcyBkZSBkaWZpY3VsZGFkZSBlIHJlc3VsdGFkb3MgZGUg' ||
+    'ZGVzZW1wZW5oby4KCiAgNi4yLiBFc3NlcyByZWdpc3Ryb3Mgc2Vyw6NvIHV0aWxpemFkb3MgcGFyYSBwZXJtaXRpciBxdWUg' ||
+    'byBhbHVubyBhY29tcGFuaGUgc2V1cyBlc3R1ZG9zIGUgdXRpbGl6ZSBhcwogIGZlcnJhbWVudGFzIGRpc3BvbmliaWxpemFk' ||
+    'YXMgbm8gY3Vyc28gY29udHJhdGFkby4KCiAgNi4zLiBPcyBkYWRvcyBkZSBkZXNlbXBlbmhvIHNlcsOjbyBhc3NvY2lhZG9z' ||
+    'IMOgIGNvbnRhIGUgYW8gY29udGV4dG8gZGUgZXN0dWRvIGNvcnJlc3BvbmRlbnRlLAogIHJlc3BlaXRhZGFzIGFzIHJlZ3Jh' ||
+    'cyBkZSBhY2Vzc28gZSBzZWdyZWdhw6fDo28gZGUgaW5mb3JtYcOnw7VlcyBkYSBwbGF0YWZvcm1hLgoKICA2LjQuIE8gUmVz' ||
+    'dW3Do28gT25saW5lIG7Do28gY29tZXJjaWFsaXphcsOhIGluZGl2aWR1YWxtZW50ZSBvcyBoaXN0w7NyaWNvcyBkZSBlc3R1' ||
+    'ZG8gZG9zIGFsdW5vcy4KCiAgNi41LiBPIGV2ZW50dWFsIHVzbyBkZSBpbmZvcm1hw6fDtWVzIGVzdGF0w61zdGljYXMgb3Ug' ||
+    'YWdyZWdhZGFzIHBhcmEgYXZhbGlhw6fDo28gZSBhcHJpbW9yYW1lbnRvIGRvcwogIHNlcnZpw6dvcyBkZXZlcsOhIG9ic2Vy' ||
+    'dmFyIGFzIGV4aWfDqm5jaWFzIGxlZ2FpcyBkZSBwcm90ZcOnw6NvIGRlIGRhZG9zIHBlc3NvYWlzLgoKCiAgNy4gUFJPQ0VT' ||
+    'U0FNRU5UTyBERSBQQUdBTUVOVE9TCgogIDcuMS4gTyBSZXN1bcOjbyBPbmxpbmUgcG9kZXLDoSB1dGlsaXphciBwcmVzdGFk' ||
+    'b3JlcyBlc3BlY2lhbGl6YWRvcyBwYXJhIHByb2Nlc3NhbWVudG8gZGUgcGFnYW1lbnRvcywKICBpbmNsdWluZG8gbyBNZXJj' ||
+    'YWRvIFBhZ28uCgogIDcuMi4gRHVyYW50ZSBhIGNvbnRyYXRhw6fDo28sIGRldGVybWluYWRhcyBpbmZvcm1hw6fDtWVzIG5l' ||
+    'Y2Vzc8OhcmlhcyDDoCBvcGVyYcOnw6NvIHBvZGVyw6NvIHNlcgogIGVuY2FtaW5oYWRhcyBhbyBwcmVzdGFkb3IgZGUgcGFn' ||
+    'YW1lbnRvLgoKICA3LjMuIE8gcHJlc3RhZG9yIHBvZGVyw6EgdHJhdGFyIGluZm9ybWHDp8O1ZXMgcmVsYWNpb25hZGFzIMOg' ||
+    'IHRyYW5zYcOnw6NvIGNvbmZvcm1lIHN1YXMgcHLDs3ByaWFzCiAgcmVzcG9uc2FiaWxpZGFkZXMsIG9icmlnYcOnw7VlcyBs' ||
+    'ZWdhaXMgZSBwb2zDrXRpY2FzIGRlIHByaXZhY2lkYWRlLgoKICA3LjQuIE8gUmVzdW3Do28gT25saW5lIHV0aWxpemFyw6Eg' ||
+    'YXMgaW5mb3JtYcOnw7VlcyByZWNlYmlkYXMgc29icmUgbyBwYWdhbWVudG8gcGFyYSBpZGVudGlmaWNhciBhCiAgY29udHJh' ||
+    'dGHDp8OjbywgY29uZmlybWFyIHN1YSBzaXR1YcOnw6NvIGUgYWRtaW5pc3RyYXIgbyBhY2Vzc28gYW8gY3Vyc28uCgogIDcu' ||
+    'NS4gT3MgZGFkb3MgY29tcGxldG9zIGRlIGNhcnTDo28gZGUgY3LDqWRpdG8gbsOjbyBkZXZlcsOjbyBzZXIgYXJtYXplbmFk' ||
+    'b3MgcGVsbyBSZXN1bcOjbyBPbmxpbmUKICBxdWFuZG8gbyBwcm9jZXNzYW1lbnRvIGZvciByZWFsaXphZG8gZGlyZXRhbWVu' ||
+    'dGUgcGVsbyBwcmVzdGFkb3IgZXNwZWNpYWxpemFkby4KCiAgNy42LiBPIHVzdcOhcmlvIHBvZGVyw6EgY29uc3VsdGFyIGEg' ||
+    'cG9sw610aWNhIGRlIHByaXZhY2lkYWRlIGRvIHByZXN0YWRvciBkZSBwYWdhbWVudG8gcGFyYSBjb25oZWNlciBvcwogIHRy' ||
+    'YXRhbWVudG9zIHJlYWxpemFkb3MgZGlyZXRhbWVudGUgcG9yIGVsZS4KCgogIDguIENPTVBBUlRJTEhBTUVOVE8gQ09NIFBS' ||
+    'RVNUQURPUkVTIERFIFNFUlZJw4dPUwoKICA4LjEuIE8gUmVzdW3Do28gT25saW5lIHBvZGVyw6EgY29tcGFydGlsaGFyIGRh' ||
+    'ZG9zIHBlc3NvYWlzIG5lY2Vzc8OhcmlvcyDDoCBvcGVyYcOnw6NvIGRhIHBsYXRhZm9ybWEgY29tCiAgcHJlc3RhZG9yZXMg' ||
+    'ZGUgc2VydmnDp29zLCBpbmNsdWluZG86CgogIGEpIFByb2Nlc3NhbWVudG8gZGUgcGFnYW1lbnRvczsKCgoKCgoKUkVTVU3D' ||
+    'g08gT05MSU5FICDigKIgIFZlcnPDo28gMS4wICDigKIgIE1pbnV0YSBwYXJhIHJldmlzw6NvICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFDDoWdpbmEgNAoMCiAgYikgSG9zcGVk' ||
+    'YWdlbSBlIGluZnJhZXN0cnV0dXJhIHRlY25vbMOzZ2ljYTsKCiAgYykgQXJtYXplbmFtZW50byBlIGdlcmVuY2lhbWVudG8g' ||
+    'ZGUgYmFuY29zIGRlIGRhZG9zOwoKICBkKSBTZXJ2acOnb3MgZGUgYXV0ZW50aWNhw6fDo28gZSBzZWd1cmFuw6dhOwoKICBl' ||
+    'KSBIb3NwZWRhZ2VtIG91IGRpc3RyaWJ1acOnw6NvIGRlIGNvbnRlw7pkb3MgZWR1Y2FjaW9uYWlzOwoKICBmKSBTZXJ2acOn' ||
+    'b3MgZGUgY29tdW5pY2HDp8OjbyBlIHN1cG9ydGUgdMOpY25pY28uCgogIDguMi4gTyBjb21wYXJ0aWxoYW1lbnRvIGRldmVy' ||
+    'w6Egb2JzZXJ2YXIgYSBuZWNlc3NpZGFkZSwgYSBmaW5hbGlkYWRlIGxlZ8OtdGltYSBlIGFzIG1lZGlkYXMgZGUKICBzZWd1' ||
+    'cmFuw6dhIGFwbGljw6F2ZWlzLgoKICA4LjMuIE8gUmVzdW3Do28gT25saW5lIGJ1c2NhcsOhIHV0aWxpemFyIHByZXN0YWRv' ||
+    'cmVzIHF1ZSBvZmVyZcOnYW0gY29uZGnDp8O1ZXMgYWRlcXVhZGFzIGRlIHByb3Rlw6fDo28gZGUKICBkYWRvcyBwZXNzb2Fp' ||
+    'cywgY29uc2lkZXJhbmRvIGEgbmF0dXJlemEgZG9zIHNlcnZpw6dvcyBjb250cmF0YWRvcy4KCiAgOC40LiBPcyBwcmVzdGFk' ||
+    'b3JlcyBwb2RlcsOjbyBhc3N1bWlyIGRpZmVyZW50ZXMgcGFww6lpcyBwcmV2aXN0b3MgbmEgTEdQRCwgY29uZm9ybWUgc3Vh' ||
+    'cyBhdGl2aWRhZGVzIGUKICByZXNwb25zYWJpbGlkYWRlcyBlc3BlY8OtZmljYXMuCgogIDguNS4gTyBSZXN1bcOjbyBPbmxp' ||
+    'bmUgbsOjbyB2ZW5kZSBiYXNlcyBkZSBkYWRvcyBwZXNzb2FpcyBkZSBhbHVub3MgcGFyYSBmaW5zIGNvbWVyY2lhaXMuCgoK' ||
+    'ICA5LiBUUkFOU0ZFUsOKTkNJQSBJTlRFUk5BQ0lPTkFMIERFIERBRE9TCgogIDkuMS4gRGV0ZXJtaW5hZG9zIHByZXN0YWRv' ||
+    'cmVzIGRlIGluZnJhZXN0cnV0dXJhLCBob3NwZWRhZ2VtLCBhcm1hemVuYW1lbnRvIG91IHRlY25vbG9naWEgcG9kZXLDo28K' ||
+    'ICByZWFsaXphciBvcGVyYcOnw7VlcyBkZSB0cmF0YW1lbnRvIGZvcmEgZG8gdGVycml0w7NyaW8gYnJhc2lsZWlyby4KCiAg' ||
+    'OS4yLiBRdWFuZG8gaG91dmVyIHRyYW5zZmVyw6puY2lhIGludGVybmFjaW9uYWwgZGUgZGFkb3MgcGVzc29haXMsIHNlcsOj' ||
+    'byBvYnNlcnZhZGFzIGFzIGhpcMOzdGVzZXMKICBsZWdhaXMgZSBvcyBtZWNhbmlzbW9zIGRlIHByb3Rlw6fDo28gZXhpZ2lk' ||
+    'b3MgcGVsYSBMR1BEIGUgcGVsYSByZWd1bGFtZW50YcOnw6NvIGFwbGljw6F2ZWwuCgogIDkuMy4gSW5mb3JtYcOnw7VlcyBh' ||
+    'ZGljaW9uYWlzIHNvYnJlIHRyYW5zZmVyw6puY2lhcyBpbnRlcm5hY2lvbmFpcyBwb2RlcsOjbyBzZXIgc29saWNpdGFkYXMg' ||
+    'cGVsbyB0aXR1bGFyIHBvcgogIG1laW8gZG8gY2FuYWwgZGUgcHJpdmFjaWRhZGUuCgoKICAxMC4gQVJNQVpFTkFNRU5UTyBF' ||
+    'IFNFR1VSQU7Dh0EKCiAgMTAuMS4gTyBSZXN1bcOjbyBPbmxpbmUgYWRvdGFyw6EgbWVkaWRhcyB0w6ljbmljYXMgZSBhZG1p' ||
+    'bmlzdHJhdGl2YXMgYWRlcXVhZGFzIGFvcyByaXNjb3MgZG8KICB0cmF0YW1lbnRvLCB2aXNhbmRvIHByb3RlZ2VyIG9zIGRh' ||
+    'ZG9zIHBlc3NvYWlzIGNvbnRyYSBhY2Vzc29zIG7Do28gYXV0b3JpemFkb3MgZSBzaXR1YcOnw7VlcyBhY2lkZW50YWlzCiAg' ||
+    'b3UgaWzDrWNpdGFzIGRlIGRlc3RydWnDp8OjbywgcGVyZGEsIGFsdGVyYcOnw6NvLCBjb211bmljYcOnw6NvIG91IGRpdnVs' ||
+    'Z2HDp8Ojby4KCiAgMTAuMi4gQXMgbWVkaWRhcyBwb2RlcsOjbyBjb21wcmVlbmRlciwgY29uZm9ybWUgYSBhcnF1aXRldHVy' ||
+    'YSBlIGFzIGZ1bmNpb25hbGlkYWRlcyBlZmV0aXZhbWVudGUKICB1dGlsaXphZGFzOgoKICBhKSBDb250cm9sZSBkZSBhY2Vz' ||
+    'c28gcG9yIGF1dGVudGljYcOnw6NvOwoKICBiKSBQcm90ZcOnw6NvIGRhcyBjcmVkZW5jaWFpcyBkZSB1c3XDoXJpb3M7Cgog' ||
+    'IGMpIFVzbyBkZSBjb25leMO1ZXMgc2VndXJhczsKCiAgZCkgUmVzdHJpw6fDo28gZGUgYWNlc3NvIGFkbWluaXN0cmF0aXZv' ||
+    'OwoKICBlKSBTZWdyZWdhw6fDo28gZGUgaW5mb3JtYcOnw7VlcyBwb3IgdXN1w6FyaW8gZSBjb250cmF0YcOnw6NvOwoKICBm' ||
+    'KSBNb25pdG9yYW1lbnRvIGRlIGV2ZW50b3MgcmVsZXZhbnRlcyBkZSBzZWd1cmFuw6dhOwoKICBnKSBBdHVhbGl6YcOnw7Vl' ||
+    'cyBlIGNvcnJlw6fDtWVzIHTDqWNuaWNhczsKCiAgaCkgTWVjYW5pc21vcyBkZSByZWN1cGVyYcOnw6NvIGUgcHJvdGXDp8Oj' ||
+    'byBkYSBpbmZyYWVzdHJ1dHVyYS4KCgoKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51' ||
+    'dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgUMOhZ2luYSA1CgwKICAxMC4zLiBOZW5odW0gYW1iaWVudGUgdGVjbm9sw7NnaWNvIGVzdMOhIGludGVp' ||
+    'cmFtZW50ZSBsaXZyZSBkZSByaXNjb3MuIEEgQ09OVFJPTEFET1JBCiAgY29tcHJvbWV0ZS1zZSBhIGFkb3RhciBtZWRpZGFz' ||
+    'IGNvbXBhdMOtdmVpcyBjb20gc3VhcyBvYnJpZ2HDp8O1ZXMgbGVnYWlzIGUgYSBhdHVhciBkZSBmb3JtYSBkaWxpZ2VudGUK' ||
+    'ICBkaWFudGUgZGUgaW5jaWRlbnRlcy4KCiAgMTAuNC4gQXMgbWVkaWRhcyBkZXNjcml0YXMgbmVzdGEgc2XDp8OjbyBkZXZl' ||
+    'csOjbyBjb3JyZXNwb25kZXIgYW9zIGNvbnRyb2xlcyBlZmV0aXZhbWVudGUKICBpbXBsZW1lbnRhZG9zIGUgbWFudGlkb3Mg' ||
+    'cGVsYSBwbGF0YWZvcm1hLgoKICAxMS4gSU5DSURFTlRFUyBERSBTRUdVUkFOw4dBCgogIDExLjEuIENhc28gb2NvcnJhIGlu' ||
+    'Y2lkZW50ZSBkZSBzZWd1cmFuw6dhIGVudm9sdmVuZG8gZGFkb3MgcGVzc29haXMsIG8gUmVzdW3Do28gT25saW5lIHJlYWxp' ||
+    'emFyw6EgYQogIGF2YWxpYcOnw6NvIG5lY2Vzc8OhcmlhIHBhcmEgaWRlbnRpZmljYXIgc3VhIG5hdHVyZXphLCBleHRlbnPD' ||
+    'o28gZSBwb3Nzw612ZWlzIHJpc2NvcyBhb3MgdGl0dWxhcmVzLgoKICAxMS4yLiBRdWFuZG8gbyBpbmNpZGVudGUgcHVkZXIg' ||
+    'YWNhcnJldGFyIHJpc2NvIG91IGRhbm8gcmVsZXZhbnRlIGFvcyB0aXR1bGFyZXMsIHNlcsOjbyBhZG90YWRhcyBhcwogIG1l' ||
+    'ZGlkYXMgZGUgY29tdW5pY2HDp8OjbyDDoCBBdXRvcmlkYWRlIE5hY2lvbmFsIGRlIFByb3Rlw6fDo28gZGUgRGFkb3MgKEFO' ||
+    'UEQpIGUgYW9zIHRpdHVsYXJlcyBhZmV0YWRvcywKICBjb25mb3JtZSBvcyByZXF1aXNpdG9zIGUgcHJhem9zIHJlZ3VsYW1l' ||
+    'bnRhcmVzIGFwbGljw6F2ZWlzLgoKICAxMS4zLiBBIENPTlRSQVRBREEgYWRvdGFyw6EgcHJvdmlkw6puY2lhcyByYXpvw6F2' ||
+    'ZWlzIHBhcmEgY29udGVyIG8gaW5jaWRlbnRlLCBtaXRpZ2FyIHNldXMgZWZlaXRvcyBlCiAgcHJldmVuaXIgbm92YXMgb2Nv' ||
+    'cnLDqm5jaWFzLgoKICAxMS40LiBPcyByZWdpc3Ryb3MgZSBwcm9jZWRpbWVudG9zIHJlbGF0aXZvcyBhb3MgaW5jaWRlbnRl' ||
+    'cyBvYnNlcnZhcsOjbyBhcyBleGlnw6puY2lhcyBsZWdhaXMgZQogIHJlZ3VsYW1lbnRhcmVzIHBlcnRpbmVudGVzLgoKCiAg' ||
+    'MTIuIFBSQVpPIERFIENPTlNFUlZBw4fDg08gRE9TIERBRE9TCgogIDEyLjEuIE9zIGRhZG9zIHBlc3NvYWlzIHNlcsOjbyBj' ||
+    'b25zZXJ2YWRvcyBwZWxvIHBlcsOtb2RvIG5lY2Vzc8OhcmlvIGFvIGN1bXByaW1lbnRvIGRhcyBmaW5hbGlkYWRlcwogIHBh' ||
+    'cmEgYXMgcXVhaXMgZm9yYW0gdHJhdGFkb3MsIG9ic2VydmFkYXMgYXMgb2JyaWdhw6fDtWVzIGxlZ2FpcyBlIGFzIGhpcMOz' ||
+    'dGVzZXMgZGUgY29uc2VydmHDp8OjbwogIGF1dG9yaXphZGFzIHBlbGEgTEdQRC4KCiAgMTIuMi4gT3MgZGFkb3MgY29udHJh' ||
+    'dHVhaXMgZSBmaW5hbmNlaXJvcyBwb2RlcsOjbyBzZXIgbWFudGlkb3MgZHVyYW50ZSBvcyBwcmF6b3MgbGVnYWxtZW50ZSBl' ||
+    'eGlnaWRvcwogIG91IG5lY2Vzc8OhcmlvcyBhbyBleGVyY8OtY2lvIHJlZ3VsYXIgZGUgZGlyZWl0b3MuCgogIDEyLjMuIE9z' ||
+    'IHJlZ2lzdHJvcyBkZSBhY2VpdGUgZG9zIFRlcm1vcyBwb2RlcsOjbyBzZXIgY29uc2VydmFkb3MgcGFyYSBjb21wcm92YcOn' ||
+    'w6NvIGRhcyBjb250cmF0YcOnw7VlcwogIGUgY3VtcHJpbWVudG8gZGUgb2JyaWdhw6fDtWVzIGxlZ2Fpcy4KCiAgMTIuNC4g' ||
+    'T3MgZGFkb3MgZGUgZXN0dWRvIGUgZGVzZW1wZW5obyBzZXLDo28gY29uc2VydmFkb3MgY29uZm9ybWUgYSBmaW5hbGlkYWRl' ||
+    'IGRhcyBmdW5jaW9uYWxpZGFkZXMKICBkaXNwb25pYmlsaXphZGFzLCBhcyBjb25kacOnw7VlcyBjb250cmF0dWFpcyBlIGFz' ||
+    'IHBvbMOtdGljYXMgZGUgcmV0ZW7Dp8OjbyBhZG90YWRhcyBwZWxhIHBsYXRhZm9ybWEuCgogIDEyLjUuIEVuY2VycmFkYSBh' ||
+    'IGZpbmFsaWRhZGUgZSBpbmV4aXN0aW5kbyBmdW5kYW1lbnRvIGxlZ2FsIHBhcmEgY29uc2VydmHDp8Ojbywgb3MgZGFkb3Mg' ||
+    'c2Vyw6NvCiAgZWxpbWluYWRvcyBvdSBhbm9uaW1pemFkb3MsIGNvbmZvcm1lIG8gY2Fzby4KCiAgMTIuNi4gT3MgcGVyw61v' ||
+    'ZG9zIGVzcGVjw61maWNvcyBkZSByZXRlbsOnw6NvIGRldmVyw6NvIHNlciBkZWZpbmlkb3MgZGUgYWNvcmRvIGNvbSBhcyBj' ||
+    'YXRlZ29yaWFzIGRlIGRhZG9zLAogIGEgbGVnaXNsYcOnw6NvIGUgb3MgcHJvY2VkaW1lbnRvcyBlZmV0aXZhbWVudGUgYWRv' ||
+    'dGFkb3MuCgoKICAxMy4gRElSRUlUT1MgRE9TIFRJVFVMQVJFUwoKICAxMy4xLiBPIHRpdHVsYXIgcG9kZXLDoSBleGVyY2Vy' ||
+    'IG9zIGRpcmVpdG9zIHByZXZpc3RvcyBuYSBMR1BELCBvYnNlcnZhZGFzIGFzIGNvbmRpw6fDtWVzIGxlZ2FpcyBhcGxpY8Oh' ||
+    'dmVpcywKICBpbmNsdWluZG86CgogIGEpIENvbmZpcm1hw6fDo28gZGEgZXhpc3TDqm5jaWEgZGUgdHJhdGFtZW50bzsKCiAg' ||
+    'YikgQWNlc3NvIGFvcyBkYWRvcyBwZXNzb2FpczsKCiAgYykgQ29ycmXDp8OjbyBkZSBkYWRvcyBpbmNvbXBsZXRvcywgaW5l' ||
+    'eGF0b3Mgb3UgZGVzYXR1YWxpemFkb3M7CgoKCgoKCgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAg' ||
+    'TWludXRhIHBhcmEgcmV2aXPDo28gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgIFDDoWdpbmEgNgoMCiAgZCkgQW5vbmltaXphw6fDo28sIGJsb3F1ZWlvIG91IGVsaW1pbmHDp8Oj' ||
+    'byBkZSBkYWRvcyBkZXNuZWNlc3PDoXJpb3MsIGV4Y2Vzc2l2b3Mgb3UgdHJhdGFkb3MgZW0KICBkZXNjb25mb3JtaWRhZGUg' ||
+    'Y29tIGEgbGVnaXNsYcOnw6NvOwoKICBlKSBQb3J0YWJpbGlkYWRlLCBxdWFuZG8gYXBsaWPDoXZlbCBlIGNvbmZvcm1lIHJl' ||
+    'Z3VsYW1lbnRhw6fDo287CgogIGYpIEVsaW1pbmHDp8OjbyBkZSBkYWRvcyB0cmF0YWRvcyBjb20gY29uc2VudGltZW50bywg' ||
+    'cmVzc2FsdmFkYXMgYXMgaGlww7N0ZXNlcyBsZWdhaXMgZGUgY29uc2VydmHDp8OjbzsKCiAgZykgSW5mb3JtYcOnw6NvIHNv' ||
+    'YnJlIGVudGlkYWRlcyBww7pibGljYXMgZSBwcml2YWRhcyBjb20gYXMgcXVhaXMgdGVuaGEgb2NvcnJpZG8gdXNvIGNvbXBh' ||
+    'cnRpbGhhZG8gZGUKICBkYWRvczsKCiAgaCkgSW5mb3JtYcOnw6NvIHNvYnJlIGEgcG9zc2liaWxpZGFkZSBkZSBuw6NvIGZv' ||
+    'cm5lY2VyIGNvbnNlbnRpbWVudG8gZSBzdWFzIGNvbnNlcXXDqm5jaWFzOwoKICBpKSBSZXZvZ2HDp8OjbyBkbyBjb25zZW50' ||
+    'aW1lbnRvLCBxdWFuZG8gZXNzYSBmb3IgYSBiYXNlIGxlZ2FsIHV0aWxpemFkYTsKCiAgaikgT3Bvc2nDp8OjbyBhbyB0cmF0' ||
+    'YW1lbnRvLCBuYXMgaGlww7N0ZXNlcyBwcmV2aXN0YXMgZW0gbGVpOwoKICBrKSBSZXZpc8OjbyBkZSBkZWNpc8O1ZXMgdG9t' ||
+    'YWRhcyB1bmljYW1lbnRlIGNvbSBiYXNlIGVtIHRyYXRhbWVudG8gYXV0b21hdGl6YWRvLCBxdWFuZG8gYXBsaWPDoXZlbC4K' ||
+    'CiAgMTMuMi4gQXMgc29saWNpdGHDp8O1ZXMgcG9kZXLDo28gc2VyIGVuY2FtaW5oYWRhcyBhbyBjYW5hbCBkZSBwcml2YWNp' ||
+    'ZGFkZSBpbmZvcm1hZG8gbmVzdGEgUG9sw610aWNhLgoKICAxMy4zLiBBIENPTlRST0xBRE9SQSBwb2RlcsOhIHNvbGljaXRh' ||
+    'ciBpbmZvcm1hw6fDtWVzIGVzdHJpdGFtZW50ZSBuZWNlc3PDoXJpYXMgcGFyYSB2ZXJpZmljYXIgYQogIGlkZW50aWRhZGUg' ||
+    'ZG8gcmVxdWVyZW50ZSBlIGV2aXRhciBkaXZ1bGdhw6fDo28gaW5kZXZpZGEgZGUgZGFkb3MgcGVzc29haXMuCgogIDEzLjQu' ||
+    'IEFzIHNvbGljaXRhw6fDtWVzIHNlcsOjbyBhdGVuZGlkYXMgbm9zIHByYXpvcyBlIGNvbmRpw6fDtWVzIHByZXZpc3RvcyBu' ||
+    'YSBsZWdpc2xhw6fDo28uCgogIDEzLjUuIFF1YW5kbyBuw6NvIGZvciBwb3Nzw612ZWwgYXRlbmRlciBpbnRlZ3JhbG1lbnRl' ||
+    'IGEgdW1hIHNvbGljaXRhw6fDo28sIGEgQ09OVFJPTEFET1JBIGFwcmVzZW50YXLDoQogIGEganVzdGlmaWNhdGl2YSBwZXJ0' ||
+    'aW5lbnRlLCBvYnNlcnZhZGFzIGFzIGRpc3Bvc2nDp8O1ZXMgbGVnYWlzLgoKCiAgMTQuIEVYQ0xVU8ODTyBEQSBDT05UQSBF' ||
+    'IERPUyBEQURPUwoKICAxNC4xLiBPIHVzdcOhcmlvIHBvZGVyw6Egc29saWNpdGFyIG8gZW5jZXJyYW1lbnRvIGRlIHN1YSBj' ||
+    'b250YSBlIGEgZWxpbWluYcOnw6NvIGRlIGRhZG9zIHBlc3NvYWlzLAogIG9ic2VydmFkYXMgYXMgY29uZGnDp8O1ZXMgbGVn' ||
+    'YWlzIGFwbGljw6F2ZWlzLgoKICAxNC4yLiBPIGVuY2VycmFtZW50byBkYSBjb250YSBuw6NvIGltcGxpY2EgbmVjZXNzYXJp' ||
+    'YW1lbnRlIGEgZWxpbWluYcOnw6NvIGltZWRpYXRhIGRlIHRvZG9zIG9zCiAgcmVnaXN0cm9zLgoKICAxNC4zLiBEZXRlcm1p' ||
+    'bmFkYXMgaW5mb3JtYcOnw7VlcyBwb2RlcsOjbyBzZXIgY29uc2VydmFkYXMgcGFyYSBjdW1wcmltZW50byBkZSBvYnJpZ2HD' ||
+    'p8O1ZXMgbGVnYWlzLAogIGNvbXByb3Zhw6fDo28gZGUgY29udHJhdGHDp8O1ZXMsIHByZXZlbsOnw6NvIGRlIGZyYXVkZXMg' ||
+    'b3UgZXhlcmPDrWNpbyByZWd1bGFyIGRlIGRpcmVpdG9zLgoKICAxNC40LiBRdWFuZG8gY2Fiw612ZWwsIG9zIGRhZG9zIHF1' ||
+    'ZSBuw6NvIHByZWNpc2FyZW0gc2VyIGNvbnNlcnZhZG9zIHNlcsOjbyBlbGltaW5hZG9zIG91IGFub25pbWl6YWRvcwogIGRl' ||
+    'IGZvcm1hIGFkZXF1YWRhLgoKICAxNC41LiBBIHNvbGljaXRhw6fDo28gZGUgZXhjbHVzw6NvIG7Do28gcHJlanVkaWNhcsOh' ||
+    'IGRpcmVpdG9zIGFzc2VndXJhZG9zIGFvIGNvbnN1bWlkb3IgZW0gcmVsYcOnw6NvIMOgcwogIGNvbnRyYXRhw6fDtWVzIHJl' ||
+    'YWxpemFkYXMuCgoKICAxNS4gQ09PS0lFUyBFIFRFQ05PTE9HSUFTIFNFTUVMSEFOVEVTCgogIDE1LjEuIE8gUmVzdW3Do28g' ||
+    'T25saW5lIHBvZGVyw6EgdXRpbGl6YXIgY29va2llcyBvdSB0ZWNub2xvZ2lhcyBzZW1lbGhhbnRlcyBuZWNlc3PDoXJpb3Mg' ||
+    'YW8KICBmdW5jaW9uYW1lbnRvLCDDoCBhdXRlbnRpY2HDp8Ojbywgw6Agc2VndXJhbsOnYSBlIMOgIG1hbnV0ZW7Dp8OjbyBk' ||
+    'YSBzZXNzw6NvIGRvIHVzdcOhcmlvLgoKICAxNS4yLiBFdmVudHVhbCB1dGlsaXphw6fDo28gZGUgdGVjbm9sb2dpYXMgcGFy' ||
+    'YSBhbsOhbGlzZSBkZSBjb21wb3J0YW1lbnRvLCBwdWJsaWNpZGFkZSBvdSBvdXRyYXMKICBmaW5hbGlkYWRlcyBuw6NvIGVz' ||
+    'c2VuY2lhaXMgZGV2ZXLDoSBvYnNlcnZhciBvcyByZXF1aXNpdG9zIGRlIHRyYW5zcGFyw6puY2lhIGUgYXMgYmFzZXMgbGVn' ||
+    'YWlzIGFwbGljw6F2ZWlzLgoKICAxNS4zLiBRdWFuZG8gbmVjZXNzw6FyaW8sIHNlcsOjbyBkaXNwb25pYmlsaXphZG9zIG1l' ||
+    'Y2FuaXNtb3MgYXByb3ByaWFkb3MgcGFyYSBnZXJlbmNpYW1lbnRvIGRhcwogIHByZWZlcsOqbmNpYXMgZG8gdXN1w6FyaW8u' ||
+    'CgoKCgoKCgpSRVNVTcODTyBPTkxJTkUgIOKAoiAgVmVyc8OjbyAxLjAgIOKAoiAgTWludXRhIHBhcmEgcmV2aXPDo28gICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFDDoWdpbmEg' ||
+    'NwoMCiAgMTUuNC4gQXMgY2F0ZWdvcmlhcyBkZSBjb29raWVzIGUgdGVjbm9sb2dpYXMgZWZldGl2YW1lbnRlIHV0aWxpemFk' ||
+    'YXMgZGV2ZXLDo28gc2VyIGlkZW50aWZpY2FkYXMgZQogIGRlc2NyaXRhcyBjb25mb3JtZSBhIGltcGxlbWVudGHDp8OjbyBk' ||
+    'YSBwbGF0YWZvcm1hLgoKCiAgMTYuIENSSUFOw4dBUyBFIEFET0xFU0NFTlRFUwoKICAxNi4xLiBDYXNvIG9zIHNlcnZpw6dv' ||
+    'cyBzZWphbSB1dGlsaXphZG9zIHBvciBjcmlhbsOnYXMgb3UgYWRvbGVzY2VudGVzLCBvIHRyYXRhbWVudG8gZGUgc2V1cyBk' ||
+    'YWRvcwogIHBlc3NvYWlzIG9ic2VydmFyw6EgbyBwcmluY8OtcGlvIGRvIG1lbGhvciBpbnRlcmVzc2UgZSBhcyBkZW1haXMg' ||
+    'ZXhpZ8OqbmNpYXMgbGVnYWlzIGFwbGljw6F2ZWlzLgoKICAxNi4yLiBRdWFuZG8gbmVjZXNzw6FyaW8sIHNlcsOjbyBhZG90' ||
+    'YWRhcyBtZWRpZGFzIGVzcGVjw61maWNhcyBkZSBpbmZvcm1hw6fDo28sIHNlZ3VyYW7Dp2EgZSBwYXJ0aWNpcGHDp8Ojbwog' ||
+    'IGRvcyBwYWlzIG91IHJlc3BvbnPDoXZlaXMgbGVnYWlzLgoKICAxNi4zLiBBIGRpc3BvbmliaWxpemHDp8OjbyBkZSBzZXJ2' ||
+    'acOnb3MgcGFyYSBlc3NlIHDDumJsaWNvIGRldmVyw6Egb2JzZXJ2YXIgYXMgY29uZGnDp8O1ZXMgZGUgY29udHJhdGHDp8Oj' ||
+    'byBlCiAgb3MgbWVjYW5pc21vcyBkZSBwcm90ZcOnw6NvIGVmZXRpdmFtZW50ZSBpbXBsZW1lbnRhZG9zLgoKCiAgMTcuIENP' ||
+    'TVVOSUNBw4fDlUVTIENPTSBPIFVTVcOBUklPCgogIDE3LjEuIE8gUmVzdW3Do28gT25saW5lIHBvZGVyw6EgZW52aWFyIGNv' ||
+    'bXVuaWNhw6fDtWVzIG5lY2Vzc8OhcmlhcyDDoCBwcmVzdGHDp8OjbyBkb3Mgc2VydmnDp29zLCBpbmNsdWluZG86CgogIGEp' ||
+    'IENvbmZpcm1hw6fDtWVzIGRlIGNhZGFzdHJvOwoKICBiKSBJbmZvcm1hw6fDtWVzIHNvYnJlIGNvbnRyYXRhw6fDtWVzIGUg' ||
+    'cGFnYW1lbnRvczsKCiAgYykgQXZpc29zIHJlbGF0aXZvcyBhbyBwcmF6byBkZSBhY2Vzc287CgogIGQpIEluZm9ybWHDp8O1' ||
+    'ZXMgc29icmUgc29saWNpdGHDp8O1ZXMgZGUgYXRlbmRpbWVudG87CgogIGUpIENvbXVuaWNhZG9zIHJlbGV2YW50ZXMgZGUg' ||
+    'c2VndXJhbsOnYTsKCiAgZikgSW5mb3JtYcOnw7VlcyBuZWNlc3PDoXJpYXMgYW8gY3VtcHJpbWVudG8gZGUgb2JyaWdhw6fD' ||
+    'tWVzIGNvbnRyYXR1YWlzIG91IGxlZ2Fpcy4KCiAgMTcuMi4gQ29tdW5pY2HDp8O1ZXMgcHVibGljaXTDoXJpYXMgbsOjbyBl' ||
+    'c3NlbmNpYWlzIGRldmVyw6NvIG9ic2VydmFyIGEgbGVnaXNsYcOnw6NvIGFwbGljw6F2ZWwgZSBhcwogIHByZWZlcsOqbmNp' ||
+    'YXMgZG8gdGl0dWxhciwgcXVhbmRvIHBlcnRpbmVudGVzLgoKICAxNy4zLiBPIFJlc3Vtw6NvIE9ubGluZSBuw6NvIHV0aWxp' ||
+    'emFyw6EgbyBhY2VpdGUgY29udHJhdHVhbCBjb21vIGF1dG9yaXphw6fDo28gZ2Vuw6lyaWNhIHBhcmEgZW52aW8KICBpcnJl' ||
+    'c3RyaXRvIGRlIHB1YmxpY2lkYWRlLgoKCiAgMTguIFJFR0lTVFJPIEVMRVRSw5ROSUNPIERBIENJw4pOQ0lBIERPUyBET0NV' ||
+    'TUVOVE9TCgogIDE4LjEuIEFudGVzIGRlIHByb3NzZWd1aXIgcGFyYSBvIHBhZ2FtZW50byBkZSB1bSBjdXJzbywgbyB1c3XD' ||
+    'oXJpbyBkZXZlcsOhIHRlciBhY2Vzc28gYW9zIFRlcm1vcyBlCiAgQ29uZGnDp8O1ZXMgZGUgQ29udHJhdGHDp8OjbyBlIFVz' ||
+    'byBlIMOgIHByZXNlbnRlIFBvbMOtdGljYSBkZSBQcml2YWNpZGFkZS4KCiAgMTguMi4gQSBkZWNsYXJhw6fDo28gYXByZXNl' ||
+    'bnRhZGEgc2Vyw6E6CgogIOKYkCBDaWVudGUgZG9zIFRlcm1vcyBkZSBDb250cmF0YcOnw6NvIGUgZGEgUG9sw610aWNhIGRl' ||
+    'IFByaXZhY2lkYWRlIGUgUHJvdGXDp8OjbyBkZSBEYWRvcy4KCiAgMTguMy4gQSBtYXJjYcOnw6NvIHNlcsOhIG9icmlnYXTD' ||
+    's3JpYSBwYXJhIHByb3NzZWd1aW1lbnRvIGRhIGNvbnRyYXRhw6fDo28uCgogIDE4LjQuIEEgcGxhdGFmb3JtYSBwb2RlcsOh' ||
+    'IHJlZ2lzdHJhciBhIGlkZW50aWZpY2HDp8OjbyBkbyB1c3XDoXJpbywgYSBkYXRhIGUgaG9yYSBkYSBtYW5pZmVzdGHDp8Oj' ||
+    'bywgYXMKICB2ZXJzw7VlcyBkb3MgZG9jdW1lbnRvcyBhcHJlc2VudGFkb3MgZSBhIGNvbnRyYXRhw6fDo28gY29ycmVzcG9u' ||
+    'ZGVudGUuCgogIDE4LjUuIEVzc2UgcmVnaXN0cm8gdGVyw6EgZmluYWxpZGFkZSBkZSBjb21wcm92YcOnw6NvIGRhIGNpw6pu' ||
+    'Y2lhIGUgZGEgY29udHJhdGHDp8OjbywgbsOjbyByZXByZXNlbnRhbmRvCiAgY29uc2VudGltZW50byBnZW7DqXJpY28gcGFy' ||
+    'YSB0cmF0YW1lbnRvcyBkZSBkYWRvcyBxdWUgZGVwZW5kYW0gZGUgbWFuaWZlc3Rhw6fDo28gZXNwZWPDrWZpY2EuCgoKCgoK' ||
+    'CgoKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJzw6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQw6FnaW5hIDgK' ||
+    'DAogIDE5LiBSRVNQT05TQUJJTElEQURFIFBFTEEgUFJPVEXDh8ODTyBET1MgREFET1MKCiAgMTkuMS4gTyBSZXN1bcOjbyBP' ||
+    'bmxpbmUgY29tcHJvbWV0ZS1zZSBhIG9ic2VydmFyIG9zIHByaW5jw61waW9zIGRlIGZpbmFsaWRhZGUsIGFkZXF1YcOnw6Nv' ||
+    'LAogIG5lY2Vzc2lkYWRlLCB0cmFuc3BhcsOqbmNpYSwgc2VndXJhbsOnYSwgcHJldmVuw6fDo28sIHJlc3BvbnNhYmlsaXph' ||
+    'w6fDo28gZSBwcmVzdGHDp8OjbyBkZSBjb250YXMgcHJldmlzdG9zCiAgbmEgTEdQRC4KCiAgMTkuMi4gQSBDT05UUk9MQURP' ||
+    'UkEgcmVzcG9uZGVyw6EgcGVsbyB0cmF0YW1lbnRvIGlycmVndWxhciBkZSBkYWRvcyBwZXNzb2FpcyBuYXMgaGlww7N0ZXNl' ||
+    'cwogIGVzdGFiZWxlY2lkYXMgcGVsYSBsZWdpc2xhw6fDo28uCgogIDE5LjMuIEEgY29udHJhdGHDp8OjbyBkZSBwcmVzdGFk' ||
+    'b3JlcyBkZSBzZXJ2acOnb3MgbsOjbyBhZmFzdGEgYXMgb2JyaWdhw6fDtWVzIGxlZ2FpcyBxdWUgY29tcGV0aXJlbSDDoAog' ||
+    'IENPTlRST0xBRE9SQS4KCiAgMTkuNC4gTyBSZXN1bcOjbyBPbmxpbmUgbsOjbyBwb2RlcsOhIGV4Y2x1aXIgZ2VuZXJpY2Ft' ||
+    'ZW50ZSBzdWEgcmVzcG9uc2FiaWxpZGFkZSBwb3IgaW5jaWRlbnRlcywgZmFsaGFzCiAgZGUgc2VndXJhbsOnYSBvdSB0cmF0' ||
+    'YW1lbnRvcyBpcnJlZ3VsYXJlcyBxdWFuZG8gaG91dmVyIGRldmVyIGxlZ2FsIGRlIHJlcGFyYcOnw6NvLgoKICAxOS41LiBB' ||
+    'IGFwdXJhw6fDo28gZGUgZXZlbnR1YWwgcmVzcG9uc2FiaWxpZGFkZSBvYnNlcnZhcsOhIGFzIGNpcmN1bnN0w6JuY2lhcyBk' ||
+    'byBjYXNvIGNvbmNyZXRvIGUgYXMKICBkaXNwb3Npw6fDtWVzIGxlZ2FpcyBhcGxpY8OhdmVpcy4KCgogIDIwLiBBVFVBTEla' ||
+    'QcOHw5VFUyBERVNUQSBQT0zDjVRJQ0EKCiAgMjAuMS4gRXN0YSBQb2zDrXRpY2EgcG9kZXLDoSBzZXIgYXR1YWxpemFkYSBw' ||
+    'YXJhIHJlZmxldGlyIG11ZGFuw6dhcyBsZWdhaXMsIHRlY25vbMOzZ2ljYXMsIG9wZXJhY2lvbmFpcyBvdQogIHJlbGFjaW9u' ||
+    'YWRhcyBhb3Mgc2VydmnDp29zLgoKICAyMC4yLiBBIHZlcnPDo28gYXR1YWxpemFkYSBzZXLDoSBkaXNwb25pYmlsaXphZGEg' ||
+    'bmEgcGxhdGFmb3JtYSwgY29tIGluZGljYcOnw6NvIGRhIGRhdGEgZGUgdmlnw6puY2lhLgoKICAyMC4zLiBBbHRlcmHDp8O1' ||
+    'ZXMgcmVsZXZhbnRlcyBuYXMgZmluYWxpZGFkZXMgb3UgbmFzIGNvbmRpw6fDtWVzIGRlIHRyYXRhbWVudG8gc2Vyw6NvIGNv' ||
+    'bXVuaWNhZGFzIGRlCiAgbWFuZWlyYSBhcHJvcHJpYWRhLCBvYnNlcnZhZGFzIGFzIGV4aWfDqm5jaWFzIGxlZ2Fpcy4KCiAg' ||
+    'MjAuNC4gUXVhbmRvIHVtYSBhbHRlcmHDp8OjbyBleGlnaXIgbm92byBjb25zZW50aW1lbnRvLCBhIENPTlRST0xBRE9SQSBz' ||
+    'b2xpY2l0YXLDoSBhIG1hbmlmZXN0YcOnw6NvCiAgZXNwZWPDrWZpY2EgZG8gdGl0dWxhci4KCiAgMjAuNS4gQXMgdmVyc8O1' ||
+    'ZXMgYW50ZXJpb3JlcyBwb2RlcsOjbyBzZXIgY29uc2VydmFkYXMgcGFyYSBmaW5zIGRlIGNvbXByb3Zhw6fDo28gZSBjdW1w' ||
+    'cmltZW50byBkZQogIG9icmlnYcOnw7VlcyBsZWdhaXMuCgogIDIxLiBDQU5BTCBERSBDT05UQVRPIFBBUkEgUFJJVkFDSURB' ||
+    'REUKCiAgMjEuMS4gUGFyYSBleGVyY2VyIGRpcmVpdG9zLCBlc2NsYXJlY2VyIGTDunZpZGFzIG91IGFwcmVzZW50YXIgc29s' ||
+    'aWNpdGHDp8O1ZXMgcmVsYWNpb25hZGFzIGFvIHRyYXRhbWVudG8KICBkZSBkYWRvcyBwZXNzb2FpcywgbyB0aXR1bGFyIHBv' ||
+    'ZGVyw6EgdXRpbGl6YXI6CgogIEUtbWFpbCBkZSBwcml2YWNpZGFkZTogW0EgUFJFRU5DSEVSXQoKICBDYW5hbCBkZSBhdGVu' ||
+    'ZGltZW50bzogaHR0cHM6Ly9yZXN1bWFvb25saW5lLmNvbS5iciDigJQgw6FyZWEgZGUgYXRlbmRpbWVudG8sIGNvbmZvcm1l' ||
+    'CiAgZGlzcG9uaWJpbGlkYWRlLgoKICAyMS4yLiBBIENPTlRST0xBRE9SQSBhbmFsaXNhcsOhIGFzIHNvbGljaXRhw6fDtWVz' ||
+    'IGUgZm9ybmVjZXLDoSByZXNwb3N0YSBjb25mb3JtZSBhcyBjb25kacOnw7VlcyBlIG9zCiAgcHJhem9zIGxlZ2FsbWVudGUg' ||
+    'YXBsaWPDoXZlaXMuCgoKICAyMi4gRElTUE9TScOHw5VFUyBGSU5BSVMKCiAgMjIuMS4gRXN0YSBQb2zDrXRpY2EgZGV2ZXLD' ||
+    'oSBzZXIgaW50ZXJwcmV0YWRhIGVtIGNvbmZvcm1pZGFkZSBjb20gYSBsZWdpc2xhw6fDo28gYnJhc2lsZWlyYSBkZSBwcm90' ||
+    'ZcOnw6NvIGRlCiAgZGFkb3MgcGVzc29haXMgZSBkZSBkZWZlc2EgZG8gY29uc3VtaWRvci4KCiAgMjIuMi4gTmVuaHVtYSBk' ||
+    'aXNwb3Npw6fDo28gcG9kZXLDoSBzZXIgdXRpbGl6YWRhIHBhcmEgYWZhc3RhciBkaXJlaXRvcyBsZWdhbG1lbnRlIGFzc2Vn' ||
+    'dXJhZG9zIGFvcwogIHRpdHVsYXJlcy4KCgoKCgoKUkVTVU3Dg08gT05MSU5FICDigKIgIFZlcnPDo28gMS4wICDigKIgIE1p' ||
+    'bnV0YSBwYXJhIHJldmlzw6NvICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgUMOhZ2luYSA5CgwKICAyMi4zLiBBIHByZXNlbnRlIFBvbMOtdGljYSBpbnRlZ3JhIG8gY29uanVudG8g' ||
+    'ZGUgaW5mb3JtYcOnw7VlcyBkaXNwb25pYmlsaXphZGFzIGFvIHVzdcOhcmlvIHBhcmEKICBjb25oZWNpbWVudG8gZGFzIGNv' ||
+    'bmRpw6fDtWVzIGRlIHRyYXRhbWVudG8gZGUgZGFkb3MgcGVzc29haXMgcmVsYWNpb25hZGFzIGFvcyBzZXJ2acOnb3MgZG8g' ||
+    'UmVzdW3Do28KICBPbmxpbmUuCgoKCiAgUkVTVU3Dg08gT05MSU5FCgogIFBvbMOtdGljYSBkZSBQcml2YWNpZGFkZSBlIFBy' ||
+    'b3Rlw6fDo28gZGUgRGFkb3MgUGVzc29haXMKCiAgVmVyc8OjbyAxLjAg4oCUIE1pbnV0YSBzdWplaXRhIGEgcmV2aXPDo28g' ||
+    'ZSBhcHJvdmHDp8OjbyBhbnRlcyBkYSBwdWJsaWNhw6fDo28uCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoK' ||
+    'CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKClJFU1VNw4NPIE9OTElORSAg4oCiICBWZXJz' ||
+    'w6NvIDEuMCAg4oCiICBNaW51dGEgcGFyYSByZXZpc8OjbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' ||
+    'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUMOhZ2luYSAxMA==', 'base64'), 'UTF8'), '945405f453cb3cf64103ace0270385a0c61c2096a5893d267b85cea0fd712e2d', 'ae4f075d5cbea36fe2f96f6a071e272b610224d632304f239d8b910c711708e1', CURRENT_TIMESTAMP);
+/* Publicar conteúdo não ativa a obrigatoriedade. */
 COMMIT;
