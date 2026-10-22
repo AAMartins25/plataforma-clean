@@ -33,6 +33,51 @@ function carregarSessao() {
   return carregamentoSessao;
 }
 
+// Compatível com HTML em cache que ainda não declara juridico.js.
+const origemModuloJuridico = document.currentScript?.src;
+let carregamentoJuridico;
+function carregarJuridico() {
+  if (window.Juridico?.payload && window.Juridico?.erro) return Promise.resolve(window.Juridico);
+  if (!carregamentoJuridico) {
+    carregamentoJuridico = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const prazo = setTimeout(falhar, 10000);
+      function falhar() {
+        clearTimeout(prazo);
+        script.remove?.();
+        reject(new Error("Não foi possível carregar os documentos jurídicos. Tente novamente."));
+      }
+      try { script.src = new URL("juridico.js?v=aceite-3", origemModuloJuridico).href; }
+      catch { falhar(); return; }
+      script.onload = () => {
+        if (!window.Juridico?.payload || !window.Juridico?.erro) return falhar();
+        clearTimeout(prazo);
+        resolve(window.Juridico);
+      };
+      script.onerror = falhar;
+      document.head.appendChild(script);
+    }).catch(err => { carregamentoJuridico = null; throw err; });
+  }
+  return carregamentoJuridico;
+}
+
+async function obterAceiteJuridico() {
+  const selecao = document.querySelector("input[name='tipo_acesso']:checked")?.value;
+  const juridico = await carregarJuridico();
+  const aceite = await juridico.payload();
+  if (selecao !== document.querySelector("input[name='tipo_acesso']:checked")?.value) {
+    juridico.limpar?.();
+    throw new Error("A seleção mudou. Confira a opção de acesso e tente novamente.");
+  }
+  return aceite;
+}
+
+async function tratarErroJuridico(err) {
+  try { await window.Juridico?.erro?.(err); }
+  catch (falhaConsulta) { return falhaConsulta; }
+  return err;
+}
+
 // helpers
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
@@ -116,7 +161,12 @@ function invalidarCupomDigitado() {
 }
 
 // POST com Bearer token
-async function apiPostAuth(path, body) {
+async function apiPostAuth(path, body, opcoes = {}) {
+  // Checkout inline de HTML antigo também passa por aqui. O sinalizador só evita
+  // consulta duplicada de chamadas já conferidas; nunca é enviado ao backend.
+  if (path === "/checkout/mercadopago" && !opcoes.politicaConferida && getToken()) {
+    body = {...body, ...await obterAceiteJuridico()};
+  }
   if (!window.Sessao) await carregarSessao();
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
@@ -2389,7 +2439,7 @@ async function adquirirAgoraCursoInfo() {
       return;
     }
 
-    const aceite = await Juridico.payload();
+    const aceite = await obterAceiteJuridico();
     const tempoId = selecionado.dataset.tempoId;
 
     msg.textContent = "...";
@@ -2411,7 +2461,8 @@ async function adquirirAgoraCursoInfo() {
           cupomAplicadoCursoInfo
             ? cupomAplicadoCursoInfo.codigo_cupom
             : null
-      }
+      },
+      {politicaConferida: true}
     );
 
     localStorage.setItem("ultimo_curso_id_compra", String(dadosCursoInfo.id));
@@ -2433,7 +2484,7 @@ async function adquirirAgoraCursoInfo() {
       url;
 
   } catch (err) {
-    await Juridico.erro(err);
+    err = await tratarErroJuridico(err);
     if (tratarErroCompra(err)) return;
     console.error(err);
 

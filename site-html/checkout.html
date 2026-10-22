@@ -154,8 +154,8 @@
     <p>© <span id="ano_atual">2026</span> RO</p>
   </footer>
 
-  <script src="js/app.js?v=aceite-1"></script>
-  <script src="js/juridico.js?v=aceite-2"></script>
+  <script src="js/app.js?v=aceite-2"></script>
+  <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>
     let dadosCheckout = null;
@@ -329,7 +329,7 @@
           return;
         }
 
-        const aceite = await Juridico.payload();
+        const aceite = await obterAceiteJuridico();
         if (sequencia !== sequenciaCheckout) return;
         const tempoId = selecionado.dataset.tempoId;
 
@@ -346,7 +346,7 @@
           ...(!checkoutRenovacao && demonstracaoIdCheckout
             ? { demonstracao_id: Number(demonstracaoIdCheckout) }
             : {})
-        });
+        }, {politicaConferida: true});
 
         if (sequencia !== sequenciaCheckout) return;
         localStorage.setItem("ultimo_curso_id_compra", String(dadosCheckout.id));
@@ -363,7 +363,7 @@
 
       } catch (err) {
         if (sequencia !== sequenciaCheckout) return;
-        await Juridico.erro(err);
+        err = await tratarErroJuridico(err);
         if (tratarErroCompra(err)) return;
         console.error(err);
         msg.textContent = "Erro ao iniciar acesso: " + err.message;

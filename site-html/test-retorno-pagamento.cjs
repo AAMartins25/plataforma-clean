@@ -14,7 +14,7 @@ function ambiente(pagina='pagamento_sucesso.html',search='?payment_id=123&status
  vm.createContext(s);vm.runInContext(fs.readFileSync(__dirname+'/js/sessao.js','utf8'),s);
  s.Sessao=s.window.Sessao;
  // Política desativada nesta fixture: mantém o fluxo financeiro original.
- s.Juridico={payload:async()=>({}),erro:async()=>{}};
+ s.Juridico={payload:async()=>({}),erro:async()=>{}};s.window.Juridico=s.Juridico;
  vm.runInContext(app,s);
  s.apiPostAuth=async(url,payload)=>{pedidos.push({url,payload});return s.resultado};
  const html=fs.readFileSync(__dirname+'/'+pagina,'utf8');
@@ -60,7 +60,7 @@ for(const status of ['PENDING','APPROVED'])test('confirmação em Meus Cursos in
 });
 for(const search of ['?curso_id=1&demonstracao_id=2&origem=cursos','?curso_id=1&renovacao=1&contratacao_id=7&origem=cursos'])test('checkout: duplo clique, pageshow e contexto '+search,async()=>{
  const x=ambiente('checkout.html',search);let resolver;x.s.apiPostAuth=(url,payload)=>{x.pedidos.push({url,payload});return new Promise(r=>resolver=r)};
- const abertura=x.s.adquirirAgora();await x.s.adquirirAgora();assert.equal(x.pedidos.length,1);assert.equal(x.elementos.btnAdquirirAgora.disabled,true);assert.equal(x.elementos.msgCheckout.textContent,'Abrindo checkout do Mercado Pago...');
+ const abertura=x.s.adquirirAgora();await x.s.adquirirAgora();await new Promise(resolve=>setImmediate(resolve));assert.equal(x.pedidos.length,1);assert.equal(x.elementos.btnAdquirirAgora.disabled,true);assert.equal(x.elementos.msgCheckout.textContent,'Abrindo checkout do Mercado Pago...');
  resolver({init_point:'https://example.com/mp'});await abertura;assert.equal(x.elementos.msgCheckout.textContent,'');assert.equal(x.elementos.btnAdquirirAgora.disabled,false);
  x.elementos.msgCheckout.textContent='Abrindo checkout do Mercado Pago...';x.elementos.btnAdquirirAgora.disabled=true;x.eventos.pageshow({persisted:true});
  assert.equal(x.elementos.msgCheckout.textContent,'');assert.equal(x.elementos.btnAdquirirAgora.disabled,false);assert.equal(x.pedidos.length,1);assert.equal(x.s.window.location.search,search);
@@ -114,7 +114,7 @@ test('aprovação não acrescenta promessa de e-mail',async()=>{
 test('restauração durante consulta jurídica cancela abertura antes de chamar pagamento',async()=>{
  const x=ambiente('checkout.html','?curso_id=1');let confirmarAceite;
  x.s.Juridico.payload=()=>new Promise(resolve=>confirmarAceite=resolve);
- const abertura=x.s.adquirirAgora();x.eventos.pageshow({persisted:true});
+ const abertura=x.s.adquirirAgora();await new Promise(resolve=>setImmediate(resolve));x.eventos.pageshow({persisted:true});
  confirmarAceite({});await abertura;
  assert.equal(x.pedidos.length,0);assert.equal(x.elementos.btnAdquirirAgora.disabled,false);
 });
