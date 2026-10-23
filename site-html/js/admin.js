@@ -177,7 +177,7 @@ const AdminCursos = {
       msg.innerHTML = "Salvando...";
       try {
         // Ajuste se sua rota for diferente (ex.: "/curso" ao invés de "/cursos")
-        await apiPost("/cursos", { nome, ativo });
+        await apiPostAuth("/cursos", { nome, ativo });
 
         msg.innerHTML = "✅ Curso criado. Recarregando...";
         // Recarregamento (padrão desejado)
@@ -339,7 +339,7 @@ const AdminCursoDisciplinas = {
 
     try {
       // Você já tem essa rota no backend (foi usada antes): POST /cursos/{curso_id}/disciplinas/{disciplina_id}
-      await apiPost(`/cursos/${cursoId}/disciplinas/${disciplinaId}`, {});
+      await apiPostAuth(`/cursos/${cursoId}/disciplinas/${disciplinaId}`, {});
 
       msg.innerHTML = "✅ Vinculado! Recarregando lista do curso...";
       await this.carregarVinculadas();
