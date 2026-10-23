@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator, StrictBool
+from pydantic import BaseModel, Field, field_validator, StrictBool, model_validator
 from pydantic.types import UUID4
 
 class CursoCreate(BaseModel):
@@ -183,7 +183,15 @@ class UsuarioResponse(BaseModel):
     cpf: str
     telefone: str
     ativo: bool
-    is_admin: bool
+    is_admin: StrictBool
+    tipo_admin: str | None = None
+
+    @model_validator(mode="after")
+    def validar_administracao(self):
+        from app.admin_intermediario import combinacao_valida
+        if not combinacao_valida(self.is_admin, self.tipo_admin):
+            raise ValueError("Combinação administrativa inválida")
+        return self
 
     perfil_inicial: str
     is_vendedor: bool = False

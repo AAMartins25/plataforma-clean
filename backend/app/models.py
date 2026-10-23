@@ -267,7 +267,13 @@ class Usuario(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     senha_hash = Column(String, nullable=False)
     ativo = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
+    tipo_admin = Column(String(20), nullable=True)
+    __table_args__ = (CheckConstraint(
+        "(is_admin = false AND (tipo_admin IS NULL OR tipo_admin IN "
+        "('admin_prod','admin_adm'))) OR "
+        "(is_admin = true AND tipo_admin IS NOT NULL AND tipo_admin = 'admin_geral')",
+        name="ck_usuarios_tipo_admin"),)
     cpf = Column(String, unique=True, nullable=False)
     telefone = Column(String, nullable=False)
 
@@ -1413,3 +1419,13 @@ TABELAS_JURIDICAS = frozenset({
     "documentos_juridicos_versoes", "politica_aceite_juridico", "aceites_juridicos",
     "aceites_juridicos_documentos", "aceites_juridicos_pagamentos",
 })
+
+
+class AuditoriaPerfilAdmin(Base):
+    __tablename__ = "auditoria_perfis_admin"
+    id = Column(Integer, primary_key=True)
+    autor_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    tipo_anterior = Column(String(20), nullable=True)
+    tipo_novo = Column(String(20), nullable=True)
+    criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)

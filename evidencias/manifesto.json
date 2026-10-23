@@ -1,0 +1,18 @@
+{
+  "base_sha": "cdba603e9a8d3a3a04a77fc03863ad41c93c1a93",
+  "arquivos": {
+    "backend/app/main.py": "6aac28f34214bc395b391153d81a84b7e0c6384b4b57f939e8ed171dc81549d3",
+    "backend/app/models.py": "458de055a2593925bb42734defd95f70928a7ea61fdf1093e56f797b4d5e2c3d",
+    "backend/app/schemas.py": "d6681ff7cdd42f02c9d1087c886d9f7f04dda521daefe02cb122a5021e513e1c",
+    "backend/test_auth_jwt.py": "0cba88bf0d2ccfc367419eb062ebe14483ec6a511430ce32a6a41feb8bec0188",
+    "backend/test_compras_fluxo.py": "22a5d547b17b248cfd651c5f81b1aa9eaec97c4b429619cb81d2e68102e51503",
+    "site-html/js/admin.js": "50a3de8ba07dc6eda65d08a7d633d6dce022f44e97dabb07b3bede74258bad8a",
+    "backend/app/admin_intermediario.py": "21ffa7983d03b788430510f9653d7d5a50642b890d3ffe19d59e7f229da14755",
+    "backend/migrations/022_tipos_administrador.sql": "3c4190703fa929e991174703ff20c8fc07567de40305c33519dd44495a7a7f06",
+    "backend/test_admin_intermediario_seguro.py": "d773e55a7ce7665629a9057b1efd422580f9a62deb48ae0fc0c4d9eb24263070",
+    "backend/test_admin_intermediario_diff.py": "2395ba1b1ea252a03cea1fc9065a97f45962532b71bee2584cb90bab40281177",
+    "backend/test_admin_intermediario_pg.py": "16a91c210964b8e053c890c5bb140f92b534b7d9db2cd85040b33642e4c0b81d",
+    "site-html/test-admin-intermediario.cjs": "7d0963a6d62f7b9951123b4c59c3012fe561402088c9682a36dd9b2e0f7ff0d1"
+  },
+  "patch_sha256": "74699ceb19be0a3d4196cfbfaccbcc49ed26dc8a5c612419716bdcded586ba25"
+}

@@ -201,7 +201,7 @@ def test_http_login_rotacao_permissoes_e_acesso_pago():
                     m.Usuario(id=1, nome='Aluno JWT', email='aluno-jwt@example.com',
                               cpf='1', telefone='0', senha_hash=password_hash, is_admin=False),
                     m.Usuario(id=2, nome='Admin JWT', email='admin-jwt@example.com',
-                              cpf='2', telefone='0', senha_hash=password_hash, is_admin=True),
+                              cpf='2', telefone='0', senha_hash=password_hash, is_admin=True, tipo_admin='admin_geral'),
                     m.Usuario(id=3, nome='Outro aluno JWT', email='outro-jwt@example.com',
                               cpf='3', telefone='0', senha_hash=password_hash, is_admin=False),
                     m.Curso(id=1, nome='Curso JWT', ativo=True),

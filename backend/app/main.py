@@ -1,3 +1,4 @@
+from app.admin_intermediario import exigir_geral, revalidar_geral
 from app.desempenho import validar_contexto_historico
 from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
 from app.financeiro_transacional import protegido, timeout_financeiro
@@ -193,6 +194,11 @@ def get_usuario_atual(token: str = Depends(oauth2_scheme), db: Session = Depends
         raise HTTPException(status_code=401, detail="Usuário não encontrado/inativo")
 
     return usuario
+
+def exigir_admin_intermediario(usuario: Usuario = Depends(get_usuario_atual)):
+    # Restritos não recebem competências nesta versão, independentemente de flags.
+    return exigir_geral(usuario)
+
 
 def exigir_admin_aulas(usuario: Usuario = Depends(get_usuario_atual)):
     if not usuario.is_admin:
@@ -862,7 +868,8 @@ def root():
 
 # CREATE: criar curso
 @app.post("/cursos", response_model=CursoResponse)
-def criar_curso(curso: CursoCreate, db: Session = Depends(get_db)):
+def criar_curso(curso: CursoCreate, db: Session = Depends(get_db),
+                  usuario: Usuario = Depends(exigir_admin_intermediario)):
     nome = curso.nome.strip()
 
     existente = db.query(Curso).filter(
@@ -968,7 +975,8 @@ def excluir_curso(
 
 # CREATE: criar disciplina
 @app.post("/disciplinas", response_model=DisciplinaResponse)
-def criar_disciplina(disciplina: DisciplinaCreate, db: Session = Depends(get_db)):
+def criar_disciplina(disciplina: DisciplinaCreate, db: Session = Depends(get_db),
+                  usuario: Usuario = Depends(exigir_admin_intermediario)):
     nome = disciplina.nome.strip()
 
     existente = db.query(Disciplina).filter(
@@ -1009,7 +1017,8 @@ def listar_disciplinas(db: Session = Depends(get_db)):
 def associar_disciplina_ao_curso(
     curso_id: int,
     disciplina_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_admin_intermediario)
 ):
     curso = db.query(Curso).filter(Curso.id == curso_id).first()
     if not curso:
@@ -1421,7 +1430,8 @@ def excluir_assunto_proprio(
 
 
 @app.post("/assuntos")
-def criar_assunto(assunto: AssuntoCreate, db: Session = Depends(get_db)):
+def criar_assunto(assunto: AssuntoCreate, db: Session = Depends(get_db),
+                  usuario: Usuario = Depends(exigir_admin_intermediario)):
     # Confere se disciplina existe
     disciplina = db.query(Disciplina).filter(Disciplina.id == assunto.disciplina_id).first()
     if not disciplina:
@@ -3626,6 +3636,7 @@ def me(
         "telefone": usuario.telefone,
         "ativo": usuario.ativo,
         "is_admin": usuario.is_admin,
+        "tipo_admin": usuario.tipo_admin,
         "perfil_inicial": usuario.perfil_inicial,
         "is_vendedor": is_vendedor,
         "is_aluno": is_aluno,
@@ -5447,6 +5458,11 @@ def admin_criar_aluno(
             detail="Apenas admin"
         )
 
+    if "tipo_admin" in payload:
+        raise HTTPException(422, "Atribuição de tipos indisponível nesta versão")
+    if not isinstance(payload.get("is_admin", False), bool):
+        raise HTTPException(422, "is_admin deve ser booleano")
+
     nome = (
         payload.get("nome") or ""
     ).strip()
@@ -5540,6 +5556,7 @@ def admin_criar_aluno(
         senha_hash=senha_hash,
         ativo=True,
         is_admin=is_admin,
+        tipo_admin="admin_geral" if is_admin else None,
         perfil_inicial=(
             "ADMIN"
             if is_admin
@@ -5547,7 +5564,12 @@ def admin_criar_aluno(
         )
     )
 
+    revalidar_geral(db, usuario.id)
     db.add(u)
+    db.flush()
+    if is_admin:
+        db.add(models.AuditoriaPerfilAdmin(autor_id=usuario.id, usuario_id=u.id,
+            tipo_anterior=None, tipo_novo="admin_geral"))
     db.commit()
     db.refresh(u)
 

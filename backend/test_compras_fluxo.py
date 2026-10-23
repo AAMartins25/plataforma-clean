@@ -50,7 +50,7 @@ def ambiente_compra(motor, monkeypatch):
     with motor.begin() as c: c.execute(text('CREATE UNIQUE INDEX test_acesso_unico ON acessos_curso(usuario_id,curso_id)'))
     factory=sessionmaker(bind=motor,autoflush=False)
     with factory() as db:
-        for i in (1,2): db.add(m.Usuario(id=i,nome='Teste',email=f'{i}@teste.local',senha_hash='teste',cpf=str(i),telefone='0',is_admin=i==2))
+        for i in (1,2): db.add(m.Usuario(id=i,nome='Teste',email=f'{i}@teste.local',senha_hash='teste',cpf=str(i),telefone='0',is_admin=i==2,tipo_admin='admin_geral' if i==2 else None))
         for i in range(1,8): db.add(m.Curso(id=i,nome=f'Curso {i}',ativo=True))
         db.flush()
         for i,meses in enumerate((4,8,12),1): db.add(m.TempoAcessoCurso(id=i,curso_id=1,meses=meses,valor_cents=4990*i,ativo=True))
