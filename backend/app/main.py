@@ -9499,3 +9499,7 @@ def assuntos_questoes_admin(curso_id: int, disciplina_id: int, db: Session = Dep
 
 from app.vendedores_admin import registrar_rotas as registrar_vendedores_admin
 registrar_vendedores_admin(app, get_db, get_usuario_atual)
+
+
+from app.vendedores import registrar_rotas as registrar_consultas_vendedor
+registrar_consultas_vendedor(app, get_db, get_usuario_atual)
