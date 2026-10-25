@@ -1,7 +1,8 @@
 import os
-from urllib.parse import quote_plus, urlparse
+from urllib.parse import parse_qs, quote_plus, unquote, urlsplit
 from app.financeiro_transacional import configuracao_pool
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker
 from app.models import Base, TABELAS_JURIDICAS
 
@@ -10,38 +11,29 @@ ENV_DATABASE_URL = os.environ.get("DATABASE_URL")
 
 is_cloud = False
 
+def _url_psycopg(valor):
+    # urlsplit não decodifica credenciais; URL.create recebe valores já decodificados.
+    # Passar o objeto URL evita uma segunda interpretação de %, @, + e outros sinais.
+    parsed = urlsplit(valor)
+    query = {
+        chave: valores[0] if len(valores) == 1 else tuple(valores)
+        for chave, valores in parse_qs(parsed.query, keep_blank_values=True).items()
+        if chave != "pgbouncer"
+    }
+    return URL.create(
+        "postgresql+psycopg",
+        username=unquote(parsed.username) if parsed.username is not None else None,
+        password=unquote(parsed.password) if parsed.password is not None else None,
+        host=parsed.hostname,
+        port=parsed.port,
+        database=unquote(parsed.path[1:]),
+        query=query,
+    )
+
+
 if ENV_DATABASE_URL:
     is_cloud = True
-    # Corrige o prefixo exigido pelo SQLAlchemy moderno
-    if ENV_DATABASE_URL.startswith("postgres://"):
-        ENV_DATABASE_URL = ENV_DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    
-    try:
-        # Remove parâmetros conflitantes com o driver Psycopg3
-        if "?pgbouncer=true" in ENV_DATABASE_URL:
-            ENV_DATABASE_URL = ENV_DATABASE_URL.replace("?pgbouncer=true", "")
-        elif "&pgbouncer=true" in ENV_DATABASE_URL:
-            ENV_DATABASE_URL = ENV_DATABASE_URL.replace("&pgbouncer=true", "")
-            
-        # Extrai os componentes da URL para codificar a senha com segurança
-        parsed_url = urlparse(ENV_DATABASE_URL)
-        username = parsed_url.username
-        password = parsed_url.password
-        
-        if password:
-            # Codifica caracteres especiais contidos na senha nova
-            safe_password = quote_plus(password)
-            # Reconstroi o host de forma limpa
-            host_port_db = parsed_url.netloc.split('@')[-1]
-            path_query = parsed_url.path
-            if parsed_url.query:
-                path_query += f"?{parsed_url.query}"
-                
-            DATABASE_URL = f"postgresql+psycopg://{username}:{safe_password}@{host_port_db}{path_query}"
-        else:
-            DATABASE_URL = ENV_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-    except Exception:
-        DATABASE_URL = ENV_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    DATABASE_URL = _url_psycopg(ENV_DATABASE_URL)
 else:
     # Configuração para a sua MÁQUINA LOCAL (Em casa)
     DB_USER = "postgres"
