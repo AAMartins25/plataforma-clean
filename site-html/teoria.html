@@ -11,16 +11,6 @@
       border-top-color: #dbe2f0;
     }
 
-    .titulo-video {
-      font: inherit;
-      color: inherit;
-      background: none;
-      border: 0;
-      padding: 0;
-      text-align: left;
-      cursor: pointer;
-    }
-
     .area-estudo {
       position: relative;
     }
@@ -929,8 +919,6 @@
       try {
         const dados = await apiGet(`/videos/${videoId}/playback${contextoAcessoQuery() ? `?${contextoAcessoQuery()}` : ""}`);
 
-        if (!container.isConnected) return;
-
         if (!dados.token) {
           throw new Error("Token de reprodução não recebido.");
         }
@@ -951,7 +939,6 @@
           ></iframe>
         `;
       } catch (err) {
-        if (!container.isConnected) return;
         console.error("Erro ao carregar vídeo Cloudflare:", err);
 
         container.innerHTML = `
@@ -1350,31 +1337,19 @@
                     </div>
                   </div>
                 `
-                : vids.map((v, indice) => `
+                : vids.map(v => `
                     <div class="assunto">
-                      <h3><button type="button" class="titulo-video" aria-expanded="false"
-                        aria-controls="player-video-${indice}" data-video-indice="${indice}">${esc(v.titulo || "Vídeo")}</button></h3>
-                      <div id="player-video-${indice}" hidden></div>
+                      <h3>${esc(v.titulo || "Vídeo")}</h3>
+                      ${renderVideo(v)}
                     </div>
                   `).join("")
             }
           </div>
         `;
 
-        box.querySelectorAll(".titulo-video").forEach(botao => {
-          const video = vids[Number(botao.dataset.videoIndice)];
-          const player = document.getElementById(botao.getAttribute("aria-controls"));
-          botao.addEventListener("click", () => {
-            const abrir = botao.getAttribute("aria-expanded") !== "true";
-            botao.setAttribute("aria-expanded", String(abrir));
-            player.hidden = !abrir;
-            // Remover o iframe encerra a reprodução e descarta tokens anteriores.
-            player.innerHTML = abrir ? renderVideo(video) : "";
-            if (abrir && String(video.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE") {
-              carregarVideoCloudflare(video.id);
-            }
-          });
-        });
+        vids
+          .filter(v => String(v.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE")
+          .forEach(v => carregarVideoCloudflare(v.id));
 
       } catch (err) {
         box.innerHTML = renderError("Erro ao carregar vídeos", err.message);
