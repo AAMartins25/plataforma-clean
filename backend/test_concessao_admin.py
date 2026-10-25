@@ -10,8 +10,16 @@ from app.models import AcessoCurso, ConcessaoAcessoAdmin
 from app.schemas import AcessoCursoCreate
 
 
-def test_concessao_para_aluno_sem_acesso():
+def banco_simulado():
     db = MagicMock()
+    filtro = db.query.return_value.filter.return_value
+    filtro.with_for_update.return_value.first = filtro.first
+    filtro.order_by.return_value.with_for_update.return_value.first.return_value = None
+    return db
+
+
+def test_concessao_para_aluno_sem_acesso():
+    db = banco_simulado()
 
     # Consultas: aluno, curso e acesso existente.
     db.query.return_value.filter.return_value.first.side_effect = [
@@ -32,7 +40,7 @@ def test_concessao_para_aluno_sem_acesso():
     resultado = admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     registros = [
@@ -68,7 +76,7 @@ def test_concessao_para_aluno_sem_acesso():
     db.commit.assert_called_once()
 
 def test_concessao_nao_reduz_prazo_de_compra_vigente():
-    db = MagicMock()
+    db = banco_simulado()
 
     agora = datetime.utcnow()
     prazo_compra = agora + timedelta(days=180)
@@ -99,7 +107,7 @@ def test_concessao_nao_reduz_prazo_de_compra_vigente():
     resultado = admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     # A concessão não pode encurtar o prazo da compra.
@@ -107,8 +115,9 @@ def test_concessao_nao_reduz_prazo_de_compra_vigente():
     assert acesso_existente.data_fim == prazo_compra
 
     # A concessão deve ficar registrada separadamente.
-    db.add.assert_called_once()
-    concessao = db.add.call_args.args[0]
+    concessoes = [c.args[0] for c in db.add.call_args_list if isinstance(c.args[0], ConcessaoAcessoAdmin)]
+    assert len(concessoes) == 1
+    concessao = concessoes[0]
 
     assert isinstance(concessao, ConcessaoAcessoAdmin)
     assert concessao.data_fim == prazo_concessao
@@ -117,7 +126,7 @@ def test_concessao_nao_reduz_prazo_de_compra_vigente():
     db.commit.assert_called_once()
 
 def test_concessao_reativa_acesso_expirado():
-    db = MagicMock()
+    db = banco_simulado()
 
     agora = datetime.utcnow()
     novo_prazo = agora + timedelta(days=30)
@@ -147,7 +156,7 @@ def test_concessao_reativa_acesso_expirado():
     resultado = admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     # O acesso expirado deve ser reativado.
@@ -156,8 +165,9 @@ def test_concessao_reativa_acesso_expirado():
     assert acesso_existente.data_fim == novo_prazo
 
     # O histórico da concessão deve ser registrado.
-    db.add.assert_called_once()
-    concessao = db.add.call_args.args[0]
+    concessoes = [c.args[0] for c in db.add.call_args_list if isinstance(c.args[0], ConcessaoAcessoAdmin)]
+    assert len(concessoes) == 1
+    concessao = concessoes[0]
 
     assert isinstance(concessao, ConcessaoAcessoAdmin)
     assert concessao.data_fim == novo_prazo
@@ -167,7 +177,7 @@ def test_concessao_reativa_acesso_expirado():
     db.commit.assert_called_once()
 
 def test_concessao_reativa_acesso_inativo():
-    db = MagicMock()
+    db = banco_simulado()
 
     agora = datetime.utcnow()
     novo_prazo = agora + timedelta(days=30)
@@ -197,15 +207,16 @@ def test_concessao_reativa_acesso_inativo():
     resultado = admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     assert acesso_existente.ativo is True
     assert acesso_existente.data_inicio >= agora
     assert acesso_existente.data_fim == novo_prazo
 
-    db.add.assert_called_once()
-    concessao = db.add.call_args.args[0]
+    concessoes = [c.args[0] for c in db.add.call_args_list if isinstance(c.args[0], ConcessaoAcessoAdmin)]
+    assert len(concessoes) == 1
+    concessao = concessoes[0]
 
     assert isinstance(concessao, ConcessaoAcessoAdmin)
     assert concessao.ativo is True
@@ -215,7 +226,7 @@ def test_concessao_reativa_acesso_inativo():
     db.commit.assert_called_once()
 
 def test_concessao_preserva_acesso_sem_vencimento():
-    db = MagicMock()
+    db = banco_simulado()
 
     agora = datetime.utcnow()
     prazo_concessao = agora + timedelta(days=30)
@@ -245,7 +256,7 @@ def test_concessao_preserva_acesso_sem_vencimento():
     resultado = admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     # A concessão não pode limitar o acesso preexistente.
@@ -253,8 +264,9 @@ def test_concessao_preserva_acesso_sem_vencimento():
     assert acesso_existente.data_fim is None
 
     # A nova concessão possui seu próprio prazo no histórico.
-    db.add.assert_called_once()
-    concessao = db.add.call_args.args[0]
+    concessoes = [c.args[0] for c in db.add.call_args_list if isinstance(c.args[0], ConcessaoAcessoAdmin)]
+    assert len(concessoes) == 1
+    concessao = concessoes[0]
 
     assert isinstance(concessao, ConcessaoAcessoAdmin)
     assert concessao.data_fim == prazo_concessao
@@ -263,7 +275,7 @@ def test_concessao_preserva_acesso_sem_vencimento():
     db.commit.assert_called_once()
 
 def test_concessao_rejeita_data_vencida():
-    db = MagicMock()
+    db = banco_simulado()
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
@@ -281,7 +293,7 @@ def test_concessao_rejeita_data_vencida():
         admin_criar_acesso(
             payload=payload,
             db=db,
-            usuario=SimpleNamespace(is_admin=True),
+            usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
         )
 
     assert erro.value.status_code == 400
@@ -289,7 +301,7 @@ def test_concessao_rejeita_data_vencida():
     db.commit.assert_not_called()
 
 def test_concessao_converte_fuso_horario():
-    db = MagicMock()
+    db = banco_simulado()
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
@@ -317,7 +329,7 @@ def test_concessao_converte_fuso_horario():
     admin_criar_acesso(
         payload=payload,
         db=db,
-        usuario=SimpleNamespace(is_admin=True),
+        usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
     )
 
     registros = [
@@ -325,7 +337,7 @@ def test_concessao_converte_fuso_horario():
         for chamada in db.add.call_args_list
     ]
 
-    assert len(registros) == 2
+    assert len(registros) == 3
 
     for registro in registros:
         assert registro.data_fim == data_esperada
@@ -334,7 +346,7 @@ def test_concessao_converte_fuso_horario():
     db.commit.assert_called_once()
 
 def test_concessao_bloqueia_usuario_nao_admin():
-    db = MagicMock()
+    db = banco_simulado()
 
     payload = AcessoCursoCreate(
         usuario_id=87,
@@ -356,7 +368,7 @@ def test_concessao_bloqueia_usuario_nao_admin():
     db.commit.assert_not_called()
 
 def test_concessao_rejeita_aluno_inexistente():
-    db = MagicMock()
+    db = banco_simulado()
 
     db.query.return_value.filter.return_value.first.return_value = None
 
@@ -371,7 +383,7 @@ def test_concessao_rejeita_aluno_inexistente():
         admin_criar_acesso(
             payload=payload,
             db=db,
-            usuario=SimpleNamespace(is_admin=True),
+            usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
         )
 
     assert erro.value.status_code == 404
@@ -381,7 +393,7 @@ def test_concessao_rejeita_aluno_inexistente():
     db.commit.assert_not_called()
 
 def test_concessao_rejeita_curso_inexistente():
-    db = MagicMock()
+    db = banco_simulado()
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
@@ -399,7 +411,7 @@ def test_concessao_rejeita_curso_inexistente():
         admin_criar_acesso(
             payload=payload,
             db=db,
-            usuario=SimpleNamespace(is_admin=True),
+            usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
         )
 
     assert erro.value.status_code == 404
@@ -409,7 +421,7 @@ def test_concessao_rejeita_curso_inexistente():
     db.commit.assert_not_called()
 
 def test_concessao_trata_conflito_no_banco():
-    db = MagicMock()
+    db = banco_simulado()
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
@@ -434,7 +446,7 @@ def test_concessao_trata_conflito_no_banco():
         admin_criar_acesso(
             payload=payload,
             db=db,
-            usuario=SimpleNamespace(is_admin=True),
+            usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
         )
 
     assert erro.value.status_code == 409

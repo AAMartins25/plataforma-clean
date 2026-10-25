@@ -1,3 +1,5 @@
+> Documento histórico do intermediário 022. Para os três perfis definitivos, consulte [PUBLICACAO-PERFIS-DEFINITIVOS.md](PUBLICACAO-PERFIS-DEFINITIVOS.md). Não executar as instruções de migração deste roteiro nesta preparação.
+
 # Backend intermediário sobre o frontend publicado
 
 Preparação local. Base direta: 702b9e5bfba3d142d4c740e2091e0f0f8e1d79e2.

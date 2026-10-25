@@ -154,7 +154,7 @@ def test_admin_descobre_nova_transacao(ambiente_compra):
     transacoes['102'] = dados(102, 'approved')
     main, _, f, _, _ = ambiente_compra
     with f() as db:
-        r = main.admin_revalidar_pagamento({'mp_payment_id': '102'}, db, SimpleNamespace(is_admin=True))
+        r = main.admin_revalidar_pagamento({'mp_payment_id': '102'}, db, SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
         assert r['liberou_acesso']
     assert confirmar(ambiente_compra, 102).json()['liberou_acesso'] is False
 

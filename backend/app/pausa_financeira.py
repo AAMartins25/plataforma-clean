@@ -3,6 +3,7 @@
 A barreira é validada na mesma conexão que grava, em cada transação.
 A caixa de entrada contém somente identidade e metadados, nunca payloads/segredos.
 """
+from app.admin_intermediario import pode_administrar
 import asyncio
 import hashlib
 import os
@@ -481,7 +482,7 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
         app.router.add_event_handler('startup', validar_inicio)
 
     def admin(usuario=Depends(get_usuario_atual), db=Depends(get_db)):
-        if not usuario.is_admin:
+        if not pode_administrar(usuario, "geral"):
             raise HTTPException(403, 'Apenas administrador.')
         if hasattr(db, 'expunge') and hasattr(usuario, '_sa_instance_state'):
             db.expunge(usuario)

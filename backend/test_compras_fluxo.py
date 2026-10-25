@@ -183,7 +183,7 @@ def test_concessao_admin_sem_limite_e_preserva_historico(ambiente_compra):
     with factory() as db:
         for i in (1,2,3):demo(db,i)
         contrato(db,'PAGAMENTO',curso=4)
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     for curso in (4,5,6,7):
         r=c.post('/admin/acessos',json={'usuario_id':1,'curso_id':curso,'data_fim':(datetime.utcnow()+timedelta(days=60)).isoformat()+'Z'})
         assert r.status_code==200,r.text

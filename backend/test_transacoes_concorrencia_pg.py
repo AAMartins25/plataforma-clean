@@ -42,7 +42,7 @@ def test_tres_caminhos_concorrentes(ambiente_compra, motor, mesmo_id, caminhos):
                     return main.confirmar_pagamento({'payment_id': str(tx), 'curso_id': 1}, db, SimpleNamespace(id=1))
                 if i == 1:
                     return asyncio.run(webhook(main, db, tx))
-                return main.admin_revalidar_pagamento({'mp_payment_id': str(tx)}, db, SimpleNamespace(is_admin=True))
+                return main.admin_revalidar_pagamento({'mp_payment_id': str(tx)}, db, SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
             except Exception:
                 db.rollback()
                 raise
@@ -149,7 +149,7 @@ def test_reembolso_e_contestacao_preservam_transacao_especifica(ambiente_compra,
         assert db.query(m.ContestacaoPagamento).one().pagamento_id == dup_id
         historico = main.historico_compras_usuario(db, SimpleNamespace(id=1))
         assert {p['mp_payment_id'] for p in historico} == {'101', '102'}
-        listagem = main.admin_listar_pagamentos(None, db, SimpleNamespace(is_admin=True))
+        listagem = main.admin_listar_pagamentos(None, db, SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
         linha = next(p for p in listagem if p['id'] == dup_id)
         assert linha['mp_payment_id'] == '102' and linha['ocorrencia_financeira'] == 'COBRANCA_DUPLICADA'
 

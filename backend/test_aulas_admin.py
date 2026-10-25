@@ -71,7 +71,7 @@ def ambiente(infraestrutura):
                          tipo_questao='CERTO_ERRADO', gabarito='C', ordem=1))
         db.commit()
     def perfil(admin):
-        main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(id=1,is_admin=admin)
+        main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(id=1,is_admin=admin, tipo_admin=("admin_geral" if admin else None))
     perfil(True)
     try:
         with TestClient(main.app) as client:

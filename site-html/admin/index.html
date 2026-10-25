@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <script src="../js/sessao.js"></script>
+  <script src="../js/admin-acesso.js?v=perfis-1"></script>
   <meta charset="UTF-8" />
   <meta
     name="viewport"
@@ -99,7 +100,7 @@
       </h2>
 
       <!-- CURSOS -->
-      <section style="margin-top:20px;">
+      <section data-admin-area="producao" style="margin-top:20px;">
 
         <h3 style="margin-bottom:12px;">
           📘 Cursos
@@ -126,20 +127,13 @@
       </section>
 
       <!-- ALUNOS -->
-      <section style="margin-top:28px;">
+      <section data-admin-area="alunos" style="margin-top:28px;">
 
         <h3 style="margin-bottom:12px;">
           👨‍🎓 Alunos
         </h3>
 
         <div class="list">
-
-          <a
-            class="btn"
-            href="alunos.html"
-          >
-            Alunos / Usuários
-          </a>
 
           <a
             class="btn"
@@ -167,13 +161,20 @@
       </section>
 
       <!-- COMERCIAL -->
-      <section style="margin-top:28px;">
+      <section data-admin-area="geral" style="margin-top:28px;">
 
         <h3 style="margin-bottom:12px;">
           💰 Comercial
         </h3>
 
         <div class="list">
+
+          <a
+            class="btn"
+            href="alunos.html"
+          >
+            Alunos / Usuários
+          </a>
 
         <a
           class="btn"
@@ -215,7 +216,7 @@
       </section>
 
       <!-- PERFIS E ACESSOS -->
-      <section style="margin-top:28px;">
+      <section data-admin-area="geral" style="margin-top:28px;">
 
         <h3 style="margin-bottom:12px;">
           🔐 Perfis e acessos
@@ -244,8 +245,8 @@
     </p>
   </footer>
 
-  <script src="../js/app.js"></script>
-  <script src="../js/admin-intermediario-022.50a3de8ba07dc6ed.js"></script>
+  <script src="../js/app.js?v=perfis-1"></script>
+  <script src="../js/admin.js?v=perfis-1"></script>
 
   <script>
     function confirmarSaidaAdmin() {

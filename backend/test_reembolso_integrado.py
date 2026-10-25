@@ -99,7 +99,7 @@ def test_reembolso_com_compra_antiga_exige_conferencia():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(pagamento)
@@ -208,7 +208,7 @@ def test_reembolso_sem_outros_direitos_desativa_acesso():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(aluno)
@@ -332,7 +332,7 @@ def test_reembolso_preserva_outra_compra_vigente():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(aluno)
@@ -443,7 +443,7 @@ def test_reembolso_preserva_concessao_administrativa():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(aluno)
@@ -556,7 +556,7 @@ def test_reembolso_preserva_concessao_sem_prazo():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(aluno)
@@ -670,7 +670,7 @@ def test_reembolso_preserva_demonstracao_vigente():
                     reembolso_id=reembolso.id,
                     confirmacao_extrato=True,
                     db=db,
-                    admin=SimpleNamespace(is_admin=True),
+                    admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                 )
 
                 db.refresh(aluno)
@@ -757,7 +757,7 @@ def test_falha_recalculo_nao_confirma_reembolso():
                             reembolso_id=reembolso_id,
                             confirmacao_extrato=True,
                             db=db,
-                            admin=SimpleNamespace(is_admin=True),
+                            admin=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"),
                         )
                     except RuntimeError:
                         assert not db.in_transaction()

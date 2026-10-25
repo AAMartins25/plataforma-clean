@@ -165,7 +165,7 @@
   </footer>
 
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=perfis-1"></script>
 
   <script>
     async function carregarMinhaArea() {
@@ -208,7 +208,7 @@
         let quantidadeAreas = 0;
 
 
-        if (me?.is_admin) {
+        if (me?.is_admin || ["admin_prod", "admin_adm"].includes(me?.tipo_admin)) {
           opcaoAdmin.style.display =
             "block";
 

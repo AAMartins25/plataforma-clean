@@ -58,7 +58,7 @@ def test_pix_manual_trata_duplicidade_no_banco(ambiente_compra):
     with factory() as db:
         with patch.object(db,'commit',side_effect=IntegrityError('INSERT',{},Exception('duplicidade'))):
             with pytest.raises(HTTPException) as erro:
-                main.registrar_reembolso_pix_manual(pid,schemas.ReembolsoPixManualCreate(valor_cents=4990,referencia_comprovante='teste'),db,SimpleNamespace(id=2,is_admin=True))
+                main.registrar_reembolso_pix_manual(pid,schemas.ReembolsoPixManualCreate(valor_cents=4990,referencia_comprovante='teste'),db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
         assert erro.value.status_code==409
     with factory() as db:assert db.query(m.ReembolsoFinanceiro).count()==0
 
@@ -68,7 +68,7 @@ def test_falha_commit_reembolso_executa_rollback(ambiente_compra):
     rid=registrar(client,pid).json()['reembolso_id']
     with factory() as db:
         with patch.object(db,'commit',side_effect=RuntimeError('falha simulada')):
-            with pytest.raises(RuntimeError):main.confirmar_reembolso_pix_manual(rid,True,db,SimpleNamespace(id=2,is_admin=True))
+            with pytest.raises(RuntimeError):main.confirmar_reembolso_pix_manual(rid,True,db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
     with factory() as db:
         assert db.get(m.ReembolsoFinanceiro,rid).status=='PENDENTE'
         assert db.get(m.ReembolsoFinanceiro,rid).confirmado_por is None

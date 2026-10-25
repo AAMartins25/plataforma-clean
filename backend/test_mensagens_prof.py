@@ -114,14 +114,14 @@ def test_reformular_estados_e_preserva_historico_de_estudo(api, fase):
     db.commit()
     rid=100
     if fase in {"RESPONDIDA", "ENCERRADA"}:
-        actor.is_admin=True
+        actor.is_admin=True; actor.tipo_admin="admin_geral"
         assert c.post(f"/admin/mensagens-questoes/{rid}/responder",json={"texto":"Resposta do professor"}).status_code==200
-        actor.is_admin=False
+        actor.is_admin=False; actor.tipo_admin=None
         if fase == "ENCERRADA":
             assert c.post(f"/me/mensagens-prof/{rid}/responder?demonstracao_id=1",json={"texto":"Complemento"}).status_code==200
-            actor.is_admin=True
+            actor.is_admin=True; actor.tipo_admin="admin_geral"
             assert c.post(f"/admin/mensagens-questoes/{rid}/responder",json={"texto":"Resposta final"}).status_code==200
-            actor.is_admin=False
+            actor.is_admin=False; actor.tipo_admin=None
     db.add(m.AnotacaoAlunoQuestao(usuario_id=1,questao_id=1,bateria_id=1,tentativa_id=1,
         demonstracao_id=1,texto="Anotação preservada")); db.commit()
     antes_tentativas=db.query(m.TentativaBateria).count()
@@ -144,9 +144,9 @@ def test_resposta_professor_invalida_confirmacao_antiga(api):
     db,c,actor=api
     rid=iniciar(c).json()["conversa_id"]
     dados=_dados_reformulacao(c,rid)
-    actor.is_admin=True
+    actor.is_admin=True; actor.tipo_admin="admin_geral"
     assert c.post(f"/admin/mensagens-questoes/{rid}/responder",json={"texto":"Resposta nova"}).status_code==200
-    actor.is_admin=False
+    actor.is_admin=False; actor.tipo_admin=None
     resposta=c.post(f"/me/mensagens-prof/{rid}/reformular?demonstracao_id=1",json=dados)
     assert resposta.status_code==409
     assert db.get(m.ConversaQuestaoProfessor,rid) is not None
@@ -174,7 +174,7 @@ def test_fila_admin_ignora_legada_sem_contexto(api):
     legado=m.ConversaQuestaoProfessor(usuario_id=1,questao_id=1,bateria_id=1,status="ABERTA")
     db.add(legado);db.flush()
     db.add(m.MensagemConversaQuestao(conversa_id=legado.id,autor="ALUNO",texto="Legado"));db.commit()
-    actor.is_admin=True
+    actor.is_admin=True; actor.tipo_admin="admin_geral"
     filas=c.get("/admin/mensagens-questoes")
     assert filas.status_code==200,filas.text
     assert [r["conversa_id"] for r in filas.json()]==[contextual]
@@ -188,10 +188,10 @@ def test_alternancia_limite_encerramento_imutavel(api):
     assert c.post(student,json={'texto':'x'}).status_code==409
     assert c.post(admin,json={'texto':'x'}).status_code==403
     for i in range(3):
-        a.is_admin=True
+        a.is_admin=True; a.tipo_admin="admin_geral"
         assert c.post(admin,json={'texto':'Resposta'}).status_code==200
         assert c.post(admin,json={'texto':'extra'}).status_code==409
-        a.is_admin=False
+        a.is_admin=False; a.tipo_admin=None
         assert c.post(student,json={'texto':'continua'}).status_code==(200 if i<2 else 409)
     assert db.query(m.MensagemConversaQuestao).count()==6
     assert db.get(m.ConversaQuestaoProfessor,rid).status=='ENCERRADA'
@@ -223,7 +223,7 @@ def test_expiracao_historico_admin_e_indice(api):
     conversa.contratacao_id=1; conversa.demonstracao_id=None; db.commit()
     assert len(c.get('/me/cursos-expirados/1/mensagens-prof?contratacao_id=1').json())==1
     assert c.get('/me/cursos-expirados/2/mensagens-prof?contratacao_id=1').status_code==403
-    a.is_admin=True
+    a.is_admin=True; a.tipo_admin="admin_geral"
     assert c.post(f'/admin/mensagens-questoes/{rid}/responder',json={'texto':'Resposta histórica'}).status_code==200
     assert c.get('/admin/mensagens-questoes').status_code==200
     db.add(m.ConversaQuestaoProfessor(usuario_id=1,questao_id=1,bateria_id=1,tentativa_id=1,demonstracao_id=1,status='ABERTA'))

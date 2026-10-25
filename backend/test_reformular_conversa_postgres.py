@@ -289,7 +289,7 @@ def test_postgres_reformulation_and_teacher_reply_are_serialized(seeded):
         try:
             return ("teacher", main.responder_conversa_prof_admin(old,
                 schemas.MensagemProfessorTexto(texto="Nova resposta"),
-                db=session, usuario=SimpleNamespace(id=99, is_admin=True)))
+                db=session, usuario=SimpleNamespace(id=99, is_admin=True, tipo_admin="admin_geral")))
         except HTTPException as exc:
             return ("teacher", exc.status_code)
         finally:
@@ -315,7 +315,7 @@ def test_postgres_legacy_rows_stay_out_of_admin_queue(seeded):
     db.add(legacy); db.flush()
     db.add(m.MensagemConversaQuestao(conversa_id=legacy.id, autor="ALUNO", texto="Legado preservado")); db.commit()
     rows = main.conversas_prof_admin(curso_id=None, disciplina_id=None,
-        concluidas=False, db=db, usuario=SimpleNamespace(id=99, is_admin=True))
+        concluidas=False, db=db, usuario=SimpleNamespace(id=99, is_admin=True, tipo_admin="admin_geral"))
     assert [item["conversa_id"] for item in rows] == [current]
     assert db.get(m.ConversaQuestaoProfessor, legacy.id) is not None
     assert db.query(m.MensagemConversaQuestao).filter_by(conversa_id=legacy.id).count() == 1

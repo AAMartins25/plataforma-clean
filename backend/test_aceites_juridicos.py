@@ -120,7 +120,7 @@ def test_concessao_administrativa_sem_aceite(juridico):
     main, _, factory, _, _ = juridico
     with factory() as db:
         r = main.admin_criar_acesso(payload=AcessoCursoCreate(usuario_id=1, curso_id=2, ativo=True, data_fim=datetime.utcnow()+timedelta(days=30)),
-            db=db, usuario=SimpleNamespace(is_admin=True))
+            db=db, usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
         assert r['ok']
         assert db.query(m.ConcessaoAcessoAdmin).count() == 1
         assert db.query(m.AceiteJuridico).count() == 0

@@ -10,7 +10,7 @@ from test_transacoes_mp import preparar
 def revalidar(ambiente):
     with ambiente[2]() as db:
         try:
-            return ambiente[0].admin_revalidar_pagamento({'mp_payment_id':'101'},db,SimpleNamespace(is_admin=True))
+            return ambiente[0].admin_revalidar_pagamento({'mp_payment_id':'101'},db,SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
         except Exception:
             db.rollback();raise
 

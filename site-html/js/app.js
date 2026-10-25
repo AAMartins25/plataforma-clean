@@ -115,6 +115,7 @@ function clearToken() {
 
 // GET com Bearer token
 async function apiGetAuth(path) {
+  if (window.AdminAcesso && !(await AdminAcesso.exigir())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
   const token = getToken();
   if (!token) throw new Error("Você não está logado. Faça login novamente.");
@@ -162,6 +163,7 @@ function invalidarCupomDigitado() {
 
 // POST com Bearer token
 async function apiPostAuth(path, body, opcoes = {}) {
+  if (window.AdminAcesso && !(await AdminAcesso.exigir())) throw new Error("Acesso administrativo negado");
   // Checkout inline de HTML antigo também passa por aqui. O sinalizador só evita
   // consulta duplicada de chamadas já conferidas; nunca é enviado ao backend.
   if (path === "/checkout/mercadopago" && !opcoes.politicaConferida && getToken()) {
@@ -392,6 +394,7 @@ async function aplicarCupomCursoInfo() {
 }
 
 async function apiPutAuth(path, body) {
+  if (window.AdminAcesso && !(await AdminAcesso.exigir())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
 
   const token = getToken();
@@ -418,6 +421,7 @@ async function apiPutAuth(path, body) {
 }
 
 async function apiDeleteAuth(path) {
+  if (window.AdminAcesso && !(await AdminAcesso.exigir())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
 
   const token = getToken();
@@ -723,7 +727,7 @@ window.entrarEEstudar = async function entrarEEstudar() {
 
 
     const quantidadeAreas =
-      Number(!!me?.is_admin) +
+      Number(!!me?.is_admin || ["admin_prod", "admin_adm"].includes(me?.tipo_admin)) +
       Number(!!me?.is_vendedor) +
       Number(!!me?.is_aluno);
 
@@ -740,7 +744,7 @@ window.entrarEEstudar = async function entrarEEstudar() {
 
 
     // Apenas Admin.
-    if (me?.is_admin) {
+    if (me?.is_admin || ["admin_prod", "admin_adm"].includes(me?.tipo_admin)) {
 
       window.location.href =
         "admin/index.html";
@@ -2664,7 +2668,8 @@ if (anoAtualCursoInfo) {
 }
 
 // Dispatcher
-window.onload = () => {
+window.onload = async () => {
+  if (window.AdminAcesso && !(await AdminAcesso.exigir())) return;
   const page = document.body.getAttribute("data-page");
   if (page === "cursos") pageCursos();
   if (page === "disciplinas") pageDisciplinas();

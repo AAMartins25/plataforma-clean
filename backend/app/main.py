@@ -1,4 +1,4 @@
-from app.admin_intermediario import exigir_geral, revalidar_geral
+from app.admin_intermediario import exigir_geral, revalidar_geral, pode_administrar, exigir_area
 from app.desempenho import validar_contexto_historico
 from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
 from app.financeiro_transacional import protegido, timeout_financeiro
@@ -196,14 +196,11 @@ def get_usuario_atual(token: str = Depends(oauth2_scheme), db: Session = Depends
     return usuario
 
 def exigir_admin_intermediario(usuario: Usuario = Depends(get_usuario_atual)):
-    # Restritos não recebem competências nesta versão, independentemente de flags.
-    return exigir_geral(usuario)
+    return exigir_area(usuario, "producao")
 
 
 def exigir_admin_aulas(usuario: Usuario = Depends(get_usuario_atual)):
-    if not usuario.is_admin:
-        raise HTTPException(403, "Apenas administradores podem gerenciar conteúdos de aulas")
-    return usuario
+    return exigir_area(usuario, "producao")
 
 
 def validar_contexto_estudo(
@@ -440,7 +437,7 @@ def admin_criar_acesso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas admin pode liberar acesso"
@@ -902,7 +899,7 @@ def listar_cursos_admin(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Apenas admin"
@@ -927,7 +924,7 @@ def editar_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     curso = db.query(Curso).filter(Curso.id == curso_id).first()
@@ -953,7 +950,7 @@ def excluir_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     curso = db.query(Curso).filter(Curso.id == curso_id).first()
@@ -1051,7 +1048,7 @@ def criar_disciplina_propria(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     curso = db.query(Curso).filter(Curso.id == curso_id).first()
@@ -1118,7 +1115,7 @@ def listar_disciplinas_proprias(
     # Aluno continua sujeito à validação de contratação/
     # demonstração.
     # ---------------------------------------------------------
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         contexto = {
             "demonstracao_id": None
         }
@@ -1176,7 +1173,7 @@ def editar_disciplina_propria(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     disciplina = (
@@ -1208,7 +1205,7 @@ def excluir_disciplina_propria(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
         
     disciplina = (
@@ -1236,7 +1233,7 @@ def criar_assunto_proprio(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     disciplina = (
@@ -1304,7 +1301,7 @@ def listar_assuntos_proprios(
     # Aluno continua sujeito à validação de contratação/
     # demonstração.
     # ---------------------------------------------------------
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         contexto = {
             "demonstracao_id": None
         }
@@ -1374,7 +1371,7 @@ def editar_assunto_proprio(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     assunto = (
@@ -1410,7 +1407,7 @@ def excluir_assunto_proprio(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     assunto = (
@@ -1495,7 +1492,7 @@ def listar_pastas_do_assunto(assunto_id: int, db: Session = Depends(get_db)):
 @app.post("/aulas")
 def criar_aula(aula: AulaCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(403, "Apenas admin")
 
     pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
@@ -1571,7 +1568,7 @@ def listar_aulas_por_pasta(
     # O administrador continua podendo listar as aulas
     # diretamente, sem necessidade de contexto de estudo.
     # ---------------------------------------------------------
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         aulas = (
             db.query(Aula)
             .filter(
@@ -2038,7 +2035,7 @@ def listar_videos_da_aula(
     # ---------------------------------------------------------
     # ADMIN
     # ---------------------------------------------------------
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         videos = (
             db.query(Video)
             .filter(Video.aula_id == aula_id)
@@ -2464,7 +2461,7 @@ def listar_baterias_da_aula(
             detail="Aula não encontrada"
         )
 
-    if not usuario_atual.is_admin:
+    if not pode_administrar(usuario_atual, "producao"):
         pasta = db.query(Pasta).filter(Pasta.id == aula.pasta_id).first()
 
         if not pasta:
@@ -2790,7 +2787,7 @@ def listar_questoes_da_bateria(
             detail="Bateria não encontrada"
         )
 
-    if usuario_atual.is_admin:
+    if pode_administrar(usuario_atual, "producao"):
         questoes = db.query(Questao).filter(Questao.bateria_id == bateria_id).order_by(Questao.ordem, Questao.id).all()
     else:
         aula = db.query(Aula).filter(
@@ -3113,7 +3110,7 @@ def listar_materiais_da_aula(
             detail="Aula não encontrada"
         )
 
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         materiais = db.query(Material).filter(Material.aula_id == aula_id).order_by(Material.ordem, Material.id).all()
         return [{"id": m.id, "aula_id": m.aula_id, "tipo": m.tipo,
                  "titulo": m.titulo, "url": m.url, "conteudo": m.conteudo,
@@ -3261,7 +3258,7 @@ def exigir_acesso_pasta(db, usuario, pasta_id):
     pasta = db.get(Pasta, pasta_id)
     if not pasta:
         raise HTTPException(404, "Pasta não encontrada")
-    if usuario.is_admin:
+    if pode_administrar(usuario, "producao"):
         return
     assunto = db.get(CursoAssuntoProprio, pasta.curso_assunto_proprio_id)
     disciplina = db.get(CursoDisciplinaPropria, assunto.curso_disciplina_propria_id) if assunto else None
@@ -3801,7 +3798,7 @@ def publicar_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administrador."
@@ -3836,7 +3833,7 @@ def obter_config_publica_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administrador."
@@ -3887,7 +3884,7 @@ def salvar_config_publica_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administrador."
@@ -5079,7 +5076,7 @@ def admin_listar_atendimentos(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     rows = db.execute(text("""
@@ -5107,7 +5104,7 @@ def admin_concluir_atendimento(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     atendimento = db.query(Atendimento).filter(
@@ -5134,7 +5131,7 @@ def admin_responder_atendimento(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     resposta = (payload.get("resposta") or "").strip()
@@ -5165,7 +5162,7 @@ def admin_listar_reembolsos(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     rows = db.execute(text("""
@@ -5220,7 +5217,7 @@ def admin_revalidar_pagamento(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     mp_payment_id = (payload.get("mp_payment_id") or "").strip()
@@ -5393,7 +5390,7 @@ def admin_listar_pagamentos(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     q_norm = (q or "").strip().lower()
@@ -5452,16 +5449,19 @@ def admin_criar_aluno(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual),
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas admin"
         )
 
     if "tipo_admin" in payload:
-        raise HTTPException(422, "Atribuição de tipos indisponível nesta versão")
+        raise HTTPException(422, "Utilize Gerenciar perfis para atribuir administração")
     if not isinstance(payload.get("is_admin", False), bool):
         raise HTTPException(422, "is_admin deve ser booleano")
+
+    if payload.get("is_admin", False):
+        raise HTTPException(422, "Utilize Gerenciar perfis para atribuir administração")
 
     nome = (
         payload.get("nome") or ""
@@ -5488,12 +5488,7 @@ def admin_criar_aluno(
         payload.get("senha") or ""
     ).strip()
 
-    is_admin = bool(
-        payload.get(
-            "is_admin",
-            False
-        )
-    )
+    is_admin = False
 
     if (
         not nome
@@ -5556,20 +5551,13 @@ def admin_criar_aluno(
         senha_hash=senha_hash,
         ativo=True,
         is_admin=is_admin,
-        tipo_admin="admin_geral" if is_admin else None,
-        perfil_inicial=(
-            "ADMIN"
-            if is_admin
-            else "ALUNO"
-        )
+        tipo_admin=None,
+        perfil_inicial="ALUNO"
     )
 
     revalidar_geral(db, usuario.id)
     db.add(u)
     db.flush()
-    if is_admin:
-        db.add(models.AuditoriaPerfilAdmin(autor_id=usuario.id, usuario_id=u.id,
-            tipo_anterior=None, tipo_novo="admin_geral"))
     db.commit()
     db.refresh(u)
 
@@ -5591,7 +5579,7 @@ def admin_listar_alunos(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual),
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     q = (q or "").strip()
@@ -5902,7 +5890,7 @@ def aprovar_reembolso(
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_usuario_atual)
 ):
-    if not admin.is_admin:
+    if not pode_administrar(admin, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administradores podem aprovar reembolsos"
@@ -5944,7 +5932,7 @@ def recusar_reembolso(
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_usuario_atual)
 ):
-    if not admin.is_admin:
+    if not pode_administrar(admin, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administradores podem recusar reembolsos"
@@ -5997,7 +5985,7 @@ def registrar_reembolso_pix_manual(
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_usuario_atual)
 ):
-    if not admin.is_admin:
+    if not pode_administrar(admin, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administradores podem registrar reembolsos"
@@ -6078,7 +6066,7 @@ def confirmar_reembolso_pix_manual(
     db: Session = Depends(get_db),
     admin: Usuario = Depends(get_usuario_atual)
 ):
-    if not admin.is_admin:
+    if not pode_administrar(admin, "geral"):
         raise HTTPException(
             status_code=403,
             detail="Apenas administradores podem confirmar reembolsos"
@@ -6319,7 +6307,7 @@ def obter_pasta_teoria_assunto_proprio(
         AcessoCurso.ativo == True
     ).first()
 
-    if not usuario.is_admin and (not tem_acesso or not curso_vigente(db, usuario.id, disciplina.curso_id)):
+    if not pode_administrar(usuario, "producao") and (not tem_acesso or not curso_vigente(db, usuario.id, disciplina.curso_id)):
         raise HTTPException(status_code=403, detail="Sem acesso a este curso")
 
     pasta = (
@@ -6372,7 +6360,7 @@ def criar_aula_pasta(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     pasta = db.query(Pasta).filter(Pasta.id == pasta_id).first()
@@ -6407,7 +6395,7 @@ def editar_aula(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     aula = db.query(Aula).filter(Aula.id == aula_id).first()
@@ -6439,7 +6427,7 @@ def excluir_aula(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
     aula = db.query(Aula).filter(Aula.id == aula_id).first()
@@ -6625,7 +6613,7 @@ def excluir_bateria(
     usuario: Usuario = Depends(get_usuario_atual)
 ):
 
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Apenas admin"
@@ -8640,7 +8628,7 @@ def continuar_conversa_prof(conversa_id: int, dados: schemas.MensagemProfessorTe
 @app.get('/admin/mensagens-questoes')
 def conversas_prof_admin(curso_id: int | None = None, disciplina_id: int | None = None,
         concluidas: bool = False, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(403, 'Acesso restrito')
     query = db.query(ConversaQuestaoProfessor).filter(or_(
         and_(ConversaQuestaoProfessor.contratacao_id.isnot(None),
@@ -8660,7 +8648,7 @@ def conversas_prof_admin(curso_id: int | None = None, disciplina_id: int | None 
 @app.post('/admin/mensagens-questoes/{conversa_id}/responder')
 def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfessorTexto,
         db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "alunos"):
         raise HTTPException(403, 'Acesso restrito')
     conversa = _travar_conversa_contextualizada(db, conversa_id)
     _contexto_conversa(db, conversa)
@@ -8929,7 +8917,7 @@ def criar_questao_pratica_admin(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas administrador.")
 
     if not dados.enunciado.strip():
@@ -9053,7 +9041,7 @@ def listar_questoes_pratica_admin(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas administrador.")
 
     questoes = (
@@ -9103,7 +9091,7 @@ def editar_questao_pratica_admin(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas administrador.")
 
     questao = db.query(models.QuestaoPraticaAssunto).filter(
@@ -9222,7 +9210,7 @@ def excluir_questao_pratica_admin(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas administrador.")
 
     questao = db.query(models.QuestaoPraticaAssunto).filter(
@@ -9258,7 +9246,7 @@ def duplicar_curso_inteiro(
     db: Session = Depends(get_db),
     usuario: models.Usuario = Depends(get_usuario_atual)
 ):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "producao"):
         raise HTTPException(
             status_code=403,
             detail="Acesso restrito ao administrador."
@@ -9461,7 +9449,7 @@ app.router.add_event_handler('shutdown', app.state.emails_pagamentos.encerrar)
 @app.post('/admin/emails-pagamentos/{pagamento_id}/{tipo}/reenviar')
 def reenviar_email_pagamento(pagamento_id: int, tipo: str, db: Session = Depends(get_db),
                             usuario=Depends(get_usuario_atual)):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(403, 'Acesso restrito ao administrador.')
     db.expunge_all(); db.rollback()
     try:
@@ -9472,7 +9460,7 @@ def reenviar_email_pagamento(pagamento_id: int, tipo: str, db: Session = Depends
 
 @app.get('/admin/emails-pagamentos')
 def listar_emails_pagamentos(db: Session = Depends(get_db), usuario=Depends(get_usuario_atual)):
-    if not usuario.is_admin:
+    if not pode_administrar(usuario, "geral"):
         raise HTTPException(403, 'Acesso restrito ao administrador.')
     db.expunge_all(); db.rollback()
     from app.emails_pagamentos import fila as fila_emails
@@ -9486,3 +9474,28 @@ def listar_emails_pagamentos(db: Session = Depends(get_db), usuario=Depends(get_
 
 from app.contestacoes import instalar as instalar_contestacoes
 instalar_contestacoes(app, get_db, get_usuario_atual, mp_headers)
+
+
+# Gestão de perfis usa exclusivamente a identidade corrente do banco.
+from app.perfis_admin import registrar_rotas as registrar_perfis_admin
+registrar_perfis_admin(app, get_db, get_usuario_atual)
+
+
+@app.get('/admin/cursos/{curso_id}/disciplinas')
+def disciplinas_questoes_admin(curso_id: int, db: Session = Depends(get_db),
+                              usuario: Usuario = Depends(exigir_admin_aulas)):
+    return db.query(models.CursoDisciplinaPropria).filter_by(curso_id=curso_id).order_by(
+        models.CursoDisciplinaPropria.ordem, models.CursoDisciplinaPropria.id).all()
+
+
+@app.get('/admin/cursos/{curso_id}/disciplinas/{disciplina_id}/assuntos')
+def assuntos_questoes_admin(curso_id: int, disciplina_id: int, db: Session = Depends(get_db),
+                           usuario: Usuario = Depends(exigir_admin_aulas)):
+    disciplina = db.query(models.CursoDisciplinaPropria).filter_by(id=disciplina_id, curso_id=curso_id).first()
+    if not disciplina:
+        raise HTTPException(404, 'Disciplina não encontrada neste curso')
+    return db.query(models.CursoAssuntoProprio).filter_by(curso_disciplina_propria_id=disciplina_id).order_by(
+        models.CursoAssuntoProprio.ordem, models.CursoAssuntoProprio.id).all()
+
+from app.vendedores_admin import registrar_rotas as registrar_vendedores_admin
+registrar_vendedores_admin(app, get_db, get_usuario_atual)

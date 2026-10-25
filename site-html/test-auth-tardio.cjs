@@ -81,7 +81,7 @@ test('cadastro sem token atrasado não altera a identificação/mensagem posteri
 for(const firstType of ['login','register'])test('tentativa em outra aba supera '+firstType+' pendente mesmo antes de obter token',async()=>{
  const a=ambiente(firstType),old=a.submit(),b=ambiente(firstType==='login'?'register':'login',a.store),newer=b.submit();const before=a.stable();a.reply(0,'ANTIGA');await old;assert.equal(a.stable(),before);b.reply(0,'ATUAL');await newer;assert.equal(a.store.get('access_token'),'ATUAL');
 });
-for(const [profile,dest] of [[{is_admin:true},'admin/index.html'],[{is_vendedor:true},'minhas-vendas.html'],[{is_aluno:true},'cursos.html'],[{is_admin:true,is_aluno:true},'minha-area.html'],[{},'index.html']])test('login normal: perfil preserva destino '+dest,async()=>{
+for(const [profile,dest] of [[{is_admin:false,tipo_admin:'admin_prod'},'admin/index.html'],[{is_admin:false,tipo_admin:'admin_adm'},'admin/index.html'],[{is_admin:false,tipo_admin:'admin_prod',is_aluno:true},'minha-area.html'],[{is_admin:false,tipo_admin:'admin_adm',is_vendedor:true},'minha-area.html'],[{is_admin:true},'admin/index.html'],[{is_vendedor:true},'minhas-vendas.html'],[{is_aluno:true},'cursos.html'],[{is_admin:true,is_aluno:true},'minha-area.html'],[{},'index.html']])test('login normal: perfil preserva destino '+dest,async()=>{
  const e=ambiente(),p=e.submit();e.reply(0,'NORMAL');await p;await timer(e);assert.equal(e.calls[1].url,'https://api.example.invalid/me');
  e.calls[1].resolve(Response.json(profile));await new Promise(r=>setImmediate(r));assert.equal(e.s.location.href,dest);
 });

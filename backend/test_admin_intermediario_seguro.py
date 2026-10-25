@@ -61,18 +61,21 @@ def test_quatro_gravacoes(ambiente,i):
     _,c,f=ambiente
     for url,p in GRAVACOES:
         r=c.post(url,json=p,headers=headers(i))
-        assert r.status_code==(200 if i==1 else 403 if i else 401),(url,r.text)
+        assert r.status_code==(200 if i in (1,2) else 403 if i else 401),(url,r.text)
     with f() as db:
-        assert db.query(m.Curso).count()==(2 if i==1 else 1)
-        assert db.query(m.Disciplina).count()==(2 if i==1 else 1)
-        assert db.query(m.Assunto).count()==(1 if i==1 else 0)
-        assert len(db.execute(m.curso_disciplina.select()).all())==int(i==1)
+        assert db.query(m.Curso).count()==(2 if i in (1,2) else 1)
+        assert db.query(m.Disciplina).count()==(2 if i in (1,2) else 1)
+        assert db.query(m.Assunto).count()==(1 if i in (1,2) else 0)
+        assert len(db.execute(m.curso_disciplina.select()).all())==int(i in (1,2))
 
 @pytest.mark.parametrize('i',[2,3,4,5,None])
 def test_leituras_administrativas_negadas(ambiente,i):
     main,c,_=ambiente
     for route in main.app.routes:
         if route.path.startswith('/admin/') and 'GET' in route.methods:
+            permitida = (i == 2 and (route.path.startswith('/admin/cursos') or route.path.startswith('/admin/curso-assuntos-proprios'))) or (i == 3 and route.path in {'/admin/pagamentos', '/admin/atendimentos', '/admin/mensagens-questoes'})
+            if permitida:
+                continue  # Fluxos positivos são exercitados pela suíte da matriz definitiva.
             url=re.sub(r'\{[^}]+\}','1',route.path)+'?q=Teste'
             r=c.get(url,headers=headers(i));assert r.status_code==(403 if i else 401),(url,r.text)
 
@@ -91,24 +94,28 @@ def test_login_real(ambiente,i):
     r=c.post('/login',data={'username':f'u{i}@example.com','password':'Teste123'});assert r.status_code==200
     h={'Authorization':'Bearer '+r.json()['access_token']}
     assert c.get('/me',headers=h).json()['is_admin']==(i==1)
-    assert c.post('/cursos',json={'nome':'Login'},headers=h).status_code==(200 if i==1 else 403)
+    assert c.post('/cursos',json={'nome':'Login'},headers=h).status_code==(200 if i in (1,2) else 403)
 
 @pytest.mark.parametrize('i',[2,3,4,5,None])
 def test_escalada_e_endpoint_ausente(ambiente,i):
     _,c,_=ambiente
     assert c.post('/admin/alunos',json={'is_admin':True,'tipo_admin':'admin_geral'},headers=headers(i)).status_code==(403 if i else 401)
-    assert c.put('/admin/usuarios/4/tipo-admin',json={'tipo_admin':'admin_geral'},headers=headers(i)).status_code==404
+    assert c.put('/admin/usuarios/4/tipo-admin',json={'tipo_admin':'admin_geral'},headers=headers(i)).status_code==(403 if i else 401)
 
 def test_criacao_geral_auditoria_e_payload(ambiente):
     _,c,f=ambiente
-    p={'nome':'Novo','cpf':'999','data_nascimento':'1990-01-01','telefone':'0','email':'novo@example.com','senha':'Teste123','is_admin':True}
-    for extra in [{'tipo_admin':'admin_prod'},{'is_admin':'false'}]:
+    p={'nome':'Novo','cpf':'999','data_nascimento':'1990-01-01','telefone':'0','email':'novo@example.com','senha':'Teste123'}
+    for extra in [{'tipo_admin':'admin_prod'},{'is_admin':'false'},{'is_admin':True}]:
         assert c.post('/admin/alunos',json={**p,**extra},headers=headers(1)).status_code==422
     r=c.post('/admin/alunos',json=p,headers=headers(1));assert r.status_code==200,r.text
+    uid=r.json()['id']
+    r=c.put(f'/admin/usuarios/{uid}/tipo-admin',json={'tipo_admin':'admin_geral'},headers=headers(1))
+    assert r.status_code==200,r.text
     with f() as db:
-        u=db.query(m.Usuario).filter_by(cpf='999').one();a=db.query(m.AuditoriaPerfilAdmin).one()
+        u=db.get(m.Usuario,uid);a=db.query(m.AuditoriaPerfilAdmin).one()
         assert (u.is_admin,u.tipo_admin)==(True,'admin_geral')
         assert (a.autor_id,a.usuario_id,a.tipo_novo)==(1,u.id,'admin_geral')
+
 
 def test_publico_e_revogacao_com_jwt_anterior(ambiente):
     _,c,f=ambiente
@@ -117,7 +124,8 @@ def test_publico_e_revogacao_com_jwt_anterior(ambiente):
     assert (r.json()['is_admin'],r.json()['tipo_admin'])==(False,None)
     h=headers(1)
     with f() as db:u=db.get(m.Usuario,1);u.is_admin=False;u.tipo_admin='admin_prod';db.commit()
-    assert c.post('/cursos',json={'nome':'Novo'},headers=h).status_code==403
+    assert c.post('/admin/alunos',json={},headers=h).status_code==403
+    assert c.post('/cursos',json={'nome':'Novo'},headers=h).status_code==200
     with f() as db:db.get(m.Usuario,1).ativo=False;db.commit()
     assert c.get('/me',headers=h).status_code==401
 
@@ -148,7 +156,7 @@ def test_handlers_publicados_aceitam_frontend_novo(ambiente):
         for url,p in GRAVACOES:assert c.post(url,json=p,headers=headers(1)).status_code==200
 
 @pytest.mark.parametrize('i',[2,3])
-def test_restritos_sem_competencia_em_escritas_das_quatro_secoes(ambiente,i):
+def test_restritos_sem_competencia_fora_da_matriz(ambiente,i):
     _,c,f=ambiente
     operacoes=[('/quiz-ia',{}),('/cartoes-ia',{}),('/questoes-ia',{}),
       ('/admin/acessos',{'usuario_id':4,'curso_id':1,'ativo':True,'data_fim':'2030-01-01T00:00:00'}),
@@ -158,6 +166,8 @@ def test_restritos_sem_competencia_em_escritas_das_quatro_secoes(ambiente,i):
       ('/admin/financeiro/manutencao',{'modo':'PAUSADO','geracao':0,'motivo':'Teste'}),
       ('/admin/emails-pagamentos/1/pix/reenviar',{})]
     for url,p in operacoes:
+        if (i==2 and url in {'/quiz-ia','/cartoes-ia','/questoes-ia'}) or (i==3 and (url.startswith('/admin/pagamentos') or url.startswith('/admin/atendimentos') or url.startswith('/admin/mensagens-questoes'))):
+            continue
         r=c.post(url,json=p,headers=headers(i));assert r.status_code==403,(url,r.text)
     with f() as db:
         assert db.query(m.AuditoriaPerfilAdmin).count()==0
@@ -167,12 +177,10 @@ def test_restritos_sem_competencia_em_escritas_das_quatro_secoes(ambiente,i):
 def test_falha_da_auditoria_nao_persiste_novo_administrador(ambiente):
     from sqlalchemy.exc import SQLAlchemyError
     _,c,f=ambiente
-    # Simula indisponibilidade da tabela somente no SQLite efêmero da fixture.
+    # A alteração de perfil e sua auditoria devem falhar atomicamente.
     m.AuditoriaPerfilAdmin.__table__.drop(f.kw['bind'])
     with pytest.raises(SQLAlchemyError):
-        c.post('/admin/alunos',headers=headers(1),json={'nome':'Novo','cpf':'999',
-            'data_nascimento':'1990-01-01','telefone':'0','email':'novo@example.com',
-            'senha':'Teste123','is_admin':True})
+        c.put('/admin/usuarios/4/tipo-admin',headers=headers(1),json={'tipo_admin':'admin_prod'})
     with f() as db:
         assert db.query(m.Usuario).count()==5
-        assert db.query(m.Usuario).filter_by(cpf='999').count()==0
+        assert db.get(m.Usuario,4).tipo_admin is None

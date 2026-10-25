@@ -29,6 +29,7 @@ async function apiPost(path, body) {
 }
 
 async function apiGetAuth(path) {
+  if (!(await requireAdmin())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
@@ -49,6 +50,7 @@ async function apiGetAuth(path) {
 }
 
 async function apiPostAuth(path, body) {
+  if (!(await requireAdmin())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
@@ -75,6 +77,7 @@ async function apiPostAuth(path, body) {
 
 
 async function apiGetAuth(path) {
+  if (!(await requireAdmin())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
@@ -95,6 +98,7 @@ async function apiGetAuth(path) {
 }
 
 async function apiPostAuth(path, body) {
+  if (!(await requireAdmin())) throw new Error("Acesso administrativo negado");
   if (!window.Sessao) await carregarSessao();
   const token = localStorage.getItem("access_token");
   if (!token) throw new Error("Sem token. Faça login novamente.");
@@ -122,41 +126,7 @@ async function apiPostAuth(path, body) {
 
 // ======= GUARDA DO ADMIN =======
 async function requireAdmin() {
-  try {
-    if (!window.Sessao) await carregarSessao();
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("Você precisa estar logado para acessar o Admin.");
-      window.location.href = "../login.html";
-      return false;
-    }
-
-    // Reaproveita API_BASE do app.js
-    const res = await Sessao.fetch(`${API_BASE}/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!res.ok) {
-      if (res.status !== 401) throw new Error(`Erro HTTP ${res.status} ao validar permissões`);
-      alert("Sessão expirada. Faça login novamente.");
-      window.location.href = "../login.html";
-      return false;
-    }
-
-    const me = await res.json();
-
-    if (!me.is_admin) {
-      alert("Acesso negado: área restrita ao administrador.");
-      window.location.href = "../cursos.html";
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    alert("Erro ao validar permissões do Admin: " + err.message);
-    window.location.href = "../cursos.html";
-    return false;
-  }
+  return window.AdminAcesso ? AdminAcesso.exigir() : false;
 }
 
 const AdminCursos = {
@@ -1107,10 +1077,7 @@ const AdminAlunos = {
         )?.value || ""
       ).trim();
 
-    const is_admin =
-      !!document.getElementById(
-        "alunoIsAdmin"
-      )?.checked;
+    const is_admin = false;
 
     const msg =
       document.getElementById(

@@ -1,0 +1,11 @@
+{
+  "origem": "Confirmação explícita do usuário nesta conversa, em 2026-10-25",
+  "ambiente": "Supabase de produção",
+  "consultas_executadas": 7,
+  "estrutura_pos_022_confirmada": true,
+  "administradores_gerais": 5,
+  "reutilizar_evidencia_existente": true,
+  "nova_consulta_executada_nesta_preparacao": false,
+  "migracao_nova_necessaria_para_perfis": false,
+  "limite": "Registro da confirmação fornecida pelo usuário. Não contém os resultados brutos das consultas nem representa uma nova inspeção do banco."
+}

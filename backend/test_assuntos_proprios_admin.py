@@ -69,7 +69,7 @@ def test_admin_sem_contexto_dispensa_validador(ambiente, disciplina_id, ids):
     main, client = ambiente
     main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(
         id=1, is_admin=True
-    )
+    , tipo_admin="admin_geral")
     with patch.object(main, "validar_contexto_estudo", side_effect=AssertionError("Validador chamado")):
         resposta = client.get(f"/disciplinas-proprias/{disciplina_id}/assuntos-proprios")
     assert resposta.status_code == 200, resposta.text
@@ -107,7 +107,7 @@ def test_terceira_disciplina_bloqueada_apenas_na_demonstracao(ambiente, contexto
 
 def test_admin_preserva_disciplina_inexistente(ambiente):
     main, client = ambiente
-    main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(is_admin=True, tipo_admin="admin_geral")
     resposta = client.get("/disciplinas-proprias/999/assuntos-proprios")
     assert resposta.status_code == 404
     assert resposta.json()["detail"] == "Disciplina não encontrada"

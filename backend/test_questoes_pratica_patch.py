@@ -235,7 +235,7 @@ def test_desativacao_e_elegibilidade_entre_selecao_resposta(env):
 @pytest.mark.parametrize('letras', ['ABCD','ABCDE'])
 def test_admin_multipla_cadastro_correcao_rever(env,letras):
     client,db=env
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True, tipo_admin="admin_geral")
     r=client.post('/admin/questoes-pratica',json={'curso_assunto_proprio_id':1,'tipo':'MULTIPLA','enunciado':'Escolha','gabarito':'',
         'alternativas':[{'letra':l,'texto':l,'correta':l==letras[-1]} for l in letras]})
     assert r.status_code==200,r.text
@@ -250,7 +250,7 @@ def test_admin_multipla_cadastro_correcao_rever(env,letras):
 @pytest.mark.parametrize('letras',['ABCE','ABC','AABCD'])
 def test_admin_alternativas_invalidas(env,letras):
     client,_=env
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True, tipo_admin="admin_geral")
     r=client.post('/admin/questoes-pratica',json={'curso_assunto_proprio_id':1,'tipo':'MULTIPLA','enunciado':'Escolha','gabarito':'',
         'alternativas':[{'letra':l,'texto':l,'correta':i==0} for i,l in enumerate(letras)]})
     assert r.status_code==400
@@ -305,7 +305,7 @@ def test_admin_permissao_e_edicao(env):
     client,db=env
     payload={'curso_assunto_proprio_id':1,'tipo':'CERTO_ERRADO','enunciado':'CE','gabarito':'E'}
     assert client.post('/admin/questoes-pratica',json=payload).status_code==403
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda: SimpleNamespace(id=1,is_admin=True, tipo_admin="admin_geral")
     r=client.post('/admin/questoes-pratica',json=payload);assert r.status_code==200
     id=r.json()['id']
     edit={'tipo':'MULTIPLA','enunciado':'MC','alternativas':[{'letra':l,'texto':l,'correta':l=='B'} for l in 'ABCD']}
@@ -461,7 +461,7 @@ def test_admin_gabarito_multipla_invalida_sessao(env):
         db.add(models.QuestaoPraticaAlternativa(questao_pratica_id=1, letra=l, texto=l, correta=l=='B'))
     db.commit()
     r = proxima(client).json()
-    main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(id=1, is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(id=1, is_admin=True, tipo_admin="admin_geral")
     payload = {'tipo':'MULTIPLA', 'enunciado':'Teste', 'alternativas':[
         {'letra':l, 'texto':l, 'correta':l=='D'} for l in 'ABCD']}
     assert client.put('/admin/questoes-pratica/1', json=payload).status_code == 200

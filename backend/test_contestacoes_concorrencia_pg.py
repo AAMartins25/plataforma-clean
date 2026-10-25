@@ -85,7 +85,7 @@ def test_confirmacao_e_bloqueio_concorrentes_idempotentes(pg):
     with f() as db:
         pid,cid=compra(db,mp='102');ident=caso(db,pid)
     confirmar=endpoint(main,'/confirmar-devolucao');bloquear=endpoint(main,'/bloquear-acesso')
-    admin=SimpleNamespace(id=2,is_admin=True)
+    admin=SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     dados=Confirmacao(referencia_devolucao='extrato local',confirmacao_devolucao=True)
     paralelo(f,lambda db,i:confirmar(ident,dados,db,admin))
     paralelo(f,lambda db,i:bloquear(ident,True,db,admin))
@@ -103,7 +103,7 @@ def test_renovacao_concorrente_ao_bloqueio_preserva_periodo(pg):
     main,f=pg
     with f() as db:
         pid,cid=compra(db,mp='103');ident=caso(db,pid)
-    actor=SimpleNamespace(id=2,is_admin=True)
+    actor=SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     with f() as db:
         endpoint(main,'/confirmar-devolucao')(ident,
             Confirmacao(referencia_devolucao='extrato terceiro',confirmacao_devolucao=True),db,actor)
@@ -135,7 +135,7 @@ def test_recebimento_concorrente_impede_bloqueio_com_prova_antiga(pg):
     with f() as db:
         pid,cid=compra(db,mp='105');ident=caso(db,pid)
         caso_id=db.get(m.ContestacaoPagamento,ident).mp_dispute_id
-    actor=SimpleNamespace(id=2,is_admin=True)
+    actor=SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     with f() as db:
         endpoint(main,'/confirmar-devolucao')(ident,
             Confirmacao(referencia_devolucao='extrato corrida',confirmacao_devolucao=True),db,actor)

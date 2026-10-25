@@ -24,7 +24,7 @@ def motor():
 @pytest.fixture
 def ambiente(ambiente_compra):
     main,c,factory,post,get=ambiente_compra
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     return main,c,factory,post,get
 
 ROTAS=[('get','/admin/cupons-desconto',None),('get','/admin/vendedores',None),
@@ -101,7 +101,7 @@ def test_vendedores_vinculo_status_e_compra(ambiente):
     r=c.post('/checkout/mercadopago',json={'tempo_acesso_id':1,'codigo_cupom':novo['codigo']})
     assert r.status_code==200 and r.json()['valor_cents']==4391,r.text
     post.assert_called_once()
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
     assert c.put(url+'/status?ativo=false',json={}).json()['ativo'] is False
     assert c.post('/cupons-desconto/validar',json={'codigo_cupom':novo['codigo']}).status_code==400
     assert c.put(url+'/status?ativo=true',json={}).status_code==200

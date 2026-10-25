@@ -39,7 +39,7 @@ def test_geracao_concorrente_colisoes(ambiente_compra,monkeypatch):
     def gerar(_):
         with factory() as db:
             barreira.wait(timeout=5)
-            return endpoint(main)(schemas.CupomDescontoGerarRequest(quantidade=100),db,SimpleNamespace(is_admin=True))
+            return endpoint(main)(schemas.CupomDescontoGerarRequest(quantidade=100),db,SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
     with ThreadPoolExecutor(max_workers=2) as executor:resultados=list(executor.map(gerar,range(2)))
     assert all(len(lote)==100 for lote in resultados)
     assert len({c['codigo'] for lote in resultados for c in lote})==200
@@ -51,6 +51,6 @@ def test_rollback_postgresql(ambiente_compra,monkeypatch):
     monkeypatch.setattr(cupons_admin,'gerar_codigo',lambda:next(codigos,'AW265'))
     with factory() as db:
         with pytest.raises(HTTPException) as erro:
-            endpoint(main)(schemas.CupomDescontoGerarRequest(quantidade=2),db,SimpleNamespace(is_admin=True))
+            endpoint(main)(schemas.CupomDescontoGerarRequest(quantidade=2),db,SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
         assert erro.value.status_code==409
     with factory() as db:assert [c.codigo for c in db.query(m.CupomDesconto)]==['AW265']

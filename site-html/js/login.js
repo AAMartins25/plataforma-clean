@@ -201,7 +201,7 @@
       if (!atual()) return;
 
       const quantidadeAreas =
-        Number(!!me?.is_admin) +
+        Number(!!me?.is_admin || ["admin_prod", "admin_adm"].includes(me?.tipo_admin)) +
         Number(!!me?.is_vendedor) +
         Number(!!me?.is_aluno);
 
@@ -217,7 +217,7 @@
 
 
       // Apenas Admin.
-      if (me?.is_admin) {
+      if (me?.is_admin || ["admin_prod", "admin_adm"].includes(me?.tipo_admin)) {
         window.location.href =
           "admin/index.html";
 

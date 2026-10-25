@@ -65,7 +65,7 @@ def aprovado(ambiente):
 def test_registro_concorrente_nao_duplica(ambiente_compra):
     main,_,factory,_,_=ambiente_compra;pid=aprovado(ambiente_compra)
     def operacao(db,i):
-        return main.registrar_reembolso_pix_manual(pid,schemas.ReembolsoPixManualCreate(valor_cents=4990,referencia_comprovante='extrato'),db,SimpleNamespace(id=2,is_admin=True))
+        return main.registrar_reembolso_pix_manual(pid,schemas.ReembolsoPixManualCreate(valor_cents=4990,referencia_comprovante='extrato'),db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
     resultados=paralelo(factory,operacao)
     assert sum(isinstance(r,dict) for r in resultados)==1 and 409 in resultados
     with factory() as db:assert db.query(m.ReembolsoFinanceiro).count()==1
@@ -82,7 +82,7 @@ def test_confirmacao_concorrente_preserva_acesso(ambiente_compra,canal):
         'external_reference':f'user:1|curso:1|tempo:1|pagamento:{raiz}'}
     def operacao(db,i):
         if i==0 or canal=='confirmacao_repetida':
-            return main.confirmar_reembolso_pix_manual(rid,True,db,SimpleNamespace(id=2,is_admin=True))
+            return main.confirmar_reembolso_pix_manual(rid,True,db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
         if canal=='retorno':return main.confirmar_pagamento({'payment_id':'102','curso_id':1},db,SimpleNamespace(id=1))
         return asyncio.run(webhook(main,db,102))
     with patch.object(main,'consultar_pagamento') as api,patch.object(main,'validar_assinatura_mercadopago',return_value=True):
@@ -104,7 +104,7 @@ def test_decisoes_concorrentes_nao_sobrescrevem(ambiente_compra):
     aplicar014(factory.kw['bind'])
     def operacao(db,i):
         funcao=main.aprovar_reembolso if i==0 else main.recusar_reembolso
-        return funcao(pid,db,SimpleNamespace(id=2,is_admin=True))
+        return funcao(pid,db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
     resultados=paralelo(factory,operacao)
     assert sum(isinstance(r,dict) for r in resultados)==1 and 400 in resultados
     with factory() as db:assert db.query(m.ReembolsoFinanceiro).count()==0

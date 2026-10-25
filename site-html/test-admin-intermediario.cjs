@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync(__dirname+'/js/admin.js','utf8');
 function contexto(){
- const calls=[],c={API_BASE:'https://api.example.invalid',location:{},alert(){},
+ const calls=[],c={AdminAcesso:{exigir:async()=>true},API_BASE:'https://api.example.invalid',location:{},alert(){},
   document:{addEventListener(){},getElementById(){return null}},localStorage:{getItem(){return 'token-ficticio'}},
   Sessao:{fetch:async(url,options)=>{calls.push({url,options});return {ok:true,status:200,json:async()=>({is_admin:true}),text:async()=>'{}'}}}};
  c.window=c;vm.createContext(c);vm.runInContext(source,c);return {c,calls};

@@ -1,3 +1,5 @@
+> Documento histórico do intermediário 022. Para os três perfis definitivos, consulte [PUBLICACAO-PERFIS-DEFINITIVOS.md](PUBLICACAO-PERFIS-DEFINITIVOS.md). Não executar as instruções de migração deste roteiro nesta preparação.
+
 # Registro da preparação do commit local
 
 O commit local autorizado reúne backend intermediário, frontend compatível com cache versionado, migração 022, testes e documentação. Sua base direta é cdba603e9a8d3a3a04a77fc03863ad41c93c1a93. Administradores restritos continuam sem competências administrativas.

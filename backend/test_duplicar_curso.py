@@ -23,7 +23,7 @@ def copia(env):
 
 
 def executar(main,db,nome='Cópia',admin=True):
-    return main.duplicar_curso_inteiro(1,schemas.DuplicarCursoRequest(novo_nome=nome),db,SimpleNamespace(id=1,is_admin=admin))
+    return main.duplicar_curso_inteiro(1,schemas.DuplicarCursoRequest(novo_nome=nome),db,SimpleNamespace(id=1,is_admin=admin, tipo_admin=("admin_geral" if admin else None)))
 
 
 def snapshot(db):
@@ -76,7 +76,7 @@ def test_rollback_integral(copia):
 
 def test_origem_inexistente_e_estrutura_incompativel(copia):
     db,main=copia
-    with pytest.raises(HTTPException) as e:main.duplicar_curso_inteiro(999,schemas.DuplicarCursoRequest(novo_nome='Cópia'),db,SimpleNamespace(is_admin=True))
+    with pytest.raises(HTTPException) as e:main.duplicar_curso_inteiro(999,schemas.DuplicarCursoRequest(novo_nome='Cópia'),db,SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
     assert e.value.status_code==404
     db.add(m.Pasta(curso_assunto_proprio_id=1,tipo='INTERATIVIDADE',nome='Legado'));db.commit()
     with pytest.raises(HTTPException) as e:executar(main,db)

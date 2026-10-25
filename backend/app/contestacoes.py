@@ -1,4 +1,5 @@
 """Registro de casos MP e decisões manuais independentes. Nunca movimenta dinheiro."""
+from app.admin_intermediario import pode_administrar
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import re
@@ -104,7 +105,7 @@ def travar(db, ident):
 
 def instalar(app, get_db, get_usuario_atual, headers):
     def admin(usuario=Depends(get_usuario_atual)):
-        if not usuario.is_admin:
+        if not pode_administrar(usuario, "geral"):
             raise HTTPException(403, 'Acesso restrito ao administrador.')
         return usuario
 

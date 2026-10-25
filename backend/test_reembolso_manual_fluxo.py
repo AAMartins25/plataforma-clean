@@ -30,7 +30,7 @@ def motor_do(factory):
 
 
 def admin(ambiente):
-    ambiente[0].app.dependency_overrides[ambiente[0].get_usuario_atual] = lambda: SimpleNamespace(id=2, is_admin=True)
+    ambiente[0].app.dependency_overrides[ambiente[0].get_usuario_atual] = lambda: SimpleNamespace(id=2, is_admin=True, tipo_admin="admin_geral")
 
 
 def registrar(client, pid):
@@ -136,7 +136,7 @@ def test_reconciliacao_preserva_confirmacao_manual(ambiente_compra, canal, estad
         acesso=db.query(m.AcessoCurso).one();snapshot=(acesso.ativo,acesso.data_fim)
         with patch.object(main,'consultar_pagamento') as api,patch.object(main,'validar_assinatura_mercadopago',return_value=True):
             api.return_value.status_code=200;api.return_value.json.return_value=resposta
-            if canal=='admin':r=main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True))
+            if canal=='admin':r=main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
             elif canal=='webhook':r=asyncio.run(webhook(main,db,102))
             else:r=main.confirmar_pagamento({'payment_id':'102','curso_id':1},db,SimpleNamespace(id=1))
         assert r['status']=='REFUNDED' and r['mp_status']==estado.upper()
@@ -162,7 +162,7 @@ def test_estado_provedor_nao_confirma_pix_manual(ambiente_compra,estado):
             'external_reference':'checkout:'+db.get(m.Pagamento,raiz).checkout_identidade,'collector_id':123456,'live_mode':True}
         with patch.object(main,'consultar_pagamento') as api:
             api.return_value.status_code=200;api.return_value.json.return_value=dados
-            main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True))
+            main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
     with factory() as db:
         assert db.get(m.ReembolsoFinanceiro,rid).status=='PENDENTE'
         assert db.get(m.ReembolsoFinanceiro,rid).confirmado_por is None
@@ -183,7 +183,7 @@ def test_ocorrencia_reconcilia_sem_inventar_devolucao_manual(ambiente_compra,can
             'external_reference':'checkout:'+db.get(m.Pagamento,raiz).checkout_identidade,'collector_id':123456,'live_mode':True}
         with patch.object(main,'consultar_pagamento') as api,patch.object(main,'validar_assinatura_mercadopago',return_value=True):
             api.return_value.status_code=200;api.return_value.json.return_value=dados
-            if canal=='admin':r=main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True))
+            if canal=='admin':r=main.admin_revalidar_pagamento({'mp_payment_id':'102'},db,SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral"))
             elif canal=='webhook':r=asyncio.run(webhook(main,db,102))
             else:r=main.confirmar_pagamento({'payment_id':'102','curso_id':1},db,SimpleNamespace(id=1))
         assert r['mp_status']==estado.upper() and r['status']==estado.upper() and not r['liberou_acesso']

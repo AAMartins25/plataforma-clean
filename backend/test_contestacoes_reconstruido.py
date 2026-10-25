@@ -50,7 +50,7 @@ def caso(db, pagamento_id, comprovado=True):
 
 
 def admin(main):
-    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True)
+    main.app.dependency_overrides[main.get_usuario_atual]=lambda:SimpleNamespace(id=2,is_admin=True, tipo_admin="admin_geral")
 
 
 def confirmar(client,ident,ref='extrato-testado'):

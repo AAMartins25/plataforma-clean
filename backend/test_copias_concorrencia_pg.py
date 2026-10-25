@@ -35,7 +35,7 @@ def infraestrutura():
 def copiar(main,factory,tipo,origem=1,destino=2,barreira=None):
     if barreira:barreira.wait(timeout=10)
     with factory() as db:
-        usuario=SimpleNamespace(id=1,is_admin=True)
+        usuario=SimpleNamespace(id=1,is_admin=True, tipo_admin="admin_geral")
         if tipo=='disciplina':
             return main.copiar_disciplina_entre_cursos(origem,schemas.CopiarDisciplinaRequest(curso_destino_id=destino),db,usuario)
         return main.copiar_assunto_entre_disciplinas(origem,schemas.CopiarAssuntoRequest(disciplina_destino_id=destino),db,usuario)

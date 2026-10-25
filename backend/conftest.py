@@ -98,3 +98,15 @@ def pytest_unconfigure(config):
     environment = getattr(config, "_jwt_test_environment", None)
     if environment is not None:
         environment.undo()
+
+# Compatibilidade das constraints PostgreSQL em bancos SQLite efêmeros.
+# Equivale ao suporte já disponível em evidencias/runner_sqlite.py.
+import sqlite3
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+@event.listens_for(Engine, 'connect')
+def _btrim_sqlite_testes(conexao, _):
+    if isinstance(conexao, sqlite3.Connection):
+        conexao.create_function('BTRIM', 1, lambda v: v.strip() if v is not None else None,
+                               deterministic=True)

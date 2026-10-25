@@ -1,4 +1,5 @@
 """Gestão administrativa de cupons, preservando o contrato histórico."""
+from app.admin_intermediario import pode_administrar
 import secrets
 import string
 from datetime import datetime
@@ -19,7 +20,7 @@ def dados_cupom(cupom):
 
 def registrar_rotas(app, get_db, get_usuario):
     def exigir_admin(usuario=Depends(get_usuario)):
-        if not usuario.is_admin:
+        if not pode_administrar(usuario, "geral"):
             raise HTTPException(403,'Acesso restrito ao administrador.')
         return usuario
 

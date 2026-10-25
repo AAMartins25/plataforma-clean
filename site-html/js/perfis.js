@@ -1,4 +1,5 @@
 (async function () {
+  if (!(await requireAdmin())) return;
 
   const campoBusca =
     document.getElementById(
@@ -76,9 +77,7 @@
             <br><br>
 
             <b>Admin:</b>
-            ${textoSimNao(
-            usuario.is_admin
-            )}
+            ${escaparHtml(({admin_geral: "Administrador Geral", admin_prod: "Administrador de Produção", admin_adm: "Administrador Administrativo"})[usuario.tipo_admin] || "Sem perfil administrativo")}
             <br>
 
             <b>Vendedor:</b>
@@ -99,12 +98,6 @@
 
     if (acoesPerfilUsuario) {
 
-        const textoBotaoAdmin =
-        usuario.is_admin
-            ? "Retirar Admin"
-            : "Conceder Admin";
-
-
         const textoBotaoVendedor =
         usuario.vendedor_ativo
             ? "Descredenciar vendedor"
@@ -114,13 +107,14 @@
 
 
         acoesPerfilUsuario.innerHTML = `
-        <button
-            id="btnAlterarPerfilAdmin"
-            class="btn"
-            type="button"
-        >
-            ${textoBotaoAdmin}
-        </button>
+        <label>Perfil administrativo
+          <select id="tipoAdminUsuario">
+            ${[["", "Sem perfil administrativo"], ["admin_geral", "Administrador Geral"],
+               ["admin_prod", "Administrador de Produção"], ["admin_adm", "Administrador Administrativo"]]
+              .map(([valor, nome]) => `<option value="${valor}" ${valor === (usuario.tipo_admin || "") ? "selected" : ""}>${nome}</option>`).join("")}
+          </select>
+        </label>
+        <button id="btnAlterarPerfilAdmin" class="btn" type="button">Salvar perfil administrativo</button>
 
         <button
             id="btnAlterarPerfilVendedor"
@@ -143,92 +137,27 @@
         );
 
 
-        // ALTERAR PERFIL ADMIN
+        // O retorno da API é a fonte do estado exibido; não alternar flags localmente.
         if (btnAlterarPerfilAdmin) {
-
-        btnAlterarPerfilAdmin.addEventListener(
-            "click",
-            async () => {
-
-            const acao =
-                usuario.is_admin
-                ? "retirar-admin"
-                : "conceder-admin";
-
-
-            const mensagemConfirmacao =
-                usuario.is_admin
-                ? (
-                    "Deseja realmente retirar " +
-                    "o perfil Admin deste usuário?"
-                    )
-                : (
-                    "Deseja realmente conceder " +
-                    "o perfil Admin a este usuário?"
-                    );
-
-
-            const confirmou =
-                confirm(
-                mensagemConfirmacao
-                );
-
-
-            if (!confirmou) {
-                return;
-            }
-
-
+          btnAlterarPerfilAdmin.addEventListener("click", async () => {
+            const tipo = document.getElementById("tipoAdminUsuario").value || null;
+            if (tipo === usuario.tipo_admin) return;
+            if (!confirm("Confirma a alteração do perfil administrativo deste usuário?")) return;
+            btnAlterarPerfilAdmin.disabled = true;
             try {
-
-                btnAlterarPerfilAdmin.disabled =
-                true;
-
-
-                await apiPutAuth(
-                `/admin/usuarios/${usuario.id}/${acao}`,
-                {}
-                );
-
-
-                usuario.is_admin =
-                !usuario.is_admin;
-
-
-                mostrarUsuario(
-                usuario
-                );
-
-
-                alert(
-                "Perfil Admin atualizado com sucesso."
-                );
-
-
+              const atualizado = await apiPutAuth(`/admin/usuarios/${usuario.id}/tipo-admin`, {tipo_admin: tipo});
+              Object.assign(usuario, atualizado);
+              mostrarUsuario(usuario);
+              alert("Perfil administrativo atualizado com sucesso.");
+              // Uma alteração do próprio perfil deve revalidar a página imediatamente.
+              const me = await apiGetAuth("/me");
+              if (me.tipo_admin !== "admin_geral") location.replace("../minha-area.html");
             } catch (err) {
-
-                console.error(
-                "Erro ao alterar perfil Admin:",
-                err
-                );
-
-
-                alert(
-                "Não foi possível alterar " +
-                "o perfil Admin."
-                );
-
-
-                btnAlterarPerfilAdmin.disabled =
-                false;
-
+              alert("Não foi possível alterar o perfil: " + err.message);
+              btnAlterarPerfilAdmin.disabled = false;
             }
-
-            }
-        );
-
+          });
         }
-
 
         // ALTERAR PERFIL VENDEDOR
         if (btnAlterarPerfilVendedor) {

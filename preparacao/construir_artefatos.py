@@ -1,108 +1,179 @@
-"""Empacota somente base publicada + mudanças locais explicitamente aprovadas."""
+"""Pacotes determinísticos da versão definitiva, limitados ao manifesto de fontes aprovado."""
 import difflib
 import gzip
 import hashlib
+from html.parser import HTMLParser
+import importlib.metadata
 import io
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import platform
+import posixpath
+import re
 import subprocess
+import sys
 import tarfile
+from urllib.parse import urlsplit
+from verificar_artefato import (
+    VERSAO, TIPO_BACKEND, TIPO_FRONTEND, MATRIZ, FLAGS, BACKEND_OBRIGATORIO,
+    FRONTEND_OBRIGATORIO, caminho_permitido, hashes, hash_arvore, verificar,
+)
 
-ROOT=Path(__file__).resolve().parents[1]
-BASE='cdba603e9a8d3a3a04a77fc03863ad41c93c1a93'
+ROOT = Path(__file__).resolve().parents[1]
+MANIFESTO = 'evidencias/manifesto.json'
+PACOTE_FRONTEND = 'frontend-perfis-definitivos.tar.gz'
+PACOTE_BACKEND = 'backend-perfis-definitivos.tar.gz'
+PACOTE_RECUPERACAO = 'recuperacao-perfis-definitivos.tar.gz'
+PATCH_FRONTEND = 'frontend-perfis-definitivos.patch'
+PATCH_COMPLETO = 'perfis-definitivos-completo.patch'
 
 
-def construir():
-    baseline={};modes={}
-    raw=subprocess.check_output(['git','archive',BASE],cwd=ROOT)
-    with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
-        for m in archive.getmembers():
-            if m.isdir():continue
-            if not m.isfile():raise ValueError('Base contém entrada não regular')
-            baseline[m.name]=archive.extractfile(m).read();modes[m.name]=m.mode
-    approved=json.loads((ROOT/'evidencias/manifesto.json').read_text())
-    for f,h in approved['arquivos'].items():
-        if hashlib.sha256((ROOT/f).read_bytes()).hexdigest()!=h:
-            raise ValueError('Arquivo do patch auditado mudou: '+f)
-    assets=list((ROOT/'site-html/js').glob('admin-intermediario-022.*.js'))
-    if len(assets)!=1:raise ValueError('Esperado um asset administrativo versionado')
-    asset=assets[0];digest=hashlib.sha256((ROOT/'site-html/js/admin.js').read_bytes()).hexdigest()
-    if asset.name!='admin-intermediario-022.'+digest[:16]+'.js' or asset.read_bytes()!=(ROOT/'site-html/js/admin.js').read_bytes():
-        raise ValueError('Asset e hash não correspondem ao admin.js auditado')
-    front={'site-html/js/admin.js':(ROOT/'site-html/js/admin.js').read_bytes(),
-           asset.relative_to(ROOT).as_posix():asset.read_bytes()}
-    pages=[]
-    for p in sorted((ROOT/'site-html/admin').glob('*.html')):
-        f=p.relative_to(ROOT).as_posix();data=p.read_bytes()
-        if b'src="../js/admin.js"' not in baseline[f]:
-            if data!=baseline[f]:raise ValueError('HTML fora do escopo mudou: '+f)
+class Referencias(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.locais = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        url = attrs.get('src') if tag == 'script' else attrs.get('href') if tag == 'link' and attrs.get('rel') == 'stylesheet' else None
+        if url and not urlsplit(url).scheme and not url.startswith('//'):
+            self.locais.append(urlsplit(url).path)
+
+
+def validar_frontend(files):
+    if not FRONTEND_OBRIGATORIO <= files.keys():
+        raise ValueError('Frontend definitivo incompleto')
+    paginas = sorted(f for f in files if f.startswith('site-html/admin/') and f.endswith('.html'))
+    if len(paginas) != 19:
+        raise ValueError('Inventário das 19 páginas administrativas mudou; revisar')
+    for f, data in files.items():
+        if not f.startswith('site-html/') or not f.endswith('.html'):
             continue
-        if data.replace(asset.name.encode(),b'admin.js')!=baseline[f]:
-            raise ValueError('HTML contém alteração fora do versionamento: '+f)
-        if asset.name.encode() not in data:raise ValueError('HTML sem asset versionado: '+f)
-        front[f]=data;pages.append(f)
-    if len(pages)!=18:raise ValueError('Inventário administrativo mudou; revisar')
-    full=dict(baseline)
-    for f in approved['arquivos']:full[f]=(ROOT/f).read_bytes()
-    full.update(front)
-    frontend={f:b for f,b in baseline.items() if f.startswith('site-html/')};frontend.update(front)
-    timestamp=int(subprocess.check_output(['git','show','-s','--format=%ct',BASE],cwd=ROOT,text=True))
-    out=ROOT/'artefatos';out.mkdir(exist_ok=True)
-    def pacote(name,files,kind,uses):
-        hashes={f:hashlib.sha256(b).hexdigest() for f,b in sorted(files.items())}
-        tree=hashlib.sha256(json.dumps(hashes,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-        manifest={'base_sha':BASE,'release_id':kind+'-'+tree[:16],'kind':kind,
-          'allowed_uses':uses,'restritos_habilitados':False,'source_tree_sha256':tree,'files':hashes}
-        entries={**files,'RELEASE-MANIFEST.json':(json.dumps(manifest,sort_keys=True,indent=2)+'\n').encode()}
-        buf=io.BytesIO()
-        with gzip.GzipFile(fileobj=buf,mode='wb',filename='',mtime=0) as gz:
-            with tarfile.open(fileobj=gz,mode='w',format=tarfile.PAX_FORMAT) as archive:
-                for f,data in sorted(entries.items()):
-                    if Path(f).name=='.env' or '.git' in Path(f).parts:raise ValueError('Arquivo não permitido')
-                    info=tarfile.TarInfo(f);info.size=len(data);info.mode=modes.get(f,0o644);info.mtime=timestamp
-                    archive.addfile(info,io.BytesIO(data))
-        data=buf.getvalue();(out/name).write_bytes(data)
-        return {'sha256':hashlib.sha256(data).hexdigest(),'release_id':manifest['release_id'],
-                'allowed_uses':uses,'arquivos':len(files)}
-    index={'base_sha':BASE,'asset':asset.name,'pacotes':{}}
-    index['pacotes']['frontend-compativel.tar.gz']=pacote('frontend-compativel.tar.gz',frontend,'frontend-compativel',['frontend'])
-    index['pacotes']['backend-intermediario.tar.gz']=pacote('backend-intermediario.tar.gz',full,'intermediario-seguro',['backend','recuperacao'])
-    (out/'recuperacao-intermediario.tar.gz').write_bytes((out/'backend-intermediario.tar.gz').read_bytes())
-    index['pacotes']['recuperacao-intermediario.tar.gz']=dict(index['pacotes']['backend-intermediario.tar.gz'])
-    def patch_local(entries):
-        lines=[]
-        for f,data in sorted(entries.items()):
-            if baseline.get(f)==data:continue
-            old=baseline.get(f,b'').decode();new=data.decode()
-            lines.append('diff --git a/'+f+' b/'+f+'\n')
-            if f not in baseline:lines.append('new file mode 100644\n')
-            for line in difflib.unified_diff(old.splitlines(True),new.splitlines(True),
-                fromfile='a/'+f if f in baseline else '/dev/null',tofile='b/'+f):
-                lines.append(line if line.endswith('\n') else line+'\n\\ No newline at end of file\n')
-        return ''.join(lines)
-    (out/'frontend-primeiro.patch').write_text(patch_local(front))
-    (out/'intermediario-completo.patch').write_text(patch_local(full))
-    (out/'verificar_artefato.py').write_bytes((ROOT/'preparacao/verificar_artefato.py').read_bytes())
-    import importlib.metadata
-    import platform
-    import re
-    import sys
-    names=[re.split(r'[\[<>=!~ ]',line.strip())[0] for line in (ROOT/'backend/requirements.txt').read_text().splitlines() if line.strip() and not line.startswith('#')]
-    names.append('psycopg-binary')
-    deps={}
+        parser = Referencias()
+        parser.feed(data.decode())
+        for ref in parser.locais:
+            destino = posixpath.normpath(posixpath.join('site-html', ref.lstrip('/')) if ref.startswith('/')
+                                         else posixpath.join(posixpath.dirname(f), ref))
+            if destino not in files:
+                raise ValueError('Dependência frontend ausente: ' + f + ' -> ' + destino)
+        if f in paginas:
+            texto = data.decode()
+            if ('admin-acesso.js?v=perfis-1' not in texto or
+                    texto.index('admin-acesso.js') > texto.index('../js/app.js') or
+                    'admin-intermediario-022.' in texto):
+                raise ValueError('Guarda/cache administrativo divergente: ' + f)
+    return paginas
+
+
+def patch_local(baseline, entries):
+    lines = []
+    for f, data in sorted(entries.items()):
+        if baseline.get(f) == data:
+            continue
+        old, new = baseline.get(f, b'').decode(), data.decode()
+        lines.append('diff --git a/' + f + ' b/' + f + '\n')
+        if f not in baseline:
+            lines.append('new file mode 100644\n')
+        for line in difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                                        fromfile='a/' + f if f in baseline else '/dev/null', tofile='b/' + f):
+            lines.append(line if line.endswith('\n') else line + '\n\\ No newline at end of file\n')
+    return ''.join(lines).encode()
+
+
+def construir(out=None):
+    source_bytes = (ROOT / MANIFESTO).read_bytes()
+    source = json.loads(source_bytes)
+    if (source['manifest_version'] != VERSAO or source['restritos_habilitados'] is not True
+            or source['matriz_permissoes'] != MATRIZ or source['is_admin_por_perfil'] != FLAGS):
+        raise ValueError('Manifesto de fontes não corresponde à versão definitiva')
+    base = source['base_sha']
+    if not re.fullmatch('[0-9a-f]{40}', base):
+        raise ValueError('Base inválida')
+    baseline, modes = {}, {}
+    raw = subprocess.check_output(['git', 'archive', base], cwd=ROOT)
+    with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
+        for member in archive.getmembers():
+            if member.isdir():
+                continue
+            if not member.isfile() or not caminho_permitido(member.name):
+                raise ValueError('Base contém entrada não permitida')
+            baseline[member.name] = archive.extractfile(member).read()
+            modes[member.name] = member.mode
+    files = {}
+    if MANIFESTO in source['arquivos']:
+        raise ValueError('Manifesto de fontes não pode conter seu próprio hash')
+    for f, expected in source['arquivos'].items():
+        if not caminho_permitido(f) or (ROOT / f).is_symlink():
+            raise ValueError('Fonte não permitida: ' + f)
+        data = (ROOT / f).read_bytes()
+        if hashlib.sha256(data).hexdigest() != expected:
+            raise ValueError('Arquivo do manifesto aprovado mudou: ' + f)
+        files[f] = data
+    files[MANIFESTO] = source_bytes
+    if not set(baseline) <= files.keys():
+        raise ValueError('Manifesto omite arquivos da base; remoções exigem revisão explícita')
+    if not BACKEND_OBRIGATORIO <= files.keys():
+        raise ValueError('Backend definitivo incompleto')
+    paginas = validar_frontend(files)
+    frontend = {f: b for f, b in files.items() if f.startswith('site-html/')}
+    timestamp = int(subprocess.check_output(['git', 'show', '-s', '--format=%ct', base], cwd=ROOT, text=True))
+    out = Path(out) if out is not None else ROOT / 'artefatos'
+    out.mkdir(parents=True, exist_ok=True)
+    common = dict(manifest_version=VERSAO, base_sha=base, restritos_habilitados=True,
+                  matriz_permissoes=MATRIZ, is_admin_por_perfil=FLAGS,
+                  schema_requerido='pos-022', executar_migracoes=False,
+                  source_manifest_sha256=hashlib.sha256(source_bytes).hexdigest(),
+                  frontend_tree_sha256=hash_arvore(frontend))
+    outputs = {}
+
+    def pacote(name, entries, kind, uses):
+        tree = hash_arvore(entries)
+        manifest = common | dict(release_id=kind + '-' + tree[:16], kind=kind, allowed_uses=uses,
+                                source_tree_sha256=tree, files=hashes(entries))
+        buf = io.BytesIO()
+        with gzip.GzipFile(fileobj=buf, mode='wb', filename='', mtime=0) as gz:
+            with tarfile.open(fileobj=gz, mode='w', format=tarfile.PAX_FORMAT) as archive:
+                for f, data in sorted((entries | {'RELEASE-MANIFEST.json': (json.dumps(manifest, sort_keys=True, indent=2) + '\n').encode()}).items()):
+                    if not caminho_permitido(f):
+                        raise ValueError('Arquivo não permitido: ' + f)
+                    info = tarfile.TarInfo(f)
+                    info.size, info.mode, info.mtime = len(data), modes.get(f, 0o644), timestamp
+                    archive.addfile(info, io.BytesIO(data))
+        outputs[name] = buf.getvalue()
+        return dict(sha256=hashlib.sha256(outputs[name]).hexdigest(), release_id=manifest['release_id'],
+                    allowed_uses=uses, arquivos=len(entries))
+
+    index = common | {'pacotes': {}, 'paginas_admin': paginas}
+    index['pacotes'][PACOTE_FRONTEND] = pacote(PACOTE_FRONTEND, frontend, TIPO_FRONTEND, ['frontend'])
+    index['pacotes'][PACOTE_BACKEND] = pacote(PACOTE_BACKEND, files, TIPO_BACKEND, ['backend', 'recuperacao'])
+    outputs[PACOTE_RECUPERACAO] = outputs[PACOTE_BACKEND]
+    index['pacotes'][PACOTE_RECUPERACAO] = dict(index['pacotes'][PACOTE_BACKEND])
+    outputs[PATCH_FRONTEND] = patch_local(baseline, frontend)
+    outputs[PATCH_COMPLETO] = patch_local(baseline, files)
+    outputs['verificar_artefato.py'] = files['preparacao/verificar_artefato.py']
+    deps = {}
+    names = [re.split(r'[\[<>=!~ ]', line.strip())[0] for line in files['backend/requirements.txt'].decode().splitlines()
+             if line.strip() and not line.startswith('#')] + ['psycopg-binary']
     for name in names:
-        try:deps[name]=importlib.metadata.version(name)
-        except importlib.metadata.PackageNotFoundError:deps[name]='não instalado neste ambiente'
-    (out/'DEPENDENCIAS-TESTADAS.json').write_text(json.dumps({'python':sys.version.split()[0],
-        'plataforma':platform.system()+'/'+platform.machine(),'versoes_locais':deps,
-        'observacao':'Registro local; não é lock ou imagem do runtime Render.'},indent=2,ensure_ascii=False)+'\n')
-    index['patches']={name:hashlib.sha256((out/name).read_bytes()).hexdigest() for name in ['frontend-primeiro.patch','intermediario-completo.patch']}
-    index['verificador_sha256']=hashlib.sha256((out/'verificar_artefato.py').read_bytes()).hexdigest()
-    (out/'INDICE.json').write_text(json.dumps(index,indent=2,ensure_ascii=False)+'\n')
-    checks={name:p['sha256'] for name,p in index['pacotes'].items()}
-    for name in ['frontend-primeiro.patch','intermediario-completo.patch','verificar_artefato.py','DEPENDENCIAS-TESTADAS.json','INDICE.json']:
-        checks[name]=hashlib.sha256((out/name).read_bytes()).hexdigest()
-    (out/'SHA256SUMS').write_text(''.join(digest+'  '+name+'\n' for name,digest in checks.items()))
+        try:
+            deps[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            deps[name] = 'não instalado neste ambiente'
+    outputs['DEPENDENCIAS-TESTADAS.json'] = (json.dumps(dict(
+        python=sys.version.split()[0], plataforma=platform.system() + '/' + platform.machine(),
+        versoes_locais=deps, observacao='Registro local; não é lock ou imagem do runtime Render.'),
+        indent=2, ensure_ascii=False) + '\n').encode()
+    index['patches'] = {f: hashlib.sha256(outputs[f]).hexdigest() for f in (PATCH_FRONTEND, PATCH_COMPLETO)}
+    index['verificador_sha256'] = hashlib.sha256(outputs['verificar_artefato.py']).hexdigest()
+    outputs['INDICE.json'] = (json.dumps(index, indent=2, ensure_ascii=False) + '\n').encode()
+    outputs['SHA256SUMS'] = ''.join(f'{hashlib.sha256(data).hexdigest()}  {f}\n' for f, data in sorted(outputs.items())).encode()
+    for f, data in outputs.items():
+        (out / f).write_bytes(data)
+    for f, meta in index['pacotes'].items():
+        for uso in meta['allowed_uses']:
+            verificar(out / f, meta['sha256'], uso)
     return index
 
-if __name__=='__main__':print(json.dumps(construir(),indent=2,ensure_ascii=False))
+
+if __name__ == '__main__':
+    print(json.dumps(construir(), indent=2, ensure_ascii=False))
