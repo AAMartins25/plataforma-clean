@@ -1285,6 +1285,34 @@ async function calcularProgressoDisciplina(disciplinaId) {
 }
 
 // 2) Disciplinas do Curso
+async function preencherPercentuais(lista, caminho, campoId) {
+  const sessaoOrigem = Sessao.snapshot();
+  try {
+    const dados = await apiGetAuth(caminho);
+    if (!Sessao.mesma(sessaoOrigem) || !lista.isConnected) return;
+    for (const item of dados.percentuais || []) {
+      const identificador = Number(item[campoId]);
+      const valor = Number(item.percentual);
+      if (!Number.isInteger(identificador) || !Number.isInteger(valor) || valor < 0 || valor > 100) continue;
+      const indicador = lista.querySelector(`[data-progresso-id="${identificador}"]`);
+      if (!indicador) continue;
+      indicador.querySelector("[data-progresso-barra]").style.width = `${valor}%`;
+      const texto = indicador.querySelector("[data-progresso-texto]");
+      texto.textContent = `${valor}%`;
+      texto.classList.toggle("com-progresso", valor > 0);
+      indicador.removeAttribute("aria-busy");
+    }
+  } catch (erro) {
+    console.error("Não foi possível carregar o progresso:", erro);
+    if (Sessao.mesma(sessaoOrigem) && lista.isConnected) {
+      lista.querySelectorAll("[data-progresso-id][aria-busy]").forEach(indicador => {
+        indicador.querySelector("[data-progresso-texto]").textContent = "—";
+        indicador.removeAttribute("aria-busy");
+      });
+    }
+  }
+}
+
 async function pageDisciplinas() {
   const cursoId = qs("curso_id");
   const cursoNome = qs("curso_nome") || "";
@@ -1331,9 +1359,6 @@ async function pageDisciplinas() {
     lista.innerHTML = "";
 
     for (const d of disciplinas) {
-      const prog =
-        await calcularProgressoDisciplina(d.id);
-
       const div =
         document.createElement("div");
 
@@ -1386,28 +1411,35 @@ async function pageDisciplinas() {
 
         </div>
 
-        <div
+        <div data-progresso-id="${d.id}" aria-busy="true"
           class="disciplina-progresso"
           title="Quanto já estudei desta disciplina"
         >
           <div class="disciplina-progresso-trilho">
             <div
-              class="disciplina-progresso-preenchimento"
-              style="width:${prog.percentual}%;"
+              class="disciplina-progresso-preenchimento" data-progresso-barra
+              style="width:0%;"
             ></div>
           </div>
 
           <div
-            class="disciplina-progresso-percentual ${
-              prog.percentual > 0 ? "com-progresso" : ""
-            }"
+            class="disciplina-progresso-percentual" data-progresso-texto
           >
-            ${prog.percentual}%
+            …
           </div>
         </div>
       `;
 
       lista.appendChild(div);
+    }
+
+    if (disciplinas.length) {
+      const contexto = contratacaoId
+        ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
+        : demonstracaoId ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}` : "";
+      void preencherPercentuais(lista,
+        `/me/cursos/${encodeURIComponent(cursoId)}/progresso-disciplinas${contexto}`,
+        "disciplina_id");
     }
 
   } catch (err) {
@@ -1601,9 +1633,6 @@ async function pageAssuntos() {
     lista.innerHTML = "";
 
     for (const a of assuntos) {
-      const prog =
-        await calcularProgressoAssunto(a.id);
-
       const div =
         document.createElement("div");
 
@@ -1631,30 +1660,37 @@ async function pageAssuntos() {
 
         </div>
 
-        <div
+        <div data-progresso-id="${a.id}" aria-busy="true"
           class="assunto-progresso"
           title="Quanto já estudei deste assunto"
         >
 
           <div class="assunto-progresso-trilho">
             <div
-              class="assunto-progresso-preenchimento"
-              style="width:${prog.percentual}%;"
+              class="assunto-progresso-preenchimento" data-progresso-barra
+              style="width:0%;"
             ></div>
           </div>
 
           <div
-            class="assunto-progresso-percentual ${
-              prog.percentual > 0 ? "com-progresso" : ""
-            }"
+            class="assunto-progresso-percentual" data-progresso-texto
           >
-            ${prog.percentual}%
+            …
           </div>
 
         </div>
       `;
 
       lista.appendChild(div);
+    }
+
+    if (assuntos.length) {
+      const contexto = contratacaoId
+        ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
+        : demonstracaoId ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}` : "";
+      void preencherPercentuais(lista,
+        `/me/disciplinas-proprias/${encodeURIComponent(disciplinaId)}/progresso-assuntos${contexto}`,
+        "assunto_id");
     }
 
   } catch (err) {
