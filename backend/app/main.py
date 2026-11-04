@@ -89,6 +89,7 @@ from app.models import CursoAssuntoProprio
 from app.direitos_acesso import contrato_vigente, curso_vigente
 from app.models import ContratacaoCurso
 from app.schemas import AulaUpdate
+from app.progresso_agregado import contagens_por_assunto, percentual
 
 import os
 import resend
@@ -1353,6 +1354,68 @@ def listar_assuntos_proprios(
         )
         .all()
     )
+
+@app.get("/me/cursos/{curso_id}/progresso-disciplinas")
+def progresso_disciplinas_agregado(
+    curso_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual),
+):
+    # Reutiliza a listagem para manter a mesma validação e os bloqueios da demo.
+    disciplinas = listar_disciplinas_proprias(
+        curso_id, contratacao_id, demonstracao_id, db, usuario
+    )
+    if usuario.is_admin and (contratacao_id is not None or demonstracao_id is not None):
+        validar_contexto_estudo(db, usuario, curso_id, contratacao_id, demonstracao_id)
+    liberadas = [d["id"] for d in disciplinas if not d["bloqueada"]]
+    assuntos = (
+        db.query(CursoAssuntoProprio)
+        .filter(CursoAssuntoProprio.curso_disciplina_propria_id.in_(liberadas),
+                CursoAssuntoProprio.ativo.is_(True))
+        .all()
+    ) if liberadas else []
+    contagens = (
+        contagens_por_assunto(db, assuntos, usuario.id, contratacao_id, demonstracao_id)
+        if contratacao_id is not None or demonstracao_id is not None else {}
+    )
+    por_disciplina = {d["id"]: [0, 0] for d in disciplinas}
+    for assunto in assuntos:
+        total, feitas = contagens.get(assunto.id, (0, 0))
+        valores = por_disciplina[assunto.curso_disciplina_propria_id]
+        valores[0] += total
+        valores[1] += feitas
+    return {"percentuais": [
+        {"disciplina_id": d["id"], "percentual": percentual(*por_disciplina[d["id"]])}
+        for d in disciplinas
+    ]}
+
+
+@app.get("/me/disciplinas-proprias/{disciplina_id}/progresso-assuntos")
+def progresso_assuntos_agregado(
+    disciplina_id: int,
+    contratacao_id: int | None = None,
+    demonstracao_id: int | None = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_usuario_atual),
+):
+    assuntos = listar_assuntos_proprios(
+        disciplina_id, contratacao_id, demonstracao_id, db, usuario
+    )
+    if usuario.is_admin and (contratacao_id is not None or demonstracao_id is not None):
+        disciplina = db.query(CursoDisciplinaPropria).filter(
+            CursoDisciplinaPropria.id == disciplina_id
+        ).first()
+        validar_contexto_estudo(db, usuario, disciplina.curso_id, contratacao_id, demonstracao_id)
+    contagens = (
+        contagens_por_assunto(db, assuntos, usuario.id, contratacao_id, demonstracao_id)
+        if contratacao_id is not None or demonstracao_id is not None else {}
+    )
+    return {"percentuais": [
+        {"assunto_id": a.id, "percentual": percentual(*contagens.get(a.id, (0, 0)))}
+        for a in assuntos
+    ]}
 
 @app.put(
     "/assuntos-proprios/{assunto_id}",
