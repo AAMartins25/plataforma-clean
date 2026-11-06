@@ -35,6 +35,10 @@
     if (!textarea) throw new Error("Campo de texto indisponível.");
     if (instancias.has(textarea)) return instancias.get(textarea);
     const C = await carregar();
+    if (!window.criarPluginTeoriaMatematica || !window.TeoriaMatematica) {
+      throw new Error("O suporte a fórmulas não foi carregado. Recarregue a página.");
+    }
+    const TeoriaFormula = window.criarPluginTeoriaMatematica(C);
     if (!textarea.isConnected) throw new Error("O formulário foi fechado antes da abertura do editor.");
     const { ClassicEditor, Essentials, Paragraph, Bold, Italic, Underline, Heading,
       List, Indent, Table, TableToolbar, TableCaption, Alignment,
@@ -52,10 +56,10 @@
       licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
       plugins: [Essentials, Paragraph, Bold, Italic, Underline, Heading, List,
         Indent, Table, TableToolbar, TableCaption, Alignment,
-        Link],
+        Link, TeoriaFormula],
       toolbar: ["undo", "redo", "|", "heading", "|", "bold", "italic", "underline",
         "|", "bulletedList", "numberedList", "outdent", "indent", "|",
-        "alignment", "insertTable", "link"],
+        "alignment", "insertTable", "link", "|", "formula"],
       table: { contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "toggleTableCaption"] }
       });
     } catch (erro) {

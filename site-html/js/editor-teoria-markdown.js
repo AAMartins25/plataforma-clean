@@ -4,7 +4,7 @@
   const LIMITE = 250000;
   const montagens = new WeakMap();
   const tags = ["p", "br", "h2", "h3", "h4", "strong", "b", "em", "i", "u",
-    "ul", "ol", "li", "blockquote", "a", "figure", "figcaption", "table", "thead", "tbody", "tfoot", "tr", "th", "td"];
+    "ul", "ol", "li", "blockquote", "a", "figure", "figcaption", "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span"];
   let sequencia = 0;
   const temTexto = texto => /[^\s\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u.test(texto);
 
@@ -28,6 +28,141 @@
     if (!temTexto(texto)) throw new Error("O bloco Markdown está vazio.");
     const avisos = new Set();
     const md = window.markdownit({ html: false, linkify: false, typographer: false, maxNesting: 50 });
+    let formulas = 0;
+    const M = window.TeoriaMatematica;
+    const fechamentosPorEstado = new WeakMap();
+    const linhasFechamento = new WeakMap();
+    // A regra roda antes de escape/backticks: código cercado por crases é
+    // consumido pela regra original e nunca é reinterpretado como matemática.
+    md.inline.ruler.before("escape", "ro_math", (estado, silencioso) => {
+      const inicio = estado.pos, abertura = estado.src.slice(inicio, inicio + 2);
+      if (abertura === "\\)" || abertura === "\\]") {
+        if (!silencioso) {
+          estado.push("text", "", 0).content = abertura;
+          avisos.add("Há delimitadores matemáticos sem abertura; foram preservados como texto.");
+        }
+        estado.pos += 2;
+        return true;
+      }
+      if (abertura !== "\\(" && abertura !== "\\[") return false;
+      const fechamento = abertura === "\\(" ? "\\)" : "\\]";
+      // Indexar uma vez por estado inline evita varreduras quadráticas em uma
+      // entrada com milhares de aberturas sem fechamento.
+      let cache = fechamentosPorEstado.get(estado);
+      if (!cache) { cache = {}; fechamentosPorEstado.set(estado, cache); }
+      if (!cache[fechamento]) {
+        const posicoes = [];
+        let pos = estado.src.indexOf(fechamento);
+        while (pos !== -1) {
+          let barras = 0;
+          for (let p = pos - 1; p >= 0 && estado.src[p] === "\\"; p--) barras++;
+          if (barras % 2 === 0) posicoes.push(pos);
+          pos = estado.src.indexOf(fechamento, pos + 2);
+        }
+        cache[fechamento] = { posicoes };
+      }
+      const busca = cache[fechamento];
+      // O parser pode consultar posições anteriores em modo silencioso; usar
+      // busca binária, sem cursor mutável compartilhado entre essas consultas.
+      let esquerda = 0, direita = busca.posicoes.length;
+      while (esquerda < direita) {
+        const meio = (esquerda + direita) >>> 1;
+        if (busca.posicoes[meio] < inicio + 2) esquerda = meio + 1;
+        else direita = meio;
+      }
+      const fim = busca.posicoes[esquerda] ?? estado.posMax;
+      /* O fechamento deve estar no trecho ativo (por exemplo, dentro de link). */
+      if (fim >= estado.posMax) {
+        if (!silencioso) {
+          estado.push("text", "", 0).content = abertura;
+          avisos.add("Há delimitadores matemáticos sem fechamento; foram preservados como texto.");
+        }
+        estado.pos += 2;
+        return true;
+      }
+      const fonte = estado.src.slice(inicio + 2, fim);
+      if (!silencioso) {
+        if (!M) throw new Error("O suporte matemático não foi carregado. Recarregue a página.");
+        M.validar(fonte);
+        if (++formulas > M.LIMITE_FORMULAS) throw new Error("Cada teoria pode ter até 200 fórmulas.");
+        const token = estado.push(abertura === "\\(" ? "ro_math_inline" : "ro_math_display", "", 0);
+        token.content = fonte;
+      }
+      estado.pos = fim + 2;
+      return true;
+    });
+    md.renderer.rules.ro_math_inline = (tokens, indice) =>
+      '<span class="ro-math-inline">' + md.utils.escapeHtml(tokens[indice].content) + '</span>';
+    md.renderer.rules.ro_math_display = (tokens, indice) =>
+      '<figure class="ro-math-display">' + md.utils.escapeHtml(tokens[indice].content) + '</figure>';
+    // Blocos LaTeX precisam ser consumidos antes da análise Markdown de listas,
+    // tabelas e escapes. Aceita abertura/fechamento em linhas próprias ou na mesma.
+    md.block.ruler.before("fence", "ro_math_block", (estado, linha, fim, silencioso) => {
+      const inicio = estado.bMarks[linha] + estado.tShift[linha];
+      if (estado.src.slice(inicio, inicio + 2) !== "\\[") return false;
+      let linhas = linhasFechamento.get(estado);
+      if (!linhas) {
+        linhas = [];
+        // lineMax pode estar temporariamente limitado por uma lista/citação.
+        // Indexar o documento inteiro e respeitar `fim` somente na consulta.
+        for (let n = 0; n < estado.bMarks.length - 1; n++) {
+          const trecho = estado.src.slice(estado.bMarks[n], estado.eMarks[n]);
+          if (/(^|[^\\])(?:\\\\)*\\\]\s*$/.test(trecho)) linhas.push(n);
+        }
+        linhasFechamento.set(estado, linhas);
+      }
+      let esquerda = 0, direita = linhas.length;
+      while (esquerda < direita) {
+        const meio = (esquerda + direita) >>> 1;
+        if (linhas[meio] < linha) esquerda = meio + 1;
+        else direita = meio;
+      }
+      const ultima = linhas[esquerda] ?? fim;
+      if (ultima >= fim) return false;
+      if (silencioso) return true;
+      // getLines remove apenas o recuo do contêiner (lista/citação).
+      const trecho = estado.getLines(linha, ultima + 1, estado.blkIndent, false);
+      const fonte = trecho.slice(trecho.indexOf("\\[") + 2, trecho.lastIndexOf("\\]"));
+      if (!M) throw new Error("O suporte matemático não foi carregado. Recarregue a página.");
+      M.validar(fonte);
+      if (++formulas > M.LIMITE_FORMULAS) throw new Error("Cada teoria pode ter até 200 fórmulas.");
+      estado.push("ro_math_display", "", 0).content = fonte;
+      estado.line = ultima + 1;
+      return true;
+    }, { alt: ["paragraph", "reference", "blockquote", "list"] });
+    // Uma fórmula display dentro de um parágrafo/título se torna um bloco
+    // irmão. Nunca emitir <figure> dentro de <p> (o navegador o repartiria).
+    md.core.ruler.after("inline", "ro_math_paragrafos", estado => {
+      const saida = [];
+      for (let i = 0; i < estado.tokens.length; i++) {
+        const abrir = estado.tokens[i], inline = estado.tokens[i + 1], fechar = estado.tokens[i + 2];
+        if (!/^(paragraph|heading)_open$/.test(abrir.type) || inline?.type !== "inline" ||
+            !inline.children.some(t => t.type === "ro_math_display")) { saida.push(abrir); continue; }
+        let grupo = [];
+        const marcas = [];
+        const flush = () => {
+          if (!grupo.length) return;
+          const a = new estado.Token(abrir.type, abrir.tag, 1);
+          a.attrs = abrir.attrs;
+          const t = new estado.Token("inline", "", 0); t.children = grupo;
+          saida.push(a, t, new estado.Token(fechar.type, fechar.tag, -1));
+          grupo = [];
+        };
+        for (const filho of inline.children) {
+          if (filho.type === "ro_math_display") {
+            for (const marca of [...marcas].reverse()) grupo.push(new estado.Token(marca.type.replace(/_open$/, "_close"), marca.tag, -1));
+            flush(); saida.push(filho);
+            grupo = [...marcas];
+          } else {
+            grupo.push(filho);
+            if (filho.nesting === 1) marcas.push(filho);
+            if (filho.nesting === -1) marcas.pop();
+          }
+        }
+        flush(); i += 2;
+      }
+      estado.tokens = saida;
+    });
     md.disable("strikethrough");
     const escapar = md.utils.escapeHtml;
     md.renderer.rules.code_inline = (tokens, indice) => {
@@ -88,7 +223,8 @@
         no.removeAttribute("href");
         avisos.add("Alguns endereços de link não são permitidos e serão mantidos apenas como texto.");
       }
-      if (no.hasAttribute("class") && !(no.tagName === "FIGURE" && no.className === "table")) no.removeAttribute("class");
+      if (no.hasAttribute("class") && !((no.tagName === "FIGURE" && ["table", "ro-math-display"].includes(no.className)) ||
+          (no.tagName === "SPAN" && no.className === "ro-math-inline"))) no.removeAttribute("class");
       if (no.hasAttribute("style")) {
         const permitido = ["P", "H2", "H3", "H4", "TH", "TD"].includes(no.tagName);
         const alinhamento = no.getAttribute("style").match(/^\s*text-align\s*:\s*(left|right|center|justify)\s*;?\s*$/i);
@@ -121,7 +257,7 @@
     dialogo.innerHTML = `
       <div class="teoria-markdown-cabecalho"><h2 id="${id}-titulo">Importar Markdown</h2>
         <button type="button" class="btn" data-md="fechar" aria-label="Fechar importador">Fechar</button></div>
-      <p>Cole o resumo em Markdown para importar títulos, negritos, itálicos, listas e tabelas.</p>
+      <p>Cole o resumo em Markdown para importar títulos, negritos, itálicos, listas, tabelas e fórmulas LaTeX.</p>
       <label for="${id}-fonte">Resumo em Markdown</label>
       <textarea id="${id}-fonte" data-md="fonte" rows="9" autocomplete="off" spellcheck="false"></textarea>
       <p>A importação substitui o conteúdo do editor. Revise e use o botão de salvar da teoria para gravar. Ctrl+Z desfaz a importação.</p>

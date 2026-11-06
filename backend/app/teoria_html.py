@@ -14,11 +14,13 @@ FORMATO_TEXTO = "texto_puro"
 LIMITE_HTML = 1_000_000
 LIMITE_TAGS = 15_000
 LIMITE_PROFUNDIDADE = 128
+LIMITE_FONTE_FORMULA = 4096
+LIMITE_FORMULAS = 200
 
 TAGS = frozenset({
     "p", "br", "h2", "h3", "h4", "strong", "b", "em", "i", "u",
     "ul", "ol", "li", "blockquote", "a", "figure", "figcaption",
-    "table", "thead", "tbody", "tfoot", "tr", "th", "td",
+    "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span",
 })
 
 
@@ -47,10 +49,100 @@ def _atributo(tag: str, nome: str, valor: str) -> str | None:
     if tag == "a" and nome == "href":
         return valor if _url_segura(valor) else None
     if tag == "figure" and nome == "class":
-        return "table" if valor == "table" else None
+        return valor if valor in {"table", "ro-math-display"} else None
+    if tag == "span" and nome == "class":
+        return valor if valor == "ro-math-inline" else None
     if tag in {"td", "th"} and nome in {"colspan", "rowspan"}:
         return valor if re.fullmatch(r"[1-9][0-9]?", valor) and int(valor) <= 20 else None
     return None
+
+
+class _Formulas(HTMLParser):
+    """A fonte de uma fórmula é texto puro, com tamanho e quantidade limitados."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.ativa = None
+        self.partes = []
+        self.quantidade = 0
+        self.comprimento = 0
+
+    def handle_starttag(self, tag, attrs):
+        if self.ativa:
+            raise HTTPException(422, "A fonte da fórmula deve conter somente texto LaTeX.")
+        classes = [v for k, v in attrs if k == "class"]
+        if ((tag == "span" and classes == ["ro-math-inline"])
+                or (tag == "figure" and classes == ["ro-math-display"])):
+            self.quantidade += 1
+            if self.quantidade > LIMITE_FORMULAS:
+                raise HTTPException(422, "Cada teoria pode ter até 200 fórmulas.")
+            self.ativa, self.partes, self.comprimento = tag, [], 0
+
+    def handle_data(self, data):
+        if self.ativa:
+            self.partes.append(data)
+            self.comprimento += len(data)
+            if self.comprimento > LIMITE_FONTE_FORMULA:
+                raise HTTPException(422, "Cada fórmula pode ter até 4.096 caracteres.")
+
+    def handle_endtag(self, tag):
+        if self.ativa:
+            if tag != self.ativa:
+                raise HTTPException(422, "Estrutura de fórmula inválida.")
+            fonte = "".join(self.partes)
+            if (not fonte.strip() or re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ufffd]", fonte)):
+                raise HTTPException(422, "A fórmula está vazia ou contém caracteres inválidos.")
+            self.ativa = None
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_comment(self, data):
+        if self.ativa:
+            raise HTTPException(422, "A fonte da fórmula deve conter somente texto LaTeX.")
+
+    handle_decl = handle_comment
+    handle_pi = handle_comment
+
+    def close(self):
+        super().close()
+        if self.ativa:
+            raise HTTPException(422, "Fórmula sem fechamento.")
+
+
+class _SpansCanonicos(HTMLParser):
+    """Preserva o comportamento anterior: spans comuns continuam desembrulhados.
+
+    Executado somente depois do nh3, não substitui o sanitizador de segurança.
+    Mantém entidades e a serialização sanitizada dos demais elementos.
+    """
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.saida = []
+        self.spans = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "span":
+            manter = attrs == [("class", "ro-math-inline")]
+            self.spans.append(manter)
+            if not manter:
+                return
+        self.saida.append(self.get_starttag_text())
+
+    def handle_endtag(self, tag):
+        if tag == "span" and self.spans and not self.spans.pop():
+            return
+        self.saida.append(f"</{tag}>")
+
+    def handle_data(self, data):
+        self.saida.append(data)
+
+    def handle_entityref(self, name):
+        self.saida.append(f"&{name};")
+
+    def handle_charref(self, name):
+        self.saida.append(f"&#{name};")
 
 
 class _Estrutura(HTMLParser):
@@ -102,16 +194,27 @@ def preparar_conteudo(conteudo: str | None, formato: str | None) -> str | None:
         estrutura = _Estrutura()
         estrutura.feed(conteudo)
         estrutura.close()
+        formulas = _Formulas()
+        formulas.feed(conteudo)
+        formulas.close()
         # O estado do parser pertence exclusivamente a esta chamada, nunca a um
         # objeto global compartilhado entre as threads das rotas síncronas.
         limpo = nh3.clean(
             conteudo, tags=set(TAGS),
-            attributes={"a": {"href"}, "figure": {"class"},
+            attributes={"a": {"href"}, "figure": {"class"}, "span": {"class"},
                         **{t: {"style"} for t in ("p", "h2", "h3", "h4")},
                         **{t: {"style", "colspan", "rowspan"} for t in ("td", "th")}},
             attribute_filter=_atributo, url_schemes={"https"}, link_rel=None,
             strip_comments=True,
         ).strip()
+        if "<span" in limpo:
+            spans = _SpansCanonicos()
+            spans.feed(limpo)
+            spans.close()
+            limpo = "".join(spans.saida)
+        formulas = _Formulas()
+        formulas.feed(limpo)
+        formulas.close()
         if len(limpo) > LIMITE_HTML:
             raise HTTPException(422, "O HTML convertido excede 1.000.000 de caracteres. Divida-o em teorias menores.")
         texto = unescape(nh3.clean(limpo, tags=set(), attributes={}, link_rel=None))

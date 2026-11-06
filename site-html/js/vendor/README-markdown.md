@@ -5,3 +5,6 @@ Distribuições oficiais npm, sem modificações, com integridade SHA-512
 conferida contra os metadados do registry. As licenças estão ao lado dos
 arquivos. São carregadas localmente apenas nas páginas administrativas.
 Não adicionam plugins ao CKEditor ou alteram a licença Cloud.
+
+KaTeX 0.19.1 (MIT) em `katex/`: JavaScript, CSS e fontes WOFF2 locais.
+Integridade e origem documentadas em `katex/PROVENANCE.md`. Usado também na leitura do aluno.

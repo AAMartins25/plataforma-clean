@@ -1,0 +1,42 @@
+/* Regras restritas ao conteúdo matemático; não afetam os controles de estudo. */
+:is(.teoria-conteudo-rico, .ck-content, .ro-math-dialogo) .ro-math-inline {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+:is(.teoria-conteudo-rico, .ck-content, .ro-math-dialogo) .ro-math-display {
+  display: block;
+  margin: 1em 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: .25em;
+}
+:is(.teoria-conteudo-rico, .ck-content, .ro-math-dialogo) .katex-display {
+  margin: .5em 0;
+}
+.ro-math-error { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ro-math-dialogo {
+  box-sizing: border-box;
+  width: min(640px, calc(100% - 24px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+}
+.ro-math-dialogo::backdrop { background: rgb(0 0 0 / .35); }
+.ro-math-dialogo label { display: block; margin-block: .75em .35em; }
+.ro-math-dialogo textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100px;
+  font-family: monospace;
+  resize: vertical;
+}
+.ro-math-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ro-math-previa { min-height: 48px; max-width: 100%; overflow-x: auto; }
+.ro-math-dialogo [role="alert"] { color: #9f1239; }
