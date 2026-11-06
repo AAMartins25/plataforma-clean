@@ -139,6 +139,7 @@ class MaterialCreate(BaseModel):
     titulo: str
     url: str | None = None
     conteudo: str | None = None
+    conteudo_formato: str | None = None
     ordem: int = 1
     ativo: bool = True
 

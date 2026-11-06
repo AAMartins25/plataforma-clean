@@ -73,7 +73,7 @@ def test_leituras_administrativas_negadas(ambiente,i):
     main,c,_=ambiente
     for route in main.app.routes:
         if route.path.startswith('/admin/') and 'GET' in route.methods:
-            permitida = (i == 2 and (route.path.startswith('/admin/cursos') or route.path.startswith('/admin/curso-assuntos-proprios'))) or (i == 3 and route.path in {'/admin/pagamentos', '/admin/atendimentos', '/admin/mensagens-questoes'})
+            permitida = (i == 2 and (route.path.startswith('/admin/cursos') or route.path.startswith('/admin/curso-assuntos-proprios') or route.path == '/admin/ckeditor-chave')) or (i == 3 and route.path in {'/admin/pagamentos', '/admin/atendimentos', '/admin/mensagens-questoes'})
             if permitida:
                 continue  # Fluxos positivos são exercitados pela suíte da matriz definitiva.
             url=re.sub(r'\{[^}]+\}','1',route.path)+'?q=Teste'

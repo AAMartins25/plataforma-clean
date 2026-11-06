@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Teoria e Questões</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/style.css?v=ckeditor-e1ae68d26b17e171"/>
   <style>
     body .card {
       border-top-color: #dbe2f0;
@@ -1209,14 +1209,56 @@
         .join("");
     }
 
+    function dividirHtmlEmPaginas(html, limite = 2600) {
+      const molde = document.createElement("template");
+      molde.innerHTML = html;
+      const paginas = [];
+      let blocos = [];
+      let tamanho = 0;
+      for (const no of molde.content.childNodes) {
+        const bloco = no.nodeType === Node.ELEMENT_NODE ? no.outerHTML : esc(no.textContent);
+        const comprimento = (no.textContent || "").length;
+        if (blocos.length && tamanho + comprimento > limite) {
+          paginas.push({ formato: "html_v1", conteudo: blocos.join("") });
+          blocos = [];
+          tamanho = 0;
+        }
+        blocos.push(bloco);
+        tamanho += comprimento;
+      }
+      if (blocos.length) paginas.push({ formato: "html_v1", conteudo: blocos.join("") });
+      return paginas;
+    }
+
+    function construirPaginasTeoria(textos) {
+      const paginas = [];
+      let legados = [];
+      const acrescentarLegados = () => {
+        if (!legados.length) return;
+        paginas.push(...dividirTextoEmPaginas(legados.join("\n\n"), 2600)
+          .map(conteudo => ({ formato: "texto_puro", conteudo })));
+        legados = [];
+      };
+      for (const material of textos) {
+        if (material.conteudo_formato === "html_v1") {
+          acrescentarLegados();
+          paginas.push(...dividirHtmlEmPaginas(material.conteudo || ""));
+        } else {
+          legados.push(limparTextoTeoria(material.conteudo || material.texto || ""));
+        }
+      }
+      acrescentarLegados();
+      return paginas.length ? paginas : [{ formato: "texto_puro", conteudo: "" }];
+    }
+
     function renderizarPaginaTeoria() {
       const box = document.getElementById("detalhes_aula");
-      const texto = paginasTeoria[paginaTeoriaAtual] || "";
+      const pagina = paginasTeoria[paginaTeoriaAtual] || { formato: "texto_puro", conteudo: "" };
 
       box.innerHTML = `
         <div class="card" style="padding:14px 18px 18px; position:relative;">
-          <div class="teoria-texto-conteudo">
-            ${renderizarParagrafosTeoria(texto)}
+          <div class="teoria-texto-conteudo${pagina.formato === "html_v1" ? " teoria-conteudo-rico" : ""}">
+            ${pagina.formato === "html_v1" ? pagina.conteudo : renderizarParagrafosTeoria(pagina.conteudo)}
           </div>
 
           ${
@@ -1283,11 +1325,7 @@
           return;
         }
 
-        const textoCompleto = textos
-          .map(t => limparTextoTeoria(t.conteudo || t.texto || ""))
-          .join("\n\n");
-
-        paginasTeoria = dividirTextoEmPaginas(textoCompleto, 2600);
+        paginasTeoria = construirPaginasTeoria(textos);
         paginaTeoriaAtual = 0;
 
         renderizarPaginaTeoria();

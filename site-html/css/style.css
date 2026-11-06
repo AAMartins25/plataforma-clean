@@ -2533,6 +2533,88 @@ footer {
   padding-right: 18px;
 }
 
+.teoria-page .teoria-conteudo-rico {
+  width: 100%;
+  min-width: 0;
+  text-align: initial;
+  overflow-wrap: anywhere;
+}
+
+/* O reset global zera margens e recuo de listas. Repor somente no
+   conteúdo rico e na área editável, preservando os demais componentes. */
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) p {
+  margin-block: 0 1em;
+}
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) :is(h2, h3, h4) {
+  margin-block: 1.3em 0.6em;
+  line-height: 1.35;
+}
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) :is(ul, ol) {
+  margin-block: 0 1em;
+  padding-inline-start: 1.75em;
+  list-style-position: outside;
+}
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ul { list-style-type: disc; }
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ol { list-style-type: decimal; }
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ul ul { list-style-type: circle; }
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) li {
+  display: list-item;
+  margin-block: 0.25em;
+  padding-inline-start: 0.15em;
+}
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) li > p {
+  margin-block: 0 0.4em;
+}
+
+:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) > :first-child {
+  margin-block-start: 0;
+}
+
+.teoria-page .teoria-conteudo-rico > :last-child {
+  margin-bottom: 0;
+}
+
+.teoria-page .teoria-conteudo-rico figure.table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.teoria-page .teoria-conteudo-rico table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.teoria-page .teoria-conteudo-rico th,
+.teoria-page .teoria-conteudo-rico td {
+  border: 1px solid #cbd5e1;
+  padding: 0.45rem 0.65rem;
+  vertical-align: top;
+  overflow-wrap: normal;
+}
+
+.assunto .ck-editor {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.assunto .ck-editor__editable_inline {
+  min-height: 260px;
+}
+
+@media (max-width: 600px) {
+  .teoria-page .teoria-conteudo-rico { padding-left: 0; padding-right: 0; }
+}
+
 /* =========================================================
    SPRINT - CABEÇALHO
    ========================================================= */

@@ -8,6 +8,11 @@
     return mensagem;
   }
 
+  function encerrarEditorTeoria() {
+    const campo = document.getElementById("textoTeoriaAula");
+    if (campo) void TeoriaEditor.destruir(campo);
+  }
+
   let cursoAtual = null;
   let disciplinasDoCurso = [];
 
@@ -1053,7 +1058,7 @@
 
       const texto = document.getElementById("textoTeoriaAula").value.trim();
 
-      if (!texto) {
+      if (!texto.trim()) {
         alert("Digite a teoria da aula.");
         return;
       }
@@ -2178,7 +2183,7 @@
     };
 
     window.abrirTeoriaAula = async function (aulaId, titulo) {
-
+      encerrarEditorTeoria();
       abrirConteudoAula(aulaId, titulo);
       document.querySelector("#areaConteudoAula h3").textContent = "Teoria em Texto";
 
@@ -2230,7 +2235,7 @@
                         ">
 
                           <div>
-                            <b>${t.titulo || "Texto sem título"}</b>
+                            <b>${esc(t.titulo || "Texto sem título")}</b>
                           </div>
 
                           <button
@@ -2392,7 +2397,7 @@
     };
 
     window.novoTextoTeoria = function () {
-
+      encerrarEditorTeoria();
       boxConteudoAula.innerHTML = `
         <div class="assunto">
 
@@ -2421,6 +2426,8 @@
             "
           ></textarea>
 
+          <div id="avisoEditorTeoria" role="status" style="margin-top:6px;"></div>
+
           <div style="
             margin-top:15px;
             display:flex;
@@ -2448,20 +2455,31 @@
 
         </div>
       `;
+      const campo = document.getElementById("textoTeoriaAula");
+      const botaoSalvar = boxConteudoAula.querySelector("button[onclick='salvarNovoTextoTeoria()']");
+      if (botaoSalvar) botaoSalvar.disabled = true;
+      TeoriaEditor.iniciar(campo, "")
+        .catch(erro => {
+          document.getElementById("avisoEditorTeoria").textContent =
+            `${erro.message} O cadastro em texto simples continua disponível.`;
+        })
+        .finally(() => { if (botaoSalvar) botaoSalvar.disabled = false; });
     };
 
     window.salvarNovoTextoTeoria = async function () {
 
       const titulo = document.getElementById("tituloTextoTeoria").value.trim();
 
-      const texto = document.getElementById("textoTeoriaAula").value.trim();
+      const { conteudo: texto, conteudo_formato } = TeoriaEditor.conteudo(
+        document.getElementById("textoTeoriaAula")
+      );
 
       if (!titulo) {
         alert("Informe o título do texto.");
         return;
       }
 
-      if (!texto) {
+      if (!texto.trim()) {
         alert("Digite o conteúdo do texto.");
         return;
       }
@@ -2473,6 +2491,7 @@
           tipo: "TEXTO",
           titulo,
           conteudo: texto,
+          conteudo_formato,
           url: null,
           ativo: true
         });
@@ -2505,6 +2524,7 @@
           return;
         }
 
+        encerrarEditorTeoria();
         boxConteudoAula.innerHTML = `
           <div class="assunto">
 
@@ -2513,7 +2533,6 @@
             <input
               id="tituloTextoTeoria"
               type="text"
-              value="${(material.titulo || "").replace(/"/g, "&quot;")}"
               style="
                 width:100%;
                 padding:12px;
@@ -2532,7 +2551,13 @@
                 border:1px solid #ddd;
                 border-radius:6px;
               "
-            >${material.conteudo || ""}</textarea>
+            ></textarea>
+
+            <div id="avisoEditorTeoria" role="status" style="margin-top:6px;"></div>
+            ${material.conteudo_formato === "html_v1" ? "" : `
+              <button class="btn" type="button" onclick="converterTextoLegadoParaHtml()">
+                Converter explicitamente para editor visual
+              </button>`}
 
             <div style="
               margin-top:15px;
@@ -2562,9 +2587,44 @@
           </div>
         `;
 
+        document.getElementById("tituloTextoTeoria").value = material.titulo || "";
+        const campo = document.getElementById("textoTeoriaAula");
+        campo.value = material.conteudo || "";
+        if (material.conteudo_formato === "html_v1") {
+          campo.readOnly = true;
+          const botaoSalvar = boxConteudoAula.querySelector("button[onclick^='salvarEdicaoTexto']");
+          if (botaoSalvar) botaoSalvar.disabled = true;
+          try {
+            await TeoriaEditor.iniciar(campo, material.conteudo);
+            campo.readOnly = false;
+            if (botaoSalvar) botaoSalvar.disabled = false;
+          } catch (erro) {
+            document.getElementById("avisoEditorTeoria").textContent =
+              `${erro.message} A edição deste HTML permanece bloqueada para evitar perda de formatação.`;
+          }
+        }
+
       } catch (err) {
         console.error(err);
         alert("Erro ao abrir texto.");
+      }
+    };
+
+    window.converterTextoLegadoParaHtml = async function () {
+      const campo = document.getElementById("textoTeoriaAula");
+      if (!campo || !confirm("Converter este texto puro para HTML? A alteração só será salva ao concluir a edição.")) return;
+      const botaoSalvar = boxConteudoAula.querySelector("button[onclick^='salvarEdicaoTexto']");
+      campo.readOnly = true;
+      if (botaoSalvar) botaoSalvar.disabled = true;
+      try {
+        await TeoriaEditor.iniciar(campo, TeoriaEditor.legadoParaHtml(campo.value));
+        const botao = boxConteudoAula.querySelector("button[onclick='converterTextoLegadoParaHtml()']");
+        if (botao) botao.remove();
+      } catch (erro) {
+        document.getElementById("avisoEditorTeoria").textContent = erro.message;
+      } finally {
+        campo.readOnly = false;
+        if (botaoSalvar) botaoSalvar.disabled = false;
       }
     };
 
@@ -2572,7 +2632,9 @@
 
       const titulo = document.getElementById("tituloTextoTeoria").value.trim();
 
-      const texto = document.getElementById("textoTeoriaAula").value.trim();
+      const campo = document.getElementById("textoTeoriaAula");
+      if (campo.readOnly) return;
+      const { conteudo: texto, conteudo_formato } = TeoriaEditor.conteudo(campo);
 
       if (!titulo) {
         alert("Informe o título do texto.");
@@ -2591,6 +2653,7 @@
           tipo: "TEXTO",
           titulo,
           conteudo: texto,
+          conteudo_formato,
           url: null,
           ordem
         });
@@ -2606,6 +2669,7 @@
     };
 
     window.voltarAreaAssunto = function () {
+      encerrarEditorTeoria();
       areaConteudoAula.style.display = "none";
     };
 

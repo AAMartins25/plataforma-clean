@@ -15,6 +15,7 @@ from app.schemas import VideoCreate
 from app.schemas import BateriaCreate 
 from app.models import Material
 from app.schemas import MaterialCreate, ConcluirBateriaCreate, TentativaBateriaResponse, RespostaQuestaoAlunoCreate
+from app.teoria_html import FORMATO_HTML, FORMATO_TEXTO, preparar_conteudo, validar_formato
 from sqlalchemy import text
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session 
@@ -3091,6 +3092,12 @@ def concluir_bateria(
         "ativo": bateria.ativo
     }
 
+@app.get("/admin/ckeditor-chave")
+def obter_chave_ckeditor(usuario: Usuario = Depends(exigir_admin_aulas)):
+    # A chave do plano Cloud é enviada ao editor no navegador somente após autenticação.
+    return {"licenseKey": os.getenv("CKEDITOR_LICENSE_KEY", "")}
+
+
 @app.post("/materiais")
 def criar_material(material: MaterialCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
     bloquear_pai(db, Aula, material.aula_id)
@@ -3126,12 +3133,18 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db), usua
     if tipo == "TEXTO" and (not material.conteudo or not material.conteudo.strip()):
         return {"erro": "Para tipo TEXTO, informe 'conteudo'."}
 
+    formato = validar_formato(material.conteudo_formato)
+    if tipo != "TEXTO" and formato == FORMATO_HTML:
+        raise HTTPException(422, "HTML rico só é permitido em materiais TEXTO")
+    conteudo = preparar_conteudo(material.conteudo, formato) if tipo == "TEXTO" else material.conteudo
+
     novo = Material(
         aula_id=material.aula_id,
         tipo=tipo,
         titulo=material.titulo,
         url=material.url.strip() if material.url else None,
-        conteudo=material.conteudo.strip() if material.conteudo else None,
+        conteudo=conteudo.strip() if conteudo else None,
+        conteudo_formato=FORMATO_HTML if tipo == "TEXTO" and formato == FORMATO_HTML else None,
         ordem=material.ordem,
         ativo=material.ativo
     )
@@ -3146,6 +3159,7 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db), usua
         "titulo": novo.titulo,
         "url": novo.url,
         "conteudo": novo.conteudo,
+        "conteudo_formato": novo.conteudo_formato or FORMATO_TEXTO,
         "ordem": novo.ordem,
         "ativo": novo.ativo
     }
@@ -3177,6 +3191,7 @@ def listar_materiais_da_aula(
         materiais = db.query(Material).filter(Material.aula_id == aula_id).order_by(Material.ordem, Material.id).all()
         return [{"id": m.id, "aula_id": m.aula_id, "tipo": m.tipo,
                  "titulo": m.titulo, "url": m.url, "conteudo": m.conteudo,
+                 "conteudo_formato": m.conteudo_formato or FORMATO_TEXTO,
                  "ordem": m.ordem, "ativo": m.ativo} for m in materiais]
 
     # ---------------------------------------------------------
@@ -3270,6 +3285,7 @@ def listar_materiais_da_aula(
             "titulo": m.titulo,
             "url": m.url,
             "conteudo": m.conteudo,
+            "conteudo_formato": m.conteudo_formato or FORMATO_TEXTO,
             "ordem": m.ordem,
             "ativo": m.ativo
         }
@@ -3290,17 +3306,35 @@ def editar_material(
 
     bloquear_pai(db, Aula, material.aula_id)
     validar_vinculo(dados, material, "aula_id")
+    conteudo_enviado = "conteudo" in dados.model_fields_set
     dados = dados.model_copy(update={
         campo: getattr(material, campo)
         for campo in ("url", "conteudo") if campo not in dados.model_fields_set
     })
     tipo = validar_material(dados)
+    formato = validar_formato(
+        dados.conteudo_formato if "conteudo_formato" in dados.model_fields_set
+        else material.conteudo_formato
+    )
+    if (material.conteudo_formato or FORMATO_TEXTO) != formato and not conteudo_enviado:
+        raise HTTPException(422, "Para alterar o formato, envie o conteúdo convertido explicitamente")
+    if tipo != "TEXTO" and formato == FORMATO_HTML:
+        raise HTTPException(422, "HTML rico só é permitido em materiais TEXTO")
+    if material.conteudo_formato == FORMATO_HTML and formato != FORMATO_HTML:
+        raise HTTPException(422, "Não é permitido converter HTML em texto puro automaticamente")
     material.ordem = ordem_conteudo(db, Material, Material.aula_id, material.aula_id, dados, material)
     material.titulo = dados.titulo.strip()
     material.tipo = tipo
     for campo in ("url", "conteudo", "ativo"):
         if campo in dados.model_fields_set:
-            setattr(material, campo, getattr(dados, campo))
+            if campo == "conteudo" and not conteudo_enviado:
+                continue
+            valor = getattr(dados, campo)
+            if campo == "conteudo" and tipo == "TEXTO":
+                valor = preparar_conteudo(valor, formato)
+            setattr(material, campo, valor)
+    if tipo == "TEXTO" and formato == FORMATO_HTML:
+        material.conteudo_formato = FORMATO_HTML
 
     confirmar_conteudo(db)
     db.refresh(material)
@@ -3312,6 +3346,7 @@ def editar_material(
         "titulo": material.titulo,
         "url": material.url,
         "conteudo": material.conteudo,
+        "conteudo_formato": material.conteudo_formato or FORMATO_TEXTO,
         "ordem": material.ordem,
         "ativo": material.ativo
     }

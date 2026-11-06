@@ -6,9 +6,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin • Conteúdo da Aula</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/style.css?v=ckeditor-e1ae68d26b17e171" />
   <link rel="stylesheet" href="../css/admin-responsivo.css">
   <script src="../js/cabecalho.js" defer></script>
+  <link rel="stylesheet" href="../css/editor-teoria-markdown.css?v=ckeditor-8459c54a5f94b16f">
 </head>
 <body>
   <header>
@@ -84,7 +85,8 @@
 
         <div class="assunto" id="materialBoxTexto">
           <label><b>Conteúdo (para TEXTO)</b></label><br/>
-          <textarea id="materialConteudo" rows="7" placeholder="Digite o texto..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+          <textarea id="materialConteudo" rows="7" placeholder="Clique aqui para abrir o editor visual..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+          <div id="avisoEditorMaterial" role="status" style="margin-top:6px;"></div>
         </div>
 
         <div class="assunto" id="materialBoxPdf" style="display:none;">
@@ -130,7 +132,11 @@
   </footer>
 
   <script src="../js/app.js?v=perfis-1"></script>
-  <script src="../js/admin.js?v=perfis-1"></script>
+  <script src="../js/vendor/markdown-it-15.0.3.min.js"></script>
+  <script src="../js/vendor/dompurify-3.4.17.min.js"></script>
+  <script src="../js/editor-teoria-markdown.js?v=ckeditor-2269d4d11833fa1d"></script>
+  <script src="../js/editor-teoria.js?v=ckeditor-789558350dd46dbd"></script>
+  <script src="../js/admin.js?v=ckeditor-d919493f3b6f15fe"></script>
   <script>
     AdminAulaConteudo.init();
   </script>

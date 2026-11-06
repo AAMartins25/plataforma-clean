@@ -472,6 +472,22 @@ const AdminAulaConteudo = {
       if (boxPdf) boxPdf.style.display = (t === "PDF") ? "block" : "none";
     });
 
+    const campoTexto = document.getElementById("materialConteudo");
+    campoTexto?.addEventListener("focus", async () => {
+      if (document.getElementById("materialTipo")?.value !== "TEXTO") return;
+      const aviso = document.getElementById("avisoEditorMaterial");
+      const botaoSalvar = document.querySelector("#formMaterial button[type='submit']");
+      if (botaoSalvar) botaoSalvar.disabled = true;
+      try {
+        await TeoriaEditor.iniciar(campoTexto, campoTexto.value);
+        if (aviso) aviso.textContent = "Editor visual ativo.";
+      } catch (erro) {
+        if (aviso) aviso.textContent = `${erro.message} O texto simples continua disponível.`;
+      } finally {
+        if (botaoSalvar) botaoSalvar.disabled = false;
+      }
+    }, { once: true });
+
     document.getElementById("formVideo")?.addEventListener("submit", async (e) => {
       e.preventDefault();
       await this.salvarVideoPadrao();
@@ -710,15 +726,16 @@ const AdminAulaConteudo = {
 
     const tipo = document.getElementById("materialTipo")?.value;
     const titulo = (document.getElementById("materialTitulo")?.value || "").trim() || "Material da aula";
-    const conteudo = (document.getElementById("materialConteudo")?.value || "").trim();
+    const campoConteudo = document.getElementById("materialConteudo");
+    const { conteudo, conteudo_formato } = TeoriaEditor.conteudo(campoConteudo);
     const url = (document.getElementById("materialUrl")?.value || "").trim();
 
     if (msg) msg.innerHTML = "Salvando...";
 
     try {
       if (tipo === "TEXTO") {
-        if (!conteudo) throw new Error("Para material TEXTO, informe o conteúdo.");
-        await apiPost("/materiais", { aula_id: this.aulaId, tipo: "TEXTO", titulo, conteudo, ativo: true });
+        if (!conteudo.trim()) throw new Error("Para material TEXTO, informe o conteúdo.");
+        await apiPostAuth("/materiais", { aula_id: this.aulaId, tipo: "TEXTO", titulo, conteudo, conteudo_formato, ativo: true });
       } else {
         if (!url) throw new Error("Para material PDF, informe a URL do PDF.");
         await apiPost("/materiais", { aula_id: this.aulaId, tipo: "PDF", titulo, url, ativo: true });

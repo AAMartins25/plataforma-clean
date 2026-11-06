@@ -191,6 +191,7 @@ class Material(Base):
 
     url = Column(Text, nullable=True)
     conteudo = Column(Text, nullable=True)
+    conteudo_formato = Column(String(20), nullable=True)  # NULL = texto puro legado
 
     ordem = Column(Integer, default=1)
     ativo = Column(Boolean, default=True)

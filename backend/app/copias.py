@@ -35,7 +35,7 @@ def copiar_assunto_conteudo(db, origem, disciplina_id, ordem=None):
                 novo(db, video, ('titulo', 'url', 'provedor', 'cloudflare_uid',
                                 'duracao_segundos', 'transcricao', 'ordem', 'ativo'), aula_id=aula.id)
             for material in filhos(db, m.Material, aula_id=aula_origem.id):
-                novo(db, material, ('tipo', 'titulo', 'url', 'conteudo', 'ordem', 'ativo'), aula_id=aula.id)
+                novo(db, material, ('tipo', 'titulo', 'url', 'conteudo', 'conteudo_formato', 'ordem', 'ativo'), aula_id=aula.id)
             for bateria_origem in filhos(db, m.Bateria, aula_id=aula_origem.id):
                 bateria = novo(db, bateria_origem, ('titulo', 'ordem', 'status', 'ativo'), aula_id=aula.id)
                 for questao_origem in filhos(db, m.Questao, bateria_id=bateria_origem.id):
