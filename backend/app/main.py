@@ -16,6 +16,7 @@ from app.schemas import BateriaCreate
 from app.models import Material
 from app.schemas import MaterialCreate, ConcluirBateriaCreate, TentativaBateriaResponse, RespostaQuestaoAlunoCreate
 from app.teoria_html import FORMATO_HTML, FORMATO_TEXTO, preparar_conteudo, validar_formato
+from app.imagens import sincronizar_referencias as sincronizar_imagens
 from sqlalchemy import text
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session 
@@ -3149,6 +3150,7 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db), usua
         ativo=material.ativo
     )
     db.add(novo)
+    sincronizar_imagens(db, novo, usuario.id)
     confirmar_conteudo(db)
     db.refresh(novo)
 
@@ -3304,6 +3306,7 @@ def editar_material(
     if not material:
         raise HTTPException(status_code=404, detail="Material não encontrado")
 
+    conteudo_anterior_imagens = material.conteudo if material.conteudo_formato == FORMATO_HTML else ""
     bloquear_pai(db, Aula, material.aula_id)
     validar_vinculo(dados, material, "aula_id")
     conteudo_enviado = "conteudo" in dados.model_fields_set
@@ -3336,6 +3339,7 @@ def editar_material(
     if tipo == "TEXTO" and formato == FORMATO_HTML:
         material.conteudo_formato = FORMATO_HTML
 
+    sincronizar_imagens(db, material, usuario.id, conteudo_anterior_imagens)
     confirmar_conteudo(db)
     db.refresh(material)
 
@@ -9601,3 +9605,12 @@ registrar_vendedores_admin(app, get_db, get_usuario_atual)
 
 from app.vendedores import registrar_rotas as registrar_consultas_vendedor
 registrar_consultas_vendedor(app, get_db, get_usuario_atual)
+
+
+from app.imagens import registrar_rotas as registrar_imagens
+registrar_imagens(app, get_db, get_usuario_atual, exigir_admin_aulas, listar_materiais_da_aula)
+
+from app.imagens_manutencao import ManutencaoImagens
+app.state.manutencao_imagens = ManutencaoImagens(motor_financeiro, SessionLocal)
+app.router.add_event_handler('startup', app.state.manutencao_imagens.iniciar)
+app.router.add_event_handler('shutdown', app.state.manutencao_imagens.encerrar)

@@ -14,18 +14,19 @@ const teoria = fs.readFileSync(path.join(root, 'teoria.html'), 'utf8');
 const funcoes = teoria.slice(teoria.indexOf('    function limparTextoTeoria('), teoria.indexOf('    async function abrirSecaoTeoria('));
 assert.ok(funcoes.includes('TeoriaMatematica.renderizar'));
 const scripts = ['js/vendor/katex/katex.min.js', 'js/teoria-matematica.js',
-  'js/editor-teoria-matematica.js', 'js/vendor/markdown-it-15.0.3.min.js',
+  'js/editor-teoria-matematica.js', 'js/teoria-imagens.js', 'js/editor-teoria-imagens.js', 'js/vendor/markdown-it-15.0.3.min.js',
   'js/vendor/dompurify-3.4.17.min.js', 'js/editor-teoria-markdown.js', 'js/editor-teoria.js'];
 const harness = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  ${['css/style.css', 'css/editor-teoria-markdown.css', 'css/teoria-matematica.css', 'js/vendor/katex/katex.min.css', 'ckeditor/ckeditor5.css'].map(p => `<link rel="stylesheet" href="/${p}">`).join('')}
+  ${['css/style.css', 'css/editor-teoria-markdown.css', 'css/teoria-matematica.css', 'css/teoria-imagens.css', 'js/vendor/katex/katex.min.css', 'ckeditor/ckeditor5.css'].map(p => `<link rel="stylesheet" href="/${p}">`).join('')}
   <style>body{padding:12px}main{max-width:100%;min-width:0}.assunto{min-width:0}#leitura{margin-top:30px}</style>
   </head><body><main><div class="assunto"><textarea id="editor"></textarea></div>
   <section id="leitura" class="teoria-page"><div id="detalhes_aula"></div><span id="paginacao_teoria"></span></section></main>
   <script src="/ckeditor/ckeditor5.umd.js"></script>${scripts.map(p => `<script src="/${p}"></script>`).join('')}
   <script>window.RESUMAO_CKEDITOR_LICENSE_KEY='GPL';
   window.dados=()=>editor.getData().replace(/ data-list-item-id="[^"]*"/g,'');
-  let paginasTeoria=[],paginaTeoriaAtual=0;
+  let paginasTeoria=[],paginaTeoriaAtual=0,aulaAtualId=1;
+  function contextoAcessoQuery(){return "contratacao_id=1";}
   function esc(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
   ${funcoes}
   window.preparar=async html=>{window.editor=await TeoriaEditor.iniciar(document.querySelector('#editor'),html||'');};
@@ -127,7 +128,7 @@ const harness = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
       const markdown = '# Matemática e lógica\n\nTexto **formatado** \\(x^2 + y^2 = z^2\\).\n\n\\[\n\\forall x,\\; P(x) \\Rightarrow Q(x)\n\\]\n\n| Regra | Expressão |\n|---|---|\n| Negação | \\(\\neg P \\lor Q\\) |\n\n- Item \\(\\text{a  b}\\)';
       await page.getByRole('button',{name:'Importar Markdown',exact:true}).click();
       await page.locator('[data-md="fonte"]').fill(markdown);
-      await page.getByRole('button',{name:'Importar texto',exact:true}).click();
+      await page.getByRole('button',{name:'Importar material',exact:true}).click();
       assert.equal(await page.locator('.ck-content .katex').count(),4);
       const importado = await page.evaluate(() => dados());
       assert.ok(!importado.includes('class="katex'));

@@ -7,6 +7,7 @@
   <title>Teoria e Questões</title>
   <link rel="stylesheet" href="css/style.css?v=ckeditor-e1ae68d26b17e171"/>
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/teoria-imagens.css?v=imagens2">
   <link rel="stylesheet" href="css/teoria-matematica.css?v=math1">
   <style>
     body .card {
@@ -233,6 +234,7 @@
 
   <script src="js/vendor/katex/katex.min.js"></script>
   <script src="js/teoria-matematica.js?v=math1"></script>
+  <script src="js/teoria-imagens.js?v=imagens2"></script>
   <script>
     const API_BASE = "https://plataforma-quality-backend.onrender.com";
     
@@ -1221,7 +1223,8 @@
       let tamanho = 0;
       for (const no of molde.content.childNodes) {
         const bloco = no.nodeType === Node.ELEMENT_NODE ? no.outerHTML : esc(no.textContent);
-        const comprimento = (no.textContent || "").length;
+        const imagens = no.nodeType === Node.ELEMENT_NODE ? (no.matches("img") ? 1 : no.querySelectorAll("img").length) : 0;
+        const comprimento = (no.textContent || "").length + imagens * 900;
         if (blocos.length && tamanho + comprimento > limite) {
           paginas.push({ formato: "html_v1", conteudo: blocos.join("") });
           blocos = [];
@@ -1259,10 +1262,11 @@
       const box = document.getElementById("detalhes_aula");
       const pagina = paginasTeoria[paginaTeoriaAtual] || { formato: "texto_puro", conteudo: "" };
 
+      window.TeoriaImagens.cancelarLeitura(box.querySelector(".teoria-conteudo-rico"));
       box.innerHTML = `
         <div class="card" style="padding:14px 18px 18px; position:relative;">
           <div class="teoria-texto-conteudo${pagina.formato === "html_v1" ? " teoria-conteudo-rico" : ""}">
-            ${pagina.formato === "html_v1" ? pagina.conteudo : renderizarParagrafosTeoria(pagina.conteudo)}
+            ${pagina.formato === "html_v1" ? window.TeoriaImagens.paraLeitura(pagina.conteudo) : renderizarParagrafosTeoria(pagina.conteudo)}
           </div>
 
           ${
@@ -1285,6 +1289,7 @@
 
       if (pagina.formato === "html_v1") {
         window.TeoriaMatematica.renderizar(box.querySelector(".teoria-conteudo-rico"));
+        void window.TeoriaImagens.renderizar(box.querySelector(".teoria-conteudo-rico"), {aulaId: aulaAtualId, query: contextoAcessoQuery()});
       }
 
       const paginacao = document.getElementById("paginacao_teoria");

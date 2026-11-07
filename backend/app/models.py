@@ -198,6 +198,26 @@ class Material(Base):
 
     aula = relationship("Aula", backref="materiais")
 
+
+class ImagemTeoria(Base):
+    __tablename__ = "imagens_teoria"
+    id = Column(String(36), primary_key=True)
+    chave = Column(String(160), nullable=False, unique=True)
+    autor_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False, index=True)
+    mime = Column(String(20), nullable=False)
+    tamanho = Column(Integer, nullable=False)
+    largura = Column(Integer, nullable=False)
+    altura = Column(Integer, nullable=False)
+    sha256 = Column(String(64), nullable=False)
+    criada_em = Column(DateTime, nullable=False, default=datetime.utcnow)
+    ultima_atividade = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class ImagemTeoriaMaterial(Base):
+    __tablename__ = "imagens_teoria_materiais"
+    material_id = Column(Integer, ForeignKey("materiais.id", ondelete="CASCADE"), primary_key=True)
+    imagem_id = Column(String(36), ForeignKey("imagens_teoria.id"), primary_key=True, index=True)
+
 class QuizIA(Base):
     __tablename__ = "quiz_ia"
 

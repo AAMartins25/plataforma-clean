@@ -2470,6 +2470,7 @@
 
       const titulo = document.getElementById("tituloTextoTeoria").value.trim();
 
+      if (!TeoriaEditor.pronto(document.getElementById("textoTeoriaAula"))) { alert("Aguarde a importação das imagens."); return; }
       const { conteudo: texto, conteudo_formato } = TeoriaEditor.conteudo(
         document.getElementById("textoTeoriaAula")
       );
@@ -2634,6 +2635,7 @@
 
       const campo = document.getElementById("textoTeoriaAula");
       if (campo.readOnly) return;
+      if (!TeoriaEditor.pronto(campo)) { alert("Aguarde a importação das imagens."); return; }
       const { conteudo: texto, conteudo_formato } = TeoriaEditor.conteudo(campo);
 
       if (!titulo) {

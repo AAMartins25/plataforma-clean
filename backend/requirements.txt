@@ -11,3 +11,4 @@ email-validator
 nh3==0.3.7
 python-dateutil
 resend
+Pillow==13.0.0

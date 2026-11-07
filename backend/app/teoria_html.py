@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 import nh3
 from fastapi import HTTPException
+from app.imagens import PADRAO_SRC, referencias
 
 
 FORMATO_HTML = "html_v1"
@@ -20,7 +21,7 @@ LIMITE_FORMULAS = 200
 TAGS = frozenset({
     "p", "br", "h2", "h3", "h4", "strong", "b", "em", "i", "u",
     "ul", "ol", "li", "blockquote", "a", "figure", "figcaption",
-    "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span",
+    "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span", "img",
 })
 
 
@@ -40,6 +41,14 @@ def _url_segura(valor: str) -> bool:
 
 
 def _atributo(tag: str, nome: str, valor: str) -> str | None:
+    if tag == "img":
+        if nome == "src":
+            return valor if PADRAO_SRC.fullmatch(valor) else None
+        if nome == "alt":
+            return valor[:2000]
+        if nome in {"width", "height"}:
+            return valor if valor.isascii() and valor.isdigit() and 1 <= int(valor) <= 8192 else None
+        return None
     if nome == "style" and tag in {"p", "h2", "h3", "h4", "th", "td"}:
         # Reconstruir uma declaração conhecida, sem transportar CSS da origem.
         alinhamentos = [m.group(1).lower() for parte in valor.split(";")
@@ -49,7 +58,7 @@ def _atributo(tag: str, nome: str, valor: str) -> str | None:
     if tag == "a" and nome == "href":
         return valor if _url_segura(valor) else None
     if tag == "figure" and nome == "class":
-        return valor if valor in {"table", "ro-math-display"} else None
+        return valor if valor in {"table", "ro-math-display", "image"} else None
     if tag == "span" and nome == "class":
         return valor if valor == "ro-math-inline" else None
     if tag in {"td", "th"} and nome in {"colspan", "rowspan"}:
@@ -191,6 +200,7 @@ def preparar_conteudo(conteudo: str | None, formato: str | None) -> str | None:
         raise HTTPException(422, "O texto formatado excede 1.000.000 de caracteres. Divida-o em teorias menores.")
     try:
         conteudo.encode("utf-8", errors="strict")
+        referencias(conteudo)
         estrutura = _Estrutura()
         estrutura.feed(conteudo)
         estrutura.close()
@@ -202,6 +212,7 @@ def preparar_conteudo(conteudo: str | None, formato: str | None) -> str | None:
         limpo = nh3.clean(
             conteudo, tags=set(TAGS),
             attributes={"a": {"href"}, "figure": {"class"}, "span": {"class"},
+                        "img": {"src", "alt", "width", "height"},
                         **{t: {"style"} for t in ("p", "h2", "h3", "h4")},
                         **{t: {"style", "colspan", "rowspan"} for t in ("td", "th")}},
             attribute_filter=_atributo, url_schemes={"https"}, link_rel=None,
@@ -220,6 +231,6 @@ def preparar_conteudo(conteudo: str | None, formato: str | None) -> str | None:
         texto = unescape(nh3.clean(limpo, tags=set(), attributes={}, link_rel=None))
     except (ValueError, UnicodeError, AssertionError) as erro:
         raise HTTPException(422, "O texto formatado contém HTML inválido.") from erro
-    if not re.sub(r"[\s\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]", "", texto):
+    if not re.sub(r"[\s\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]", "", texto) and not referencias(limpo):
         raise HTTPException(status_code=422, detail="O texto formatado está vazio")
     return limpo

@@ -727,6 +727,7 @@ const AdminAulaConteudo = {
     const tipo = document.getElementById("materialTipo")?.value;
     const titulo = (document.getElementById("materialTitulo")?.value || "").trim() || "Material da aula";
     const campoConteudo = document.getElementById("materialConteudo");
+    if (!TeoriaEditor.pronto(campoConteudo)) { if (msg) msg.textContent = "Aguarde a importação das imagens."; return; }
     const { conteudo, conteudo_formato } = TeoriaEditor.conteudo(campoConteudo);
     const url = (document.getElementById("materialUrl")?.value || "").trim();
 

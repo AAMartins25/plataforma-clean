@@ -35,6 +35,9 @@
     if (!textarea) throw new Error("Campo de texto indisponível.");
     if (instancias.has(textarea)) return instancias.get(textarea);
     const C = await carregar();
+    if (!window.TeoriaImagens || !window.criarPluginTeoriaImagens) throw new Error("O suporte a imagens não foi carregado. Recarregue a página.");
+    await window.TeoriaImagens.preparar(html || "");
+    const TeoriaImagensPlugin = window.criarPluginTeoriaImagens(C);
     if (!window.criarPluginTeoriaMatematica || !window.TeoriaMatematica) {
       throw new Error("O suporte a fórmulas não foi carregado. Recarregue a página.");
     }
@@ -56,11 +59,12 @@
       licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
       plugins: [Essentials, Paragraph, Bold, Italic, Underline, Heading, List,
         Indent, Table, TableToolbar, TableCaption, Alignment,
-        Link, TeoriaFormula],
+        Link, TeoriaFormula, TeoriaImagensPlugin],
       toolbar: ["undo", "redo", "|", "heading", "|", "bold", "italic", "underline",
         "|", "bulletedList", "numberedList", "outdent", "indent", "|",
-        "alignment", "insertTable", "link", "|", "formula"],
-      table: { contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "toggleTableCaption"] }
+        "alignment", "insertTable", "link", "|", "formula", "imagemPropria"],
+      table: { contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "toggleTableCaption"] },
+      image: { toolbar: ["imageTextAlternative", "toggleImageCaption"] }
       });
     } catch (erro) {
       textarea.value = anterior;
@@ -92,11 +96,8 @@
     return editor;
   }
 
-  function instalarListasWord(editor) {
-    editor.listenTo(editor.editing.view.document, "clipboardInput", (_evento, dados) => {
-      const html = typeof dados.content === "string" ? dados.content : dados.dataTransfer.getData("text/html");
-      // Só interpretar parágrafos explicitamente identificados como lista Word.
-      if (!/\bmso-list\s*:/i.test(html) || (dados.content && typeof dados.content !== "string")) return;
+  function normalizarListasWordHtml(html) {
+    if (!/\bmso-list\s*:/i.test(html)) return html;
       const template = document.createElement("template");
       template.innerHTML = html;
       const estilos = [...template.content.querySelectorAll("style")].map(no => no.textContent).join("\n");
@@ -151,12 +152,19 @@
         }
       }
       percorrer(template.content);
-      if (!convertidos) return;
+      if (!convertidos) return html;
       // O template é inerte. Não transportar folhas ou conteúdo ativo da origem.
       template.content.querySelectorAll("script,style,link,meta,base,iframe,object,embed").forEach(no => no.remove());
       // O pipeline normal do CKEditor ainda filtra o HTML; o backend continua
       // aplicando a mesma allowlist de sanitização antes de qualquer gravação.
-      dados.content = template.innerHTML;
+    return template.innerHTML;
+  }
+
+  function instalarListasWord(editor) {
+    editor.listenTo(editor.editing.view.document, "clipboardInput", (_evento, dados) => {
+      if (dados.content && typeof dados.content !== "string") return;
+      const html = typeof dados.content === "string" ? dados.content : dados.dataTransfer.getData("text/html");
+      if (/\bmso-list\s*:/i.test(html)) dados.content = normalizarListasWordHtml(html);
     }, { priority: "highest" });
   }
 
@@ -264,6 +272,7 @@
 
   function conteudo(textarea) {
     const editor = instancias.get(textarea);
+    if (editor && window.TeoriaImagensEditor.estados.get(editor)?.pendente) throw new Error("Aguarde a conclusão da importação de imagens antes de salvar.");
     const diagnostico = editor && diagnosticosPorEditor.get(editor);
     if (diagnostico && diagnostico === ultimaColagem && Date.now() <= diagnosticoExpiraEm) {
       diagnostico.antesSalvar = resumirHtml(editor.getData());
@@ -289,5 +298,9 @@
     ).join("");
   }
 
-  window.TeoriaEditor = { iniciar, conteudo, destruir, legadoParaHtml, diagnosticoColagem, diagnosticarProximaColagem, cancelarDiagnosticoColagem };
+  function pronto(textarea) {
+    const editor = instancias.get(textarea);
+    return !editor || !window.TeoriaImagensEditor.estados.get(editor)?.pendente;
+  }
+  window.TeoriaEditor = { pronto, normalizarListasWordHtml, iniciar, conteudo, destruir, legadoParaHtml, diagnosticoColagem, diagnosticarProximaColagem, cancelarDiagnosticoColagem };
 })();

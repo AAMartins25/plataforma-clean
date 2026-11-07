@@ -19,6 +19,9 @@ def novo(db, origem, campos, **vinculo):
     registro = type(origem)(**valores)
     db.add(registro)
     db.flush()
+    if isinstance(registro, m.Material) and registro.conteudo_formato == "html_v1":
+        from app.imagens import sincronizar_referencias
+        sincronizar_referencias(db, registro)
     return registro
 
 

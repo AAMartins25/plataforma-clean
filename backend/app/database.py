@@ -63,4 +63,5 @@ if os.getenv("AMBIENTE_TESTE") != "1":
     Base.metadata.create_all(bind=engine, tables=[
         tabela for tabela in Base.metadata.sorted_tables
         if tabela.name not in TABELAS_JURIDICAS
+        and tabela.name not in {"imagens_teoria", "imagens_teoria_materiais"}
     ])

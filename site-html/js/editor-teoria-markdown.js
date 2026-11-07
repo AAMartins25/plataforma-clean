@@ -4,7 +4,7 @@
   const LIMITE = 250000;
   const montagens = new WeakMap();
   const tags = ["p", "br", "h2", "h3", "h4", "strong", "b", "em", "i", "u",
-    "ul", "ol", "li", "blockquote", "a", "figure", "figcaption", "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span"];
+    "ul", "ol", "li", "blockquote", "a", "figure", "figcaption", "table", "thead", "tbody", "tfoot", "tr", "th", "td", "span", "img"];
   let sequencia = 0;
   const temTexto = texto => /[^\s\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/u.test(texto);
 
@@ -17,7 +17,7 @@
     } catch (_) { return false; }
   }
 
-  function converter(entrada) {
+  function converter(entrada, opcoes = {}) {
     if (!window.markdownit || !window.DOMPurify) throw new Error("O importador não foi carregado. Recarregue a página antes de tentar novamente.");
     let texto = String(entrada || "");
     if (!temTexto(texto)) throw new Error("Cole o resumo em Markdown antes de importar.");
@@ -27,6 +27,7 @@
     if (envelope) texto = envelope[2];
     if (!temTexto(texto)) throw new Error("O bloco Markdown está vazio.");
     const avisos = new Set();
+    const referencias = [];
     const md = window.markdownit({ html: false, linkify: false, typographer: false, maxNesting: 50 });
     let formulas = 0;
     const M = window.TeoriaMatematica;
@@ -176,8 +177,16 @@
     md.renderer.rules.fence = blocoCodigo;
     md.renderer.rules.code_block = blocoCodigo;
     md.renderer.rules.image = (tokens, indice) => {
-      avisos.add("Imagens serão mantidas apenas como descrição; nenhum arquivo de imagem será importado.");
-      return escapar("[Imagem: " + (tokens[indice].content || "sem descrição") + "]");
+      const token = tokens[indice], src = token.attrGet("src"), alt = token.content || "";
+      if (referencias.length >= 20) throw new Error("Cada teoria pode conter até 20 imagens.");
+      referencias.push(src);
+      if (opcoes.coletar) return escapar(alt || "Imagem");
+      const imagem = opcoes.resolver?.(src);
+      if (!imagem || !window.TeoriaImagens?.PADRAO.test(imagem.src)) {
+        throw new Error("Imagem não disponível: " + src + ". Forneça o arquivo ou um ZIP completo.");
+      }
+      return '<img src="' + escapar(imagem.src) + '" alt="' + escapar(alt.slice(0, 2000)) + '"' +
+        (imagem.largura ? ' width="' + Number(imagem.largura) + '" height="' + Number(imagem.altura) + '"' : '') + '>';
     };
     md.renderer.rules.hr = () => {
       avisos.add("Separadores serão representados por um traço em um parágrafo.");
@@ -212,18 +221,32 @@
     }
     ajustar(tokens);
     const html = md.renderer.render(tokens, md.options, ambiente);
+    const limpo = sanitizarHtml(html, avisos);
+    const teste = document.createElement("template"); teste.innerHTML = limpo;
+    if (!temTexto(teste.content.textContent) && !teste.content.querySelector("img")) throw new Error("O resumo não contém conteúdo para importar.");
+    return { html: limpo, avisos: [...avisos], referencias };
+  }
+
+  function sanitizarHtml(html, avisos = new Set()) {
     const limpo = window.DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: tags, ALLOWED_ATTR: ["href", "class", "style", "colspan", "rowspan"],
+      ALLOWED_TAGS: tags, ALLOWED_ATTR: ["href", "class", "style", "colspan", "rowspan", "src", "alt", "width", "height"],
       ALLOW_DATA_ATTR: false, ALLOW_ARIA_ATTR: false, RETURN_TRUSTED_TYPE: false
     });
     const template = document.createElement("template");
     template.innerHTML = limpo;
+    for (const img of template.content.querySelectorAll("img")) {
+      if (!window.TeoriaImagens?.PADRAO.test(img.getAttribute("src") || "")) throw new Error("Há imagem sem arquivo incorporado.");
+      for (const nome of ["width", "height"]) {
+        const v = img.getAttribute(nome);
+        if (v && (!/^\d+$/.test(v) || Number(v) < 1 || Number(v) > 8192)) img.removeAttribute(nome);
+      }
+    }
     for (const no of template.content.querySelectorAll("*")) {
       if (no.hasAttribute("href") && (no.tagName !== "A" || !urlSegura(no.getAttribute("href")))) {
         no.removeAttribute("href");
         avisos.add("Alguns endereços de link não são permitidos e serão mantidos apenas como texto.");
       }
-      if (no.hasAttribute("class") && !((no.tagName === "FIGURE" && ["table", "ro-math-display"].includes(no.className)) ||
+      if (no.hasAttribute("class") && !((no.tagName === "FIGURE" && ["table", "ro-math-display", "image"].includes(no.className)) ||
           (no.tagName === "SPAN" && no.className === "ro-math-inline"))) no.removeAttribute("class");
       if (no.hasAttribute("style")) {
         const permitido = ["P", "H2", "H3", "H4", "TH", "TD"].includes(no.tagName);
@@ -235,8 +258,7 @@
         if (no.hasAttribute(nome) && (!["TD", "TH"].includes(no.tagName) || !/^\d+$/.test(no.getAttribute(nome)) || Number(no.getAttribute(nome)) < 1 || Number(no.getAttribute(nome)) > 20)) no.removeAttribute(nome);
       }
     }
-    if (!temTexto(template.content.textContent)) throw new Error("O resumo não contém texto para importar.");
-    return { html: template.innerHTML, avisos: [...avisos] };
+    return template.innerHTML;
   }
 
   function instalar(textarea, editor) {
@@ -260,16 +282,23 @@
       <p>Cole o resumo em Markdown para importar títulos, negritos, itálicos, listas, tabelas e fórmulas LaTeX.</p>
       <label for="${id}-fonte">Resumo em Markdown</label>
       <textarea id="${id}-fonte" data-md="fonte" rows="9" autocomplete="off" spellcheck="false"></textarea>
+      <label for="${id}-zip">Ou importe um ZIP com conteudo.md e a pasta imagens/</label>
+      <input id="${id}-zip" data-md="zip" type="file" accept=".zip,application/zip">
+      <label for="${id}-arquivos">Imagens do Markdown, se não estiverem em um ZIP</label>
+      <input id="${id}-arquivos" data-md="arquivos" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+      <p>As figuras serão associadas pelos nomes no Markdown. O pacote precisa conter todos os arquivos referenciados.</p>
       <p>A importação substitui o conteúdo do editor. Revise e use o botão de salvar da teoria para gravar. Ctrl+Z desfaz a importação.</p>
-      <div class="teoria-markdown-acoes"><button type="button" class="btn" data-md="aplicar">Importar texto</button>
+      <div class="teoria-markdown-acoes"><button type="button" class="btn" data-md="aplicar">Importar material</button>
         <button type="button" class="btn" data-md="cancelar">Cancelar</button></div>
       <p data-md="erro" role="alert"></p>`;
     const buscar = nome => dialogo.querySelector(`[data-md="${nome}"]`);
     const fonte = buscar("fonte"), erro = buscar("erro"), aplicar = buscar("aplicar");
+    const pacote = buscar("zip"), arquivos = buscar("arquivos");
     let original = null, descartado = false;
     function sincronizar() {
       abrir.disabled = editor.isReadOnly || descartado;
       aplicar.disabled = editor.isReadOnly || descartado;
+      fonte.disabled = pacote.disabled = arquivos.disabled = editor.isReadOnly || descartado;
     }
     abrir.addEventListener("click", () => {
       if (editor.isReadOnly || descartado) return;
@@ -278,27 +307,50 @@
       dialogo.showModal(); fonte.focus();
     });
     fonte.addEventListener("input", () => { erro.textContent = ""; });
-    aplicar.addEventListener("click", () => {
+    aplicar.addEventListener("click", async () => {
       if (editor.isReadOnly || descartado) return;
       erro.textContent = "";
       if (editor.getData() !== original) { erro.textContent = "O conteúdo do editor mudou. Cancele a importação, revise o texto e abra o importador novamente."; return; }
-      let conversao;
-      try { conversao = converter(fonte.value); }
-      catch (falha) { erro.textContent = falha.message; return; }
+      const texto = fonte.value, zipSelecionado = pacote.files[0], lista = [...arquivos.files];
       try {
-        const fragmento = editor.data.parse(conversao.html);
-        // Uma única operação desfazível; setData apagaria o histórico anterior.
-        editor.model.change(escritor => {
-          escritor.setSelection(editor.model.document.getRoot(), "in");
-          editor.model.insertContent(fragmento);
-        });
-        mensagem.textContent = ["Resumo importado. Revise e salve a teoria. Desfazer restaura o texto anterior.", ...conversao.avisos].join(" ");
+        if (zipSelecionado && (texto.trim() || lista.length)) throw new Error("Escolha o ZIP ou Markdown com arquivos, sem misturar os dois modos.");
+        await window.TeoriaImagensEditor.transacao(editor, async signal => {
+          if (zipSelecionado) {
+            const resultado = await TeoriaImagens.zip(zipSelecionado, signal);
+            return TeoriaImagensEditor.markdown(resultado.markdown, resultado.imagens, signal, true);
+          }
+          // Conferir todos os nomes antes de enviar arquivos: nenhuma associação
+          // depende da ordem da seleção de arquivos.
+          const analise = converter(texto, { coletar: true });
+          const nomes = new Map();
+          for (const file of lista) {
+            if (nomes.has(file.name)) throw new Error("Há imagens com nomes repetidos. Use nomes únicos.");
+            nomes.set(file.name, file);
+          }
+          const usadas = new Set();
+          for (const src of analise.referencias) {
+            if (/^https:\/\//i.test(src) || TeoriaImagens.PADRAO.test(src)) continue;
+            let nome; try {nome = decodeURIComponent(src).replace(/^\.\//, "");} catch (_) {throw new Error("Caminho de imagem inválido.");}
+            const file = nomes.get(nome) || (nome.startsWith("imagens/") ? nomes.get(nome.slice(8)) : null);
+            if (!file) throw new Error("Imagem não encontrada: " + nome + ". Selecione as imagens em lote ou um ZIP completo.");
+            usadas.add(file);
+          }
+          if (lista.some(f => !usadas.has(f))) throw new Error("Há arquivos selecionados sem referência no Markdown. Confira os nomes.");
+          const enviadas = lista.length ? await TeoriaImagens.arquivos(lista, signal) : [];
+          const conhecidas = enviadas.flatMap((img, n) => [{...img,nome:lista[n].name},{...img,nome:"imagens/"+lista[n].name}]);
+          return TeoriaImagensEditor.markdown(texto, conhecidas, signal);
+        }, true);
+        if (descartado) return;
+        mensagem.textContent = "Material importado com imagens. Revise e salve. Desfazer restaura o conteúdo anterior.";
         dialogo.close();
-      } catch (_) { erro.textContent = "Não foi possível importar. Mantenha esta janela aberta e revise o conteúdo antes de tentar novamente."; }
+      } catch (falha) {
+        if (dialogo.open && !descartado) erro.textContent = falha.message;
+      }
     });
     for (const nome of ["fechar", "cancelar"]) buscar(nome).addEventListener("click", () => dialogo.close());
     dialogo.addEventListener("close", () => {
-      erro.textContent = ""; fonte.value = ""; original = null;
+      window.TeoriaImagensEditor.cancelar(editor);
+      erro.textContent = ""; fonte.value = ""; pacote.value = ""; arquivos.value = ""; original = null;
       if (!descartado && editor.state !== "destroyed") editor.editing.view.focus();
     });
     editor.on("change:isReadOnly", sincronizar);
@@ -310,12 +362,12 @@
       if (dialogo.open) dialogo.close();
       editor.off("change:isReadOnly", sincronizar);
       controles.remove(); dialogo.remove(); montagens.delete(textarea);
-      original = null; fonte.value = "";
+      original = null; fonte.value = ""; pacote.value = ""; arquivos.value = "";
     }
     montagens.set(textarea, { limpar });
     sincronizar();
   }
 
   function destruir(textarea) { montagens.get(textarea)?.limpar(); }
-  window.TeoriaMarkdown = { instalar, destruir, converter };
+  window.TeoriaMarkdown = { instalar, destruir, converter, sanitizarHtml };
 })();

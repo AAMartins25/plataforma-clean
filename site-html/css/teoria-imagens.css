@@ -1,0 +1,18 @@
+:is(.teoria-conteudo-rico, .ck-content) img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+:is(.teoria-conteudo-rico, .ck-content) figure.image {
+  display: block;
+  max-width: 100%;
+  margin: 1em auto;
+}
+.teoria-conteudo-rico figure.image img { display: block; margin-inline: auto; }
+.teoria-conteudo-rico figcaption { font-size: .9em; text-align: center; overflow-wrap: anywhere; }
+.teoria-imagens-aviso { overflow-wrap: anywhere; }
+.teoria-imagens-aviso button { margin: 8px; }
+.teoria-imagens-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-block: 8px; }
+.teoria-imagens-controles [role="status"] { min-width: 0; overflow-wrap: anywhere; }
+.teoria-markdown-dialogo input[type="file"] { max-width: 100%; }
+.teoria-conteudo-rico .image-inline { display: inline-block; max-width: 100%; vertical-align: middle; }

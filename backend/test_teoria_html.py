@@ -130,7 +130,7 @@ def test_edicao_legada_nao_converte_sem_pedido_explicito(ambiente):
 def test_sanitizacao_na_criacao_e_na_edicao(ambiente):
     _, cliente, _, _ = ambiente
     sujo = ('<p onclick="x()" style="text-align:expression(x)">Seguro</p>'
-             '<script>alert(1)</script><img src="https://exemplo.local/a.png">'
+             '<script>alert(1)</script>'
              '<a href="javascript:alert(1)">ruim</a>'
              '<a href="https://exemplo.local/ok">bom</a>'
              '<a href="//exemplo.local/evil">protocolo relativo</a>')
