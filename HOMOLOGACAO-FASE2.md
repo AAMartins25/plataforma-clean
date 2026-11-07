@@ -1,15 +1,19 @@
 # Laboratório local da Fase 2
 
-Preparado na worktree `/tmp/resumao-imagens-fase2`, sem acesso ao Supabase real.
+Laboratório na worktree `/workspaces/resumao-imagens-fase2-recuperada`.
+A preparação inicial não acessou o Supabase; a homologação real posterior foi
+aprovada em 2026-11-07 com autorização, exclusivamente no Storage do bucket
+`teoria-imagens`, com PostgreSQL local e dados fictícios. Nenhum acesso ao banco
+de produção foi realizado.
 O bucket `teoria-imagens` foi informado pelo administrador como privado, com os
 formatos PNG/JPEG/WebP e limite de 5 MB; esta preparação não consulta suas configurações.
 
 ## O que está preparado
 
-- PostgreSQL 17.6 Docker `resumao-fase2-homologacao-pg`, com `--network none`, sem
+- PostgreSQL 17.6 Docker `resumao-fase2-homologacao-recuperada-pg`, com `--network none`, sem
   portas TCP publicadas. A aplicação conecta somente pelo socket Unix privado
-  de `/tmp/resumao-fase2-homologacao/pgsocket` ao banco `resumao_imagens_homologacao`.
-- Volume nomeado `resumao-fase2-homologacao-pg-dados`, persistente entre reinícios.
+  de `/workspaces/resumao-fase2-homologacao-privado/pgsocket` ao banco `resumao_imagens_homologacao`.
+- Volume nomeado `resumao-fase2-homologacao-recuperada-pg-dados`, persistente entre reinícios.
   Marcador aleatório confere a identidade do banco e impede adoção acidental de
   outro banco. O preparo não apaga tabelas nem recria dados em reinícios.
 - Esquema mínimo por dependências dos modelos dos testes existentes, mais a
@@ -37,15 +41,16 @@ formatos PNG/JPEG/WebP e limite de 5 MB; esta preparação não consulta suas co
 ## Comandos locais
 
 Executar da worktree. O launcher reutiliza automaticamente o venv existente e
-Pillow temporário, sem instalar dependências nem utilizar configurações de produção.
+Pillow preservado em diretório persistente, sem instalar dependências nem utilizar configurações de produção.
 
 ```bash
-cd /tmp/resumao-imagens-fase2
+cd /workspaces/resumao-imagens-fase2-recuperada
 python backend/homologacao_imagens.py preparar
 python backend/homologacao_imagens.py iniciar
 ```
 
-O primeiro comando já foi executado nesta preparação. O segundo mantém o servidor
+O primeiro comando já foi executado nesta preparação sobre uma cópia restaurada
+do backup, preservando o container e o volume originais parados. O segundo mantém o servidor
 em primeiro plano e não libera o Storage. Ctrl+C encerra a interface/ponte e preserva
 o PostgreSQL/volume. O acesso HTTP é restrito ao Host `127.0.0.1:8766`; encaminhamentos
 com outro Host/Origin serão recusados. Para acesso remoto pelo navegador, usar apenas
@@ -62,7 +67,7 @@ python backend/homologacao_imagens.py configurar
 
 O programa pede a URL HTTPS do projeto e a chave secreta usando entrada oculta
 (`getpass`), valida o formato localmente e grava
-`/tmp/resumao-fase2-homologacao/supabase.json` com modo **0600**, em diretório **0700**,
+`/workspaces/resumao-fase2-homologacao-privado/supabase.json` com modo **0600**, em diretório **0700**,
 fora da worktree e do Git. Não faz requisição de validação ao Supabase e não libera
 o Storage. Não fornecer valores em argumentos de linha de comando, não colar em
 chat e não usar `cat`, `printenv`, tracing ou logs para inspecioná-los.
@@ -109,3 +114,30 @@ requisições externas durante a verificação. Nenhum upload ou exclusão no Su
 Arquivos acrescentados: `backend/homologacao_imagens.py`,
 `site-html/homologacao-imagens.cjs` e este documento. Não altera as URLs da plataforma
 em produção nem os testes e funcionalidades já aprovados.
+
+
+## Correções preservadas na consolidação
+
+- Estado privado em `/workspaces/resumao-fase2-homologacao-privado` e dependências
+  Pillow preservadas em `/workspaces/resumao-fase2-preservacao-20261107/dependencias`.
+- Container/volume exclusivos `resumao-fase2-homologacao-recuperada-pg` e
+  `resumao-fase2-homologacao-recuperada-pg-dados`; originais preservados.
+- Codecs Pillow inicializados antes do carregador que restaura `sys.modules`.
+  Isso evita a recusa de JPEG/PNG/WebP válidos exclusivamente na ponte de testes.
+- Mesmo com `--liberar-storage`, o adaptador do laboratório recusa exclusões,
+  compensações de exclusão, outros métodos e outros buckets antes da rede.
+  A auditoria registra somente operação, método, bucket e resultado.
+- `IMAGENS_MANUTENCAO_ATIVA=false` permanece obrigatório; o TestClient não executa
+  lifespan ou workers. Credenciais e URLs assinadas não devem ser versionadas.
+
+Essas restrições pertencem ao laboratório. O uploader funcional conserva sua
+compensação de falhas: desativar manutenção automática não desativa essa exclusão.
+Antes da implantação, resolver a política de exclusões e o compartilhamento do
+bucket entre homologação e produção. Os quatro objetos fictícios foram mantidos,
+com vínculos somente no PostgreSQL local; não ativar reconciliação de produção
+nesse bucket compartilhado.
+
+O relatório sanitizado está fora do Git em
+`/workspaces/resumao-fase2-preservacao-20261107/evidencias/homologacao-real-20261107.md`.
+Os testes de consolidação exercitam somente os ajustes locais com SQLite e
+Storage simulado; não repetem uploads, exclusões ou operações remotas.

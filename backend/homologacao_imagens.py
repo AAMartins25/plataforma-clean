@@ -18,8 +18,8 @@ import time
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-ESTADO = Path('/tmp/resumao-fase2-homologacao')
-CONTAINER = 'resumao-fase2-homologacao-pg'
+ESTADO = Path('/workspaces/resumao-fase2-homologacao-privado')
+CONTAINER = 'resumao-fase2-homologacao-recuperada-pg'
 VOLUME = CONTAINER + '-dados'
 BANCO = 'resumao_imagens_homologacao'
 LABEL = 'resumao.fase2.homologacao'
@@ -207,12 +207,38 @@ def bridge(liberar):
     from sqlalchemy.orm import sessionmaker
     from app.imagens_storage import obter_storage_imagens, SupabaseImagens
     from test_questoes_pratica_patch import carregar_main_isolado
+    # O carregador restaura sys.modules; preservar os codecs antes dessa restauração.
+    from app import imagens_arquivos
+    imagens_arquivos.Image.init()
     factory=sessionmaker(engine,autoflush=False)
+    class StorageHomologacao(SupabaseImagens):
+        def _request(self, metodo, path, **kwargs):
+            # O laboratório real nunca executa exclusões, nem compensações.
+            if metodo.upper() != 'POST' or self.bucket != 'teoria-imagens' or not (
+                    path.startswith('/object/teoria-imagens/')
+                    or path.startswith('/object/sign/teoria-imagens/')
+                    or path == '/object/list/teoria-imagens'):
+                raise HTTPException(403, 'Operação de Storage bloqueada na homologação.')
+            operacao = 'assinatura' if path.startswith('/object/sign/') else ('listagem' if path.startswith('/object/list/') else 'upload')
+            registro = {'operacao':operacao, 'metodo':metodo.upper(), 'bucket':self.bucket}
+            try:
+                resposta = super()._request(metodo, path, **kwargs)
+                registro['status'] = resposta.status_code
+                return resposta
+            except HTTPException:
+                registro['falhou'] = True
+                raise
+            finally:
+                # Nunca registrar credenciais, URLs assinadas, corpos ou cabeçalhos.
+                with (ESTADO/'storage-auditoria.jsonl').open('a') as out:
+                    out.write(json.dumps(registro)+'\n')
+        def excluir(self, chave):
+            raise HTTPException(403, 'Exclusões desativadas no laboratório de homologação.')
     def bloqueado():
         raise HTTPException(503,'Storage bloqueado nesta preparação; aguarde autorização para testes reais.')
     try:
         with carregar_main_isolado(factory,engine) as main:
-            main.app.dependency_overrides[obter_storage_imagens]=(lambda:SupabaseImagens()) if liberar else bloqueado
+            main.app.dependency_overrides[obter_storage_imagens]=(lambda:StorageHomologacao()) if liberar else bloqueado
             # Sem lifespan: não iniciar workers financeiros nem manutenção. JWT
             # e permissões reais são preservados; nenhuma autenticação é mockada.
             client=TestClient(main.app,raise_server_exceptions=False)
@@ -242,7 +268,8 @@ def main():
     ambiente=ambiente_seguro();os.environ.clear();os.environ.update(ambiente)
     sys.dont_write_bytecode=True
     os.environ['SECRET_KEY']=secrets.token_urlsafe(48)
-    if Path('/tmp/resumao-fase2-deps').exists():sys.path.insert(0,'/tmp/resumao-fase2-deps')
+    dependencias = Path('/workspaces/resumao-fase2-preservacao-20261107/dependencias')
+    if dependencias.exists():sys.path.insert(0,str(dependencias))
     if args.acao=='preparar':preparar()
     elif args.acao=='configurar':configurar()
     elif args.acao=='bridge':bridge(args.liberar_storage)

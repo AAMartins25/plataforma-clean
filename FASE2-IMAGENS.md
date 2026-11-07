@@ -1,8 +1,11 @@
 # Fase 2 — imagens e ícones em materiais html_v1
 
-Implementação exclusivamente local na worktree `/tmp/resumao-imagens-fase2`,
-base `dbc6feb0a2b16dc4437e4b62d3f325a44c208dfb`. Sem commit, push, integração,
-deploy, configuração de bucket ou acesso a dados de produção.
+Implementação na branch isolada `fase2-imagens-recuperada-20261107`, worktree
+`/workspaces/resumao-imagens-fase2-recuperada`, base
+`dbc6feb0a2b16dc4437e4b62d3f325a44c208dfb`. Os 34 arquivos recuperados foram
+preservados no commit de segurança `8d9c7f7`. A homologação real de Storage foi
+aprovada em 2026-11-07, exclusivamente com PostgreSQL local e dados fictícios.
+Não houve push, integração, deploy ou acesso ao banco de produção.
 
 ## Uso pelo administrador
 
@@ -252,3 +255,21 @@ Referências oficiais verificadas para o contrato do adaptador:
 [paginação de objetos](https://supabase.com/docs/reference/python/storage-from-list).
 Nenhuma conexão ao Supabase real foi feita; continuam pendentes os ensaios de
 permissões, timestamps/listagem e expiração no projeto exclusivo de homologação.
+
+
+## Consolidação após homologação real — 2026-11-07
+
+As evidências históricas acima descrevem suas respectivas etapas. A integração
+real posterior confirmou quatro objetos fictícios PNG/JPEG/WebP, ZIP, Ctrl+V
+nativo, inserção individual, persistência/reabertura exata, leitura como aluno e
+recusa de acesso indevido. Após o prazo natural de 900 segundos, a assinatura
+antiga foi recusada; a API local renovou a assinatura e os bytes mantiveram o SHA-256.
+A renovação periódica da interface foi acionada com relógio do navegador controlado,
+usando assinaturas reais no backend. Nenhum objeto foi excluído.
+
+Os ajustes de caminhos persistentes, inicialização dos codecs antes do carregador
+isolado e bloqueio de exclusões pertencem às ferramentas locais de homologação.
+Não modificam o adaptador funcional da aplicação. As credenciais, o estado privado,
+os arquivos fictícios e os relatórios detalhados permanecem fora do Git.
+A manutenção automática permanece desativada. A consolidação não integra a main;
+a main local contém trabalho não commitado que deve ser preservado.
