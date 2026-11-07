@@ -91,30 +91,44 @@ def registrar_lote(db, usuario, imagens, storage):
     if pendentes + len(imagens) > 100:
         raise HTTPException(429, "Há muitos uploads pendentes. Salve os materiais ou solicite a limpeza dos pendentes antigos.")
     enviados, resultados = [], []
+    conexao = db.connection()
+    commit_iniciado = False
     try:
         for nome, validada in imagens.items():
             id = str(uuid4())
             chave = id + "." + validada.extensao
             travar_objeto(db, chave)
-            enviados.append(chave)
             storage.enviar(chave, validada.dados, validada.mime)
+            enviados.append(chave)
             imagem = m.ImagemTeoria(id=id, chave=chave, autor_id=usuario.id,
                 mime=validada.mime, tamanho=len(validada.dados), largura=validada.largura,
                 altura=validada.altura, sha256=validada.sha256)
             db.add(imagem)
             resultados.append(dict(id=id, nome=nome, src="/midias/imagens/" + id,
                                    largura=validada.largura, altura=validada.altura))
+        # Uma falha a partir daqui pode significar commit persistido sem ACK.
+        commit_iniciado = True
         db.commit()
         return {"imagens": resultados}
     except Exception:
-        db.rollback()
-        # Compensação é best effort; não mascarar a falha original. Objetos
-        # remanescentes ficam identificáveis pelas chaves UUID para reconciliação.
-        for chave in enviados:
-            try:
-                storage.excluir(chave)
-            except Exception:
-                logger.warning("Reconciliar objeto de imagem após falha de compensação: %s", chave)
+        # Session.rollback() pode ser apenas local após perder a conexão.
+        # Só compensar antes do commit, com transação conectada e rollback bem-sucedido.
+        rollback_confirmavel = (not commit_iniciado and not conexao.closed
+                                and not conexao.invalidated and conexao.in_transaction())
+        rollback_confirmado = False
+        try:
+            db.rollback()
+            rollback_confirmado = rollback_confirmavel
+        except Exception:
+            logger.warning("Rollback de imagens não confirmado; objetos preservados.")
+        if rollback_confirmado:
+            for chave in enviados:
+                try:
+                    storage.excluir(chave)
+                except Exception:
+                    logger.warning("Reconciliar objeto de imagem após falha de compensação: %s", chave)
+        else:
+            logger.warning("Resultado transacional de imagens não confirmado; objetos preservados.")
         raise
 
 

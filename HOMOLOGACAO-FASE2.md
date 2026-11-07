@@ -86,8 +86,8 @@ python backend/homologacao_imagens.py iniciar --liberar-storage
 ```
 
 Esse modo não envia arquivos automaticamente ao iniciar: disponibiliza as operações
-ao usuário. Ao importar ou colar, o adaptador passa a usar o bucket real, incluindo
-eventual exclusão compensatória se um lote falhar. Portanto não executar essa
+ao usuário. Ao importar ou colar, o adaptador usa somente o bucket de homologação;
+a ponte bloqueia todas as exclusões, inclusive compensatórias. Portanto não executar essa
 liberação durante a etapa de preparação. A manutenção continua false em ambos os
 modos; não há exclusão periódica ou botão de exclusão na interface.
 
@@ -130,12 +130,12 @@ em produção nem os testes e funcionalidades já aprovados.
 - `IMAGENS_MANUTENCAO_ATIVA=false` permanece obrigatório; o TestClient não executa
   lifespan ou workers. Credenciais e URLs assinadas não devem ser versionadas.
 
-Essas restrições pertencem ao laboratório. O uploader funcional conserva sua
-compensação de falhas: desativar manutenção automática não desativa essa exclusão.
-Antes da implantação, resolver a política de exclusões e o compartilhamento do
-bucket entre homologação e produção. Os quatro objetos fictícios foram mantidos,
-com vínculos somente no PostgreSQL local; não ativar reconciliação de produção
-nesse bucket compartilhado.
+Essas restrições pertencem ao laboratório. No uploader funcional, a compensação
+fica restrita ao rollback comprovado antes de qualquer tentativa de commit.
+Resultado incerto preserva os objetos. A manutenção permanece desativada.
+Produção deve usar exclusivamente `teoria-imagens-producao` e seu próprio banco;
+os quatro objetos fictícios e seus vínculos continuam no ambiente de homologação.
+Não copiar os metadados locais nem ativar reconciliação no bucket de homologação.
 
 O relatório sanitizado está fora do Git em
 `/workspaces/resumao-fase2-preservacao-20261107/evidencias/homologacao-real-20261107.md`.

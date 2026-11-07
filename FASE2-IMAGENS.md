@@ -115,19 +115,20 @@ nenhum material existente é alterado por isso.
    O usuário SQLAlchemy deve ter acesso às tabelas e bypass adequado de RLS (por
    exemplo, ser seu proprietário); um papel SQL restrito precisará de concessões
    e política específicas revisadas. Não conceder acesso à Data API pública.
-2. Criar bucket **privado** `teoria-imagens`, limite 5 MiB por objeto e MIME types
+2. Manter `teoria-imagens` exclusivamente na homologação e preparar bucket **privado**
+   `teoria-imagens-producao` para produção, limite 5 MiB por objeto e MIME types
    `image/png`, `image/jpeg`, `image/webp`. Não criar política pública de download
    ou upload nem expor chave privilegiada ao navegador. A aplicação usa o backend
    com service role; não depende de Supabase Auth no frontend.
 3. Definir somente no backend: `SUPABASE_URL` (origem HTTPS do projeto),
    `SUPABASE_SECRET_KEY` (chave atual `sb_secret_...`) ou `SUPABASE_SERVICE_ROLE_KEY`
-   (JWT legado `service_role`), e `SUPABASE_IMAGENS_BUCKET=teoria-imagens`.
+   (JWT legado `service_role`), e `SUPABASE_IMAGENS_BUCKET=teoria-imagens-producao` em produção
+   (`teoria-imagens` somente na homologação).
    A variável SECRET tem precedência. A chave atual viaja somente em `apikey`;
    a legada viaja em `apikey` e `Authorization: Bearer`. Chaves públicas, JWTs anon
    e formatos inválidos falham fechados. Nenhuma chave é enviada ao frontend.
-   Após conferir o bucket exclusivo do banco de teste e o esquema/permissões SQL,
-  ativar `IMAGENS_MANUTENCAO_ATIVA=true` para manutenção automática, sem agendador
-   externo. Não habilitar sobre bucket compartilhado com outro banco. Disponibilizar
+   Manter `IMAGENS_MANUTENCAO_ATIVA=false` na implantação inicial. Qualquer ativação
+   futura exige revisão e autorização separadas do bucket e esquema/permissões SQL. Não habilitar sobre bucket compartilhado com outro banco. Disponibilizar
    pelo menos duas conexões SQL simultâneas: uma reserva o lock transacional global
    e outra executa os lotes (o pool existente usa cinco por padrão). Os locks são
    transacionais para compatibilidade com PgBouncer em modo transaction.
@@ -273,3 +274,24 @@ Não modificam o adaptador funcional da aplicação. As credenciais, o estado pr
 os arquivos fictícios e os relatórios detalhados permanecem fora do Git.
 A manutenção automática permanece desativada. A consolidação não integra a main;
 a main local contém trabalho não commitado que deve ser preservado.
+
+## Preparação final: transações e ambientes
+
+O uploader preserva os objetos se houver qualquer falha após iniciar o commit,
+mesmo que um rollback local posterior retorne sem erro. Antes do commit, somente
+compensa uploads confirmados quando a conexão continua válida e o rollback termina
+com sucesso. Falha de rollback ou conexão perdida também preserva os objetos.
+Órfãos devem ser reconciliados posteriormente por procedimento autorizado;
+a manutenção automática continua desativada.
+
+Os perfis sem credenciais em `preparacao/fase2/` selecionam buckets diferentes
+no mesmo projeto. Banco, chave da aplicação, credenciais do backend e metadados
+são próprios de cada ambiente. Os quatro objetos fictícios e seus vínculos ficam
+na homologação; não copiar esses registros para produção. Chaves privilegiadas
+Supabase têm escopo amplo: o isolamento por bucket depende da configuração correta
+do backend; não constitui isolamento de privilégios da credencial no projeto.
+
+Validação final direcionada: 10 casos aprovados com SQLite descartável e Storage
+em memória: rollback comprovado, commit sem confirmação antes/depois da persistência,
+rollback falho, conexão invalidada/fechada, dois perfis de bucket e regressões de
+compensação parcial e salvar/reabrir/acesso autorizado. Sem rede ou credenciais.
