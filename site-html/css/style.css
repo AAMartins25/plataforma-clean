@@ -98,6 +98,12 @@ a:hover {
   cursor: pointer;
 }
 
+/* Botões da Minha Área/ADM; inclui páginas legadas identificadas pela guarda ADM. */
+:is(.minha-area-page, .admin-shell, html:has(script[src^="../js/admin-acesso.js"]) body)
+:is(.btn, button, [role="button"]):is(:hover, :focus) {
+  text-decoration: none;
+}
+
 /* FOOTER */
 footer {
   text-align: center;
