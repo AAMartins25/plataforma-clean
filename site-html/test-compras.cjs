@@ -7,7 +7,7 @@ function ambiente(search='?curso_id=1&demonstracao_id=2&origem=cursos',checkout=
  const elementos={},store=new Map([['access_token','token']]),pedidos=[];
  const s={URLSearchParams,console:{error(){}},Date,Number,String,Math,JSON,encodeURIComponent,
   confirm:()=>true,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
-  window:{addEventListener(){},location:{search,pathname:'/checkout.html',href:'https://example.com/checkout.html'+search,replace(url){this.href=url}}},
+  window:{Juridico:{payload:async()=>({}),erro:async()=>{},limpar(){}},addEventListener(){},location:{search,pathname:'/checkout.html',href:'https://example.com/checkout.html'+search,replace(url){this.href=url}}},
   document:{getElementById(id){return elementos[id]??={style:{},value:'',textContent:''}},querySelector(){return s.radio},addEventListener(){},body:{dataset:{},style:{}}},
   fetch:async(url,opts)=>{pedidos.push({url,opts});return{ok:true,text:async()=>'',json:async()=>url.includes('validar')?{codigo_cupom:'AW265',percentual_desconto:12,vendedor_id:1}:{init_point:'https://example.com/pagamento'}}},
  };
@@ -73,4 +73,21 @@ test('navegação e confirmação de logout',()=>{
 test('backend orienta para fluxo próprio de renovação',()=>{
  const {s}=ambiente();const erro=s.erroApiCompra(JSON.stringify({detail:{codigo:'USE_RENOVACAO',curso_id:1,contratacao_id:7,mensagem:'Renove'}}),409);
  assert.equal(s.tratarErroCompra(erro),true);assert.match(s.window.location.href,/renovacao=1&contratacao_id=7/);
+});
+test('curso fora de venda remove demonstração e orienta retomada na URL direta',()=>{
+ const {s,elementos}=ambiente('?curso_id=1',false);
+ vm.runInContext('dadosCursoInfo={id:1,publicado:false,tempos_acesso:[{id:1,meses:4,valor_cents:4990}]}',s);
+ s.renderizarOpcoesAcessoCursoInfo();
+ assert.doesNotMatch(elementos.opcoes_acesso.innerHTML,/value="demo"/);
+ assert.match(elementos.opcoes_acesso.innerHTML,/pagamento já iniciado/);
+ assert.equal(elementos.btnAdquirirAgora.textContent,'Retomar pagamento');
+});
+test('checkout fora de venda preserva retomada e renovação sem oferecer nova demo',()=>{
+ for(const renovacao of [false,true]){
+  const {s,elementos}=ambiente('?curso_id=1'+(renovacao?'&renovacao=1&contratacao_id=7':''));
+  vm.runInContext('dadosCheckout.publicado=false',s);s.renderizarOpcoesAcesso();
+  assert.doesNotMatch(elementos.opcoesAcesso.innerHTML,/value="demo"/);
+  assert.match(elementos.opcoesAcesso.innerHTML,/pagamentos?|pagamento já iniciado/);
+  assert.equal(elementos.btnAdquirirAgora.textContent,renovacao?'Renovar acesso':'Retomar pagamento');
+ }
 });

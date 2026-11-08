@@ -2415,7 +2415,11 @@ function renderizarOpcoesAcessoCursoInfo() {
     </label>
   `).join("");
 
+  const vendaDesativada = dadosCursoInfo.publicado === false;
+  const botao = document.getElementById("btnAdquirirAgora");
+  if (botao) botao.textContent = vendaDesativada ? "Retomar pagamento" : "Adquirir agora";
   box.innerHTML = `
+    ${vendaDesativada ? '<p role="status">Venda desativada. Você pode retomar um pagamento já iniciado selecionando o mesmo período e cupom. Seus acessos existentes permanecem disponíveis.</p>' : `
     <label class="assunto curso-info-opcao-acesso">
       <input
         type="radio"
@@ -2426,6 +2430,7 @@ function renderizarOpcoesAcessoCursoInfo() {
       />
       Teste (acesso gratuito)
     </label>
+    `}
 
     ${pagas}
   `;

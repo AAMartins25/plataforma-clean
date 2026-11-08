@@ -1494,7 +1494,7 @@
       }
 
       const ok = confirm(
-        "Deseja publicar este curso?\n\n" +
+        "Deseja ativar a venda deste curso?\n\n" +
         "Ele passará a aparecer na área de cursos disponíveis."
       );
 
@@ -1509,14 +1509,14 @@
         cursoAtual.publicado = true;
         atualizarBotoesPublicacaoCurso();
 
-        alert("Curso publicado com sucesso.");
+        alert("Venda do curso ativada com sucesso.");
 
       } catch (err) {
         console.error(err);
 
         alert(
-          "Erro ao publicar curso: " +
-          err.message
+          "Erro ao ativar a venda: " +
+          mensagemErroAula(err)
         );
       }
     });
@@ -1528,9 +1528,9 @@
       }
 
       const ok = confirm(
-        "Deseja retirar este curso da venda?\n\n" +
+        "Deseja desativar a venda deste curso?\n\n" +
         "Ele deixará de aparecer para novos alunos, " +
-        "mas continuará disponível para edição no painel."
+        "e os acessos vigentes, pagamentos já iniciados e históricos serão preservados."
       );
 
       if (!ok) return;
@@ -1544,14 +1544,14 @@
         cursoAtual.publicado = false;
         atualizarBotoesPublicacaoCurso();
 
-        alert("Curso retirado da venda com sucesso.");
+        alert("Venda desativada. Os direitos dos alunos foram preservados.");
 
       } catch (err) {
         console.error(err);
 
         alert(
-          "Erro ao retirar curso da venda: " +
-          err.message
+          "Erro ao desativar a venda: " +
+          mensagemErroAula(err)
         );
       }
     });
@@ -2966,8 +2966,7 @@
 
       try {
         const curso = await apiPutAuth(`/cursos/${cursoId}`, {
-          nome: novoNome.trim(),
-          ativo: true
+          nome: novoNome.trim()
         });
 
         msgCurso.textContent = `Curso atualizado: ${curso.nome}!`;
@@ -3082,7 +3081,7 @@
       const ok = confirm(
         `Tem certeza que deseja excluir o curso?\n\n` +
         `${nomeCurso}\n\n` +
-        `Esta ação não poderá ser desfeita.`
+        `A exclusão apenas retira o curso do painel, sem apagar seu conteúdo. Cursos com vínculos acadêmicos ou financeiros não podem ser excluídos; utilize Desativar venda.`
       );
 
       if (!ok) return;
@@ -3090,7 +3089,7 @@
       try {
         await apiDeleteAuth(`/cursos/${cursoId}`);
 
-        msgCurso.textContent = "Curso excluído com sucesso!";
+        msgCurso.textContent = "Curso excluído do painel. Seu conteúdo foi preservado.";
         msgCurso.style.color = "#2f5e46";
 
         cursoAtual = null;
@@ -3123,7 +3122,7 @@
 
         alert(
           "Erro ao excluir curso: " +
-          err.message
+          mensagemErroAula(err)
         );
       }
     });

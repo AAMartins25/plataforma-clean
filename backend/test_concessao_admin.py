@@ -14,6 +14,7 @@ def banco_simulado():
     db = MagicMock()
     filtro = db.query.return_value.filter.return_value
     filtro.with_for_update.return_value.first = filtro.first
+    db.query.return_value.filter_by.return_value.populate_existing.return_value.with_for_update.return_value.first = filtro.first
     filtro.order_by.return_value.with_for_update.return_value.first.return_value = None
     return db
 
@@ -24,7 +25,7 @@ def test_concessao_para_aluno_sem_acesso():
     # Consultas: aluno, curso e acesso existente.
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         None,
     ]
 
@@ -93,7 +94,7 @@ def test_concessao_nao_reduz_prazo_de_compra_vigente():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         acesso_existente,
     ]
 
@@ -142,7 +143,7 @@ def test_concessao_reativa_acesso_expirado():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         acesso_existente,
     ]
 
@@ -193,7 +194,7 @@ def test_concessao_reativa_acesso_inativo():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         acesso_existente,
     ]
 
@@ -242,7 +243,7 @@ def test_concessao_preserva_acesso_sem_vencimento():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         acesso_existente,
     ]
 
@@ -279,7 +280,7 @@ def test_concessao_rejeita_data_vencida():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
     ]
 
     payload = AcessoCursoCreate(
@@ -305,7 +306,7 @@ def test_concessao_converte_fuso_horario():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         None,
     ]
 
@@ -425,7 +426,7 @@ def test_concessao_trata_conflito_no_banco():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1),
+        SimpleNamespace(id=1, ativo=True),
         None,
     ]
 

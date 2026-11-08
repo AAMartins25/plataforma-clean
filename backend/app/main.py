@@ -50,6 +50,8 @@ from app.aulas import (
 from app.schemas import (ReembolsoPixManualCreate, ContestacaoPagamentoCreate, ContestacaoDevolucaoConfirmadaCreate)
 from app import models
 from app.compras import validar_nova_compra, validar_nova_demonstracao, validar_cupom
+from app.cursos_comerciais import bloquear_curso, garantir_exclusao_segura, VENDA_DESATIVADA
+from app.schemas import CursoUpdate
 from app.oportunidades import (
     obter_oportunidade,
     bloquear_oportunidade_pagamento,
@@ -456,15 +458,7 @@ def admin_criar_acesso(
             detail="Usuário não encontrado"
         )
 
-    c = db.query(Curso).filter(
-        Curso.id == payload.curso_id
-    ).first()
-
-    if not c:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado"
-        )
+    c = bloquear_curso(db, payload.curso_id, exigir_ativo=True, aquisicao=True)
 
     agora = datetime.utcnow()
 
@@ -923,20 +917,21 @@ def listar_cursos(db: Session = Depends(get_db)):
 @app.put("/cursos/{curso_id}")
 def editar_curso(
     curso_id: int,
-    dados: CursoCreate,
+    dados: CursoUpdate,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
     if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
-    curso = db.query(Curso).filter(Curso.id == curso_id).first()
+    curso = bloquear_curso(db, curso_id)
 
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado")
-
+    if dados.ativo is False:
+        garantir_exclusao_segura(db, curso)
+        curso.publicado = False
     curso.nome = dados.nome.strip()
-    curso.ativo = dados.ativo
+    if dados.ativo is not None:
+        curso.ativo = dados.ativo
 
     db.commit()
     db.refresh(curso)
@@ -956,18 +951,17 @@ def excluir_curso(
     if not pode_administrar(usuario, "producao"):
         raise HTTPException(status_code=403, detail="Apenas admin")
 
-    curso = db.query(Curso).filter(Curso.id == curso_id).first()
+    curso = bloquear_curso(db, curso_id)
 
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado")
-
+    garantir_exclusao_segura(db, curso)
     curso.ativo = False
+    curso.publicado = False
 
     db.commit()
     db.refresh(curso)
 
     return {
-        "mensagem": "Curso desativado com sucesso",
+        "mensagem": "Curso excluído do painel sem apagar seu conteúdo",
         "id": curso.id,
         "nome": curso.nome,
         "ativo": curso.ativo
@@ -3858,6 +3852,7 @@ def dados_publicos_checkout(
     return {
         "id": curso.id,
         "nome": curso.nome,
+        "publicado": bool(curso.publicado),
         "descricao_publica": curso.descricao_publica,
         "tempos_acesso": [
             {
@@ -3906,16 +3901,7 @@ def publicar_curso(
             detail="Apenas administrador."
         )
 
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado."
-        )
+    curso = bloquear_curso(db, curso_id, exigir_ativo=True)
 
     curso.publicado = True
 
@@ -3928,6 +3914,15 @@ def publicar_curso(
         "publicado": curso.publicado,
         "mensagem": "Curso publicado com sucesso."
     }
+
+@app.put("/admin/cursos/{curso_id}/retirar-venda")
+def retirar_curso_venda(curso_id: int, db: Session = Depends(get_db),
+                       usuario: Usuario = Depends(exigir_admin_aulas)):
+    curso = bloquear_curso(db, curso_id)
+    curso.publicado = False
+    db.commit()
+    return {"ok": True, "curso_id": curso.id, "publicado": False}
+
 
 @app.get("/admin/cursos/{curso_id}/config-publica")
 def obter_config_publica_curso(
@@ -4052,18 +4047,10 @@ def iniciar_demonstracao_curso(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
 ):
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado."
-        )
-
     db.query(models.Usuario).filter_by(id=usuario.id).with_for_update().one()
+    curso = bloquear_curso(db, curso_id, exigir_ativo=True, aquisicao=True)
+    if not curso.publicado:
+        raise HTTPException(409, VENDA_DESATIVADA)
     agora = datetime.utcnow()
 
     validar_nova_demonstracao(db, usuario.id, curso_id, agora)
@@ -4178,18 +4165,10 @@ def criar_checkout_mp(
     if not tempo:
         raise HTTPException(status_code=404, detail="Tempo de acesso não encontrado.")
 
-    curso = db.query(Curso).filter(
-        Curso.id == tempo.curso_id,
-        Curso.ativo == True
-    ).first()
-
-    if not curso:
-        raise HTTPException(status_code=404, detail="Curso não encontrado.")
-
-    # Bloqueio de concorrência do checkout por aluno
-    db.query(models.Usuario).filter(
-        models.Usuario.id == user.id
-    ).with_for_update().one()
+    # Ordem comum às aquisições: aluno, depois curso. O curso fica bloqueado
+    # até a intenção durável ser gravada, antes da chamada externa ao provedor.
+    db.query(models.Usuario).filter(models.Usuario.id == user.id).with_for_update().one()
+    curso = bloquear_curso(db, tempo.curso_id, exigir_ativo=True, aquisicao=True)
 
     agora = datetime.utcnow()
     tipo_compra = payload.get("tipo_compra", "NOVA")
@@ -4388,6 +4367,9 @@ def criar_checkout_mp(
             status_code=409,
             detail="Limite de oito títulos atingido para esta oportunidade."
         )
+
+    if tipo_compra == "NOVA" and not curso.publicado:
+        raise HTTPException(409, VENDA_DESATIVADA)
 
     identidade_checkout = nova_identidade()
     recebedor_checkout = recebedor_esperado()

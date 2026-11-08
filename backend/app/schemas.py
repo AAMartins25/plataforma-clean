@@ -5,6 +5,10 @@ class CursoCreate(BaseModel):
     nome: str
     ativo: bool = True
 
+class CursoUpdate(BaseModel):
+    nome: str
+    ativo: StrictBool | None = None
+
 class CursoResponse(BaseModel):
     id: int
     nome: str

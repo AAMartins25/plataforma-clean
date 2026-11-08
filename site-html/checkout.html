@@ -154,7 +154,7 @@
     <p>© <span id="ano_atual">2026</span> RO</p>
   </footer>
 
-  <script src="js/app.js?v=aceite-2"></script>
+  <script src="js/app.js?v=venda1"></script>
   <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>
@@ -247,8 +247,12 @@
         </label>
       `).join("");
 
+      const vendaDesativada = dadosCheckout.publicado === false;
+      const botao = document.getElementById("btnAdquirirAgora");
+      if (botao) botao.textContent = checkoutRenovacao ? "Renovar acesso" : vendaDesativada ? "Retomar pagamento" : "Adquirir agora";
       box.innerHTML = `
-        ${checkoutRenovacao || demonstracaoIdCheckout ? "" : `
+        ${vendaDesativada ? '<p role="status">Venda desativada. Renovações válidas continuam disponíveis. Para retomar um pagamento já iniciado, selecione o mesmo período e cupom.</p>' : ""}
+        ${checkoutRenovacao || demonstracaoIdCheckout || vendaDesativada ? "" : `
           <label class="assunto" style="display:block;cursor:pointer;">
             <input
               type="radio"
