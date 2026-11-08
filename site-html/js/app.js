@@ -2046,7 +2046,8 @@ function pageCurso() {
         </a>
       </div>
 
-      <div class="curso-acao-linha">
+      <!-- Temporário: para reativar Questões, remova somente style="display:none;" da linha abaixo. -->
+      <div class="curso-acao-linha" style="display:none;">
         <div
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Questões. Treinar, treinar"
@@ -2071,22 +2072,6 @@ function pageCurso() {
       <div class="curso-acao-linha">
         <div
           class="curso-acao-titulo curso-tooltip"
-          data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
-        >
-          🔁 Revisões
-        </div>
-
-        <a
-          class="btn curso-acao-btn"
-          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
-        >
-          Abrir
-        </a>
-      </div>
-
-      <div class="curso-acao-linha">
-        <div
-          class="curso-acao-titulo curso-tooltip"
           data-tooltip="Questões que errei ou que marquei como difícil ou que assinalei para rever"
         >
           🚨 Questões diferenciadas
@@ -2095,6 +2080,22 @@ function pageCurso() {
         <a
           class="btn curso-acao-btn"
           href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
+        >
+          Abrir
+        </a>
+      </div>
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
+        >
+          🔁 Revisões
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>
