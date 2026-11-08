@@ -5758,9 +5758,9 @@ def recuperar_senha(
 
     try:
         resend.Emails.send({
-            "from": "Quality Estudos <onboarding@resend.dev>",
+            "from": "Resumão Online <contato@resumaoonline.com.br>",
             "to": [usuario.email],
-            "subject": "Redefinição de senha - Quality Estudos",
+            "subject": "Resumão Online - Redefinição de senha",
             "html": f"""
                 <h2>Redefinição de senha</h2>
 
@@ -5770,7 +5770,7 @@ def recuperar_senha(
 
                 <p>
                     Recebemos uma solicitação para redefinir
-                    a senha da sua conta na Quality Estudos.
+                    a senha da sua conta no Resumão Online.
                 </p>
 
                 <p>
