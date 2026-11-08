@@ -36,7 +36,7 @@ async function geometria(p) {
     // independentemente do frame atual da animação da janela.
     const box = el => {const r=el.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,w:r.width,h:r.height};};
     return {faixa:box(document.querySelector('header')), botoes:[...document.querySelectorAll('.teoria-header-acoes .btn')].map(box),
-      laterais:[...document.querySelectorAll('.botao-estudo-lateral')].map(el => ({id:el.id,handler:el.getAttribute('onclick'),style:getComputedStyle(el).cssText, w:box(el).w,h:box(el).h}))};
+      laterais:[...document.querySelectorAll('.botao-estudo-lateral')].map(el => ({id:el.id,handler:el.getAttribute('onclick'),w:box(el).w,h:box(el).h}))};
   });
 }
 async function conferir(p, referencia, caso, largura) {
@@ -45,8 +45,15 @@ async function conferir(p, referencia, caso, largura) {
   const atual = await geometria(p);
   for (const chave of ['x','y','w','h']) perto(atual.faixa[chave],referencia.faixa[chave],`faixa ${largura} ${chave}`);
   atual.botoes.forEach((botao,i) => Object.keys(botao).forEach(k => perto(botao[k],referencia.botoes[i][k],`botão ${i} ${largura} ${k}`)));
-  assert.deepEqual(atual.laterais,referencia.laterais,'Dimensões e handlers dos controles laterais');
+  atual.laterais.forEach((botao,i)=>{
+    assert.equal(botao.id,referencia.laterais[i].id);
+    assert.equal(botao.handler,referencia.laterais[i].handler);
+    // O hover tem uma transição de transform; aceite apenas arredondamento subpixel.
+    perto(botao.w,referencia.laterais[i].w,'Largura do controle lateral');
+    perto(botao.h,referencia.laterais[i].h,'Altura do controle lateral');
+  });
   const estado = await p.evaluate(() => {
+    window.scrollTo({top:0,behavior:'instant'});
     const contexto = document.querySelector('.teoria-contexto');
     const r=contexto.getBoundingClientRect(), faixa=document.querySelector('header').getBoundingClientRect();
     const interno=contexto.parentElement.tagName==='HEADER';
@@ -55,10 +62,20 @@ async function conferir(p, referencia, caso, largura) {
     const font=textos.map(el=>getComputedStyle(el));
     const controles=[...document.querySelectorAll('.teoria-header-acoes .btn,.ro-header-identity')].map(el=>el.getBoundingClientRect());
     const intersecta=(a,b)=>a.left<b.right-.01&&a.right>b.left+.01&&a.top<b.bottom-.01&&a.bottom>b.top+.01;
+    const folha=document.querySelector('#detalhes_aula > .card').getBoundingClientRect();
+    const centroFolha=folha.left+folha.width/2;
+    const linhas=textos.filter(el=>!el.hidden).flatMap(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()];});
+    const estiloFaixa=getComputedStyle(document.querySelector('header'));
+    const topoOriginal=faixa.top+parseFloat(estiloFaixa.paddingTop)+(faixa.height-parseFloat(estiloFaixa.paddingTop)-parseFloat(estiloFaixa.paddingBottom)-parseFloat(estiloFaixa.borderBottomWidth)-r.height)/2;
     return {interno,textos:textos.map(el=>el.textContent),fontes:font.map(s=>parseFloat(s.fontSize)),peso:font[0].fontWeight,
+      controlesAcessiveis:[...document.querySelectorAll('.teoria-header-acoes .btn')].every(el=>{
+        const c=el.getBoundingClientRect();return document.elementFromPoint(c.left+c.width/2,c.top+c.height/2)?.closest('.btn')===el;
+      }),
+      centralizado:caixas.every(c=>Math.abs(c.left+c.width/2-centroFolha)<.1)&&linhas.every(c=>Math.abs(c.left+c.width/2-centroFolha)<.1),
+      elevado:!interno||r.top<=Math.max(faixa.top+parseFloat(estiloFaixa.paddingTop),topoOriginal-4)+.02,
       semCortes:textos.every(el=>el.scrollWidth<=el.clientWidth+1&&el.scrollHeight<=el.clientHeight+1),
       semRolagem:contexto.scrollWidth<=contexto.clientWidth+1&&contexto.scrollHeight<=contexto.clientHeight+1,
-      semSobreposicao:caixas.every((a,i)=>!i||a.top>=caixas[i-1].bottom-.01)&&(!interno||controles.every(b=>!intersecta(r,b))),
+      semSobreposicao:caixas.every((a,i)=>!i||a.top>=caixas[i-1].bottom-.01)&&(!interno||linhas.every(a=>controles.every(b=>!intersecta(a,b)))),
       dentro:!interno||(r.top>=faixa.top&&r.bottom<=faixa.bottom),
       abaixo:interno||(contexto.previousElementSibling.tagName==='HEADER'&&Math.abs(r.top-faixa.bottom)<.02),
       larguraCorreta:r.left>=0&&r.right<=innerWidth+.02,
@@ -66,7 +83,7 @@ async function conferir(p, referencia, caso, largura) {
       origemOculta:document.querySelector('.teoria-header-identificacao').getAttribute('aria-hidden')==='true'};
   });
   assert.deepEqual(estado.textos,[caso.curso,caso.disciplina,caso.assunto]);
-  for (const k of ['semCortes','semRolagem','semSobreposicao','dentro','abaixo','larguraCorreta','origemOculta']) assert.ok(estado[k],`${caso.nome} ${largura}: ${k}`);
+  for (const k of ['controlesAcessiveis','centralizado','elevado','semCortes','semRolagem','semSobreposicao','dentro','abaixo','larguraCorreta','origemOculta']) assert.ok(estado[k],`${caso.nome} ${largura}: ${k}`);
   assert.ok(estado.fontes.every(n=>n>=12), 'Fonte mínima');
   assert.equal(estado.peso,'700');
   assert.equal(estado.cursoInjetouHTML,false);
@@ -118,13 +135,13 @@ async function conferir(p, referencia, caso, largura) {
       assert.match(paginacao,/^1\/[2-9]/);
       await p.evaluate(()=>window.proximaPaginaTeoria());
       assert.match(await p.locator('#paginacao_teoria').innerText(),/^2\//);
-      await p.evaluate(()=>document.querySelector('#btn_video').click());
+      await p.locator('#btn_video').click();
       await p.locator('.video-vazio').waitFor();
       assert.equal(await p.locator('#btn_video').getAttribute('class'),'botao-estudo-lateral ativo');
-      await p.evaluate(()=>document.querySelector('#btn_questoes').click());
+      await p.locator('#btn_questoes').click();
       await p.waitForFunction(()=>!document.querySelector('#detalhes_aula').textContent.includes('Carregando'));
       assert.ok(await p.locator('#btn_questoes').evaluate(el=>el.classList.contains('ativo')));
-      await p.evaluate(()=>document.querySelector('#btn_teoria').click());
+      await p.locator('#btn_teoria').click();
       await p.locator('.teoria-paragrafo').first().waitFor();
       assert.ok(await p.locator('#btn_teoria').evaluate(el=>el.classList.contains('ativo')));
       await conferir(p,referencia,caso,largura);

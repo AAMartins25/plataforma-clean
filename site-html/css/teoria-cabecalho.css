@@ -49,6 +49,11 @@
   padding: 0;
 }
 
+/* Mantém os controles acima da área transparente dos títulos centralizados. */
+.teoria-page .teoria-header--contexto > :is(.ro-header-navigation, .ro-header-identity) {
+  z-index: 1 !important;
+}
+
 @media (max-width: 480px) {
   .teoria-page .teoria-contexto-curso {
     font-size: 1rem;

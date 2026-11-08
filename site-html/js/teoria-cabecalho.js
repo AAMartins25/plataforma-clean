@@ -26,29 +26,55 @@
         .forEach((texto, i) => {
           if (titulos[i].textContent !== texto) titulos[i].textContent = texto;
           titulos[i].hidden = !texto;
-          titulos[i].style.removeProperty("font-size");
+          titulos[i].removeAttribute("style");
         });
 
       // Fora do fluxo do grid: a referência invisível preserva a geometria original,
       // inclusive ao redimensionar a janela e após carregar o nome do aluno.
       contexto.classList.add("teoria-contexto--interno");
+      contexto.removeAttribute("style");
       if (contexto.parentElement !== faixa) faixa.append(contexto);
       const rect = faixa.getBoundingClientRect();
       const estilo = getComputedStyle(faixa);
-      const esquerda = parseFloat(estilo.paddingLeft);
       const topo = parseFloat(estilo.paddingTop);
+      const folha = (document.querySelector("#detalhes_aula > .card") || document.querySelector(".teoria-assunto-faixa")).getBoundingClientRect();
+      const centro = folha.left + folha.width / 2;
+      const largura = Math.max(0, Math.min(folha.width, 2 * (centro - rect.left - parseFloat(estilo.paddingLeft)),
+        2 * (rect.right - parseFloat(estilo.paddingRight) - centro)));
+      const esquerda = centro - rect.left - largura / 2;
       const controles = [...faixa.querySelectorAll(".teoria-header-acoes .btn, .ro-header-identity")]
         .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height);
-      const limite = Math.min(rect.right - parseFloat(estilo.paddingRight),
-        ...controles.map(r => r.left - 8));
-      const largura = Math.max(0, limite - rect.left - esquerda);
       const altura = rect.height - topo - parseFloat(estilo.paddingBottom)
         - parseFloat(estilo.borderTopWidth) - parseFloat(estilo.borderBottomWidth);
+      const acoes = [...faixa.querySelectorAll(".teoria-header-acoes .btn")].map(el => el.getBoundingClientRect());
+      const limiteInferior = rect.top + topo + altura;
+      const alunoRect = faixa.querySelector(".ro-header-identity")?.getBoundingClientRect();
+      if (alunoRect?.width) {
+        // O curso pode quebrar em linhas centralizadas sem invadir o nome do aluno.
+        titulos[0].style.maxWidth = `${Math.max(1, Math.min(largura, 2 * (alunoRect.left - 8 - centro)))}px`;
+        titulos[0].style.marginInline = "auto";
+      }
       contexto.style.width = `${largura}px`;
       contexto.style.left = `${esquerda}px`;
       contexto.style.top = `${topo}px`;
       const tamanhos = titulos.map(el => parseFloat(getComputedStyle(el).fontSize));
-      const cabe = () => contexto.getBoundingClientRect().height <= altura && largura > 0;
+      const cabe = () => {
+        const atual = contexto.getBoundingClientRect();
+        const linhas = () => titulos.filter(el => !el.hidden).flatMap(el => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          return [...range.getClientRects()];
+        });
+        // Só reserve espaço acima das ações onde uma linha cruza sua coluna.
+        const limiteAcoes = Math.min(Infinity, ...linhas().flatMap(r => acoes
+          .filter(c => r.right > c.left - 4 && r.left < c.right + 4)
+          .map(c => c.top - 6 - (r.bottom - atual.top) - rect.top)));
+        // Elevação de 4 px, respeitando os controles e o limite superior da faixa.
+        contexto.style.top = `${Math.max(topo, Math.min(topo + (altura - atual.height) / 2 - 4, limiteAcoes))}px`;
+        if (contexto.getBoundingClientRect().bottom > limiteInferior || largura <= 0) return false;
+        return linhas().every(r => controles.every(c =>
+          r.right <= c.left - 4 || r.left >= c.right + 4 || r.bottom <= c.top - 4 || r.top >= c.bottom + 4));
+      };
       const reduzir = escala => titulos.forEach((el, i) => {
         el.style.fontSize = `${Math.max(12, tamanhos[i] * escala)}px`;
       });
@@ -59,8 +85,11 @@
           // Nomes excepcionais ficam completos, em tamanho original e no fluxo.
           contexto.classList.remove("teoria-contexto--interno");
           contexto.removeAttribute("style");
-          titulos.forEach(el => el.style.removeProperty("font-size"));
+          titulos.forEach(el => el.removeAttribute("style"));
           faixa.after(contexto);
+          contexto.style.width = `${folha.width}px`;
+          contexto.style.marginLeft = `${folha.left - document.body.getBoundingClientRect().left}px`;
+          contexto.style.alignSelf = "flex-start";
           return;
         }
         let minimo = 0;
@@ -73,7 +102,7 @@
         }
         reduzir(minimo);
       }
-      contexto.style.top = `${topo + (altura - contexto.getBoundingClientRect().height) / 2}px`;
+      cabe();
     }
 
     let agendado = false;
