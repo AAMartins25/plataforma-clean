@@ -7,7 +7,7 @@ const root=__dirname,dist=process.env.CKEDITOR_TEST_DIST;
 assert.ok(dist,'Defina CKEDITOR_TEST_DIST (49.1.0 oficial).');
 const teoria=fs.readFileSync(path.join(root,'teoria.html'),'utf8');
 const funcoes=teoria.slice(teoria.indexOf('    function limparTextoTeoria('),teoria.indexOf('    async function abrirSecaoTeoria('));
-const scripts=['ckeditor/ckeditor5.umd.js','js/vendor/katex/katex.min.js','js/teoria-matematica.js','js/editor-teoria-matematica.js','js/teoria-imagens.js','js/editor-teoria-imagens.js','js/vendor/markdown-it-15.0.3.min.js','js/vendor/dompurify-3.4.17.min.js','js/editor-teoria-markdown.js','js/editor-teoria.js'];
+const scripts=['ckeditor/ckeditor5.umd.js','js/vendor/katex/katex.min.js','js/teoria-matematica.js','js/editor-teoria-matematica.js','js/teoria-imagens.js', 'js/teoria-tabelas.js','js/editor-teoria-imagens.js','js/vendor/markdown-it-15.0.3.min.js','js/vendor/dompurify-3.4.17.min.js','js/editor-teoria-markdown.js','js/editor-teoria.js'];
 const harness=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 ${['css/style.css','css/editor-teoria-markdown.css','css/teoria-matematica.css','css/teoria-imagens.css','js/vendor/katex/katex.min.css','ckeditor/ckeditor5.css'].map(p=>`<link rel="stylesheet" href="/${p}">`).join('')}
 <style>body{padding:12px}.assunto{min-width:0;max-width:100%}main{min-width:0;max-width:100%}#leitura{margin-top:24px}</style></head>

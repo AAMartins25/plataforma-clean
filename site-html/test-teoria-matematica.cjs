@@ -14,7 +14,7 @@ const teoria = fs.readFileSync(path.join(root, 'teoria.html'), 'utf8');
 const funcoes = teoria.slice(teoria.indexOf('    function limparTextoTeoria('), teoria.indexOf('    async function abrirSecaoTeoria('));
 assert.ok(funcoes.includes('TeoriaMatematica.renderizar'));
 const scripts = ['js/vendor/katex/katex.min.js', 'js/teoria-matematica.js',
-  'js/editor-teoria-matematica.js', 'js/teoria-imagens.js', 'js/editor-teoria-imagens.js', 'js/vendor/markdown-it-15.0.3.min.js',
+  'js/editor-teoria-matematica.js', 'js/teoria-imagens.js', 'js/teoria-tabelas.js', 'js/editor-teoria-imagens.js', 'js/vendor/markdown-it-15.0.3.min.js',
   'js/vendor/dompurify-3.4.17.min.js', 'js/editor-teoria-markdown.js', 'js/editor-teoria.js'];
 const harness = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
