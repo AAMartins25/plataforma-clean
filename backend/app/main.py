@@ -5760,7 +5760,7 @@ def recuperar_senha(
         resend.Emails.send({
             "from": "Resumão Online <contato@resumaoonline.com.br>",
             "to": [usuario.email],
-            "subject": "Resumão Online - Redefinição de senha",
+            "subject": "Redefinição de senha - Resumão Online",
             "html": f"""
                 <h2>Redefinição de senha</h2>
 

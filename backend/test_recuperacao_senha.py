@@ -103,7 +103,7 @@ def test_envio_identidade_e_token_persistido(recuperacao, login):
     env.envio.assert_called_once()
     payload = env.envio.call_args.args[0]
     assert payload['from'] == 'Resumão Online <contato@resumaoonline.com.br>'
-    assert payload['subject'] == 'Resumão Online - Redefinição de senha'
+    assert payload['subject'] == 'Redefinição de senha - Resumão Online'
     assert payload['to'] == ['aluna@example.invalid']
     assert 'Resumão Online' in payload['html']
     assert 'Quality Estudos' not in payload['html']
