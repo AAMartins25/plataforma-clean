@@ -1,3 +1,4 @@
+from app.descricao_publica import preparar_descricao, descricao_para_visitante
 from app.admin_intermediario import exigir_geral, revalidar_geral, pode_administrar, exigir_area
 from app.desempenho import validar_contexto_historico
 from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
@@ -3859,7 +3860,7 @@ def dados_publicos_checkout(
         "id": curso.id,
         "nome": curso.nome,
         "publicado": bool(curso.publicado),
-        "descricao_publica": curso.descricao_publica,
+        **descricao_para_visitante(curso.descricao_publica),
         "tempos_acesso": [
             {
                 "id": tempo.id,
@@ -4003,9 +4004,7 @@ def salvar_config_publica_curso(
             detail="Curso não encontrado."
         )
 
-    curso.descricao_publica = (
-        payload.get("descricao_publica") or ""
-    )
+    curso.descricao_publica = preparar_descricao(payload, curso.descricao_publica)
 
     tempos = payload.get("tempos_acesso") or []
     meses_validos = {4, 8, 12}

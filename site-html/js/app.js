@@ -2639,9 +2639,7 @@ async function pageCursoInfo() {
     }
 
     if (informacoes) {
-      informacoes.textContent =
-        dadosCursoInfo.descricao_publica ||
-        "Informações ainda não cadastradas.";
+      DescricaoPublica.renderizar(informacoes, dadosCursoInfo.descricao_publica, dadosCursoInfo.descricao_publica_html);
     }
 
     renderizarEstruturaCursoInfo();

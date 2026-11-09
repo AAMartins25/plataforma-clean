@@ -1,0 +1,13 @@
+.descricao-publica,
+#boxConfigPublicaCurso .ck-editor {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.descricao-publica p { margin: 0 0 1em; }
+.descricao-publica h2 { font-size: 1.4em; }
+.descricao-publica h3 { font-size: 1.2em; }
+.descricao-publica h4 { font-size: 1.05em; }
+.descricao-publica ul, .descricao-publica ol { padding-left: 1.75em; }
+#boxConfigPublicaCurso .ck-editor__editable { min-height: 160px; overflow-wrap: anywhere; }
+#boxConfigPublicaCurso .ck-toolbar { flex-wrap: wrap; }

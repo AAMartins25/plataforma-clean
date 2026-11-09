@@ -302,5 +302,5 @@
     const editor = instancias.get(textarea);
     return !editor || !window.TeoriaImagensEditor.estados.get(editor)?.pendente;
   }
-  window.TeoriaEditor = { pronto, normalizarListasWordHtml, iniciar, conteudo, destruir, legadoParaHtml, diagnosticoColagem, diagnosticarProximaColagem, cancelarDiagnosticoColagem };
+  window.TeoriaEditor = { carregarCKEditor: carregar, pronto, normalizarListasWordHtml, iniciar, conteudo, destruir, legadoParaHtml, diagnosticoColagem, diagnosticarProximaColagem, cancelarDiagnosticoColagem };
 })();

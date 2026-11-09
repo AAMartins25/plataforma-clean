@@ -101,7 +101,8 @@
       atualizarBotoesPublicacaoCurso();
 
       boxConfigPublicaCurso.style.display = "block";
-      cursoDescricaoPublica.value = "";
+      await DescricaoPublicaEditor.carregar(cursoDescricaoPublica, "");
+      liberarEdicaoConfigPublicaCurso();
       valor4Meses.value = "";
       valor8Meses.value = "";
       valor12Meses.value = "";
@@ -1398,8 +1399,7 @@
 
         cursoAtual.publicado = dados.publicado === true;
 
-        cursoDescricaoPublica.value =
-          dados.descricao_publica || "";
+        await DescricaoPublicaEditor.carregar(cursoDescricaoPublica, dados.descricao_publica || "");
 
         const tempos = dados.tempos_acesso || [];
 
@@ -1465,7 +1465,7 @@
         msgConfigPublicaCurso.style.color = "";
 
         await apiPutAuth(`/admin/cursos/${cursoAtual.id}/config-publica`, {
-          descricao_publica: cursoDescricaoPublica.value.trim(),
+          ...DescricaoPublicaEditor.conteudo(cursoDescricaoPublica),
           tempos_acesso: [
             { meses: 4, valor_cents: v4 },
             { meses: 8, valor_cents: v8 },
@@ -3462,6 +3462,7 @@
 
 function bloquearConfigPublicaCurso() {
   cursoDescricaoPublica.disabled = true;
+  DescricaoPublicaEditor.bloquear(true);
   valor4Meses.disabled = true;
   valor8Meses.disabled = true;
   valor12Meses.disabled = true;
@@ -3475,6 +3476,7 @@ function bloquearConfigPublicaCurso() {
 
 function liberarEdicaoConfigPublicaCurso() {
   cursoDescricaoPublica.disabled = false;
+  DescricaoPublicaEditor.bloquear(false);
   valor4Meses.disabled = false;
   valor8Meses.disabled = false;
   valor12Meses.disabled = false;
