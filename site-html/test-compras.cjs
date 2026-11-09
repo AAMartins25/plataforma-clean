@@ -11,11 +11,14 @@ function ambiente(search='?curso_id=1&demonstracao_id=2&origem=cursos',checkout=
   document:{getElementById(id){return elementos[id]??={style:{},value:'',textContent:''}},querySelector(){return s.radio},addEventListener(){},body:{dataset:{},style:{}}},
   fetch:async(url,opts)=>{pedidos.push({url,opts});return{ok:true,text:async()=>'',json:async()=>url.includes('validar')?{codigo_cupom:'AW265',percentual_desconto:12,vendedor_id:1}:{init_point:'https://example.com/pagamento'}}},
  };
+ // Dependências globais do navegador e módulo jurídico são dublês desta unidade.
+ s.location=s.window.location;
  s.Headers=Headers;s.TextEncoder=TextEncoder;s.crypto=require('node:crypto').webcrypto;
  s.document.querySelectorAll=()=>[];
  vm.createContext(s);vm.runInContext(fs.readFileSync(__dirname+'/js/sessao.js','utf8'),s);
  s.Sessao=s.window.Sessao;
  vm.runInContext(app,s);
+ s.obterAceiteJuridico=async()=>({});
  if(checkout){const script=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1].replace('    carregarCheckout();','');vm.runInContext(script,s);vm.runInContext('dadosCheckout={id:1,tempos_acesso:[{id:1,meses:4,valor_cents:4990},{id:2,meses:8,valor_cents:9980},{id:3,meses:12,valor_cents:14970}]}',s);}
  else vm.runInContext('dadosCursoInfo={id:1}',s);
  return{s,elementos,store,pedidos};

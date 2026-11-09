@@ -188,6 +188,7 @@ def receber_caso(db, caso, dados_pagamento, payment_id, headers):
     p = resolver_transacao(db, payment_id, dados_pagamento, headers)
     # O endpoint de caso registra o evento sem conceder/revogar acesso,
     # sem alterar status de reembolso e sem executar o processador de aprovação.
+    travar_escopo(db, caso['id'])
     c = registrar_observacao(db, p, caso)
     db.commit()
     return {'ok': True, 'contestacao_id': c.id}
@@ -200,6 +201,17 @@ class Conferencia(HTTPException):
 
 def consultar_escopo(ident, headers, resumo):
     try:
+        # O contrato oficial exige o seller ID autenticado, nunca o user_id do webhook.
+        conta = requests.get('https://api.mercadopago.com/users/me',
+                             headers=headers, timeout=timeout_financeiro())
+        if conta.status_code != 200:
+            raise HTTPException(502, 'Identidade da conta Mercado Pago indisponível.')
+        conta = conta.json()
+        recebedor = str(conta.get('id')) if isinstance(conta, dict) else ''
+        if not re.fullmatch(r'[1-9][0-9]{0,63}', recebedor):
+            raise HTTPException(502, 'Identidade da conta Mercado Pago inválida.')
+        headers = {**headers, 'X-Caller-Id': recebedor}
+        resumo['recebedor_mp'] = recebedor
         r = requests.get(f'https://api.mercadopago.com/v1/chargebacks/{ident}',
                          headers=headers, timeout=timeout_financeiro())
         if r.status_code != 200:
@@ -222,6 +234,8 @@ def consultar_escopo(ident, headers, resumo):
         raise HTTPException(502, 'Consulta do pagamento indisponível.')
     try:
         dados = resposta.json()
+        if not isinstance(dados, dict) or str(dados.get('collector_id')) != recebedor:
+            raise Conferencia('Recebedor do pagamento difere da conta autenticada.')
         valor = Decimal(str(caso['amount'])) * 100
         valor_pagamento = Decimal(str(dados['transaction_amount'])) * 100
         if any(not v.is_finite() or v != v.to_integral_value() or v <= 0
@@ -258,6 +272,7 @@ def processar_pendente(ident, protecao, op):
         op.verificar()
         with protecao.factory() as db:
             db.info['finance_op'] = op
+            db.info['finance_unidade_atomica'] = True
             row = db.execute(select(inbox).where(inbox.c.id == ident).with_for_update()).mappings().one()
             if row['estado'] == 'CONCLUIDO':
                 return {'id': ident, 'processado': False}

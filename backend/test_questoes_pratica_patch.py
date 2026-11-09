@@ -66,6 +66,8 @@ def modulo_isolado():
     global main, engine, SessionTest
     engine = create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
     SessionTest = sessionmaker(bind=engine)
+    with engine.connect() as c:
+        c.connection.driver_connection.create_function('BTRIM', 1, lambda value: value.strip() if value is not None else None)
     try:
         with carregar_main_isolado(SessionTest, engine) as modulo:
             main = modulo
@@ -79,7 +81,9 @@ TABLES = [models.Curso.__table__, models.CursoDisciplinaPropria.__table__,
           models.CursoAssuntoProprio.__table__, models.ContratacaoCurso.__table__,
           models.DemonstracaoCurso.__table__, models.QuestaoPraticaAssunto.__table__,
           models.QuestaoPraticaAlternativa.__table__, models.QuestaoPraticaMarcacaoAluno.__table__,
-          models.QuestaoPraticaRotatividadeAluno.__table__]
+          models.QuestaoPraticaRotatividadeAluno.__table__,
+          # A autorização de contratação consulta decisões manuais por pagamento.
+          models.Pagamento.__table__, models.ContestacaoPagamento.__table__]
 
 @pytest.fixture
 def env():

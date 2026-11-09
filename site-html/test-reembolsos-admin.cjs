@@ -52,6 +52,24 @@ test('reembolso concluído não oferece ação financeira',async()=>{
  assert.doesNotMatch(t.lista.innerHTML,/Registrar Pix manual|Confirmar devolução/);
  assert.match(t.lista.innerHTML,/Administrador ID: 2/);assert.match(t.lista.innerHTML,/Mercado Pago: APPROVED/);
 });
+test('bloqueio é separado da confirmação financeira e exige decisão explícita',async()=>{
+ const dados={...base,status:'REFUNDED',reembolso_id:33,reembolso_status:'CONFIRMADO',bloqueio_disponivel:true};
+ const t=await tela([dados]);
+ assert.match(t.lista.innerHTML,/Bloquear acesso deste pagamento/);
+ assert.match(t.lista.innerHTML,/acesso permanece preservado/);
+ assert.equal(t.chamadas.filter(c=>c[0]==='POST').length,0);
+ t.contexto.confirm=()=>false;
+ await t.contexto.window.bloquearAcessoReembolso(33);
+ assert.equal(t.chamadas.filter(c=>c[0]==='POST').length,0);
+ t.contexto.confirm=()=>true;
+ await t.contexto.window.bloquearAcessoReembolso(33);
+ assert.ok(t.chamadas.some(c=>c[1]==='/admin/reembolsos/33/bloquear-acesso?confirmacao_bloqueio=true'));
+});
+test('decisão já registrada é exibida sem oferecer outro bloqueio',async()=>{
+ const t=await tela([{...base,status:'REFUNDED',reembolso_id:33,bloqueio_executado_em:'2035-01-01T12:00:00Z',bloqueio_executado_por:2}]);
+ assert.match(t.lista.innerHTML,/bloqueado manualmente/);
+ assert.doesNotMatch(t.lista.innerHTML,/onclick="bloquearAcessoReembolso/);
+});
 test('duplo clique envia uma operação por vez',async()=>{
  const t=await tela([{...base,status:'REFUND_IN_PROCESS'}]);let liberar;
  t.contexto.apiPostAuth=async(url,payload)=>{t.chamadas.push(['POST',url,payload]);await new Promise(r=>{liberar=r;});return {};};

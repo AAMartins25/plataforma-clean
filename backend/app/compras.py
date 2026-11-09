@@ -25,7 +25,8 @@ def validar_nova_compra(db, usuario_id, curso_id, agora):
     contrato = pagamento_vigente(db, usuario_id, curso_id, agora)
     if not contrato:
         return
-    if contrato.data_fim is not None and renovacao_disponivel(contrato.data_fim, agora):
+    from app.direitos_acesso import vencimento_renovacao
+    if renovacao_disponivel(vencimento_renovacao(db, contrato, agora), agora):
         raise HTTPException(409, {'codigo': 'USE_RENOVACAO',
             'mensagem': 'Você já possui acesso a este curso. Utilize o fluxo de renovação.',
             'curso_id': curso_id, 'contratacao_id': contrato.id})

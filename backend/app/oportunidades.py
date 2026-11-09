@@ -33,9 +33,15 @@ def obter_oportunidade(
                 OportunidadeCompra.concluida_em.is_(None)
             )
 
-    oportunidade = consulta.order_by(
-        OportunidadeCompra.id.desc()
-    ).first()
+    candidatas = consulta.order_by(OportunidadeCompra.id.desc()).all()
+    oportunidade = None
+    for candidata in candidatas:
+        if tipo_compra == "RENOVACAO" and candidata.concluida_em is not None:
+            from app.direitos_acesso import oportunidade_consumida
+            if not oportunidade_consumida(db, candidata):
+                continue
+        oportunidade = candidata
+        break
 
     if oportunidade is None:
         oportunidade = OportunidadeCompra(

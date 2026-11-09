@@ -69,6 +69,11 @@
     await executarOperacao(() => apiPostAuth(`/admin/reembolsos/${reembolsoId}/pix-manual/confirmar?confirmacao_extrato=true`, {}));
   };
 
+  window.bloquearAcessoReembolso = async function(reembolsoId) {
+    if (!confirm("Bloquear somente o direito deste pagamento devolvido? Outros direitos válidos serão preservados.")) return;
+    await executarOperacao(() => apiPostAuth(`/admin/reembolsos/${reembolsoId}/bloquear-acesso?confirmacao_bloqueio=true`, {}));
+  };
+
   function formatarData(dataISO) {
     if (!dataISO) return "-";
     // Os timestamps sem fuso retornados pelo backend representam UTC.
@@ -120,6 +125,11 @@
             : ""
         }
         ${controlesPix(r)}
+        ${r.bloqueio_executado_em
+          ? `<p>Acesso deste pagamento bloqueado manualmente em ${escape(formatarData(r.bloqueio_executado_em))} • Administrador ID: ${escape(r.bloqueio_executado_por)}</p>`
+          : r.bloqueio_disponivel
+            ? `<p>Devolução confirmada. O acesso permanece preservado até uma decisão manual.</p><button class="btn" onclick="bloquearAcessoReembolso(${Number(r.reembolso_id)})">Bloquear acesso deste pagamento</button>`
+            : ""}
       </div>
     `;
   }

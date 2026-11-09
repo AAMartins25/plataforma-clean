@@ -13,6 +13,7 @@ def registrar_contratacao(
     pagamento,
     data_inicio: datetime,
     data_fim: datetime,
+    data_aprovacao: datetime | None = None,
 ) -> ContratacaoCurso:
     if pagamento.tipo_compra == "RENOVACAO":
         contratacao = (
@@ -32,19 +33,23 @@ def registrar_contratacao(
                 detail="Contratação da renovação não encontrada."
             )
 
-        if contratacao.data_fim != pagamento.vencimento_original:
+        from app.direitos_acesso import vencimento_renovacao
+        prazo = vencimento_renovacao(db, contratacao,
+            pagamento.aprovado_em or data_aprovacao or datetime.utcnow())
+        if prazo != pagamento.vencimento_original:
             raise HTTPException(
                 status_code=409,
                 detail="O contrato já teve seu vencimento alterado.",
             )
 
-        if data_fim <= contratacao.data_fim:
+        if data_fim <= prazo:
             raise HTTPException(
                 status_code=409,
                 detail="O novo vencimento deve ser posterior ao atual.",
             )
 
-        contratacao.data_fim = data_fim
+        # O limite nominal continua incluindo o histórico bloqueado e direitos futuros.
+        contratacao.data_fim = max(contratacao.data_fim, data_fim)
     else:
         contratacao = ContratacaoCurso(
             usuario_id=pagamento.usuario_id,

@@ -75,7 +75,7 @@ def test_falha_commit_reembolso_executa_rollback(ambiente_compra):
         assert db.get(m.Pagamento,pid).status=='REFUND_IN_PROCESS'
 
 
-def test_reembolso_normal_mantem_recalculo_existente(ambiente_compra):
+def test_reembolso_normal_nao_recalcula_acesso_na_confirmacao(ambiente_compra):
     main,client,factory,_,_=ambiente_compra;duplicata(ambiente_compra)
     with factory() as db:pid=db.query(m.Pagamento).filter_by(mp_payment_id='101').one().id
     assert client.post(f'/me/reembolso/{pid}',json={}).status_code==200
@@ -85,7 +85,7 @@ def test_reembolso_normal_mantem_recalculo_existente(ambiente_compra):
     with patch.object(main,'recalcular_acesso_apos_reembolso',wraps=main.recalcular_acesso_apos_reembolso) as recalcular:
         r=client.post(f'/admin/reembolsos/{rid}/pix-manual/confirmar?confirmacao_extrato=true',json={})
     assert r.status_code==200,r.text
-    recalcular.assert_called_once()
+    recalcular.assert_not_called()
     # A demonstração concedida no fixture continua sendo um direito independente.
     with factory() as db:
         assert db.query(m.AcessoCurso).one().ativo

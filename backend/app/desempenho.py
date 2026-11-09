@@ -2,6 +2,7 @@
 from datetime import datetime
 from fastapi import Depends, HTTPException
 from app import models as m
+from app.direitos_acesso import contrato_tem_bloqueio, contrato_vigente
 from app.revisoes import disponiveis
 
 
@@ -15,8 +16,9 @@ def validar_contexto_historico(db, usuario, curso_id, contratacao_id=None, demon
         id=contratacao_id, usuario_id=usuario.id, curso_id=curso_id).first()
     agora = datetime.utcnow()
     if (not acesso or acesso.origem not in ('ADMIN', 'PAGAMENTO') or
-            acesso.data_fim is None or acesso.data_fim > agora or
-            acesso.data_inicio > acesso.data_fim):
+            acesso.data_fim is None or acesso.data_inicio > acesso.data_fim or
+            (acesso.data_fim > agora and not (contrato_tem_bloqueio(db, acesso)
+                and not contrato_vigente(db, acesso, agora)))):
         raise HTTPException(403, 'Contexto histórico expirado não encontrado')
     return acesso
 
@@ -72,13 +74,16 @@ def registrar_rotas(app, get_db, get_usuario, validar):
         for acesso in db.query(m.ContratacaoCurso).filter(
                 m.ContratacaoCurso.usuario_id == usuario.id,
                 m.ContratacaoCurso.origem.in_(('ADMIN', 'PAGAMENTO')),
-                m.ContratacaoCurso.data_fim <= agora,
+                m.ContratacaoCurso.data_fim.isnot(None),
                 m.ContratacaoCurso.data_inicio <= m.ContratacaoCurso.data_fim):
+            bloqueado = contrato_tem_bloqueio(db, acesso) and not contrato_vigente(db, acesso, agora)
+            if acesso.data_fim > agora and not bloqueado:
+                continue
             curso = db.get(m.Curso, acesso.curso_id)
             if curso:
                 rows.append({'curso_id': curso.id, 'nome_curso': curso.nome, 'ativo': False,
                              'contratacao_id': acesso.id, 'data_inicio': acesso.data_inicio,
-                             'data_fim': acesso.data_fim})
+                             'data_fim': acesso.data_fim, 'bloqueio_manual': bloqueado})
         return sorted(rows, key=lambda x: x['data_inicio'], reverse=True)
 
     @app.get('/me/cursos/{curso_id}/desempenho')

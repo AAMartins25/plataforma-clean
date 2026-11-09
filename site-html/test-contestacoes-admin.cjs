@@ -7,7 +7,7 @@ const base={id:1,pagamento_id:5,curso:'Curso',aluno:'Aluno',valor_cents:4990,sta
 async function tela(casos=[base],admin=true,pendencias=[]){
  const handlers={}, chamadas=[], alertas=[];
  const lista={innerHTML:'',querySelectorAll:()=>[],addEventListener:(tipo,fn)=>{handlers[tipo]=fn;}};
- const ctx={document:{getElementById:()=>lista},confirm:()=>true,alert:m=>alertas.push(m),
+ const ctx={requireAdmin:async()=>admin,document:{getElementById:()=>lista},confirm:()=>true,alert:m=>alertas.push(m),
  apiGetAuth:async url=>{chamadas.push(['GET',url]);return url==='/me'?{is_admin:admin}:{contestacoes:casos,pendencias,tem_proxima:false};},
  apiPostAuth:async(url,payload)=>{chamadas.push(['POST',url,payload]);return {};}};
  vm.runInNewContext(codigo,ctx);await flush();return {ctx,lista,handlers,chamadas,alertas};

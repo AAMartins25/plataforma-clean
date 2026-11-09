@@ -8,6 +8,7 @@ import asyncio
 import hashlib
 import os
 import re
+from uuid import uuid4
 from contextlib import contextmanager
 from time import monotonic
 from threading import BoundedSemaphore
@@ -98,7 +99,7 @@ def financeiro(method, path):
         return False
     return bool(re.fullmatch(
         r'/(?:checkout/mercadopago|pagamentos/confirmar|admin/pagamentos/revalidar|'
-        r'me/reembolso/[^/]+|admin/reembolsos/[^/]+/(?:aprovar|recusar|pix-manual|pix-manual/confirmar)|'
+        r'me/reembolso/[^/]+|admin/reembolsos/[^/]+/(?:aprovar|recusar|pix-manual|pix-manual/confirmar|bloquear-acesso)|'
         r'admin/acessos|cursos/[^/]+/demonstracao)', path.rstrip('/')))
 
 
@@ -306,20 +307,18 @@ class Protecao:
             if prazo is not None:
                 op.prazo = min(op.prazo, prazo)
             try:
-                with self.engine.connect() as conn:
-                    chave = conn.execute(select(inbox.c.chave).where(inbox.c.id == ident)).scalar()
-                if chave and chave.startswith('c:'):
+                with self.engine.connect() as c:
+                    evento = c.execute(select(inbox).where(inbox.c.id == ident,
+                        ~isolamento_ativo() if self.definitivo else text('TRUE'))).mappings().first()
+                if evento is None or evento['estado'] == 'CONCLUIDO':
+                    return {'id': ident, 'processado': False}
+                if evento['chave'].startswith('c:'):
                     from app.contestacoes import processar_pendente
                     return processar_pendente(ident, self, op)
                 # Consulta externa antes de qualquer lock da transação financeira.
                 resposta = None
                 if self.consulta is not None:
-                    with self.engine.connect() as c:
-                        row = c.execute(select(inbox.c.payment_id).where(inbox.c.id == ident,
-                            ~isolamento_ativo() if self.definitivo else text('TRUE'))).first()
-                    if row is None:
-                        return {'id':ident, 'processado':False}
-                    resposta = self.consulta(row.payment_id)
+                    resposta = self.consulta(evento['payment_id'])
                 op.verificar()
                 with self.factory() as db:
                     db.info['finance_op'] = op
@@ -456,8 +455,8 @@ class GateMiddleware:
 def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, processor, headers, definitivo=True, consulta=None):
     from fastapi import Request
     protecao = Protecao(engine, factory, processor, definitivo, consulta)
-    app.state.protecao_financeira = protecao
     protecao.headers_contestacoes = headers
+    app.state.protecao_financeira = protecao
     # Colocar dentro do CORS: respostas 503 mantêm os mesmos headers de origem.
     from starlette.middleware import Middleware
     app.user_middleware.append(Middleware(GateMiddleware, protecao=protecao))
@@ -548,49 +547,32 @@ def instalar(app, engine, factory, get_db, get_usuario_atual, assinatura, proces
         if not re.fullmatch(r'[0-9]{1,64}', pid) or not assinatura(request, pid):
             raise HTTPException(401, 'Assinatura do Mercado Pago inválida.')
         try:
-            tipo_query = request.query_params.get('type')
             try:
                 data = await request.json()
             except ValueError:
-                if tipo_query not in ('topic_chargebacks_wh', 'chargebacks'):
-                    raise
-                data = {'type':tipo_query, 'data':None}
-            tipo = (data.get('type') or tipo_query) if isinstance(data, dict) else tipo_query
-            if tipo in ('topic_chargebacks_wh', 'chargebacks') and not isinstance(data, dict):
-                data = {'type':tipo, 'data':None}
-            if tipo in ('topic_chargebacks_wh', 'chargebacks'):
-                evento = str(data.get('id') or request.headers.get('x-request-id') or '')
-                # Mesmo envelope inconclusivo é persistido: chave baseada em
-                # identificadores, sem armazenar payloads, tokens ou assinatura.
-                identidade_valida = bool(evento) and len(evento) <= 200
-                if not identidade_valida:
-                    # Não fundir recebimentos sem identidade com um evento
-                    # concluído anteriormente, nem usá-los como comprovação.
-                    from uuid import uuid4
-                    evento = uuid4().hex
-                valido = identidade_valida and isinstance(data.get('data'), dict) and str(data['data'].get('id')) == pid
-                digest = hashlib.sha256(f'{pid}|{evento}'.encode()).hexdigest()
-                ident = await run_in_threadpool(protecao.armazenar, pid, f'c:{digest}', 'WEBHOOK',
-                    {'tipo':'CONTESTACAO', 'envelope_valido':valido,
-                     'escopo':'CONFERENCIA_NECESSARIA'})
-                try:
-                    resultado = await run_in_threadpool(protecao.processar, ident)
-                except HTTPException as exc:
-                    if exc.status_code != 503:
-                        raise
-                    resultado = {'processado':False}
-                return {'ok':True, 'armazenado':True, **resultado}
-            if not isinstance(data, dict) or tipo != 'payment':
+                data = None
+            tipo = (data.get('type') if isinstance(data, dict) else None) or request.query_params.get('type')
+            contestacao = tipo in ('topic_chargebacks_wh', 'chargebacks')
+            if tipo != 'payment' and not contestacao:
                 raise HTTPException(400, 'Tipo de notificação inválido.')
-            if str((data.get('data') or {}).get('id')) != pid:
-                raise HTTPException(400, 'Identificador da notificação incompatível.')
-            evento = str(data.get('id') or request.headers.get('x-request-id') or '')
-            if not evento or len(evento) > 200:
-                raise HTTPException(400, 'Identidade do evento ausente ou inválida.')
-            # Identidade do evento, não só do pagamento: atualizações distintas
-            # continuam aptas a atualizar o estado financeiro.
-            digest = hashlib.sha256(f'{pid}|{evento}'.encode()).hexdigest()
-            ident = await run_in_threadpool(protecao.armazenar, pid, f'w:{digest}', 'WEBHOOK')
+            recurso = data.get('data') if isinstance(data, dict) else None
+            identidade_valida = isinstance(recurso, dict) and str(recurso.get('id')) == pid
+            evento = str(data.get('id') or request.headers.get('x-request-id') or '') if isinstance(data, dict) else request.headers.get('x-request-id', '')
+            evento_valido = bool(evento and len(evento) <= 200)
+            topico_query = request.query_params.get('type')
+            envelope_valido = identidade_valida and evento_valido and (
+                not contestacao or not topico_query or topico_query == tipo)
+            if not contestacao and not envelope_valido:
+                raise HTTPException(400, 'Identidade do evento ausente ou incompatível.')
+            # Eventos de caso inconclusivos ficam duráveis e visíveis para conferência.
+            # Sem identidade estável, não fundir notificações diferentes nem gerar prova.
+            digest = hashlib.sha256(f'{pid}|{evento if evento_valido else uuid4().hex}'.encode()).hexdigest()
+            prefixo = 'c' if contestacao else 'w'
+            if contestacao:
+                ident = await run_in_threadpool(protecao.armazenar, pid, f'{prefixo}:{digest}',
+                    'WEBHOOK', {'tipo': 'CONTESTACAO', 'envelope_valido': envelope_valido})
+            else:
+                ident = await run_in_threadpool(protecao.armazenar, pid, f'{prefixo}:{digest}', 'WEBHOOK')
         except SQLAlchemyError:
             raise HTTPException(503, 'Notificação não armazenada; tentar novamente.') from None
         except (ValueError, TypeError, AttributeError):

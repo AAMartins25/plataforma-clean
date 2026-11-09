@@ -92,7 +92,7 @@
 
     document.getElementById("titulo_curso").innerText = `📘 ${cursoNome}`;
     document.getElementById("acesso_inicio").innerText = `Acesso inicial: ${dataInicio}`;
-    document.getElementById("acesso_fim").innerText = `Acesso expirado em: ${dataFim}`;
+    document.getElementById("acesso_fim").innerText = qs('bloqueio_manual') === '1' ? `Acesso bloqueado manualmente. Término contratual original: ${dataFim}` : `Acesso expirado em: ${dataFim}`;
 
     document.getElementById("link_disciplinas").href =
       `disciplinas-expirado.html?curso_id=${encodeURIComponent(cursoId)}` +

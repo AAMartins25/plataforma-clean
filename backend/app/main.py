@@ -2,6 +2,9 @@ from app.admin_intermediario import exigir_geral, revalidar_geral, pode_administ
 from app.desempenho import validar_contexto_historico
 from app.checkout_seguro import nova_identidade, recebedor_esperado, referencia_compra, meses_contratados
 from app.financeiro_transacional import protegido, timeout_financeiro
+from app.direitos_acesso import (contrato_vigente, contrato_tem_bloqueio, curso_vigente,
+    bloqueios, direito_atual_curso, intervalos_contrato, fim_continuo,
+    vencimento_renovacao, oportunidade_consumida)
 from .transacoes_mp import consultar_pagamento, resolver_transacao
 from app.models import Curso, Disciplina, Assunto, Pasta, Aula, Video, Bateria, TentativaBateria, RespostaAlunoQuestao  
 from datetime import datetime, timedelta, timezone
@@ -727,6 +730,8 @@ def meus_cursos(
     resultado = []
 
     for a in acessos:
+        if not curso_vigente(db, usuario.id, a.curso_id, agora):
+            continue
         contratacoes = (
             db.query(models.ContratacaoCurso)
             .filter(
@@ -747,30 +752,32 @@ def meus_cursos(
         contratos_resposta = []
 
         for contrato in contratacoes:
-            pode_renovar = renovacao_disponivel(
-                contrato.data_fim, agora
-            )
+            if not contrato_vigente(db, contrato, agora):
+                continue
+            _, fim_atual = fim_continuo(intervalos_contrato(db, contrato), agora)
+            fim_renovacao = vencimento_renovacao(db, contrato, agora)
+            pode_renovar = renovacao_disponivel(fim_renovacao, agora)
 
             if pode_renovar:
                 concluida = (
-                    db.query(models.OportunidadeCompra.id)
+                    db.query(models.OportunidadeCompra)
                     .filter(
                         models.OportunidadeCompra.usuario_id == usuario.id,
                         models.OportunidadeCompra.curso_id == a.curso_id,
                         models.OportunidadeCompra.tipo_compra == "RENOVACAO",
                         models.OportunidadeCompra.contratacao_id == contrato.id,
-                        models.OportunidadeCompra.vencimento_original == contrato.data_fim,
+                        models.OportunidadeCompra.vencimento_original == fim_renovacao,
                         models.OportunidadeCompra.concluida_em.isnot(None)
                     )
-                    .first()
+                    .all()
                 )
-                pode_renovar = concluida is None
+                pode_renovar = not any(oportunidade_consumida(db, o) for o in concluida)
 
             contratos_resposta.append({
                 "id": contrato.id,
                 "origem": contrato.origem,
                 "data_inicio": contrato.data_inicio,
-                "data_fim": contrato.data_fim,
+                "data_fim": fim_atual,
                 "renovacao_disponivel": pode_renovar
             })
 
@@ -816,7 +823,8 @@ def meus_cursos(
                 nome_curso=a.curso.nome,
                 ativo=a.ativo,
                 data_inicio=a.data_inicio,
-                data_fim=a.data_fim,
+                data_fim=(direito_atual_curso(db, usuario.id, a.curso_id, agora)[1]
+                    if bloqueios(db, usuario.id, a.curso_id) else a.data_fim),
                 renovacao_disponivel=any(
                     c["renovacao_disponivel"]
                     for c in contratos_resposta
@@ -837,8 +845,7 @@ def meus_cursos_historico(
         db.query(AcessoCurso)
         .join(Curso, Curso.id == AcessoCurso.curso_id)
         .filter(
-            AcessoCurso.usuario_id == usuario.id,
-            AcessoCurso.ativo == False
+            AcessoCurso.usuario_id == usuario.id
         )
         .order_by(AcessoCurso.data_inicio.desc())
         .all()
@@ -849,11 +856,13 @@ def meus_cursos_historico(
             "id": a.id,
             "curso_id": a.curso_id,
             "nome_curso": a.curso.nome,
-            "ativo": a.ativo,
+            "ativo": False,
+            "bloqueio_manual": bool(bloqueios(db, usuario.id, a.curso_id)),
             "data_inicio": a.data_inicio,
             "data_fim": a.data_fim
         }
         for a in acessos
+        if not a.ativo or not curso_vigente(db, usuario.id, a.curso_id)
     ]
 
 @app.get("/")
@@ -3700,14 +3709,11 @@ def me(
                 is_vendedor = True
 
 
-    tem_cursos = (
-        db.query(AcessoCurso)
-        .filter(
-            AcessoCurso.usuario_id == usuario.id,
-            AcessoCurso.ativo == True
-        )
-        .first()
-        is not None
+    tem_cursos = any(
+        curso_vigente(db, usuario.id, a.curso_id)
+        for a in db.query(AcessoCurso).join(Curso, Curso.id == AcessoCurso.curso_id).filter(
+            AcessoCurso.usuario_id == usuario.id, AcessoCurso.ativo == True,
+            Curso.ativo == True).all()
     )
 
 
@@ -4243,13 +4249,14 @@ def criar_checkout_mp(
         if contratacao and not contrato_vigente(db, contratacao, agora):
             raise HTTPException(409, "Contratação sem direito vigente; conferência necessária.")
 
-        if not renovacao_disponivel(contratacao.data_fim, agora):
+        fim_renovacao = vencimento_renovacao(db, contratacao, agora)
+        if not renovacao_disponivel(fim_renovacao, agora):
             raise HTTPException(
                 status_code=409,
                 detail="A renovação só está disponível nos últimos 15 dias do contrato."
             )
 
-        vencimento_original = contratacao.data_fim
+        vencimento_original = fim_renovacao
 
     oportunidade = obter_oportunidade(
         db=db,
@@ -4920,6 +4927,10 @@ def processar_pagamento_mp(payment_id, db, resposta_mp=None):
         pagamento = resolver_transacao(db, payment_id, pagamento_mp, mp_headers(), user_id, curso_id)
 
         if pagamento:
+            if pagamento.mp_status == "CHARGED_BACK":
+                from app.contestacoes import registrar_observacao
+                registrar_observacao(db, pagamento)
+
             if reconciliar_sem_conceder_acesso(db, pagamento):
                 return {
                     "ok": True,
@@ -5292,7 +5303,20 @@ def admin_listar_reembolsos(
         ORDER BY p.atualizado_em DESC
     """)).mappings().all()
 
-    return [dict(r) for r in rows]
+    from app.bloqueios_reembolso import decisoes, esquema_disponivel
+    disponivel = esquema_disponivel(db)
+    por_pagamento = {b.pagamento_id: b for b in decisoes(db)}
+    resultado = []
+    for row in rows:
+        r = dict(row)
+        decisao = por_pagamento.get(r['pagamento_id'])
+        r['bloqueio_executado_em'] = decisao.executado_em if decisao else None
+        r['bloqueio_executado_por'] = decisao.executado_por if decisao else None
+        r['bloqueio_disponivel'] = bool(disponivel and not decisao and r['reembolso_status'] == 'CONFIRMADO'
+            and r['confirmado_em'] and r['confirmado_por'] and (r['referencia_comprovante'] or '').strip()
+            and r['reembolso_valor_cents'] == r['valor_cents'] and r['ocorrencia_financeira'] is None)
+        resultado.append(r)
+    return resultado
 
 @app.post("/admin/pagamentos/revalidar", tags=["Admin Pagamentos"])
 @protegido
@@ -5399,7 +5423,7 @@ def admin_revalidar_pagamento(
         data_fim = data_inicio + relativedelta(months=meses_contratados(db, pagamento, tempo))
 
         contratacao = registrar_contratacao(
-            db, pagamento, data_inicio, data_fim
+            db, pagamento, data_inicio, data_fim, data_aprovacao=data_aprovacao
         )
 
         db.add(
@@ -6225,17 +6249,8 @@ def confirmar_reembolso_pix_manual(
     pagamento.atualizado_em = agora
 
     try:
-        if duplicada:
-            # Esta transação não concedeu acesso: nenhum direito é recalculado.
-            resultado_acesso = {"situacao": "ACESSO_PRESERVADO"}
-        else:
-            resultado_acesso = recalcular_acesso_apos_reembolso(
-                db=db,
-                usuario_id=pagamento.usuario_id,
-                curso_id=pagamento.curso_id,
-                pagamento_reembolsado_id=pagamento.id,
-            )
-
+        # Confirmação financeira não é decisão de bloqueio de acesso.
+        resultado_acesso = {"situacao": "ACESSO_PRESERVADO"}
         db.commit()
 
     except Exception:
@@ -6255,7 +6270,7 @@ def confirmar_reembolso_pix_manual(
         ),
         "ACESSO_PRESERVADO": (
             "Reembolso financeiro confirmado. O acesso ao curso "
-            "foi preservado por existir outro direito vigente."
+            "permanece inalterado. O bloqueio exige ação manual posterior do administrador."
         ),
     }
 
@@ -8754,7 +8769,10 @@ def historico_conversas_prof(curso_id: int, contratacao_id: int | None = None,
         if disciplina.curso_id != curso_id:
             continue
         acesso = _contexto_conversa(db, conversa)
-        if acesso.data_fim is not None and acesso.data_fim <= datetime.utcnow() and acesso.data_inicio <= conversa.criado_em < acesso.data_fim:
+        sem_acesso = acesso.data_fim is not None and acesso.data_fim <= datetime.utcnow()
+        if conversa.contratacao_id is not None:
+            sem_acesso = sem_acesso or (contrato_tem_bloqueio(db, acesso) and not contrato_vigente(db, acesso))
+        if sem_acesso and acesso.data_fim is not None and acesso.data_inicio <= conversa.criado_em < acesso.data_fim:
             resultado.append(_resultado_conversa(db, conversa))
     return resultado
 
@@ -9594,3 +9612,6 @@ from app.imagens_manutencao import ManutencaoImagens
 app.state.manutencao_imagens = ManutencaoImagens(motor_financeiro, SessionLocal)
 app.router.add_event_handler('startup', app.state.manutencao_imagens.iniciar)
 app.router.add_event_handler('shutdown', app.state.manutencao_imagens.encerrar)
+
+from app.reembolsos_acesso import registrar_rotas as registrar_bloqueios_reembolso
+registrar_bloqueios_reembolso(app, get_db, get_usuario_atual, bloquear_pagamento_reembolso)

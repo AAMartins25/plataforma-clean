@@ -198,8 +198,9 @@ def test_webhook_caso_canonico(ambiente_compra,problema):
     resp_caso=Mock(status_code=503 if problema=='provedor_indisponivel' else 200)
     resp_caso.json.return_value=caso_mp
     resp_payment=Mock(status_code=200);resp_payment.json.return_value=mp_dados(status='approved')
+    resp_conta=Mock(status_code=200);resp_conta.json.return_value={'id':123456}
     # O corpo do evento não é fonte de identidade/valor: consulta autenticada.
-    with patch.object(main,'validar_assinatura_mercadopago',return_value=problema!='assinatura'),patch('app.contestacoes.requests.get',side_effect=[resp_caso,resp_payment]*2):
+    with patch.object(main,'validar_assinatura_mercadopago',return_value=problema!='assinatura'),patch('app.contestacoes.requests.get',side_effect=[resp_conta,resp_caso,resp_payment]*2):
         r=c.post('/webhooks/mercadopago?data.id=999',json=payload)
         if problema=='assinatura':
             assert r.status_code==401

@@ -17,7 +17,7 @@ def entregar(ambiente, caso_mp=None, evento=500, envelope=None, falha=False):
     caso_mp=caso_mp or {'id':'999','payments':[101],'currency':'BRL','amount':49.90}
     def consultar(url, **kw):
         r=Mock(status_code=503 if falha else 200)
-        r.json.return_value=caso_mp if '/chargebacks/' in url else mp_dados(status='approved')
+        r.json.return_value=({'id':123456} if url.endswith('/users/me') else caso_mp if '/chargebacks/' in url else mp_dados(status='approved'))
         return r
     with patch.object(main,'validar_assinatura_mercadopago',return_value=True), \
          patch('app.contestacoes.requests.get',side_effect=consultar) as get:
@@ -77,7 +77,7 @@ def test_comprovacao_integral_libera_apenas_acao_manual(ambiente_compra):
     pid,cid,ident=generico(ambiente_compra)
     admin(main);assert confirmar(c,ident).status_code==200
     r,chamadas=entregar(ambiente_compra)
-    assert r.status_code==200 and r.json()['processado'] and chamadas==2
+    assert r.status_code==200 and r.json()['processado'] and chamadas==3
     with f() as db:
         registro=db.get(m.ContestacaoPagamento,ident)
         assert registro.mp_dispute_id=='999' and registro.bloqueio_executado_em is None
@@ -207,13 +207,14 @@ def test_recuperacao_administrativa_despacha_caso_sem_confundir_id_de_pagamento(
     def consultar(url,**kw):
         urls.append(url)
         resp=Mock(status_code=200)
-        resp.json.return_value=({'id':'999','payments':[101],'currency':'BRL','amount':49.90}
+        resp.json.return_value=({'id':123456} if url.endswith('/users/me') else {'id':'999','payments':[101],'currency':'BRL','amount':49.90}
             if '/chargebacks/' in url else mp_dados(status='approved'))
         return resp
     with patch('app.contestacoes.requests.get',side_effect=consultar):
-        resultado=main.app.state.protecao_financeira.recuperar(1,notificacao_id=ident)
+        resultado=main.app.state.protecao_financeira.recuperar(1)
     assert resultado['resultados'][0]['processado']
-    assert urls==['https://api.mercadopago.com/v1/chargebacks/999',
+    assert urls==['https://api.mercadopago.com/users/me',
+        'https://api.mercadopago.com/v1/chargebacks/999',
         'https://api.mercadopago.com/v1/payments/101']
     with f() as db:
         assert db.execute(select(inbox.c.estado)).scalar_one()=='CONCLUIDO'
