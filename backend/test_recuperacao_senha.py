@@ -108,6 +108,14 @@ def test_envio_identidade_e_token_persistido(recuperacao, login):
     assert 'Resumão Online' in payload['html']
     assert 'Quality Estudos' not in payload['html']
     assert '30 minutos' in payload['html']
+    assert '<h2>' not in payload['html']
+    texto = ' '.join(re.sub(r'<[^>]+>', ' ', payload['html']).split())
+    assert texto == (
+        'Olá, Aluna Fictícia! '
+        'Recebemos uma solicitação para redefinir a senha da sua conta no Resumão Online. '
+        'Redefinir minha senha Este link é válido por 30 minutos. '
+        'Se você não solicitou a redefinição, ignore este e-mail.'
+    )
     token = token_enviado(env)
     assert token not in str(resposta)
     with env.factory() as db:

@@ -5762,10 +5762,8 @@ def recuperar_senha(
             "to": [usuario.email],
             "subject": "Redefinição de senha - Resumão Online",
             "html": f"""
-                <h2>Redefinição de senha</h2>
-
                 <p>
-                    Olá, {usuario.nome}.
+                    Olá, {usuario.nome}!
                 </p>
 
                 <p>
