@@ -1,0 +1,39 @@
+{
+  "base": "cf3510a",
+  "worktree": "/tmp/resumao-questoes-editor-20261110",
+  "backend": {
+    "aprovados": 396,
+    "falhas": 0
+  },
+  "postgres": {
+    "migracao_idempotente_legado_rls_fks": "aprovado",
+    "locks_imagens": "aprovado",
+    "esquema_privado_imagens": "aprovado"
+  },
+  "javascript": {
+    "aulas_questoes": 8,
+    "copias": 4,
+    "revisoes": "aprovado"
+  },
+  "navegador": {
+    "questoes_larguras": [
+      1366,
+      768,
+      390,
+      320
+    ],
+    "teoria_tabelas_cenarios": 32,
+    "teoria_matematica_e_imagens_larguras": [
+      1280,
+      768,
+      390,
+      320
+    ],
+    "leituras_complementares": 9,
+    "compatibilidade_teoria_legado_e_html": "aprovada",
+    "criacao_importacao_imagens_falhas": "aprovadas"
+  },
+  "preview": "http://127.0.0.1:8769/__preview",
+  "producao_alterada": false,
+  "commit_push_pr_deploy": false
+}

@@ -6,8 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Minhas anotações</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=questoes1">
   <script src="js/cabecalho.js" defer></script>
+  <link rel="stylesheet" href="css/questao-conteudo.css">
+  <link rel="stylesheet" href="css/teoria-matematica.css">
+  <link rel="stylesheet" href="css/teoria-imagens.css">
+  <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
 </head>
 
 <body
@@ -131,7 +135,13 @@
   </p>
 </footer>
 
-<script>
+  <script src="js/vendor/dompurify-3.4.17.min.js"></script>
+  <script src="js/vendor/katex/katex.min.js"></script>
+  <script src="js/teoria-matematica.js"></script>
+  <script src="js/teoria-imagens.js?v=questoes1"></script>
+  <script src="js/teoria-tabelas.js"></script>
+  <script src="js/questao-conteudo.js"></script>
+  <script>
 
 const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
@@ -541,8 +551,8 @@ function montarCardAnotacao(a) {
     "";
 
   const enunciadoHtml = ehCertoErrado
-    ? `${esc(a.enunciado)} (Gab. ${esc(respostaCorretaCE)})`
-    : esc(a.enunciado);
+    ? `${QuestaoConteudo.renderizar(a.enunciado, a.enunciado_formato, a.bateria_id)} (Gab. ${esc(respostaCorretaCE)})`
+    : QuestaoConteudo.renderizar(a.enunciado, a.enunciado_formato, a.bateria_id);
 
   return `
     <div class="card minhas-anotacoes-anotacao-card">
@@ -560,7 +570,7 @@ function montarCardAnotacao(a) {
               <strong>Resposta:</strong>
 
               <div class="minhas-anotacoes-resposta-texto">
-                ${esc(textoResposta)}
+                ${QuestaoConteudo.renderizar(textoResposta, a.texto_resposta_formato, a.bateria_id)}
               </div>
 
             </div>
@@ -572,10 +582,7 @@ function montarCardAnotacao(a) {
         <strong>Comentário:</strong>
 
         <div class="minhas-anotacoes-comentario-texto">
-          ${esc(
-            a.comentario ||
-            "Comentário não cadastrado."
-          )}
+          ${QuestaoConteudo.renderizar(a.comentario || "Comentário não cadastrado.", a.comentario_formato, a.bateria_id)}
         </div>
 
       </div>

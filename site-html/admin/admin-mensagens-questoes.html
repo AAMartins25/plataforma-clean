@@ -15,11 +15,15 @@
 
   <link
     rel="stylesheet"
-    href="../css/style.css"
+    href="../css/style.css?v=questoes1"
   >
   <link rel="stylesheet" href="../css/admin-responsivo.css">
   <link rel="stylesheet" href="../css/admin-shell.css" />
   <script src="../js/cabecalho.js" defer></script>
+  <link rel="stylesheet" href="../css/questao-conteudo.css">
+  <link rel="stylesheet" href="../css/teoria-matematica.css">
+  <link rel="stylesheet" href="../css/teoria-imagens.css">
+  <link rel="stylesheet" href="../js/vendor/katex/katex.min.css">
 </head>
 
 <body class="admin-shell">
@@ -197,6 +201,12 @@
   <script src="../js/app.js?v=perfis-1"></script>
   <script src="../js/admin.js?v=perfis-1"></script>
 
+  <script src="../js/vendor/dompurify-3.4.17.min.js"></script>
+  <script src="../js/vendor/katex/katex.min.js"></script>
+  <script src="../js/teoria-matematica.js"></script>
+  <script src="../js/teoria-imagens.js?v=questoes1"></script>
+  <script src="../js/teoria-tabelas.js"></script>
+  <script src="../js/questao-conteudo.js"></script>
   <script>
     function confirmarSaidaAdmin() {
       const ok = confirm(
@@ -639,10 +649,10 @@
             ${
               ehCertoErrado
                 ? `
-                  ${esc(conversa.enunciado)}
+                  ${QuestaoConteudo.renderizar(conversa.enunciado, conversa.enunciado_formato, conversa.bateria_id, true)}
                   (${respostaCorreta})
                 `
-                : esc(conversa.enunciado)
+                : QuestaoConteudo.renderizar(conversa.enunciado, conversa.enunciado_formato, conversa.bateria_id, true)
             }
           </div>
 

@@ -18,7 +18,8 @@ MODELOS = [m.Usuario, m.Curso, m.Disciplina, m.Assunto, m.CursoDisciplinaPropria
            m.Pasta, m.Aula, m.Material, m.Video, m.Bateria, m.Questao,
            m.Alternativa, m.Comentario, m.RevisaoAluno, m.TentativaBateria,
            m.RespostaAlunoQuestao, m.AnotacaoAlunoQuestao,
-           m.ConversaQuestaoProfessor, m.MensagemConversaQuestao, m.ProgressoAula]
+           m.ConversaQuestaoProfessor, m.MensagemConversaQuestao, m.ProgressoAula, m.Pagamento, m.ContestacaoPagamento,
+           m.ImagemTeoria, m.ImagemTeoriaMaterial, m.ImagemQuestao]
 
 
 @pytest.fixture(scope="module")
@@ -27,6 +28,7 @@ def infraestrutura():
     @event.listens_for(engine, 'connect')
     def ativar_fk(conexao, _):
         conexao.execute('PRAGMA foreign_keys=ON')
+        conexao.create_function('BTRIM',1,lambda v:v.strip() if v is not None else None,deterministic=True)
     factory = sessionmaker(bind=engine, autoflush=False)
     with carregar_main_isolado(factory, engine) as main:
         try:

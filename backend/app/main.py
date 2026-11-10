@@ -1,3 +1,4 @@
+from app.questoes_html import preparar_questao, formatos as formatos_questao
 from app.descricao_publica import preparar_descricao, descricao_para_visitante
 from app.admin_intermediario import exigir_geral, revalidar_geral, pode_administrar, exigir_area
 from app.desempenho import validar_contexto_historico
@@ -2597,6 +2598,7 @@ def listar_baterias_da_aula(
 @app.post("/questoes")
 def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(exigir_admin_aulas)):
     bateria = bloquear_pai(db, Bateria, questao.bateria_id)
+    preparar_questao(questao)
     alternativas = validar_alternativas(questao)
     questao.ordem = ordem_conteudo(db, Questao, Questao.bateria_id, questao.bateria_id, questao)
     if db.query(Questao).filter_by(bateria_id=bateria.id).count() >= 10:
@@ -2640,6 +2642,8 @@ def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db), usuario
     nova = Questao(
         bateria_id=questao.bateria_id,
         enunciado=questao.enunciado.strip(),
+        enunciado_formato=questao.enunciado_formato,
+        comentario_formato=questao.comentario_formato,
         tipo=tipo,
         tipo_questao=tipo_questao,
         quantidade_alternativas=quantidade_alternativas,
@@ -2652,6 +2656,8 @@ def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db), usuario
     db.add(nova)
     confirmar_conteudo(db, flush=True)
     sincronizar_alternativas(db, nova, alternativas)
+    from app.imagens import sincronizar_referencias_questao
+    sincronizar_referencias_questao(db, nova, usuario.id)
     bateria.status = "EM_ANDAMENTO"
     confirmar_conteudo(db)
     db.refresh(nova)
@@ -2660,6 +2666,7 @@ def criar_questao(questao: QuestaoCreate, db: Session = Depends(get_db), usuario
         "id": nova.id,
         "bateria_id": nova.bateria_id,
         "enunciado": nova.enunciado,
+        **formatos_questao(nova),
         "tipo": nova.tipo,
         "tipo_questao": nova.tipo_questao,
         "quantidade_alternativas": nova.quantidade_alternativas,
@@ -2683,6 +2690,9 @@ def editar_questao(
 
     bateria = bloquear_pai(db, Bateria, questao.bateria_id)
     validar_vinculo(dados, questao, "bateria_id")
+    from app.questoes_html import referencias_questao
+    imagens_anteriores = referencias_questao(questao)
+    preparar_questao(dados, questao)
     alternativas = validar_alternativas(dados, questao)
     if dados.tipo_questao.strip().upper() != questao.tipo_questao:
         garantir_sem_historico(db, bateria)
@@ -2711,6 +2721,8 @@ def editar_questao(
         return {"erro": "Gabarito inválido para o tipo de questão selecionado"}
 
     questao.enunciado = dados.enunciado.strip()
+    questao.enunciado_formato = dados.enunciado_formato
+    questao.comentario_formato = dados.comentario_formato
     questao.tipo = tipo
     questao.tipo_questao = tipo_questao
     questao.quantidade_alternativas = quantidade_alternativas
@@ -2720,6 +2732,8 @@ def editar_questao(
         questao.ativo = dados.ativo
 
     sincronizar_alternativas(db, questao, alternativas)
+    from app.imagens import sincronizar_referencias_questao
+    sincronizar_referencias_questao(db, questao, usuario.id, imagens_anteriores)
     confirmar_conteudo(db)
     db.refresh(questao)
 
@@ -2727,6 +2741,7 @@ def editar_questao(
         "id": questao.id,
         "bateria_id": questao.bateria_id,
         "enunciado": questao.enunciado,
+        **formatos_questao(questao),
         "tipo": questao.tipo,
         "tipo_questao": questao.tipo_questao,
         "quantidade_alternativas": questao.quantidade_alternativas,
@@ -2793,10 +2808,15 @@ def criar_alternativa(
     nova_alt = Alternativa(
         questao_id=questao_id,
         letra=letra,
-        texto=alt.texto.strip()
+        texto=preparar_conteudo(alt.texto, alt.texto_formato).strip(),
+        texto_formato=validar_formato(alt.texto_formato)
     )
 
     db.add(nova_alt)
+    db.flush()
+    db.expire(questao, ["alternativas"])
+    from app.imagens import sincronizar_referencias_questao
+    sincronizar_referencias_questao(db, questao, usuario.id)
     confirmar_conteudo(db)
     db.refresh(nova_alt)
 
@@ -2804,7 +2824,7 @@ def criar_alternativa(
         "id": nova_alt.id,
         "questao_id": nova_alt.questao_id,
         "letra": nova_alt.letra,
-        "texto": nova_alt.texto
+        "texto": nova_alt.texto, "texto_formato": nova_alt.texto_formato
     }
 
 @app.post("/questoes/{questao_id}/comentario-geral")
@@ -2932,6 +2952,7 @@ def listar_questoes_da_bateria(
             "id": q.id,
             "bateria_id": q.bateria_id,
             "enunciado": q.enunciado,
+            **formatos_questao(q),
             "tipo": q.tipo,
             "tipo_questao": q.tipo_questao,
             "quantidade_alternativas": q.quantidade_alternativas,
@@ -2943,7 +2964,7 @@ def listar_questoes_da_bateria(
                 {
                     "id": a.id,
                     "letra": a.letra,
-                    "texto": a.texto
+                    "texto": a.texto, "texto_formato": a.texto_formato or "texto_puro"
                 }
                 for a in alternativas
             ]
@@ -7303,6 +7324,7 @@ def listar_questoes_para_rever(
             "bateria_id": r.bateria_id,
             "bateria_titulo": bateria.titulo if bateria else None,
             "enunciado": questao.enunciado if questao else None,
+            **(formatos_questao(questao) if questao else {}),
             "comentario": questao.comentario if questao else None,
             "resposta_marcada": r.resposta_marcada,
             "gabarito": r.gabarito,
@@ -7501,12 +7523,13 @@ def listar_questoes_criticas(
                 "tipo": questao.tipo,
                 "tipo_questao": questao.tipo_questao,
                 "enunciado": questao.enunciado,
+        **formatos_questao(questao),
                 "comentario": questao.comentario,
 
                 "alternativas": [
                     {
                         "letra": alternativa.letra,
-                        "texto": alternativa.texto
+                        "texto": alternativa.texto, "texto_formato": alternativa.texto_formato or "texto_puro"
                     }
                     for alternativa in (
                         db.query(Alternativa)
@@ -8442,8 +8465,10 @@ def _consultar_anotacoes(db, usuario_id, curso_id, contratacao_id, demonstracao_
             "tipo": questao.tipo,
             "tipo_questao": questao.tipo_questao,
             "enunciado": questao.enunciado,
+        **formatos_questao(questao),
             "gabarito": questao.gabarito,
             "texto_resposta": texto_resposta,
+            "texto_resposta_formato": alternativa_correta.texto_formato if alternativa_correta else "texto_puro",
             "comentario": questao.comentario,
 
             "bateria_id": bateria.id,
@@ -8556,7 +8581,7 @@ def _resultado_conversa(db, conversa):
         'disciplina_id': disciplina.id, 'disciplina_nome': disciplina.nome, 'disciplina_ordem': disciplina.ordem,
         'assunto_id': assunto.id, 'assunto_nome': assunto.nome, 'assunto_ordem': assunto.ordem,
         'questao_id': questao.id, 'questao_ordem': questao.ordem, 'tipo': questao.tipo, 'tipo_questao': questao.tipo_questao,
-        'enunciado': questao.enunciado, 'gabarito': questao.gabarito, 'comentario': questao.comentario,
+        'enunciado': questao.enunciado, **formatos_questao(questao), 'gabarito': questao.gabarito, 'comentario': questao.comentario,
         'bateria_id': bateria.id, 'bateria_titulo': bateria.titulo,
         'criado_em': conversa.criado_em, 'atualizado_em': conversa.atualizado_em,
         'mensagens': [{'id': m.id, 'autor': m.autor, 'texto': m.texto, 'criada_em': m.criada_em} for m in mensagens]}
@@ -9605,7 +9630,7 @@ registrar_consultas_vendedor(app, get_db, get_usuario_atual)
 
 
 from app.imagens import registrar_rotas as registrar_imagens
-registrar_imagens(app, get_db, get_usuario_atual, exigir_admin_aulas, listar_materiais_da_aula)
+registrar_imagens(app, get_db, get_usuario_atual, exigir_admin_aulas, listar_materiais_da_aula, listar_questoes_da_bateria)
 
 from app.imagens_manutencao import ManutencaoImagens
 app.state.manutencao_imagens = ManutencaoImagens(motor_financeiro, SessionLocal)

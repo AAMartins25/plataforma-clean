@@ -1,0 +1,9 @@
+
+.questao-conteudo-rico { white-space: normal; min-width: 0; max-width: 100%; overflow-wrap: anywhere; font-weight: normal; }
+.questao-texto-legado { white-space: pre-wrap; overflow-wrap: anywhere; }
+.questao-editor-aviso { overflow-wrap: anywhere; }
+#camposQuestaoCompleta .ck-editor__editable_inline { min-height: 100px; }
+#camposQuestaoCompleta .ck-editor { min-width: 0; max-width: 100%; }
+.questao-conteudo-rico img { max-width: 100%; height: auto; }
+/* A página também contém o editor compacto da descrição do curso. */
+.admin-shell .ck-editor .ck.ck-toolbar > .ck-toolbar__items { min-width: 0; flex-shrink: 1; flex-wrap: wrap; }

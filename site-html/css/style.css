@@ -2539,7 +2539,7 @@ footer {
   padding-right: 18px;
 }
 
-.teoria-page .teoria-conteudo-rico {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) {
   width: 100%;
   min-width: 0;
   text-align: initial;
@@ -2548,44 +2548,44 @@ footer {
 
 /* O reset global zera margens e recuo de listas. Repor somente no
    conteúdo rico e na área editável, preservando os demais componentes. */
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) p {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) p {
   margin-block: 0 1em;
 }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) :is(h2, h3, h4) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) :is(h2, h3, h4) {
   margin-block: 1.3em 0.6em;
   line-height: 1.35;
 }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) :is(ul, ol) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) :is(ul, ol) {
   margin-block: 0 1em;
   padding-inline-start: 1.75em;
   list-style-position: outside;
 }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ul { list-style-type: disc; }
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ol { list-style-type: decimal; }
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) ul ul { list-style-type: circle; }
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) ul { list-style-type: disc; }
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) ol { list-style-type: decimal; }
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) ul ul { list-style-type: circle; }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) li {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) li {
   display: list-item;
   margin-block: 0.25em;
   padding-inline-start: 0.15em;
 }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) li > p {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) li > p {
   margin-block: 0 0.4em;
 }
 
-:is(.teoria-page .teoria-conteudo-rico, .ck-editor .ck-content) > :first-child {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico, .ck-editor .ck-content) > :first-child {
   margin-block-start: 0;
 }
 
-.teoria-page .teoria-conteudo-rico > :last-child {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) > :last-child {
   margin-bottom: 0;
 }
 
-.teoria-page .teoria-conteudo-rico figure.table {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) figure.table {
   display: block;
   width: 100%;
   max-width: 100%;
@@ -2593,15 +2593,15 @@ footer {
   overflow: visible;
 }
 
-.teoria-page .teoria-conteudo-rico table {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table {
   width: 100%;
   max-width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
 }
 
-.teoria-page .teoria-conteudo-rico th,
-.teoria-page .teoria-conteudo-rico td {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) th,
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) td {
   border: 1px solid #cbd5e1;
   padding: 0.45rem 0.65rem;
   vertical-align: top;
@@ -2610,43 +2610,43 @@ footer {
 }
 
 /* A largura de leitura, e não a janela, determina a apresentação da tabela. */
-.teoria-page .teoria-conteudo-rico {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) {
   container-type: inline-size;
   container-name: teoria;
 }
-.teoria-page .teoria-conteudo-rico :is(table, col, th, td) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) :is(table, col, th, td) {
   min-width: 0 !important;
 }
-.teoria-page .teoria-conteudo-rico :is(table, col) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) :is(table, col) {
   width: 100% !important;
 }
-.teoria-page .teoria-conteudo-rico :is(th, td) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) :is(th, td) {
   width: auto !important;
   white-space: normal !important;
 }
-.teoria-page .teoria-conteudo-rico :is(th, td) :is(p, a, strong, em, code) {
+:is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) :is(th, td) :is(p, a, strong, em, code) {
   white-space: normal !important;
   overflow-wrap: anywhere;
 }
 @container teoria (max-width: 600px) {
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]),
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot),
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]),
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot),
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr {
     display: block;
     width: 100%;
   }
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr {
     margin-block: 0 1rem;
     border: 1px solid #cbd5e1;
   }
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr > :is(th, td) {
     display: block;
     width: 100% !important;
     box-sizing: border-box;
     border: 0;
     border-bottom: 1px solid #cbd5e1;
   }
-  .teoria-page .teoria-conteudo-rico table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) [data-teoria-rotulo]::before {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) [data-teoria-rotulo]::before {
     content: attr(data-teoria-rotulo);
     display: block;
     font-weight: 600;
@@ -2655,24 +2655,24 @@ footer {
   }
 }
 @container teoria (min-width: 600.01px) and (max-width: 1200px) {
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"],
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot),
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"],
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot),
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr {
     display: block;
     width: 100%;
   }
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr {
     margin-block: 0 1rem;
     border: 1px solid #cbd5e1;
   }
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr > :is(th, td) {
     display: block;
     width: 100% !important;
     box-sizing: border-box;
     border: 0;
     border-bottom: 1px solid #cbd5e1;
   }
-  .teoria-page .teoria-conteudo-rico table[data-teoria-colunas="extensas"] [data-teoria-rotulo]::before {
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] [data-teoria-rotulo]::before {
     content: attr(data-teoria-rotulo);
     display: block;
     font-weight: 600;
@@ -2691,7 +2691,7 @@ footer {
 }
 
 @media (max-width: 600px) {
-  .teoria-page .teoria-conteudo-rico { padding-left: 0; padding-right: 0; }
+  :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) { padding-left: 0; padding-right: 0; }
 }
 
 /* =========================================================

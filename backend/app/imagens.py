@@ -51,19 +51,36 @@ def sincronizar_referencias(db, material, autor_id=None, anterior=""):
     antigos = referencias(anterior)
     if not ids and not antigos:
         return
+    db.flush()
+    _sincronizar(db, ids, antigos, m.ImagemTeoriaMaterial, "material_id", material.id, autor_id)
+
+
+def sincronizar_referencias_questao(db, questao, autor_id=None, antigos=None):
+    from app.questoes_html import referencias_questao
+    ids = referencias_questao(questao)
+    if antigos is None:
+        # Textos legados não precisam consultar tabelas novas para serem salvos.
+        if not ids:
+            return
+        antigos = {r.imagem_id for r in db.query(m.ImagemQuestao).filter_by(questao_id=questao.id)}
+    if ids or antigos:
+        _sincronizar(db, ids, antigos, m.ImagemQuestao, "questao_id", questao.id, autor_id)
+
+
+def _sincronizar(db, ids, antigos, modelo, campo, identificador, autor_id):
     # Mesmo lock usado pela limpeza. Cópias compartilham arquivos imutáveis.
     imagens = (db.query(m.ImagemTeoria).filter(m.ImagemTeoria.id.in_(ids | antigos))
                .order_by(m.ImagemTeoria.id).with_for_update().all())
     por_id = {i.id: i for i in imagens}
     for id in ids:
         imagem = por_id.get(id)
-        vinculada = db.query(m.ImagemTeoriaMaterial).filter_by(imagem_id=id).first() is not None
+        vinculada = db.query(m.ImagemTeoriaMaterial).filter_by(imagem_id=id).first() is not None or db.query(m.ImagemQuestao).filter_by(imagem_id=id).first() is not None
         if imagem is None or (not vinculada and imagem.autor_id != autor_id):
             raise HTTPException(422, "Uma imagem não existe ou não está disponível para este administrador.")
     db.flush()
-    db.execute(delete(m.ImagemTeoriaMaterial).where(m.ImagemTeoriaMaterial.material_id == material.id))
+    db.execute(delete(modelo).where(getattr(modelo, campo) == identificador))
     for id in ids:
-        db.add(m.ImagemTeoriaMaterial(material_id=material.id, imagem_id=id))
+        db.add(modelo(**{campo: identificador, "imagem_id": id}))
     for imagem in imagens:
         imagem.ultima_atividade = datetime.utcnow()
 
@@ -87,7 +104,8 @@ def registrar_lote(db, usuario, imagens, storage):
     # na interface. A limpeza só remove objetos não referenciados após carência.
     db.query(m.Usuario.id).filter(m.Usuario.id == usuario.id).with_for_update().one()
     pendentes = (db.query(m.ImagemTeoria).filter(m.ImagemTeoria.autor_id == usuario.id,
-                 ~exists().where(m.ImagemTeoriaMaterial.imagem_id == m.ImagemTeoria.id)).count())
+                 ~exists().where(m.ImagemTeoriaMaterial.imagem_id == m.ImagemTeoria.id),
+                 ~exists().where(m.ImagemQuestao.imagem_id == m.ImagemTeoria.id)).count())
     if pendentes + len(imagens) > 100:
         raise HTTPException(429, "Há muitos uploads pendentes. Salve os materiais ou solicite a limpeza dos pendentes antigos.")
     enviados, resultados = [], []
@@ -160,7 +178,7 @@ def ler_upload(arquivo, limite):
     return dados
 
 
-def registrar_rotas(app, get_db, get_usuario, exigir_admin, listar_materiais):
+def registrar_rotas(app, get_db, get_usuario, exigir_admin, listar_materiais, listar_questoes):
     app.add_middleware(LimiteImagensMiddleware)
     @app.post("/admin/imagens/arquivos")
     def upload(arquivos: list[UploadFile] = File(...), db=Depends(get_db),
@@ -202,7 +220,8 @@ def registrar_rotas(app, get_db, get_usuario, exigir_admin, listar_materiais):
                           storage=Depends(obter_storage_imagens)):
         for id in sorted(set(dados.ids)):
             imagem = db.query(m.ImagemTeoria).filter_by(id=id).with_for_update().first()
-            vinculada = db.query(m.ImagemTeoriaMaterial).filter_by(imagem_id=id).first()
+            vinculada = (db.query(m.ImagemTeoriaMaterial).filter_by(imagem_id=id).first()
+                         or db.query(m.ImagemQuestao).filter_by(imagem_id=id).first())
             if not imagem or (imagem.autor_id != usuario.id and not vinculada):
                 raise HTTPException(404, "Imagem não encontrada.")
             if not vinculada:
@@ -224,6 +243,23 @@ def registrar_rotas(app, get_db, get_usuario, exigir_admin, listar_materiais):
                 permitidas.update(referencias(material.get("conteudo")))
         if not set(dados.ids).issubset(permitidas):
             raise HTTPException(403, "A imagem não pertence a um material disponível neste contexto.")
+        return assinar(db, dados.ids, storage)
+
+    @app.post("/baterias/{bateria_id}/imagens/assinaturas")
+    def assinaturas_questoes(bateria_id: int, dados: PedidoAssinaturas,
+                            contratacao_id: int | None = None, demonstracao_id: int | None = None,
+                            db=Depends(get_db), usuario=Depends(get_usuario), storage=Depends(obter_storage_imagens)):
+        questoes = listar_questoes(bateria_id, contratacao_id, demonstracao_id, db, usuario)
+        permitidas = set()
+        for questao in questoes:
+            for campo in ("enunciado", "comentario"):
+                if questao.get(campo + "_formato") == "html_v1":
+                    permitidas.update(referencias(questao.get(campo)))
+            for alternativa in questao.get("alternativas", []):
+                if alternativa.get("texto_formato") == "html_v1":
+                    permitidas.update(referencias(alternativa.get("texto")))
+        if not set(dados.ids).issubset(permitidas):
+            raise HTTPException(403, "A imagem não pertence a uma questão disponível neste contexto.")
         return assinar(db, dados.ids, storage)
 
 
@@ -262,3 +298,11 @@ class LimiteImagensMiddleware:
             await self.app(scope, receber, send)
         except _ExcessoUpload:
             await JSONResponse({"detail": "O envio excede o tamanho permitido."}, status_code=413)(scope, receive, send)
+
+
+@event.listens_for(m.Questao, "before_delete")
+def _carencia_questao(mapper, conexao, questao):
+    ids = list(conexao.execute(select(m.ImagemQuestao.imagem_id).where(m.ImagemQuestao.questao_id == questao.id)).scalars())
+    if ids:
+        conexao.execute(select(m.ImagemTeoria.id).where(m.ImagemTeoria.id.in_(ids)).order_by(m.ImagemTeoria.id).with_for_update()).all()
+        conexao.execute(update(m.ImagemTeoria).where(m.ImagemTeoria.id.in_(ids)).values(ultima_atividade=datetime.utcnow()))

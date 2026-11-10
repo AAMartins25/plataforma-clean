@@ -833,7 +833,7 @@ const AdminAulaConteudo = {
           <div class="list">
             ${qs.map((q, i) => `
               <div class="disciplina">
-                <b>Q${i + 1}</b> — ${esc(q.enunciado || q.pergunta || "Questão")}<br/>
+                <b>Q${i + 1}</b> — ${QuestaoConteudo.renderizar(q.enunciado || q.pergunta || "Questão", q.enunciado_formato, this.bateriaId, true)}<br/>
                 <span style="opacity:.8">questao_id=${esc(q.id)} • tipo=${esc(q.tipo)}</span>
               </div>
             `).join("")}

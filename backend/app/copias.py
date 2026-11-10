@@ -44,14 +44,17 @@ def copiar_assunto_conteudo(db, origem, disciplina_id, ordem=None):
                 for questao_origem in filhos(db, m.Questao, bateria_id=bateria_origem.id):
                     questao = novo(db, questao_origem, ('enunciado', 'tipo', 'ordem', 'ativo',
                                                       'tipo_questao', 'quantidade_alternativas',
-                                                      'gabarito', 'comentario'), bateria_id=bateria.id)
+                                                      'gabarito', 'comentario', 'enunciado_formato', 'comentario_formato'), bateria_id=bateria.id)
                     mapa = {}
                     for alternativa in filhos(db, m.Alternativa, questao_id=questao_origem.id):
-                        copia = novo(db, alternativa, ('letra', 'texto'), questao_id=questao.id)
+                        copia = novo(db, alternativa, ('letra', 'texto', 'texto_formato'), questao_id=questao.id)
                         mapa[alternativa.id] = copia.id
                     for comentario in filhos(db, m.Comentario, questao_id=questao_origem.id):
                         novo(db, comentario, ('texto',), questao_id=questao.id,
                              alternativa_id=mapa.get(comentario.alternativa_id))
+                    db.expire(questao, ["alternativas"])
+                    from app.imagens import sincronizar_referencias_questao
+                    sincronizar_referencias_questao(db, questao)
     for pratica_origem in filhos(db, m.QuestaoPraticaAssunto, curso_assunto_proprio_id=origem.id):
         pratica = novo(db, pratica_origem, ('tipo', 'enunciado', 'gabarito', 'comentario', 'ativo'),
                        curso_assunto_proprio_id=assunto.id)

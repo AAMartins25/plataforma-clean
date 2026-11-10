@@ -145,6 +145,7 @@ class Questao(Base):
     bateria_id = Column(Integer, ForeignKey("baterias.id"), nullable=False)
 
     enunciado = Column(Text, nullable=False)
+    enunciado_formato = Column(String(20), nullable=True)
     tipo = Column(String(20), nullable=False)  # MULTIPLA / CERTO_ERRADO
     ordem = Column(Integer, default=1)
     ativo = Column(Boolean, default=True)
@@ -153,6 +154,7 @@ class Questao(Base):
     quantidade_alternativas = Column(Integer, nullable=True)
     gabarito = Column(String, nullable=True)
     comentario = Column(Text, nullable=True)
+    comentario_formato = Column(String(20), nullable=True)
 
     bateria = relationship("Bateria", backref="questoes")
 
@@ -164,6 +166,7 @@ class Alternativa(Base):
 
     letra = Column(String(1), nullable=False)  # A-E
     texto = Column(Text, nullable=False)
+    texto_formato = Column(String(20), nullable=True)
 
     questao = relationship("Questao", backref="alternativas")
 
@@ -217,6 +220,12 @@ class ImagemTeoriaMaterial(Base):
     __tablename__ = "imagens_teoria_materiais"
     material_id = Column(Integer, ForeignKey("materiais.id", ondelete="CASCADE"), primary_key=True)
     imagem_id = Column(String(36), ForeignKey("imagens_teoria.id"), primary_key=True, index=True)
+
+
+class ImagemQuestao(Base):
+    __tablename__ = "imagens_questoes"
+    imagem_id = Column(String(36), ForeignKey("imagens_teoria.id", ondelete="RESTRICT"), primary_key=True)
+    questao_id = Column(Integer, ForeignKey("questoes.id", ondelete="CASCADE"), primary_key=True, index=True)
 
 class QuizIA(Base):
     __tablename__ = "quiz_ia"

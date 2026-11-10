@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Teoria e Questões</title>
-  <link rel="stylesheet" href="css/style.css?v=tabelas1"/>
+  <link rel="stylesheet" href="css/style.css?v=questoes1"/>
   <link rel="stylesheet" href="css/teoria-cabecalho.css?v=2">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/teoria-imagens.css?v=imagens2">
@@ -110,6 +110,8 @@
   </style>
   <script src="js/cabecalho.js" defer></script>
   <script src="js/teoria-cabecalho.js?v=2" defer></script>
+  <link rel="stylesheet" href="css/questao-conteudo.css">
+
 </head>
 
 <body class="teoria-page">
@@ -236,8 +238,10 @@
 
   <script src="js/vendor/katex/katex.min.js"></script>
   <script src="js/teoria-matematica.js?v=math1"></script>
-  <script src="js/teoria-imagens.js?v=imagens2"></script>
+  <script src="js/teoria-imagens.js?v=questoes1"></script>
   <script src="js/teoria-tabelas.js?v=tabelas1"></script>
+  <script src="js/vendor/dompurify-3.4.17.min.js"></script>
+  <script src="js/questao-conteudo.js"></script>
   <script>
     const API_BASE = "https://plataforma-quality-backend.onrender.com";
     
@@ -1150,20 +1154,17 @@
 
         alvo.innerHTML = questoes.map((q, idx) => `
           <div class="card" style="margin-top:12px">
-            <h2>${idx + 1}. ${esc(q.enunciado || q.pergunta || "Questão")}</h2>
-
-            ${q.alternativas ? `
-              <div class="list">
-                ${["A", "B", "C", "D", "E"].map(L => `
-                  <div class="assunto">
-                    <b>${L})</b> ${esc(q.alternativas?.[L] || "")}
-                    ${q.comentario?.[L] ? `<div style="opacity:.9;margin-top:6px"><b>Coment:</b> ${esc(q.comentario[L])}</div>` : ""}
-                  </div>
-                `).join("")}
-              </div>
-            ` : ""}
-
-            ${q.comentario?.geral ? `<p><b>Comentário:</b> ${esc(q.comentario.geral)}</p>` : ""}
+            <h2>Questão ${idx + 1}</h2>
+            ${QuestaoConteudo.renderizar(q.enunciado || q.pergunta || "Questão", q.enunciado_formato, bateriaId)}
+            <div class="list">
+              ${(Array.isArray(q.alternativas) ? q.alternativas : Object.entries(q.alternativas || {}).map(([letra, texto]) => ({letra, texto}))).map(a => `
+                <div class="assunto">
+                  <b>${esc(a.letra)})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaId)}
+                  ${typeof q.comentario === "object" && q.comentario?.[a.letra] ? `<div><b>Coment:</b> ${QuestaoConteudo.renderizar(q.comentario[a.letra], "texto_puro", bateriaId)}</div>` : ""}
+                </div>
+              `).join("")}
+            </div>
+            ${q.comentario ? `<div><b>Comentário:</b> ${QuestaoConteudo.renderizar(typeof q.comentario === "string" ? q.comentario : q.comentario.geral, q.comentario_formato, bateriaId)}</div>` : ""}
           </div>
         `).join("");
 

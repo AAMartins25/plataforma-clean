@@ -1,0 +1,16 @@
+✔ criação delega ordenação ao backend para textos, vídeos e baterias (19.895787ms)
+✔ edição de vídeo omite duração, transcrição e ativo, preservando os valores (9.92461ms)
+✔ editar título da bateria omite status e ativo (5.152825ms)
+✔ questão e alternativas são criadas juntas e atualizadas juntas (12.47795ms)
+✔ CERTO/ERRADO envia lista vazia de alternativas (5.680629ms)
+✔ cards oferecem exclusão de texto e vídeo e recarregam a lista (6.793917ms)
+✔ exclusão cancelada não chama a API (2.510129ms)
+✔ bloqueio por histórico apresenta a mensagem do backend (5.500543ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.737267

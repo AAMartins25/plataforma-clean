@@ -48,7 +48,7 @@
   async function assinar(identificadores, contexto = null, signal) {
     if (!identificadores.length) return new Map();
     const caminho = contexto
-      ? `/aulas/${encodeURIComponent(contexto.aulaId)}/imagens/assinaturas${contexto.query ? "?" + contexto.query : ""}`
+      ? `${contexto.bateriaId ? "/baterias/" + encodeURIComponent(contexto.bateriaId) : "/aulas/" + encodeURIComponent(contexto.aulaId)}/imagens/assinaturas${contexto.query ? "?" + contexto.query : ""}`
       : "/admin/imagens/assinaturas";
     const resultado = await api(caminho, { ids: identificadores }, signal);
     const mapa = new Map();

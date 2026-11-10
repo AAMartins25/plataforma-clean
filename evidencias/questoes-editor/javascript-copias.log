@@ -1,0 +1,12 @@
+✔ copiar disciplina preserva método, rota, payload e mensagem de sucesso (6.609881ms)
+✔ copiar assunto preserva seletores, contrato e mensagem de sucesso (3.329995ms)
+✔ copiar assunto mostra o motivo retornado pelo backend sem o JSON bruto (2.121284ms)
+✔ cancelar confirmação não chama a rota de cópia (2.206012ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25.141413

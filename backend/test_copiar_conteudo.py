@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
-from sqlalchemy import event, select, text
+from sqlalchemy import Integer, event, select, text
 
 from app import models as m
 from test_aulas_admin import ambiente, infraestrutura, inserir_historico, MODELOS as MODELOS_AULAS
@@ -22,6 +22,8 @@ def preparar_conteudo(db):
     # IDs explícitos na semente da fixture: atualizar apenas sequências do banco descartável.
     if db.bind.dialect.name == 'postgresql':
         for modelo in MODELOS_AULAS:
+            if "id" not in modelo.__table__.c or not isinstance(modelo.__table__.c.id.type, Integer):
+                continue
             tabela = modelo.__tablename__
             db.execute(text(f"SELECT setval(pg_get_serial_sequence('{tabela}', 'id'), COALESCE((SELECT MAX(id) FROM {tabela}), 0) + 1, false)"))
     db.get(m.CursoDisciplinaPropria, 1).nome = 'Direitos Humanos'
@@ -84,7 +86,7 @@ def copia(ambiente):
 
 
 def snapshot(db, modelos=MODELOS):
-    return {modelo.__tablename__:list(db.execute(select(modelo.__table__).order_by(modelo.id))) for modelo in modelos}
+    return {modelo.__tablename__:list(db.execute(select(modelo.__table__).order_by(*modelo.__table__.primary_key.columns))) for modelo in modelos}
 
 
 def equivalentes(origem,copia,pai):
@@ -101,8 +103,8 @@ def comparar_assunto(db,origem,copia,ordem_externa=None):
     assert origem.id != copia.id
     assert copia.ordem==(origem.ordem if ordem_externa is None else ordem_externa)
     def pares(modelo,campo,oid,cid):
-        antigos=db.query(modelo).filter(getattr(modelo,campo)==oid).order_by(modelo.id).all()
-        novos=db.query(modelo).filter(getattr(modelo,campo)==cid).order_by(modelo.id).all()
+        antigos=db.query(modelo).filter(getattr(modelo,campo)==oid).order_by(*modelo.__table__.primary_key.columns).all()
+        novos=db.query(modelo).filter(getattr(modelo,campo)==cid).order_by(*modelo.__table__.primary_key.columns).all()
         assert len(antigos)==len(novos)
         for a,b in zip(antigos,novos):
             equivalentes(a,b,campo)

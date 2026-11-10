@@ -31,16 +31,25 @@ def travar_objeto(db, chave, esperar=True):
 def referenciada(db, id):
     if db.query(m.ImagemTeoriaMaterial).filter_by(imagem_id=id).first():
         return True
+    if db.query(m.ImagemQuestao).filter_by(imagem_id=id).first():
+        return True
     # Defesa adicional contra vínculo ausente/inconsistente: preservar também
     # referências presentes no HTML, inclusive materiais inativos e cópias.
-    return db.query(m.Material.id).filter(m.Material.conteudo.contains("/midias/imagens/" + id)).first() is not None
+    trecho = "/midias/imagens/" + id
+    return (db.query(m.Material.id).filter(m.Material.conteudo.contains(trecho)).first() is not None
+            or db.query(m.Questao.id).filter((m.Questao.enunciado.contains(trecho)) | (m.Questao.comentario.contains(trecho))).first() is not None
+            or db.query(m.Alternativa.id).filter(m.Alternativa.texto.contains(trecho)).first() is not None)
 
 
 def limpar_pendentes(db, storage, agora=None, limite_lote=100, parar=None):
     limite = (agora or datetime.utcnow()) - timedelta(hours=24)
     imagens = (db.query(m.ImagemTeoria).filter(m.ImagemTeoria.ultima_atividade < limite,
                ~exists().where(m.ImagemTeoriaMaterial.imagem_id == m.ImagemTeoria.id),
-               ~exists().where(m.Material.conteudo.contains(literal("/midias/imagens/") + m.ImagemTeoria.id)))
+               ~exists().where(m.ImagemQuestao.imagem_id == m.ImagemTeoria.id),
+               ~exists().where(m.Material.conteudo.contains(literal("/midias/imagens/") + m.ImagemTeoria.id)),
+               ~exists().where(m.Questao.enunciado.contains(literal("/midias/imagens/") + m.ImagemTeoria.id)
+                               | m.Questao.comentario.contains(literal("/midias/imagens/") + m.ImagemTeoria.id)),
+               ~exists().where(m.Alternativa.texto.contains(literal("/midias/imagens/") + m.ImagemTeoria.id)))
                .order_by(m.ImagemTeoria.id).with_for_update(skip_locked=True).limit(limite_lote).all())
     chaves = []
     for imagem in imagens:
@@ -145,7 +154,7 @@ class ManutencaoImagens:
             if not obteve:
                 return
             inspetor = inspect(self.engine)
-            if not all(inspetor.has_table(t) for t in ("imagens_teoria", "imagens_teoria_materiais")):
+            if not all(inspetor.has_table(t) for t in ("imagens_teoria", "imagens_teoria_materiais", "imagens_questoes")):
                 raise RuntimeError("Esquema de imagens indisponível")
             with self.factory() as db:
                 limpar_pendentes(db, storage, parar=self.parar)

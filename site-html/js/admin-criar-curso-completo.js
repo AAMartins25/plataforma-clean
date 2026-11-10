@@ -1269,7 +1269,7 @@
             <label><b>Tipo da questão</b></label><br/>
             <select
               id="questaoTipoQuestao"
-              onchange="renderizarCamposQuestaoCompleta()"
+              onchange="renderizarCamposQuestaoCompleta(null, true)"
               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
             >
               <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
@@ -1689,7 +1689,7 @@
             <div style="margin-top:10px;">
               ${(q.alternativas || []).map(a => `
                 <div style="margin-top:6px;">
-                  <b>${a.letra})</b> ${a.texto}
+                  <b>${a.letra})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaAtualId, true)}
                 </div>
               `).join("")}
             </div>
@@ -1697,11 +1697,10 @@
           : "";
 
         const comentarioCompleto = q.comentario || "Nenhum comentário cadastrado.";
-
-        const comentarioResumo =
-          comentarioCompleto.length > 250
-            ? comentarioCompleto.substring(0, 250) + "..."
-            : comentarioCompleto;
+        const moldeComentario = document.createElement("template");
+        if (q.comentario_formato === "html_v1") moldeComentario.innerHTML = DOMPurify.sanitize(comentarioCompleto);
+        const textoComentario = q.comentario_formato === "html_v1" ? moldeComentario.content.textContent : comentarioCompleto;
+        const longo = textoComentario.length > 250;
 
         return `
           <div class="assunto" id="cardQuestao_${q.id}">
@@ -1709,7 +1708,7 @@
             <b>Questão ${q.ordem}</b>
 
             <div style="white-space:pre-wrap; margin-top:10px;">
-              ${q.enunciado}
+              ${QuestaoConteudo.renderizar(q.enunciado, q.enunciado_formato, bateriaAtualId, true)}
             </div>
 
             ${alternativasHtml}
@@ -1721,31 +1720,10 @@
             <div style="margin-top:10px;">
               <b>Comentário:</b>
 
-              <div
-                id="comentarioQuestao_${q.id}"
-                data-resumo="${comentarioResumo.replace(/"/g, "&quot;")}"
-                data-completo="${comentarioCompleto.replace(/"/g, "&quot;")}"
-                data-aberto="false"
-                style="white-space:pre-wrap; opacity:.9; margin-top:4px;"
-              >
-                ${comentarioResumo}
+              <div id="comentarioQuestao_${q.id}" data-aberto="false">
+                ${longo ? QuestaoConteudo.escapar(textoComentario.slice(0,250) + "...") : QuestaoConteudo.renderizar(comentarioCompleto, q.comentario_formato, bateriaAtualId, true)}
               </div>
-
-              ${
-                comentarioCompleto.length > 250
-                  ? `
-                    <button
-                      class="btn"
-                      type="button"
-                      style="margin-top:8px;"
-                      onclick="alternarComentarioQuestao(${q.id})"
-                      id="btnComentarioQuestao_${q.id}"
-                    >
-                      Visualizar comentário
-                    </button>
-                  `
-                  : ""
-              }
+              ${longo ? `<button class="btn" type="button" id="btnComentarioQuestao_${q.id}" onclick="alternarComentarioQuestao(${q.id})">Visualizar comentário</button>` : ""}
             </div>
 
             <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -1779,7 +1757,11 @@
       lista.innerHTML = html;
     }
 
-    window.renderizarCamposQuestaoCompleta = function () {
+    window.renderizarCamposQuestaoCompleta = async function (dados = null, preservar = false) {
+      if (preservar) {
+        try { dados = QuestaoEditores.dados(); }
+        catch (erro) { document.getElementById("questaoTipoQuestao").value = tipoQuestaoAtual; alert(erro.message); return; }
+      }
       const tipo = document.getElementById("questaoTipoQuestao").value;
       tipoQuestaoAtual = tipo;
       const box = document.getElementById("camposQuestaoCompleta");
@@ -1866,12 +1848,11 @@
                   <div style="margin-top:10px;">
                     <label><b>${letra})</b></label>
 
-                    <input
+                    <textarea
                       id="alternativa_${letra}"
-                      type="text"
-                      value=""
+                      aria-label="Alternativa ${letra}"
                       style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
-                    />
+                    ></textarea>
                   </div>
                 `).join("")}
               </div>
@@ -1899,6 +1880,7 @@
           ></textarea>
         </div>
       `;
+      await QuestaoEditores.iniciar(box, dados || {});
     };
 
     window.criarQuestaoManual = async function () {
@@ -1913,9 +1895,12 @@
       }
 
       const tipoQuestao = document.getElementById("questaoTipoQuestao").value;
-      const enunciado = document.getElementById("questaoEnunciado").value.trim();
+      let conteudos;
+      try { conteudos = QuestaoEditores.dados(); }
+      catch (erro) { alert(erro.message); return; }
+      const enunciado = conteudos.enunciado.trim();
       const gabarito = document.getElementById("questaoGabarito").value;
-      const comentario = document.getElementById("questaoComentario").value.trim();
+      const comentario = conteudos.comentario.trim();
 
       if (!enunciado) {
         alert("Digite o enunciado da questão.");
@@ -1939,7 +1924,7 @@
 
       if (tipoQuestao !== "CERTO_ERRADO") {
         for (const letra of letras) {
-          const textoAlt = document.getElementById(`alternativa_${letra}`).value.trim();
+          const textoAlt = conteudos.alternativas.find(a => a.letra === letra)?.texto.trim();
 
           if (!textoAlt) {
             alert(`Preencha a alternativa ${letra}.`);
@@ -1960,6 +1945,8 @@
         const payloadQuestao = {
           bateria_id: bateriaAtualId,
           enunciado,
+          enunciado_formato: conteudos.enunciado_formato,
+          comentario_formato: conteudos.comentario_formato,
           tipo: tipoQuestao === "CERTO_ERRADO" ? "CERTO_ERRADO" : "MULTIPLA",
           tipo_questao: tipoQuestao,
           quantidade_alternativas: letras.length,
@@ -1967,10 +1954,7 @@
           comentario,
           ...(questaoOriginal ? { ordem } : {}),
           ...(questaoOriginal ? {} : { ativo: true }),
-          alternativas: tipoQuestao === "CERTO_ERRADO" ? [] : letras.map(letra => ({
-            letra,
-            texto: document.getElementById(`alternativa_${letra}`).value.trim()
-          }))
+          alternativas: tipoQuestao === "CERTO_ERRADO" ? [] : conteudos.alternativas
         };
 
         const questao = questaoEditandoId
@@ -2024,7 +2008,7 @@
                 <label><b>Tipo da questão</b></label><br/>
                 <select
                   id="questaoTipoQuestao"
-                  onchange="renderizarCamposQuestaoCompleta()"
+                  onchange="renderizarCamposQuestaoCompleta(null, true)"
                   style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
                 >
                   <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
@@ -3258,7 +3242,7 @@
       }
     };
 
-    window.editarQuestao = function (questaoId) {
+    window.editarQuestao = async function (questaoId) {
       const questao = questoesDaBateria.find(q => q.id === questaoId);
 
       if (!questao) {
@@ -3274,7 +3258,7 @@
         <label><b>Tipo da questão</b></label><br/>
         <select
           id="questaoTipoQuestao"
-          onchange="renderizarCamposQuestaoCompleta()"
+          onchange="renderizarCamposQuestaoCompleta(null, true)"
           style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
         >
           <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
@@ -3302,18 +3286,13 @@
 
       document.getElementById("questaoTipoQuestao").value = questao.tipo_questao || "MULTIPLA_5";
 
-      renderizarCamposQuestaoCompleta();
+      const abertura = renderizarCamposQuestaoCompleta(questao);
 
-      document.getElementById("questaoEnunciado").value = questao.enunciado || "";
       document.getElementById("questaoGabarito").value = questao.gabarito || "A";
-      document.getElementById("questaoComentario").value = questao.comentario || "";
 
-      if (questao.alternativas && questao.alternativas.length > 0) {
-        questao.alternativas.forEach(alt => {
-          const campo = document.getElementById(`alternativa_${alt.letra}`);
-          if (campo) campo.value = alt.texto || "";
-        });
-      }
+      const radio = document.querySelector(`input[name="gabarito_certo_errado"][value="${questao.gabarito}"]`);
+      if (radio) radio.checked = true;
+      await abertura;
 
       document.getElementById("questaoTipoQuestao").scrollIntoView({
         behavior: "smooth",
@@ -3342,7 +3321,7 @@
             <label><b>Tipo da questão</b></label><br/>
             <select
               id="questaoTipoQuestao"
-              onchange="renderizarCamposQuestaoCompleta()"
+              onchange="renderizarCamposQuestaoCompleta(null, true)"
               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
             >
               <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
@@ -3379,17 +3358,17 @@
     window.alternarComentarioQuestao = function (questaoId) {
       const box = document.getElementById(`comentarioQuestao_${questaoId}`);
       const btn = document.getElementById(`btnComentarioQuestao_${questaoId}`);
-
-      if (!box || !btn) return;
-
-      const aberto = box.dataset.aberto === "true";
-
-      if (aberto) {
-        box.textContent = box.dataset.resumo;
+      const questao = questoesDaBateria.find(q => q.id === questaoId);
+      if (!box || !btn || !questao) return;
+      if (box.dataset.aberto === "true") {
+        const molde = document.createElement("template");
+        if (questao.comentario_formato === "html_v1") molde.innerHTML = DOMPurify.sanitize(questao.comentario);
+        const texto = questao.comentario_formato === "html_v1" ? molde.content.textContent : questao.comentario;
+        box.textContent = texto.slice(0,250) + "...";
         box.dataset.aberto = "false";
         btn.textContent = "Visualizar comentário";
       } else {
-        box.textContent = box.dataset.completo;
+        box.innerHTML = QuestaoConteudo.renderizar(questao.comentario, questao.comentario_formato, bateriaAtualId, true);
         box.dataset.aberto = "true";
         btn.textContent = "Ocultar comentário";
       }
@@ -3425,7 +3404,7 @@
         <label><b>Tipo da questão</b></label><br/>
         <select
           id="questaoTipoQuestao"
-          onchange="renderizarCamposQuestaoCompleta()"
+          onchange="renderizarCamposQuestaoCompleta(null, true)"
           style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
         >
           <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>

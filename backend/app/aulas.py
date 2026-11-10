@@ -106,6 +106,9 @@ def sincronizar_alternativas(db, questao, alternativas):
             registro = m.Alternativa(questao_id=questao.id, letra=letra)
             db.add(registro)
         registro.texto = dados.texto.strip()
+        registro.texto_formato = dados.texto_formato
+    db.flush()
+    db.expire(questao, ["alternativas"])
 
 
 def validar_conclusao(db, bateria):

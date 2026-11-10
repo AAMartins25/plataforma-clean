@@ -104,11 +104,14 @@ class BateriaResponse(BaseModel):
 class AlternativaConteudo(BaseModel):
     letra: str
     texto: str
+    texto_formato: str | None = None
 
 
 class QuestaoCreate(BaseModel):
     bateria_id: int
     enunciado: str
+    enunciado_formato: str | None = None
+    comentario_formato: str | None = None
     tipo: str
     ordem: int = 1
     ativo: bool = True
@@ -123,6 +126,7 @@ class QuestaoCreate(BaseModel):
 class AlternativaCreate(BaseModel):
     letra: str  # "A"..."E"
     texto: str
+    texto_formato: str | None = None
     comentario: str | None = None  # comentário por alternativa (opcional)
 
 

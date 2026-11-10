@@ -1,0 +1,42 @@
+[
+  {
+    "width": 1366,
+    "editores": 7,
+    "certoErrado": 2,
+    "edicao": "OK",
+    "legado": "OK",
+    "leitura": "OK",
+    "revisao": "OK",
+    "overflow": 0
+  },
+  {
+    "width": 768,
+    "editores": 7,
+    "certoErrado": 2,
+    "edicao": "OK",
+    "legado": "OK",
+    "leitura": "OK",
+    "revisao": "OK",
+    "overflow": 0
+  },
+  {
+    "width": 390,
+    "editores": 7,
+    "certoErrado": 2,
+    "edicao": "OK",
+    "legado": "OK",
+    "leitura": "OK",
+    "revisao": "OK",
+    "overflow": 0
+  },
+  {
+    "width": 320,
+    "editores": 7,
+    "certoErrado": 2,
+    "edicao": "OK",
+    "legado": "OK",
+    "leitura": "OK",
+    "revisao": "OK",
+    "overflow": 0
+  }
+]

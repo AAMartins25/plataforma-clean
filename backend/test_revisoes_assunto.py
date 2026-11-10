@@ -15,7 +15,8 @@ from test_questoes_pratica_patch import carregar_main_isolado
 TABLES = [m.Curso.__table__, m.CursoDisciplinaPropria.__table__, m.CursoAssuntoProprio.__table__,
           m.DemonstracaoCurso.__table__, m.ContratacaoCurso.__table__, m.Pasta.__table__, m.Aula.__table__, m.Bateria.__table__, m.Questao.__table__,
           m.Alternativa.__table__, m.RevisaoAluno.__table__, m.TentativaBateria.__table__,
-          m.RespostaAlunoQuestao.__table__, m.ProgressoAula.__table__]
+          m.RespostaAlunoQuestao.__table__, m.ProgressoAula.__table__,
+          m.Pagamento.__table__, m.ContestacaoPagamento.__table__]
 
 @pytest.fixture
 def env():

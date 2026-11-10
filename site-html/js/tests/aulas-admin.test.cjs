@@ -19,6 +19,7 @@ function ambiente() {
   const ctx = {
     document: { getElementById: element, querySelector: element },
     console: { log() {}, error() {} }, setTimeout() {},
+    esc: value => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;"),
     confirm: () => true, prompt: () => 'Novo título', alert: message => alerts.push(message),
     apiGetAuth: async url => {
       calls.push(['GET', url]);
@@ -41,6 +42,27 @@ function ambiente() {
       return result;
     },
     apiDeleteAuth: async url => calls.push(['DELETE', url])
+  };
+  ctx.TeoriaEditor = {
+    pronto: () => true, destruir: async () => {},
+    conteudo: campo => ({conteudo: campo.value, conteudo_formato: 'texto_puro'})
+  };
+  ctx.QuestaoConteudo = {renderizar: valor => String(valor || ''), escapar: valor => String(valor || '')};
+  ctx.DOMPurify = {sanitize: valor => valor};
+  ctx.document.createElement = () => ({content: {textContent: ''}});
+  ctx.QuestaoEditores = {
+    iniciar: async (_raiz, dados) => {
+      element('questaoEnunciado').value = dados.enunciado || '';
+      element('questaoComentario').value = dados.comentario || '';
+      for (const a of dados.alternativas || []) element(`alternativa_${a.letra}`).value = a.texto;
+    },
+    dados: () => {
+      const tipo = element('questaoTipoQuestao').value;
+      const letras = tipo === 'CERTO_ERRADO' ? [] : [...(tipo === 'MULTIPLA_4' ? 'ABCD' : 'ABCDE')];
+      return {enunciado: element('questaoEnunciado').value, comentario: element('questaoComentario').value,
+        enunciado_formato: 'texto_puro', comentario_formato: 'texto_puro',
+        alternativas: letras.map(letra => ({letra, texto: element(`alternativa_${letra}`).value, texto_formato: 'texto_puro'}))};
+    }
   };
   ctx.window = ctx;
   vm.createContext(ctx);
@@ -106,7 +128,7 @@ test('questão e alternativas são criadas juntas e atualizadas juntas', async (
   assert.equal(post[2].alternativas.length, 4);
   assert.equal(Object.hasOwn(post[2], 'ordem'), false);
   assert.equal(env.calls.filter(c => c[0] === 'POST').length, 1);
-  env.ctx.editarQuestao(9);
+  await env.ctx.editarQuestao(9);
   preencherQuestao(env);
   env.element('alternativa_A').value = 'Alternativa editada';
   await env.ctx.criarQuestaoManual();

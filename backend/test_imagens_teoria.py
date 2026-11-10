@@ -61,7 +61,7 @@ class StorageMemoria:
 @pytest.fixture
 def ambiente_imagens(aulas):
     main, client, factory, perfil = aulas
-    tabelas = [m.ImagemTeoria.__table__, m.ImagemTeoriaMaterial.__table__,
+    tabelas = [m.ImagemTeoria.__table__, m.ImagemTeoriaMaterial.__table__, m.ImagemQuestao.__table__,
                m.QuestaoPraticaAssunto.__table__, m.QuestaoPraticaAlternativa.__table__]
     m.Base.metadata.create_all(factory.kw["bind"], tables=tabelas)
     storage = StorageMemoria()

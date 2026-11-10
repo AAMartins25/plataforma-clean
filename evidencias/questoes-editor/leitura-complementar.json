@@ -1,0 +1,83 @@
+[
+  {
+    "tela": "questoes-criticas",
+    "width": 1366,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "minhas-anotacoes",
+    "width": 1366,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "mensagens-prof",
+    "width": 1366,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "questoes-criticas",
+    "width": 768,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "minhas-anotacoes",
+    "width": 768,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "mensagens-prof",
+    "width": 768,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "questoes-criticas",
+    "width": 320,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "minhas-anotacoes",
+    "width": 320,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  },
+  {
+    "tela": "mensagens-prof",
+    "width": 320,
+    "formatacao": true,
+    "formula": true,
+    "tabela": true,
+    "imagem": true,
+    "overflow": false
+  }
+]

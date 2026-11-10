@@ -1,3 +1,4 @@
+from app.questoes_html import formatos as formatos_questao
 """Agenda por assunto. Não utiliza modelos de Questões práticas ou ciclos."""
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
@@ -162,10 +163,10 @@ def registrar_rotas(app, get_db, get_usuario, validar):
         qs = next((qs for b, qs in bs if b.id == bateria_id), None)
         if qs is None:
             raise HTTPException(404, 'Bateria indisponível na revisão')
-        return [{'id': q.id, 'ordem': q.ordem, 'enunciado': q.enunciado, 'tipo': q.tipo,
+        return [{'id': q.id, 'ordem': q.ordem, 'enunciado': q.enunciado, **formatos_questao(q), 'tipo': q.tipo,
                  'tipo_questao': q.tipo_questao, 'quantidade_alternativas': q.quantidade_alternativas,
                  'gabarito': q.gabarito, 'comentario': q.comentario,
-                 'alternativas': [{'letra': alt.letra, 'texto': alt.texto} for alt in db.query(m.Alternativa).filter_by(questao_id=q.id).order_by(m.Alternativa.letra)]} for q in qs]
+                 'alternativas': [{'letra': alt.letra, 'texto': alt.texto, 'texto_formato': alt.texto_formato or 'texto_puro'} for alt in db.query(m.Alternativa).filter_by(questao_id=q.id).order_by(m.Alternativa.letra)]} for q in qs]
 
     @app.post('/me/revisoes/{revisao_id}/baterias/{bateria_id}/respostas')
     def respostas(revisao_id: int, bateria_id: int, dados: schemas.RespostasBateriaRevisaoCreate,
