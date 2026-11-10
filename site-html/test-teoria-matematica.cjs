@@ -125,6 +125,71 @@ const harness = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
       assert.ok(analise.fechamento.html.includes('\\)') && analise.fechamento.html.includes('\\]'));
       assert.ok(analise.tempoIncompletos<5000,'delimitadores incompletos causaram processamento excessivo');
 
+      const compatibilidade = await page.evaluate(async () => {
+        const casos = [String.raw`$$\frac{1}{2}$$`, '$$\n\\begin{aligned}\na &= b \\\\\nc &= d\n\\end{aligned}\n$$',
+          '- Primeiro\n\n  $$\n  x^2\n  $$', '| A | B |\n|---|---|\n| $$x$$ | ok |', '$$x$$ e $$y$$', String.raw`\[x\] e \[y\]`];
+        const convertidos = casos.map(fonte => {
+          const resultado = TeoriaMarkdown.converter(fonte);
+          const t = document.createElement('div'); t.innerHTML = resultado.html;
+          TeoriaMatematica.renderizar(t);
+          return t.querySelectorAll('.katex').length;
+        });
+        const literal = TeoriaMarkdown.converter('R$ 100,00 e $20; $x$; `$$codigo$$`\n\n```latex\n$$nao converter$$\n```').html;
+        const escapado = TeoriaMarkdown.converter(String.raw`\$$literal\$$ e $$$triplo$$$`).html;
+        const incompleto = TeoriaMarkdown.converter('Antes $$sem fechamento');
+        const colados = [];
+        for (const html of [
+          '<p><strong>Antes</strong> $$\\frac{1}{2}$$ <i>depois</i></p>',
+          '<p><b>Antes</b> <span>\\(</span><strong>\\frac{1}{2}</strong><span>\\)</span> depois</p>',
+          '<p>$$</p><p>\\frac{1}{2}</p><p>$$</p>',
+          '<p>\\(a\\) e <span>\\(b\\)</span> e \\(c\\)</p>',
+          '<p><code>$$literal$$</code> $$x^2$$</p>',
+          '<span class="katex"><math><semantics><annotation encoding="application/x-tex">\\frac{1}{2}</annotation></semantics></math><span>visual duplicado</span></span>'
+        ]) {
+          const resultado = await TeoriaImagensEditor.colagem(html, '', []);
+          const t = document.createElement('div');t.innerHTML=resultado.html;
+          TeoriaMatematica.renderizar(t);
+          colados.push({html:resultado.html,formulas:t.querySelectorAll('.katex').length});
+        }
+        const recuperada = await TeoriaImagensEditor.colagem('<p><strong>Antes</strong> <span class="katex">visual</span> depois</p>', String.raw`\(\frac{5}{6}\)`, []);
+        const fonteRecuperada = document.createElement('template');fonteRecuperada.innerHTML=recuperada.html;
+        const recuperadaFonte = fonteRecuperada.content.querySelector('.ro-math-inline')?.textContent;
+        const inicioHtml=performance.now();
+        await TeoriaImagensEditor.colagem('<p>'+'\\'.repeat(60000)+'</p>','',[]);
+        const tempoHtml=performance.now()-inicioHtml;
+        const copiaPropria=document.createElement('div');copiaPropria.innerHTML='<p><span class="ro-math-inline">x^2</span></p>';
+        TeoriaMatematica.renderizar(copiaPropria);
+        const recopiada=await TeoriaImagensEditor.colagem(copiaPropria.innerHTML,'',[]);
+        const tRecopiado=document.createElement('div');tRecopiado.innerHTML=recopiada.html;
+        const copiaValida=tRecopiado.querySelectorAll('.ro-math-inline').length===1&&tRecopiado.querySelector('.ro-math-inline').children.length===0;
+        // Faltas de fonte não apagam o conteúdo atual, nem tentam adivinhar LaTeX.
+        let semFonte=false;
+        try {await TeoriaImagensEditor.colagem('<span class="katex">visual</span>','',[]);}catch {semFonte=true;}
+        editor.setData('<p>Anterior</p>');editor.editing.view.focus();
+        const transfer = new DataTransfer();transfer.setData('text/html','<p>$$\\frac{1}{2}$$</p>');
+        editor.ui.getEditableElement().dispatchEvent(new ClipboardEvent('paste',{clipboardData:transfer,bubbles:true,cancelable:true}));
+        return {convertidos,literal,escapado,incompleto,colados,semFonte,recuperadaFonte,copiaValida,tempoHtml};
+      });
+      assert.deepEqual(compatibilidade.convertidos,[1,1,1,1,2,2]);
+      assert.ok(!compatibilidade.literal.includes('ro-math-'),compatibilidade.literal);
+      assert.ok(!compatibilidade.escapado.includes('ro-math-'),compatibilidade.escapado);
+      assert.ok(compatibilidade.incompleto.html.includes('$$sem fechamento'));
+      assert.ok(compatibilidade.incompleto.avisos.length);
+      assert.deepEqual(compatibilidade.colados.map(c=>c.formulas),[1,1,1,3,1,1]);
+      assert.ok(compatibilidade.colados[0].html.includes('<strong>Antes</strong>'));
+      assert.ok(compatibilidade.colados[0].html.includes('<i>depois</i>'));
+      assert.ok(compatibilidade.colados[4].html.includes('$$literal$$'));
+      assert.ok(compatibilidade.semFonte);
+      assert.ok(compatibilidade.copiaValida);
+      assert.ok(compatibilidade.tempoHtml<5000,"texto com barras causou processamento excessivo");
+      assert.equal(compatibilidade.recuperadaFonte,String.raw`\frac{5}{6}`);
+      await page.waitForFunction(()=>!TeoriaImagensEditor.estados.get(editor).pendente);
+      assert.equal(await page.locator('.ck-content .katex').count(),1);
+      assert.ok((await page.evaluate(()=>dados())).includes('Anterior'));
+      await page.evaluate(()=>editor.execute('undo'));
+      assert.equal(await page.evaluate(()=>dados()),'<p>Anterior</p>');
+
+      await page.evaluate(()=>editor.setData('<p><strong>Original</strong> intacto.</p>'));
       const markdown = '# Matemática e lógica\n\nTexto **formatado** \\(x^2 + y^2 = z^2\\).\n\n\\[\n\\forall x,\\; P(x) \\Rightarrow Q(x)\n\\]\n\n| Regra | Expressão |\n|---|---|\n| Negação | \\(\\neg P \\lor Q\\) |\n\n- Item \\(\\text{a  b}\\)';
       await page.getByRole('button',{name:'Importar Markdown',exact:true}).click();
       await page.locator('[data-md="fonte"]').fill(markdown);

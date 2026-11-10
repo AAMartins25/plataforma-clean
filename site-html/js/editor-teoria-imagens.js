@@ -101,49 +101,73 @@
     }
   }
 
-  function fonteMatematica(raiz) {
-    // HTML renderizado pode transportar duas representações da mesma fórmula.
-    // Extrair a anotação LaTeX e descartar todo o DOM de apresentação da origem.
-    for (const no of [...raiz.querySelectorAll(".katex")]) {
+  function fonteMatematica(raiz, texto) {
+    // KaTeX/MathML podem conter duas representações visuais da mesma expressão.
+    const originais = [...raiz.querySelectorAll(".katex,math")].filter(no =>
+      !no.closest("code,pre") && !no.parentElement?.closest(".katex,math"));
+    let fontesTexto = [];
+    if (originais.some(no => !no.querySelector('annotation[encoding="application/x-tex"]')) && texto.trim()) {
+      // text/plain só é usado quando fornece uma fonte para cada objeto visual,
+      // na mesma ordem; o HTML e a formatação vizinha continuam preservados.
+      const molde = I.documento(TeoriaMarkdown.converter(texto, {coletar:true}).html);
+      const fontes = [...molde.content.querySelectorAll(".ro-math-inline,.ro-math-display")];
+      if (fontes.length === originais.length && originais.every((no, indice) => {
+        const anotacao = no.querySelector('annotation[encoding="application/x-tex"]');
+        return !anotacao || anotacao.textContent.trim() === fontes[indice].textContent.trim();
+      })) fontesTexto = fontes;
+    }
+    for (const [indice, no] of originais.entries()) {
       if (!raiz.contains(no)) continue;
       const anotacao = no.querySelector('annotation[encoding="application/x-tex"]');
-      if (!anotacao) throw new Error("Uma fórmula copiada não contém LaTeX recuperável. Use Markdown ou ZIP.");
-      const alvo = no.closest(".katex-display") || no;
-      const novo = document.createElement(alvo.classList.contains("katex-display") ? "figure" : "span");
-      novo.className = novo.tagName === "FIGURE" ? "ro-math-display" : "ro-math-inline";
-      TeoriaMatematica.validar(anotacao.textContent);novo.textContent = anotacao.textContent;alvo.replaceWith(novo);
-    }
-    for (const math of [...raiz.querySelectorAll("math")]) {
-      const anotacao = math.querySelector('annotation[encoding="application/x-tex"]');
-      if (!anotacao) throw new Error("Uma fórmula copiada não contém LaTeX recuperável. Use Markdown ou ZIP.");
-      const bloco = math.getAttribute("display") === "block", novo = document.createElement(bloco ? "figure" : "span");
+      const fonte = anotacao?.textContent ?? fontesTexto[indice]?.textContent;
+      if (!fonte) throw new Error("Uma fórmula copiada não contém LaTeX recuperável. Use Markdown ou ZIP.");
+      const alvo = no.closest(".ro-math-inline,.ro-math-display,.katex-display") || no;
+      const bloco = alvo.matches(".katex-display,.ro-math-display") || no.getAttribute("display") === "block" ||
+        (!anotacao && fontesTexto[indice].classList.contains("ro-math-display"));
+      const novo = document.createElement(bloco ? "figure" : "span");
       novo.className = bloco ? "ro-math-display" : "ro-math-inline";
-      TeoriaMatematica.validar(anotacao.textContent);novo.textContent = anotacao.textContent;math.replaceWith(novo);
+      TeoriaMatematica.validar(fonte); novo.textContent = fonte; alvo.replaceWith(novo);
     }
-    // Reconhecer delimitadores também no texto de uma colagem HTML, preservando
-    // a formatação dos elementos vizinhos. Código e fórmulas já marcadas são literais.
-    const walker = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
-    const textos = [];while(walker.nextNode()) textos.push(walker.currentNode);
-    for (const no of textos) {
-      if (no.parentElement?.closest("code,pre,.ro-math-inline,.ro-math-display")) continue;
-      const texto = no.data, fragmento = document.createDocumentFragment();let pos = 0, cursor = 0, mudou = false;
-      while (pos < texto.length - 1) {
-        const abertura = texto.slice(pos, pos + 2);
-        if (abertura !== "\\(" && abertura !== "\\[") {pos++;continue;}
-        let barras = 0; for(let p=pos-1;p>=0&&texto[p]==="\\";p--)barras++;
-        if (barras % 2) {pos+=2;continue;}
-        const fechar = abertura === "\\(" ? "\\)" : "\\]";
-        let fim = texto.indexOf(fechar, pos + 2);
-        while(fim!==-1){let n=0;for(let p=fim-1;p>=pos+2&&texto[p]==="\\";p--)n++;if(n%2===0)break;fim=texto.indexOf(fechar,fim+2);}
-        if (fim === -1) break;
-        const fonte = texto.slice(pos + 2, fim);TeoriaMatematica.validar(fonte);
-        fragmento.appendChild(document.createTextNode(texto.slice(cursor, pos)));
-        const elemento = document.createElement(abertura === "\\(" ? "span" : "figure");
-        elemento.className = elemento.tagName === "SPAN" ? "ro-math-inline" : "ro-math-display";
-        elemento.textContent = fonte;fragmento.appendChild(elemento);
-        cursor = pos = fim + 2;mudou = true;
+    // Delimitadores podem estar repartidos em spans ou parágrafos pelo clipboard.
+    // Range substitui apenas a fórmula; a formatação dos textos vizinhos fica intacta.
+    const grupos = [];
+    let atual = null;
+    function separar() { atual = null; }
+    function percorrer(pai, contexto = raiz) {
+      for (const no of [...pai.childNodes]) {
+        if (no.nodeType === Node.TEXT_NODE) {
+          if (!atual || atual.contexto !== contexto) {
+            atual = { contexto, texto: "", nos: [] }; grupos.push(atual);
+          }
+          atual.nos.push({ no, inicio: atual.texto.length });
+          atual.texto += no.data;
+        } else if (no.nodeType === Node.ELEMENT_NODE) {
+          if (no.matches("code,pre,.ro-math-inline,.ro-math-display,img,svg,canvas")) { separar(); continue; }
+          if (no.matches("li,td,th,blockquote,h1,h2,h3,h4,h5,h6")) {
+            separar(); percorrer(no, no); separar();
+          } else {
+            if (atual && no.matches("p,div,br")) atual.texto += "\n";
+            percorrer(no, contexto);
+            if (atual && no.matches("p,div")) atual.texto += "\n";
+          }
+        }
       }
-      if (mudou) {fragmento.appendChild(document.createTextNode(texto.slice(cursor)));no.replaceWith(fragmento);}
+    }
+    percorrer(raiz);
+    for (const grupo of grupos) {
+      const intervalos = TeoriaMatematica.intervalos(grupo.texto);
+      for (const formula of intervalos.reverse()) {
+        const primeiro = grupo.nos.find(item => item.inicio <= formula.inicio && item.inicio + item.no.length > formula.inicio);
+        const ultimo = grupo.nos.find(item => item.inicio < formula.fim && item.inicio + item.no.length >= formula.fim);
+        if (!primeiro || !ultimo) continue;
+        const range = document.createRange();
+        range.setStart(primeiro.no, formula.inicio - primeiro.inicio);
+        range.setEnd(ultimo.no, formula.fim - ultimo.inicio);
+        const elemento = document.createElement(formula.bloco ? "figure" : "span");
+        elemento.className = formula.bloco ? "ro-math-display" : "ro-math-inline";
+        elemento.textContent = formula.fonte;
+        range.deleteContents(); range.insertNode(elemento);
+      }
     }
   }
 
@@ -215,7 +239,7 @@
       plano.img.setAttribute("src",imagem.src);
       if(imagem.largura){plano.img.setAttribute("width",imagem.largura);plano.img.setAttribute("height",imagem.altura);}
     }
-    fonteMatematica(raiz);destaques(raiz);
+    fonteMatematica(raiz, texto);destaques(raiz);
     let preparado = window.TeoriaEditor.normalizarListasWordHtml(molde.innerHTML);
     preparado = TeoriaMarkdown.sanitizarHtml(preparado);
     const resultado = {html:preparado,avisos:[]};
@@ -264,7 +288,7 @@
           const arquivos=[...(dados.dataTransfer.files||[])];
           const temImagens=/<img\b/i.test(html)||arquivos.length||/!\[[^\]]*\]\s*\(/.test(texto);
           // Também tratar LaTeX/KaTeX de uma colagem mista sem imagens.
-          if(!temImagens && !/\\[([]|class=["'][^"']*katex|<math\b/i.test(html||texto))return;
+          if(!temImagens && !/\$\$|\\[([]|class=["'][^"']*katex|<math\b/i.test(html + "\n" + texto))return;
           evt.stop();
           if(editor.isReadOnly || this.estado.pendente){mensagem.textContent="Aguarde a importação em andamento.";return;}
           void transacao(editor,async signal=>{

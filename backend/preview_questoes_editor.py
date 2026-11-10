@@ -7,6 +7,14 @@ import secrets
 import sys
 from datetime import datetime, timedelta
 
+# Caminhos exclusivos da prévia podem ser fornecidos sem herdar credenciais.
+import argparse
+opcoes = argparse.ArgumentParser(description=__doc__)
+opcoes.add_argument('--dados', default='/tmp/resumao-questoes-editor-visual')
+opcoes.add_argument('--ckeditor-dist', default='/tmp/resumao-questoes-browser/node_modules/ckeditor5/dist/browser')
+opcoes.add_argument('--porta', type=int, default=8769)
+preview = opcoes.parse_args()
+
 # Credenciais/DSNs herdados não fazem parte desta aplicação descartável.
 os.environ.clear()
 os.environ.update(AMBIENTE_TESTE='1', SECRET_KEY=secrets.token_hex(32),
@@ -22,7 +30,7 @@ from test_imagens_teoria import StorageMemoria, png
 from app.imagens_storage import obter_storage_imagens
 
 ROOT = Path(__file__).resolve().parents[1]
-DADOS = Path('/tmp/resumao-questoes-editor-visual')
+DADOS = Path(preview.dados)
 DADOS.mkdir(exist_ok=True)
 engine = create_engine('sqlite:///' + str(DADOS / 'preview.sqlite'), connect_args={'check_same_thread': False})
 @event.listens_for(engine, 'connect')
@@ -125,7 +133,7 @@ with carregar_main_isolado(factory, engine) as main:
 
     @main.app.get('/__ckeditor/{asset}')
     def ckeditor(asset: str):
-        pasta=Path('/tmp/resumao-questoes-browser/node_modules/ckeditor5/dist/browser')
+        pasta=Path(preview.ckeditor_dist)
         if asset not in {'ckeditor5.umd.js','ckeditor5.css'}:raise HTTPException(404)
         arquivo=pasta/asset
         if not arquivo.exists():arquivo=pasta.parent/asset
@@ -140,4 +148,4 @@ with carregar_main_isolado(factory, engine) as main:
             return Response(texto,media_type='text/javascript' if arquivo.suffix=='.js' else 'text/html')
         return FileResponse(arquivo)
 
-    if __name__=='__main__':uvicorn.run(main.app,host='127.0.0.1',port=8769)
+    if __name__=='__main__':uvicorn.run(main.app,host='127.0.0.1',port=preview.porta)

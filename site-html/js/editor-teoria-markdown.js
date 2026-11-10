@@ -45,21 +45,17 @@
         estado.pos += 2;
         return true;
       }
-      if (abertura !== "\\(" && abertura !== "\\[") return false;
-      const fechamento = abertura === "\\(" ? "\\)" : "\\]";
+      if (abertura !== "\\(" && abertura !== "\\[" && abertura !== "$$") return false;
+      if (!M) throw new Error("O suporte matemático não foi carregado. Recarregue a página.");
+      const info = M.delimitador(estado.src, inicio);
+      if (!info) return false;
+      const fechamento = info.fechamento;
       // Indexar uma vez por estado inline evita varreduras quadráticas em uma
       // entrada com milhares de aberturas sem fechamento.
       let cache = fechamentosPorEstado.get(estado);
       if (!cache) { cache = {}; fechamentosPorEstado.set(estado, cache); }
       if (!cache[fechamento]) {
-        const posicoes = [];
-        let pos = estado.src.indexOf(fechamento);
-        while (pos !== -1) {
-          let barras = 0;
-          for (let p = pos - 1; p >= 0 && estado.src[p] === "\\"; p--) barras++;
-          if (barras % 2 === 0) posicoes.push(pos);
-          pos = estado.src.indexOf(fechamento, pos + 2);
-        }
+        const posicoes = M.fechamentos(estado.src, fechamento);
         cache[fechamento] = { posicoes };
       }
       const busca = cache[fechamento];
@@ -100,30 +96,44 @@
     // tabelas e escapes. Aceita abertura/fechamento em linhas próprias ou na mesma.
     md.block.ruler.before("fence", "ro_math_block", (estado, linha, fim, silencioso) => {
       const inicio = estado.bMarks[linha] + estado.tShift[linha];
-      if (estado.src.slice(inicio, inicio + 2) !== "\\[") return false;
-      let linhas = linhasFechamento.get(estado);
+      const abertura = estado.src.slice(inicio, inicio + 2);
+      if (abertura !== "\\[" && abertura !== "$$") return false;
+      if (!M) throw new Error("O suporte matemático não foi carregado. Recarregue a página.");
+      const info = M.delimitador(estado.src, inicio);
+      if (!info) return false;
+      let porFechamento = linhasFechamento.get(estado);
+      if (!porFechamento) { porFechamento = {}; linhasFechamento.set(estado, porFechamento); }
+      let linhas = porFechamento[info.fechamento];
       if (!linhas) {
         linhas = [];
         // lineMax pode estar temporariamente limitado por uma lista/citação.
         // Indexar o documento inteiro e respeitar `fim` somente na consulta.
         for (let n = 0; n < estado.bMarks.length - 1; n++) {
           const trecho = estado.src.slice(estado.bMarks[n], estado.eMarks[n]);
-          if (/(^|[^\\])(?:\\\\)*\\\]\s*$/.test(trecho)) linhas.push(n);
+          const fechamentos = M.fechamentos(trecho, info.fechamento);
+          if (fechamentos.some(pos => !trecho.slice(pos + 2).trim())) linhas.push(n);
         }
-        linhasFechamento.set(estado, linhas);
+        porFechamento[info.fechamento] = linhas;
       }
       let esquerda = 0, direita = linhas.length;
       while (esquerda < direita) {
         const meio = (esquerda + direita) >>> 1;
-        if (linhas[meio] < linha) esquerda = meio + 1;
+        const mesmaAbertura = info.fechamento === "$$" && linhas[meio] === linha &&
+          !M.fechamentos(estado.src.slice(inicio + 2, estado.eMarks[linha]), "$$").length;
+        if (linhas[meio] < linha || mesmaAbertura) esquerda = meio + 1;
         else direita = meio;
       }
       const ultima = linhas[esquerda] ?? fim;
       if (ultima >= fim) return false;
-      if (silencioso) return true;
       // getLines remove apenas o recuo do contêiner (lista/citação).
       const trecho = estado.getLines(linha, ultima + 1, estado.blkIndent, false);
-      const fonte = trecho.slice(trecho.indexOf("\\[") + 2, trecho.lastIndexOf("\\]"));
+      const inicioFonte = trecho.indexOf(info.abertura) + 2;
+      const fechamento = M.fechamentos(trecho, info.fechamento).find(pos => pos >= inicioFonte);
+      // Duas fórmulas na mesma linha devem passar pela regra inline, sem que
+      // a primeira absorva o texto e os delimitadores da segunda.
+      if (fechamento === undefined || trecho.slice(fechamento + 2).trim()) return false;
+      if (silencioso) return true;
+      const fonte = trecho.slice(inicioFonte, fechamento);
       if (!M) throw new Error("O suporte matemático não foi carregado. Recarregue a página.");
       M.validar(fonte);
       if (++formulas > M.LIMITE_FORMULAS) throw new Error("Cada teoria pode ter até 200 fórmulas.");

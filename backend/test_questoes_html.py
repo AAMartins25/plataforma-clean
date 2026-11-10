@@ -177,3 +177,19 @@ def test_limite_bateria_e_gabarito_nao_mudam(ambiente_imagens):
     assert c.post('/questoes',json=p).status_code==400
     for i in range(10):assert c.post('/questoes',json=rica('CERTO_ERRADO')).status_code==200
     assert c.post('/questoes',json=rica('CERTO_ERRADO')).status_code==400
+
+
+@pytest.mark.parametrize('formato',['texto_puro','html_v1'])
+def test_formulas_literais_antigas_nao_sao_reescritas(ambiente_imagens,formato):
+    _,c,_,_,_=ambiente_imagens
+    fonte=r'Antigo $$\frac{1}{2}$$ e \(x\), R$ 100,00 e $20'
+    valor='<p>'+fonte+'</p>' if formato=='html_v1' else fonte
+    p=rica('MULTIPLA_5');p.update(enunciado=valor,comentario=valor,enunciado_formato=formato,comentario_formato=formato)
+    for a in p['alternativas']:a.update(texto=valor,texto_formato=formato)
+    r=c.post('/questoes',json=p);assert r.status_code==200,r.text
+    id=r.json()['id']
+    for _ in range(2):
+        q=next(q for q in c.get('/baterias/1/questoes').json() if q['id']==id)
+        assert q['enunciado']==valor and q['comentario']==valor
+        assert all(a['texto']==valor and a['texto_formato']==formato for a in q['alternativas'])
+        assert c.put(f'/questoes/{id}',json=p).status_code==200

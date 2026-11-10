@@ -11,6 +11,54 @@
     if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\ufffd]/u.test(fonte)) throw new Error("A fórmula contém caracteres inválidos.");
   }
 
+  // Somente delimitadores explícitos. Um dólar isolado continua sendo texto.
+  function delimitador(texto, pos) {
+    const abertura = texto.slice(pos, pos + 2);
+    if (abertura !== "\\(" && abertura !== "\\[" && abertura !== "$$") return null;
+    let barras = 0;
+    for (let p = pos - 1; p >= 0 && texto[p] === "\\"; p--) barras++;
+    if (barras % 2) return null;
+    if (abertura === "\\(" || abertura === "\\[") {
+      return { abertura, fechamento: abertura === "\\(" ? "\\)" : "\\]", bloco: abertura === "\\[" };
+    }
+    if (abertura === "$$" && texto[pos - 1] !== "$" && texto[pos + 2] !== "$") {
+      return { abertura, fechamento: "$$", bloco: true };
+    }
+    return null;
+  }
+
+  function fechamentos(texto, fechamento) {
+    const posicoes = [];
+    let pos = texto.indexOf(fechamento);
+    while (pos !== -1) {
+      let barras = 0;
+      for (let p = pos - 1; p >= 0 && texto[p] === "\\"; p--) barras++;
+      if (barras % 2 === 0 && (fechamento !== "$$" || delimitador(texto, pos))) posicoes.push(pos);
+      pos = texto.indexOf(fechamento, pos + 2);
+    }
+    return posicoes;
+  }
+
+  function intervalos(texto) {
+    const resultado = [], cache = new Map();
+    for (let pos = 0; pos < texto.length - 1;) {
+      const info = delimitador(texto, pos);
+      if (!info) { pos++; continue; }
+      if (!cache.has(info.fechamento)) cache.set(info.fechamento, fechamentos(texto, info.fechamento));
+      const lista = cache.get(info.fechamento);
+      let a = 0, b = lista.length;
+      while (a < b) { const meio = (a + b) >>> 1; if (lista[meio] < pos + 2) a = meio + 1; else b = meio; }
+      const fim = lista[a];
+      if (fim === undefined) { pos += 2; continue; }
+      const fonte = texto.slice(pos + 2, fim);
+      validar(fonte);
+      resultado.push({ inicio: pos, fim: fim + 2, fonte, bloco: info.bloco });
+      if (resultado.length > LIMITE_FORMULAS) throw new Error("Cada conteúdo pode ter até 200 fórmulas.");
+      pos = fim + 2;
+    }
+    return resultado;
+  }
+
   function desenhar(alvo, fonte, bloco) {
     // Erros nunca são interpolados como HTML. A fonte continua disponível.
     alvo.textContent = fonte;
@@ -43,5 +91,5 @@
     }
   }
 
-  window.TeoriaMatematica = { LIMITE_FONTE, LIMITE_FORMULAS, validar, desenhar, renderizar };
+  window.TeoriaMatematica = { LIMITE_FONTE, LIMITE_FORMULAS, validar, desenhar, renderizar, delimitador, fechamentos, intervalos };
 })();
