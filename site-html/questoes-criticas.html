@@ -539,14 +539,14 @@ function montarCardQuestaoCritica(q, numero, tipoGrupo) {
     alternativasHtml = `
       <div class="questoes-criticas-alternativas">
         ${alternativas.map(a => `
-          <div class="questoes-criticas-alternativa">
+          <div class="questoes-criticas-alternativa questao-alternativa">
             <span class="questoes-criticas-alternativa-letra">
               ${esc(a.letra)})
             </span>
 
-            <span>
+            <div>
               ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, q.bateria_id)}
-            </span>
+            </div>
           </div>
         `).join("")}
       </div>

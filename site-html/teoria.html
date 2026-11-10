@@ -1159,7 +1159,7 @@
             <div class="list">
               ${(Array.isArray(q.alternativas) ? q.alternativas : Object.entries(q.alternativas || {}).map(([letra, texto]) => ({letra, texto}))).map(a => `
                 <div class="assunto">
-                  <b>${esc(a.letra)})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaId)}
+                  <div class="questao-alternativa"><b>${esc(a.letra)})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaId)}</div>
                   ${typeof q.comentario === "object" && q.comentario?.[a.letra] ? `<div><b>Coment:</b> ${QuestaoConteudo.renderizar(q.comentario[a.letra], "texto_puro", bateriaId)}</div>` : ""}
                 </div>
               `).join("")}

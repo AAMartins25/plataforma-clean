@@ -342,9 +342,9 @@
                     <div class="list" style="margin-top:18px;">
                       ${alternativas.map(a => `
                         <label
-                          class="assunto alternativa-opcao"
+                          class="assunto alternativa-opcao questao-alternativa questao-alternativa-selecionavel"
                           id="alt_${q.id}_${a.letra}"
-                          style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 14px; margin-top:8px; line-height:1.45; transition:.15s;"
+                          style="cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 14px; margin-top:8px; line-height:1.45; transition:.15s;"
                         >
                           <input
                             type="radio"
@@ -352,7 +352,6 @@
                             value="${escLocal(a.letra)}"
                             onchange="marcarAlternativaVisual(${q.id}, '${a.letra}'); resetarBotaoResponder(${q.id});"
                             ${respostasAluno[q.id] === a.letra ? "checked" : ""}
-                            style="margin-right:12px;"
                           />
                           <b>${escLocal(a.letra)})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaId)}
                         </label>
@@ -573,7 +572,7 @@
             <div class="list" style="margin-top:18px;">
               ${
                 alternativas.map(a => `
-                  <label class="assunto" style="display:block; cursor:pointer;">
+                  <label class="assunto questao-alternativa questao-alternativa-selecionavel" style="cursor:pointer;">
                     <input
                       type="radio"
                       name="resposta"
@@ -775,7 +774,7 @@
                   }
 
                   return `
-                    <div class="assunto sprint-revisao-alternativa ${classeEstado}">
+                    <div class="assunto sprint-revisao-alternativa questao-alternativa ${classeEstado}">
                       <b>${escLocal(a.letra)})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaId)}
                     </div>
                   `;

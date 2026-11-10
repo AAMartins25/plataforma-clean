@@ -7,3 +7,23 @@
 .questao-conteudo-rico img { max-width: 100%; height: auto; }
 /* A página também contém o editor compacto da descrição do curso. */
 .admin-shell .ck-editor .ck.ck-toolbar > .ck-toolbar__items { min-width: 0; flex-shrink: 1; flex-wrap: wrap; }
+
+/* Letra e conteúdo ocupam colunas próprias, inclusive com blocos do CKEditor. */
+.questao-alternativa {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  column-gap: 7px;
+}
+.questao-alternativa-selecionavel {
+  grid-template-columns: max-content max-content minmax(0, 1fr);
+}
+.questao-alternativa > input[type="radio"] {
+  margin: 0.25em 5px 0 0;
+}
+.questao-alternativa > b {
+  margin: 0;
+}
+.questao-alternativa > :last-child {
+  min-width: 0;
+}
