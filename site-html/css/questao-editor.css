@@ -1,0 +1,35 @@
+/* Compactação exclusiva do formulário de criação e edição de questões. */
+#camposQuestaoCompleta .questao-editor-alternativas { margin-top: 16px; }
+#camposQuestaoCompleta .questao-editor-alternativa + .questao-editor-alternativa { margin-top: 10px; }
+#camposQuestaoCompleta .questao-gabarito { margin-top: 12px; }
+#camposQuestaoCompleta .questao-comentario { margin-top: 22px; }
+
+#camposQuestaoCompleta .teoria-imagens-controles {
+  margin-block: 0;
+  gap: 4px 8px;
+}
+
+#camposQuestaoCompleta .teoria-markdown-controles {
+  margin-block: 2px 4px;
+  gap: 4px 8px;
+}
+#camposQuestaoCompleta .teoria-markdown-controles [role="status"]:empty {
+  flex: 0 0 0;
+}
+#camposQuestaoCompleta .teoria-markdown-controles .btn {
+  margin: 0;
+  padding: 6px 10px;
+  min-height: 36px;
+}
+
+/* Crescem com o conteúdo; o limite mantém a rolagem dentro de cada editor. */
+#camposQuestaoCompleta .ck-editor__editable_inline {
+  min-height: 128px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+#camposQuestaoCompleta .questao-editor-alternativa .ck-editor__editable_inline {
+  min-height: 68px;
+  padding-block: 6px;
+  max-height: 240px;
+}

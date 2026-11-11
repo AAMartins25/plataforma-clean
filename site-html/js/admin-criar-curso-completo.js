@@ -1803,7 +1803,7 @@
         <label><b>Questão ${numeroQuestao}</b></label><br/>
         <textarea
           id="questaoEnunciado"
-          placeholder="Enunciado..."
+          placeholder="Enunciado"
           style="width:100%; min-height:120px; padding:12px; border:1px solid #ddd; border-radius:6px;"
         ></textarea>
 
@@ -1841,23 +1841,23 @@
               </div>
             `
             : `
-              <div style="margin-top:15px;">
-                <label><b>Alternativas</b></label>
+              <div class="questao-editor-alternativas">
 
                 ${letras.map(letra => `
-                  <div style="margin-top:10px;">
+                  <div class="questao-editor-alternativa">
                     <label><b>${letra})</b></label>
 
                     <textarea
                       id="alternativa_${letra}"
                       aria-label="Alternativa ${letra}"
+                      placeholder="Alternativa ${letra}"
                       style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
                     ></textarea>
                   </div>
                 `).join("")}
               </div>
 
-              <div style="margin-top:15px;">
+              <div class="questao-gabarito">
                 <label><b>Gabarito</b></label><br/>
                 <select
                   id="questaoGabarito"
@@ -1871,11 +1871,11 @@
             `
         }
 
-        <div style="margin-top:15px;">
+        <div class="questao-comentario">
           <label><b>Comentário</b></label><br/>
           <textarea
             id="questaoComentario"
-            placeholder="Digite ou cole o comentário da questão..."
+            placeholder="Comentário"
             style="width:100%; min-height:140px; padding:12px; border:1px solid #ddd; border-radius:6px;"
           ></textarea>
         </div>
