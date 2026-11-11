@@ -12,3 +12,20 @@
 .sprint-conclusao-btn:disabled { opacity:.45; cursor:not-allowed; }
 
 .registro-editor-host .ck.ck-toolbar .ck-toolbar__items { flex-wrap:wrap; min-width:0; max-width:100%; }
+
+.sprint-header ~ .container .btn.sprint-registro-abrir {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  max-width:100%;
+  min-height:32px;
+  padding:6px 14px;
+  border:1px solid #e1d6be;
+  border-radius:999px;
+  background:#f8f2e6;
+  color:var(--azul);
+  font-size:.9rem;
+  line-height:1.3;
+  white-space:normal;
+}

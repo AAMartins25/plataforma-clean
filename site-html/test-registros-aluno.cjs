@@ -46,6 +46,7 @@ async function overflow(p) {const n=await p.evaluate(()=>document.documentElemen
       await p.locator('#boxConcluirBateria').screenshot({path:path.join(out,`botoes-${width}.png`)});
       await p.getByRole('button',{name:'Revisar agora',exact:true}).click();
       const qid=++index;
+      await p.locator(`#registro_anotacao_${qid} .sprint-registro-abrir`).click();
       await setData(p,`anotacao_texto_${qid}`);
       const ed=p.locator(`#anotacao_texto_${qid}`);
       assert.equal(await ed.evaluate(f=>f.parentElement.querySelector('.ck-content').ckeditorInstance.plugins.has('ImageUpload')),false);
@@ -53,6 +54,7 @@ async function overflow(p) {const n=await p.evaluate(()=>document.documentElemen
       await p.locator(`#registro_anotacao_${qid}`).screenshot({path:path.join(out,`editor-${width}.png`)});
       const saved=p.waitForResponse(r=>r.url().includes('/me/anotacoes-questoes')&&r.request().method()==='POST');
       await p.locator(`#btn_salvar_anotacao_${qid}`).click();assert.equal((await saved).status(),200);
+      await p.locator(`#registro_mensagem_${qid} .sprint-registro-abrir`).click();
       await setData(p,`mensagem_texto_${qid}`);
       const sent=p.waitForResponse(r=>r.url().includes('/me/mensagens-prof')&&r.request().method()==='POST');
       await p.locator(`#btn_salvar_mensagem_${qid}`).click();assert.equal((await sent).status(),200);

@@ -942,7 +942,7 @@
         return `${arquivo}${query ? `?${query}` : ""}`;
       }
 
-      function htmlSecaoRegistro(tipo, qid, registro, erro, loading = false) {
+      function htmlSecaoRegistro(tipo, qid, registro, erro, loading = false, aberto = false) {
         const nota = tipo === "anotacao";
         const titulo = nota ? "Fazer anotação" : "Enviar mensagem ao professor";
         const hostId = `registro_${nota ? "anotacao" : "mensagem"}_${qid}`;
@@ -952,24 +952,32 @@
           ? `Você já fez anotação nesta questão. Caso deseje editá-la, entre em <a href="${linkAreaRegistro("minhas-anotacoes.html")}">📝 Anotações</a>.`
           : `Você já enviou mensagem ao prof a respeito desta questão. Você pode acessá-la em <a href="${linkAreaRegistro("mensagens-prof.html")}">💬 Mensagens ao prof</a>. Caso deseje, poderá reformulá-la e enviá-la novamente ao professor.`;
         else if (erro) corpo = `<p role="status">Não foi possível verificar se já existe registro. Tente novamente.</p><button class="btn sprint-revisao-btn-acao" onclick="recarregarRegistroQuestao('${tipo}',${qid})">Tentar novamente</button>`;
+        else if (!aberto) corpo = `<button type="button" class="btn sprint-registro-abrir" onclick="atualizarSecaoRegistro('${tipo}',${qid},true)">${titulo}</button>`;
         else {
           const id = nota ? `anotacao_texto_${qid}` : `mensagem_texto_${qid}`;
           const placeholder = nota ? "Escreva sua anotação..." : "Escreva sua dúvida ou pergunta...";
           const buttonId = nota ? `btn_salvar_anotacao_${qid}` : `btn_salvar_mensagem_${qid}`;
           const action = nota ? "salvarAnotacaoParaMim" : "salvarEnviarProf";
           const labelBotao = nota ? "Salvar" : "Enviar";
-          corpo = `<textarea id="${id}" aria-label="${titulo}" placeholder="${placeholder}" style="width:100%;min-height:100px;margin-top:11px;padding:12px;border:1px solid #ddd;border-radius:6px;"></textarea><button id="${buttonId}" class="btn sprint-revisao-btn-acao" onclick="${action}(${qid})">${labelBotao}</button>`;
+          corpo = `<textarea id="${id}" aria-label="${titulo}" placeholder="${placeholder}" style="width:100%;min-height:100px;margin-top:11px;padding:12px;border:1px solid #ddd;border-radius:6px;"></textarea><button id="${buttonId}" class="btn sprint-revisao-btn-acao" onclick="${action}(${qid})">${labelBotao}</button> <button type="button" class="btn sprint-revisao-btn-acao" onclick="cancelarRegistroQuestao('${tipo}',${qid})">Cancelar</button>`;
         }
-        return `<section id="${hostId}" class="card" style="margin-top:16px"><h3>${titulo}</h3>${corpo}</section>`;
+        return `<section id="${hostId}" class="card" style="margin-top:16px">${registro ? `<h3>${nota ? "Anotação" : "Mensagem ao professor"}</h3>` : ""}${corpo}</section>`;
       }
 
-      function atualizarSecaoRegistro(tipo, qid) {
+      function atualizarSecaoRegistro(tipo, qid, aberto = false) {
         const host = document.getElementById(`registro_${tipo}_${qid}`);
         if (host) {
-          host.outerHTML = htmlSecaoRegistro(tipo, qid, cacheRegistrosQuestao[tipo].get(Number(qid)), erroRegistrosQuestao[tipo]);
+          host.outerHTML = htmlSecaoRegistro(tipo, qid, cacheRegistrosQuestao[tipo].get(Number(qid)), erroRegistrosQuestao[tipo], false, aberto);
           const campo = document.getElementById(`${tipo}_texto_${qid}`);
           if (campo) void RegistroEditor.iniciar(campo);
         }
+      }
+
+      function cancelarRegistroQuestao(tipo, qid) {
+        const botao = document.getElementById(`btn_salvar_${tipo}_${qid}`);
+        if (botao?.disabled) return;
+        atualizarSecaoRegistro(tipo, qid);
+        document.getElementById(`registro_${tipo}_${qid}`)?.querySelector('button')?.focus();
       }
 
       async function carregarRegistroQuestao(tipo) {

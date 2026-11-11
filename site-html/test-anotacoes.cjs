@@ -6,7 +6,7 @@ const page = fs.readFileSync(__dirname + '/sprint.html', 'utf8');
 const script = page.match(/<script>\s*([\s\S]*?)<\/script>/)[1]
   .replace(/\s*carregarBateria\(\);\s*$/, '');
 assert.match(page, /const titulo = nota \? "Fazer anotação" : "Enviar mensagem ao professor"/);
-assert.match(page, /<h3>\$\{titulo\}<\/h3>/);
+
 assert.match(page, /const labelBotao = nota \? "Salvar" : "Enviar"/);
 assert.doesNotMatch(page, /Fazer anotação \/ enviar mensagem ao professor/);
 assert.match(page, /Escreva sua anotação\.\.\./);
@@ -25,6 +25,7 @@ const ctx = {
     ? [{ questao_id: 7, tentativa_id: 2 }]
     : [{ questao_id: 7, tentativa_id: 2 }],
   apiPostAuth: async (path, body) => { calls.push({ path, body }); return {}; },
+  RegistroEditor: { ler: campo => ({texto: campo.value, texto_formato: "texto_puro"}), bloquear: () => {} },
   alert: () => {}, confirm: () => true,
 };
 const calls = [];
@@ -33,6 +34,17 @@ vm.runInContext(script, ctx);
 vm.runInContext('bateriaId=4; tentativaAnotacaoId=9; questoes=[{id:7}];', ctx);
 
 (async () => {
+  for (const tipo of ['anotacao', 'mensagem']) {
+    const closed = ctx.htmlSecaoRegistro(tipo, 8);
+    assert.equal((closed.match(/<button/g) || []).length, 1);
+    assert.doesNotMatch(closed, /<textarea|<h3>/);
+    const open = ctx.htmlSecaoRegistro(tipo, 8, null, false, false, true);
+    assert.match(open, /<textarea/);
+    assert.match(open, /Cancelar/);
+    const existing = ctx.htmlSecaoRegistro(tipo, 8, {questao_id: 8});
+    assert.match(existing, tipo === 'anotacao' ? /<h3>Anotação<\/h3>/ : /<h3>Mensagem ao professor<\/h3>/);
+    assert.doesNotMatch(existing, /<button|<textarea/);
+  }
   const gets = [];
   ctx.apiGetAuth = async path => {
     gets.push(path);
