@@ -31,5 +31,5 @@
 }
 
 .sprint-header ~ .container section.card:has(> .sprint-registro-abrir) {
-  padding-block:10px;
+  padding-block:6px 14px;
 }
