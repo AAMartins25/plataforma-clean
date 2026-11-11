@@ -1,3 +1,5 @@
+from app.respostas_bateria import validar_respostas
+from app.registros_html import para_leitura as registro_para_leitura, texto_visivel
 from app.questoes_html import preparar_questao, formatos as formatos_questao
 from app.descricao_publica import preparar_descricao, descricao_para_visitante
 from app.admin_intermediario import exigir_geral, revalidar_geral, pode_administrar, exigir_area
@@ -3121,6 +3123,11 @@ def concluir_bateria(
 @app.get("/admin/ckeditor-chave")
 def obter_chave_ckeditor(usuario: Usuario = Depends(exigir_admin_aulas)):
     # A chave do plano Cloud é enviada ao editor no navegador somente após autenticação.
+    return {"licenseKey": os.getenv("CKEDITOR_LICENSE_KEY", "")}
+
+
+@app.get("/me/ckeditor-chave")
+def obter_chave_ckeditor_aluno(usuario: Usuario = Depends(get_usuario_atual)):
     return {"licenseKey": os.getenv("CKEDITOR_LICENSE_KEY", "")}
 
 
@@ -6581,22 +6588,7 @@ def concluir_bateria_aluno(
             detail="A bateria precisa ter 10 questões"
         )
 
-    respostas_por_questao = {
-        r.questao_id: r
-        for r in dados.respostas
-    }
-
-    questoes_nao_respondidas = [
-        q.ordem
-        for q in questoes
-        if q.id not in respostas_por_questao
-    ]
-
-    if questoes_nao_respondidas:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Questões não respondidas: {questoes_nao_respondidas}"
-        )
+    respostas_por_questao = validar_respostas(db, questoes, dados.respostas)
 
     aula = db.query(Aula).filter(Aula.id == bateria.aula_id).first()
 
@@ -7193,6 +7185,7 @@ def obter_minha_tentativa_ativa(
             {
                 "questao_id": r.questao_id,
                 "resposta_marcada": r.resposta_marcada,
+                "respondida": r.respondida is not False,
                 "dificuldade": r.dificuldade,
                 "acertou": r.acertou,
                 "pulou": r.pulou,
@@ -7795,7 +7788,7 @@ def criar_anotacao_questao(
             detail="Informe a anotação"
         )
 
-    if len(texto.split()) > 300:
+    if len(texto_visivel(texto, payload["texto_formato"]).split()) > 300:
         raise HTTPException(
             status_code=400,
             detail="A anotação deve ter no máximo 300 palavras"
@@ -7941,7 +7934,7 @@ def criar_anotacao_questao(
         bateria_id=bateria_id,
         contratacao_id=contratacao_id,
         demonstracao_id=demonstracao_id,
-        texto=texto
+        texto=texto, texto_formato=payload["texto_formato"]
     )
 
     db.add(nova)
@@ -7958,7 +7951,7 @@ def criar_anotacao_questao(
         "bateria_id": nova.bateria_id,
         "contratacao_id": nova.contratacao_id,
         "demonstracao_id": nova.demonstracao_id,
-        "texto": nova.texto
+        "texto": registro_para_leitura(nova), "texto_formato": nova.texto_formato
     }
 
 
@@ -7980,7 +7973,7 @@ def editar_anotacao_questao(
             detail="Informe a anotação"
         )
 
-    if len(texto.split()) > 300:
+    if len(texto_visivel(texto, payload["texto_formato"]).split()) > 300:
         raise HTTPException(
             status_code=400,
             detail="A anotação deve ter no máximo 300 palavras"
@@ -8111,7 +8104,10 @@ def editar_anotacao_questao(
         demonstracao_id=demonstracao_id,
     )
 
+    if anotacao.texto_formato == "html_v1" and payload["texto_formato"] != "html_v1":
+        raise HTTPException(409, "Reabra o editor formatado antes de salvar esta anotação")
     anotacao.texto = texto
+    anotacao.texto_formato = payload["texto_formato"]
     anotacao.atualizado_em = datetime.utcnow()
 
     db.commit()
@@ -8119,7 +8115,7 @@ def editar_anotacao_questao(
 
     return {
         "id": anotacao.id,
-        "texto": anotacao.texto
+        "texto": registro_para_leitura(anotacao), "texto_formato": anotacao.texto_formato
     }
 
 
@@ -8474,7 +8470,8 @@ def _consultar_anotacoes(db, usuario_id, curso_id, contratacao_id, demonstracao_
             "bateria_id": bateria.id,
             "bateria_titulo": bateria.titulo,
 
-            "anotacao": anotacao.texto,
+            "anotacao": registro_para_leitura(anotacao),
+            "texto_formato": anotacao.texto_formato or "texto_puro",
             "criado_em": anotacao.criado_em,
             "atualizado_em": anotacao.atualizado_em
         })
@@ -8530,17 +8527,18 @@ def _estado_conversa(db, conversa):
     return _assinar_dados_conversa({
         "conversa_id": conversa.id, "status": conversa.status,
         "atualizado_em": conversa.atualizado_em.isoformat() if conversa.atualizado_em else None,
-        "mensagens": [[m.id, m.autor, m.criada_em.isoformat() if m.criada_em else None, m.texto]
+        "mensagens": [[m.id, m.autor, m.criada_em.isoformat() if m.criada_em else None, m.texto, *([m.texto_formato] if m.texto_formato == "html_v1" else [])]
                       for m in mensagens],
     })
 
 
 def _fingerprint_reformulacao(usuario_id, conversa_id, curso_id, contratacao_id,
-                             demonstracao_id, texto, estado, confirmado):
+                             demonstracao_id, texto, estado, confirmado, texto_formato="texto_puro"):
     return _assinar_dados_conversa({
         "usuario_id": usuario_id, "conversa_id": conversa_id, "curso_id": curso_id,
         "contratacao_id": contratacao_id, "demonstracao_id": demonstracao_id,
         "texto": texto, "estado_conversa": estado, "confirmado": confirmado,
+        **({"texto_formato": texto_formato} if texto_formato == "html_v1" else {}),
     })
 
 
@@ -8584,7 +8582,7 @@ def _resultado_conversa(db, conversa):
         'enunciado': questao.enunciado, **formatos_questao(questao), 'gabarito': questao.gabarito, 'comentario': questao.comentario,
         'bateria_id': bateria.id, 'bateria_titulo': bateria.titulo,
         'criado_em': conversa.criado_em, 'atualizado_em': conversa.atualizado_em,
-        'mensagens': [{'id': m.id, 'autor': m.autor, 'texto': m.texto, 'criada_em': m.criada_em} for m in mensagens]}
+        'mensagens': [{'id': m.id, 'autor': m.autor, 'texto': registro_para_leitura(m), 'texto_formato': m.texto_formato or 'texto_puro', 'criada_em': m.criada_em} for m in mensagens]}
 
 
 @app.post('/me/mensagens-prof')
@@ -8611,7 +8609,7 @@ def iniciar_conversa_prof(dados: schemas.ConversaProfessorCreate, db: Session = 
     db.add(conversa)
     try:
         db.flush()
-        db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor='ALUNO', texto=dados.texto))
+        db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor='ALUNO', texto=dados.texto, texto_formato=dados.texto_formato))
         db.commit()
     except IntegrityError:
         db.rollback()
@@ -8651,7 +8649,7 @@ def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversa
     operacao = db.get(models.ReformulacaoConversaOperacao, operacao_id)
     if operacao:
         fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, operacao.curso_id,
-            contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+            contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado, dados.texto_formato)
         if not hmac.compare_digest(operacao.fingerprint, fingerprint):
             raise HTTPException(409, 'Identificador de operação já utilizado com outros parâmetros.')
         nova = db.query(ConversaQuestaoProfessor).filter_by(id=operacao.conversa_nova_id,
@@ -8676,7 +8674,7 @@ def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversa
     if conversa.status not in {'ABERTA', 'AGUARDANDO_RESPOSTA_FINAL', 'ENCERRADA'}:
         raise HTTPException(409, 'Estado da conversa não permite reformulação.')
     fingerprint = _fingerprint_reformulacao(usuario.id, conversa_id, disciplina.curso_id,
-        contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado)
+        contratacao_id, demonstracao_id, dados.texto, dados.estado_conversa, dados.confirmado, dados.texto_formato)
     atual = db.query(ConversaQuestaoProfessor).filter_by(usuario_id=usuario.id,
         questao_id=conversa.questao_id, contratacao_id=contratacao_id,
         demonstracao_id=demonstracao_id).order_by(ConversaQuestaoProfessor.id.desc()).first()
@@ -8703,7 +8701,7 @@ def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversa
             contratacao_id=contratacao_id, demonstracao_id=demonstracao_id, status='ABERTA')
         db.add(nova)
         db.flush()
-        db.add(MensagemConversaQuestao(conversa_id=nova.id, autor='ALUNO', texto=dados.texto))
+        db.add(MensagemConversaQuestao(conversa_id=nova.id, autor='ALUNO', texto=dados.texto, texto_formato=dados.texto_formato))
         db.add(models.ReformulacaoConversaOperacao(operacao_id=operacao_id,
             curso_id=disciplina.curso_id, contratacao_id=contratacao_id,
             demonstracao_id=demonstracao_id, conversa_nova_id=nova.id,
@@ -8717,7 +8715,7 @@ def reformular_conversa_prof(conversa_id: int, dados: schemas.ReformularConversa
         raise
 
 
-def _responder_conversa(db, conversa, texto, autor):
+def _responder_conversa(db, conversa, texto, autor, texto_formato="texto_puro"):
     if conversa.status == 'ENCERRADA':
         raise HTTPException(409, 'Conversa encerrada')
     mensagens = db.query(MensagemConversaQuestao).filter_by(conversa_id=conversa.id).order_by(
@@ -8727,7 +8725,7 @@ def _responder_conversa(db, conversa, texto, autor):
     quantidade = sum(m.autor == autor for m in mensagens)
     if quantidade >= 3:
         raise HTTPException(409, 'Limite de mensagens atingido')
-    db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor=autor, texto=texto))
+    db.add(MensagemConversaQuestao(conversa_id=conversa.id, autor=autor, texto=texto, texto_formato=texto_formato))
     conversa.status = 'ENCERRADA' if autor == 'PROFESSOR' and quantidade == 2 else 'ABERTA'
     conversa.atualizado_em = datetime.utcnow()
     db.commit()
@@ -8743,7 +8741,7 @@ def continuar_conversa_prof(conversa_id: int, dados: schemas.MensagemProfessorTe
     conversa = _travar_conversa_contextualizada(db, conversa_id, usuario.id,
         contratacao_id, demonstracao_id)
     _contexto_conversa(db, conversa, vigente=True)
-    return _responder_conversa(db, conversa, dados.texto, 'ALUNO')
+    return _responder_conversa(db, conversa, dados.texto, 'ALUNO', dados.texto_formato)
 
 
 @app.get('/admin/mensagens-questoes')
@@ -8773,7 +8771,7 @@ def responder_conversa_prof_admin(conversa_id: int, dados: schemas.MensagemProfe
         raise HTTPException(403, 'Acesso restrito')
     conversa = _travar_conversa_contextualizada(db, conversa_id)
     _contexto_conversa(db, conversa)
-    return _responder_conversa(db, conversa, dados.texto, 'PROFESSOR')
+    return _responder_conversa(db, conversa, dados.texto, 'PROFESSOR', dados.texto_formato)
 
 
 @app.get('/me/cursos-expirados/{curso_id}/mensagens-prof')

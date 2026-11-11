@@ -680,14 +680,13 @@ class RespostasBateriaRevisaoCreate(BaseModel):
 
 class AnotacaoTexto(BaseModel):
     texto: str
+    texto_formato: str = "texto_puro"
 
-    @field_validator("texto")
-    @classmethod
-    def validar_texto(cls, value):
-        value = value.strip()
-        if not value or len(value.split()) > 300:
-            raise ValueError("Informe texto entre 1 e 300 palavras")
-        return value
+    @model_validator(mode="after")
+    def validar_registro(self):
+        from app.registros_html import preparar_registro
+        self.texto = preparar_registro(self.texto, self.texto_formato)
+        return self
 
 
 class AnotacaoQuestaoCreate(AnotacaoTexto):
@@ -698,16 +697,8 @@ class AnotacaoQuestaoCreate(AnotacaoTexto):
     demonstracao_id: int | None = Field(default=None, gt=0)
 
 
-class MensagemProfessorTexto(BaseModel):
-    texto: str
-
-    @field_validator("texto")
-    @classmethod
-    def validar_texto(cls, value):
-        value = value.strip()
-        if not value or len(value.split()) > 300:
-            raise ValueError("Informe texto entre 1 e 300 palavras")
-        return value
+class MensagemProfessorTexto(AnotacaoTexto):
+    pass
 
 
 class ConversaProfessorCreate(MensagemProfessorTexto):

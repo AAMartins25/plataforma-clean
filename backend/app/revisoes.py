@@ -1,3 +1,4 @@
+from app.respostas_bateria import validar_respostas
 from app.questoes_html import formatos as formatos_questao
 """Agenda por assunto. Não utiliza modelos de Questões práticas ou ciclos."""
 from datetime import datetime, timedelta
@@ -125,6 +126,7 @@ def registrar_rotas(app, get_db, get_usuario, validar):
                              'tentativa_id': t.id if t else None, 'total_questoes': len(qs), 'respondidas': len({q.id for q in qs} & feitas),
                              'concluida': bool(qs) and {q.id for q in qs}.issubset(feitas),
                              'respostas': [{'questao_id': x.questao_id, 'resposta_marcada': x.resposta_marcada,
+                                            'respondida': x.respondida is True,
                                             'dificuldade': x.dificuldade, 'rever': x.rever}
                                            for x in (db.query(m.RespostaAlunoQuestao).filter_by(tentativa_id=t.id).all() if t else [])
                                            if x.questao_id in {q.id for q in qs}]})
@@ -178,9 +180,7 @@ def registrar_rotas(app, get_db, get_usuario, validar):
         qs = next((qs for b, qs in bs if b.id == bateria_id), None)
         if not qs:
             raise HTTPException(404, 'Bateria sem questões disponíveis')
-        enviados = {x.questao_id: x for x in dados.respostas}
-        if len(enviados) != len(dados.respostas) or set(enviados) != {q.id for q in qs}:
-            raise HTTPException(400, 'Responda exatamente todas as questões atualmente exigidas')
+        enviados = validar_respostas(db, qs, dados.respostas)
         t = tentativa_atual(db, r, bateria_id)
         if not t:
             t = m.TentativaBateria(usuario_id=usuario.id, bateria_id=bateria_id, revisao_id=r.id,

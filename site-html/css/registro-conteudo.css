@@ -1,0 +1,14 @@
+.registro-legado { white-space:pre-wrap; overflow-wrap:anywhere; }
+.registro-conteudo, .registro-editor-host, .registro-editor-host .ck-editor { min-width:0; max-width:100%; }
+.registro-conteudo { white-space:normal; overflow-wrap:anywhere; }
+.registro-conteudo table { border-collapse:collapse; }
+.registro-conteudo td, .registro-conteudo th { border:1px solid #ccc; padding:6px; }
+.registro-conteudo figure.table { max-width:100%; overflow-x:auto; }
+.registro-conteudo .ro-math-display { overflow-x:auto; max-width:100%; }
+.registro-editor-host .ck-editor__editable_inline { min-height:120px; max-height:360px; overflow-y:auto; overflow-x:auto; }
+.registro-editor-host .ck-content { white-space:normal; overflow-wrap:anywhere; }
+.registro-editor-host .ck.ck-toolbar { flex-wrap:wrap; }
+.registro-editor-host .ck.ck-button { min-width:28px; min-height:30px; }
+.sprint-conclusao-btn:disabled { opacity:.45; cursor:not-allowed; }
+
+.registro-editor-host .ck.ck-toolbar .ck-toolbar__items { flex-wrap:wrap; min-width:0; max-width:100%; }

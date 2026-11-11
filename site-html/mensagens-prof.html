@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/teoria-matematica.css">
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/registro-conteudo.css">
 </head>
 
 <body
@@ -146,12 +147,17 @@
   <script src="js/teoria-imagens.js?v=questoes1"></script>
   <script src="js/teoria-tabelas.js"></script>
   <script src="js/questao-conteudo.js"></script>
+<script src="js/registro-conteudo.js"></script>
+<script src="js/editor-teoria-matematica.js?v=math1"></script>
+<script src="js/editor-teoria.js"></script>
+<script src="js/registro-editor.js"></script>
   <script>
 const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let conversas = [];
 const reformulacoesPendentes = new Map();
+const rascunhosMensagem = new Map();
 const AVISO_REFORMULACAO = "Ao enviar esta nova mensagem, a conversa anterior será apagada. Copie trechos que considerar importantes da conversa atual e cole na nova mensagem a ser enviada ao professor.";
 
 const tituloCursoMensagensProf =
@@ -551,6 +557,19 @@ function renderizarConversas() {
   });
 
   document.getElementById("area_mensagens").innerHTML = html;
+  for (const campo of document.querySelectorAll('textarea[id^="nova_msg_"]')) {
+    const id = Number(campo.id.slice(9)), dado = rascunhosMensagem.get(id);
+    void RegistroEditor.iniciar(campo, dado?.texto || '', dado?.texto_formato, () => {
+      try {rascunhosMensagem.set(id, RegistroEditor.ler(campo, false));} catch (_) {}
+    });
+  }
+  for (const campo of document.querySelectorAll('textarea[id^="reformulacao_texto_"]')) {
+    const id = Number(campo.id.slice(19)), p = reformulacoesPendentes.get(id);
+    void RegistroEditor.iniciar(campo, p.texto, p.texto_formato, () => {
+      if (p.fase === 'editar') {try {Object.assign(p, RegistroEditor.ler(campo, false));} catch (_) {}}
+    });
+    RegistroEditor.bloquear(campo, p.fase !== 'editar');
+  }
 }
 
 function montarCardConversa(c) {
@@ -653,7 +672,7 @@ function montarAreaReformulacao(c) {
   return `<section class="card" style="margin-top:16px" id="reformulacao_${Number(c.conversa_id)}">
     <p role="note">${AVISO_REFORMULACAO}</p>
     <label for="reformulacao_texto_${Number(c.conversa_id)}">Nova mensagem ao professor</label>
-    <textarea id="reformulacao_texto_${Number(c.conversa_id)}" maxlength="6000" placeholder="Escreva sua nova mensagem..."
+    <textarea id="reformulacao_texto_${Number(c.conversa_id)}" placeholder="Escreva sua nova mensagem..."
       style="width:100%;min-height:120px;padding:12px;border:1px solid #ddd;border-radius:6px" ${bloqueada ? "readonly" : ""}>${esc(p.texto)}</textarea>
     ${p.mensagem ? `<p role="status">${esc(p.mensagem)}</p>` : ""}
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
@@ -691,15 +710,16 @@ async function confirmarReformulacao(conversaId) {
   const c = conversas.find(x => Number(x.conversa_id) === id);
   const field = document.getElementById(`reformulacao_texto_${id}`);
   if (!p || !c || !field || p.fase === "enviando") return;
-  const texto = (p.fase === "incerta" ? p.texto : field.value).trim();
-  const palavras = texto.split(/\s+/).filter(Boolean).length;
-  if (!texto || palavras > 300) { alert(!texto ? "Escreva a nova mensagem antes de confirmar." : "A mensagem deve ter no máximo 300 palavras."); return; }
+  let dado;
+  try { dado = p.fase === "incerta" ? {texto:p.texto, texto_formato:p.texto_formato || 'texto_puro'} : RegistroEditor.ler(field); }
+  catch (err) { alert(err.message); return; }
+  const texto = dado.texto;
   try {
-    p.texto = texto; if (!p.operacaoId) p.operacaoId = novoIdOperacaoReformulacao();
+    Object.assign(p, dado); if (!p.operacaoId) p.operacaoId = novoIdOperacaoReformulacao();
     if (!p.estado) p.estado = c.estado_conversa;
     p.fase = "enviando"; p.mensagem = "Enviando a nova mensagem..."; renderizarConversas();
     await apiPost(`/me/mensagens-prof/${id}/reformular`, {
-      texto, operacao_id: p.operacaoId, estado_conversa: p.estado, confirmado: true
+      ...dado, operacao_id: p.operacaoId, estado_conversa: p.estado, confirmado: true
     });
     reformulacoesPendentes.delete(id);
     await carregarMensagens();
@@ -747,7 +767,7 @@ function montarMensagens(c) {
           ${ehAluno ? "Eu" : "Prof"}
         </div>
 
-        <div class="mensagens-prof-mensagem-texto">${esc(m.texto).trim()}</div>
+        <div class="mensagens-prof-mensagem-texto">${RegistroConteudo.renderizar(m.texto, m.texto_formato)}</div>
 
       </div>
     `;
@@ -811,19 +831,9 @@ async function enviarNovaMensagem(conversaId) {
 
   if (!campo) return;
 
-  const texto = campo.value.trim();
-
-  if (!texto) {
-    alert("Escreva uma mensagem antes de enviar.");
-    return;
-  }
-
-  const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
-
-  if (totalPalavras > 300) {
-    alert("A mensagem deve ter no máximo 300 palavras.");
-    return;
-  }
+  if (campo.dataset.enviando) return;
+  let dado;
+  try { dado = RegistroEditor.ler(campo); } catch (err) { alert(err.message); return; }
 
   const confirmar = confirm(
     "Confirma enviar esta mensagem ao professor? Após o envio, ela não poderá ser editada."
@@ -832,16 +842,16 @@ async function enviarNovaMensagem(conversaId) {
   if (!confirmar) return;
 
   try {
-    await apiPost(`/me/mensagens-prof/${conversaId}/responder`, {
-      texto
-    });
+    campo.dataset.enviando = '1'; RegistroEditor.bloquear(campo, true);
+    await apiPost(`/me/mensagens-prof/${conversaId}/responder`, dado);
+    rascunhosMensagem.delete(conversaId);
 
     await carregarMensagens();
 
   } catch (err) {
     console.error(err);
     alert("Erro ao enviar mensagem: " + err.message);
-  }
+  } finally { delete campo.dataset.enviando; RegistroEditor.bloquear(campo, false); }
 }
 
 document.getElementById("anoAtual").textContent =

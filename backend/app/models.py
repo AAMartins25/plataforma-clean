@@ -798,6 +798,7 @@ class AnotacaoAlunoQuestao(Base):
     tentativa_id = Column(Integer, ForeignKey("tentativas_bateria.id"), nullable=True)
 
     texto = Column(Text, nullable=False)
+    texto_formato = Column(String(20), nullable=True, default="texto_puro", server_default="texto_puro")
 
     criado_em = Column(DateTime, default=datetime.utcnow)
     atualizado_em = Column(
@@ -856,6 +857,7 @@ class MensagemConversaQuestao(Base):
 
     autor = Column(String(20), nullable=False)  # ALUNO / PROFESSOR
     texto = Column(Text, nullable=False)
+    texto_formato = Column(String(20), nullable=True, default="texto_puro", server_default="texto_puro")
 
     criada_em = Column(DateTime, default=datetime.utcnow)
 

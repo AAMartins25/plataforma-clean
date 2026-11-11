@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/teoria-matematica.css">
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/registro-conteudo.css">
 </head>
 
 <body
@@ -141,6 +142,10 @@
   <script src="js/teoria-imagens.js?v=questoes1"></script>
   <script src="js/teoria-tabelas.js"></script>
   <script src="js/questao-conteudo.js"></script>
+<script src="js/registro-conteudo.js"></script>
+<script src="js/editor-teoria-matematica.js?v=math1"></script>
+<script src="js/editor-teoria.js"></script>
+<script src="js/registro-editor.js"></script>
   <script>
 
 const API_BASE =
@@ -596,7 +601,7 @@ function montarCardAnotacao(a) {
         </div>
 
         <div class="minhas-anotacoes-bloco-aluno-texto">
-          ${esc(a.anotacao)}
+          ${RegistroConteudo.renderizar(a.anotacao, a.texto_formato)}
         </div>
       </div>
 
@@ -622,7 +627,7 @@ function montarCardAnotacao(a) {
   `;
 }
 
-function editarAnotacao(id) {
+async function editarAnotacao(id) {
   const anotacao =
     anotacoes.find(
       a => a.anotacao_id === id
@@ -675,6 +680,7 @@ function editarAnotacao(id) {
 
     </div>
   `;
+  await RegistroEditor.iniciar(document.getElementById(`texto_edicao_${id}`), anotacao.anotacao, anotacao.texto_formato, () => mostrarSalvar(id));
 }
 
 function mostrarSalvar(id) {
@@ -684,30 +690,19 @@ function mostrarSalvar(id) {
 
 async function salvarEdicaoAnotacao(id) {
   const campo = document.getElementById(`texto_edicao_${id}`);
-  if (!campo) return;
+  if (!campo || campo.dataset.salvando) return;
 
-  const texto = campo.value.trim();
-
-  if (!texto) {
-    alert("A anotação não pode ficar vazia.");
-    return;
-  }
-
-  const totalPalavras = texto.split(/\s+/).filter(Boolean).length;
-
-  if (totalPalavras > 300) {
-    alert("A anotação deve ter no máximo 300 palavras.");
-    return;
-  }
+  let dado;
+  try { dado = RegistroEditor.ler(campo); } catch (err) { alert(err.message); return; }
 
   try {
-    await apiPut(`/me/anotacoes-questoes/${id}`, {
-      texto
-    });
+    campo.dataset.salvando = '1'; RegistroEditor.bloquear(campo, true);
+    const salvo = await apiPut(`/me/anotacoes-questoes/${id}`, dado);
 
     const anotacao = anotacoes.find(a => a.anotacao_id === id);
     if (anotacao) {
-      anotacao.anotacao = texto;
+      anotacao.anotacao = salvo.texto;
+      anotacao.texto_formato = salvo.texto_formato;
     }
 
     renderizarAnotacoes();
@@ -715,7 +710,7 @@ async function salvarEdicaoAnotacao(id) {
   } catch (err) {
     console.error(err);
     alert("Erro ao salvar anotação.");
-  }
+  } finally { delete campo.dataset.salvando; RegistroEditor.bloquear(campo, false); }
 }
 
 function excluirAnotacao(id) {

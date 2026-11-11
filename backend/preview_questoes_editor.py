@@ -40,7 +40,7 @@ def configurar(conexao, _):
 factory = sessionmaker(bind=engine, autoflush=False)
 # Exclui apenas evidências jurídicas PostgreSQL, sem relação com a prévia.
 from test_aulas_admin import MODELOS
-extras=[m.Vendedor,m.AcessoCurso,m.TempoAcessoCurso,m.QuestaoPraticaAssunto,m.QuestaoPraticaAlternativa,
+extras=[m.ReformulacaoConversaOperacao,m.Vendedor,m.AcessoCurso,m.TempoAcessoCurso,m.QuestaoPraticaAssunto,m.QuestaoPraticaAlternativa,
         m.QuestaoPraticaMarcacaoAluno,m.QuestaoPraticaRotatividadeAluno]
 m.Base.metadata.create_all(engine, tables=[modelo.__table__ for modelo in MODELOS + extras])
 

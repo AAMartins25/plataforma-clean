@@ -6,9 +6,9 @@
   let carregamento;
   const instancias = new WeakMap();
 
-  async function carregar() {
-    if (!window.RESUMAO_CKEDITOR_LICENSE_KEY && window.apiGetAuth) {
-      const config = await window.apiGetAuth("/admin/ckeditor-chave");
+  async function carregar(endpoint = "/admin/ckeditor-chave") {
+    if (!window.RESUMAO_CKEDITOR_LICENSE_KEY && (window.apiGetAuth || window.apiGet)) {
+      const config = await (window.apiGetAuth || window.apiGet)(endpoint);
       window.RESUMAO_CKEDITOR_LICENSE_KEY = config.licenseKey || "";
     }
     if (!window.RESUMAO_CKEDITOR_LICENSE_KEY) {
@@ -31,13 +31,13 @@
     return carregamento;
   }
 
-  async function iniciar(textarea, html) {
+  async function iniciar(textarea, html, opcoes = {}) {
     if (!textarea) throw new Error("Campo de texto indisponível.");
     if (instancias.has(textarea)) return instancias.get(textarea);
-    const C = await carregar();
-    if (!window.TeoriaImagens || !window.criarPluginTeoriaImagens) throw new Error("O suporte a imagens não foi carregado. Recarregue a página.");
-    await window.TeoriaImagens.preparar(html || "");
-    const TeoriaImagensPlugin = window.criarPluginTeoriaImagens(C);
+    const C = await carregar(opcoes.chaveEndpoint);
+    if (!opcoes.semImagens && (!window.TeoriaImagens || !window.criarPluginTeoriaImagens)) throw new Error("O suporte a imagens não foi carregado. Recarregue a página.");
+    if (!opcoes.semImagens) await window.TeoriaImagens.preparar(html || "");
+    const TeoriaImagensPlugin = opcoes.semImagens ? null : window.criarPluginTeoriaImagens(C);
     if (!window.criarPluginTeoriaMatematica || !window.TeoriaMatematica) {
       throw new Error("O suporte a fórmulas não foi carregado. Recarregue a página.");
     }
@@ -59,10 +59,10 @@
       licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
       plugins: [Essentials, Paragraph, Bold, Italic, Underline, Heading, List,
         Indent, Table, TableToolbar, TableCaption, Alignment,
-        Link, TeoriaFormula, TeoriaImagensPlugin],
-      toolbar: ["undo", "redo", "|", "heading", "|", "bold", "italic", "underline",
+        Link, TeoriaFormula, ...(TeoriaImagensPlugin ? [TeoriaImagensPlugin] : [])],
+      toolbar: {shouldNotGroupWhenFull: Boolean(opcoes.semImagens), items: ["undo", "redo", "|", "heading", "|", "bold", "italic", "underline",
         "|", "bulletedList", "numberedList", "outdent", "indent", "|",
-        "alignment", "insertTable", "link", "|", "formula", "imagemPropria"],
+        "alignment", "insertTable", "link", "|", "formula", ...(opcoes.semImagens ? [] : ["imagemPropria"])]},
       table: { contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "toggleTableCaption"] },
       image: { toolbar: ["imageTextAlternative", "toggleImageCaption"] }
       });
@@ -91,7 +91,7 @@
     });
     instalarListasWord(editor);
     instalarDiagnosticoColagem(editor);
-    if (window.TeoriaMarkdown) window.TeoriaMarkdown.instalar(textarea, editor);
+    if (!opcoes.semImagens && window.TeoriaMarkdown) window.TeoriaMarkdown.instalar(textarea, editor);
     instancias.set(textarea, editor);
     return editor;
   }
@@ -272,7 +272,7 @@
 
   function conteudo(textarea) {
     const editor = instancias.get(textarea);
-    if (editor && window.TeoriaImagensEditor.estados.get(editor)?.pendente) throw new Error("Aguarde a conclusão da importação de imagens antes de salvar.");
+    if (editor && window.TeoriaImagensEditor?.estados.get(editor)?.pendente) throw new Error("Aguarde a conclusão da importação de imagens antes de salvar.");
     const diagnostico = editor && diagnosticosPorEditor.get(editor);
     if (diagnostico && diagnostico === ultimaColagem && Date.now() <= diagnosticoExpiraEm) {
       diagnostico.antesSalvar = resumirHtml(editor.getData());
@@ -300,7 +300,7 @@
 
   function pronto(textarea) {
     const editor = instancias.get(textarea);
-    return !editor || !window.TeoriaImagensEditor.estados.get(editor)?.pendente;
+    return !editor || !window.TeoriaImagensEditor?.estados.get(editor)?.pendente;
   }
   window.TeoriaEditor = { carregarCKEditor: carregar, pronto, normalizarListasWordHtml, iniciar, conteudo, destruir, legadoParaHtml, diagnosticoColagem, diagnosticarProximaColagem, cancelarDiagnosticoColagem };
 })();

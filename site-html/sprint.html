@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="css/teoria-matematica.css">
 <link rel="stylesheet" href="css/teoria-imagens.css">
 <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/registro-conteudo.css">
 </head>
 
   <body>
@@ -84,12 +85,18 @@
 <script src="js/teoria-imagens.js?v=questoes1"></script>
 <script src="js/teoria-tabelas.js"></script>
   <script src="js/questao-conteudo.js"></script>
+<script src="js/registro-conteudo.js"></script>
+<script src="js/editor-teoria-matematica.js?v=math1"></script>
+<script src="js/editor-teoria.js"></script>
+<script src="js/registro-editor.js"></script>
   <script src="js/app.js"></script>
 
     <script>
       let questoes = [];
       let indiceAtual = 0;
       let respostasAluno = {};
+      const respostasConfirmadas = new Set();
+      let concluindoBateria = false;
       let dificuldadesAluno = {};
       let bateriaId = null;
       let tentativaAtiva = null;
@@ -184,6 +191,7 @@
             const bateria=revisao.baterias.find(b=>Number(b.id)===Number(bateriaId));
             (bateria?.respostas || []).forEach(r=>{
               respostasAluno[r.questao_id]=r.resposta_marcada;
+              if (r.respondida === true && r.resposta_marcada) respostasConfirmadas.add(Number(r.questao_id));
               dificuldadesAluno[r.questao_id]=r.dificuldade;
               reverQuestoesAluno[r.questao_id]=r.rever;
             });
@@ -202,12 +210,12 @@
             return;
           }
 
-          if (modo === "visualizar") {
+          if (modo === "visualizar" && bateriaRespondida()) {
             revisarAgora();
             return;
           }
 
-          if (tentativaAtiva && tentativaAtiva.status === "EM_ANDAMENTO") {
+          if (tentativaAtiva && tentativaAtiva.status === "EM_ANDAMENTO" && bateriaRespondida()) {
             revisarAgora();
           } else {
             renderizarTodasQuestoes();
@@ -259,6 +267,7 @@
 
           (dados.respostas || []).forEach(r => {
             respostasAluno[r.questao_id] = r.resposta_marcada;
+            if (r.respondida === true && r.resposta_marcada) respostasConfirmadas.add(Number(r.questao_id));
 
             if (r.dificuldade) {
               dificuldadesAluno[r.questao_id] = r.dificuldade;
@@ -439,14 +448,14 @@
             <div class="sprint-conclusao-acoes">
 
               <button
-                class="btn sprint-conclusao-btn"
+                class="btn sprint-conclusao-btn" disabled aria-disabled="true"
                 onclick="concluirBateriaAluno('agora')"
               >
                 Revisar agora
               </button>
 
               <button
-                class="btn sprint-conclusao-btn"
+                class="btn sprint-conclusao-btn" disabled aria-disabled="true"
                 onclick="concluirBateriaAluno('depois')"
               >
                 Revisar depois
@@ -458,6 +467,7 @@
         `;
 
         document.getElementById("area_questoes").innerHTML = html;
+        atualizarBotoesConclusao();
 
         document.getElementById(`questao_${questoes[0].id}`).scrollIntoView({
           behavior: "smooth",
@@ -523,6 +533,8 @@
         }
 
         respostasAluno[questaoId] = respostaMarcada.value;
+        respostasConfirmadas.add(Number(questaoId));
+        atualizarBotoesConclusao();
 
         dificuldadesAluno[questaoId] = ehCertoErrado
           ? null
@@ -640,6 +652,7 @@
         }
 
         respostasAluno[q.id] = respostaMarcada.value;
+        respostasConfirmadas.add(Number(q.id));
         dificuldadesAluno[q.id] = dificuldadeMarcada.value;
 
         if (indiceAtual < questoes.length - 1) {
@@ -668,7 +681,23 @@
         });
       }
 
+      function bateriaRespondida() {
+        // A revisão programada usa o conjunto vigente retornado pelo servidor.
+        // A resolução normal continua exigindo as dez questões da bateria.
+        const quantidadeValida = qsLocal("revisao_id") ? questoes.length > 0 : questoes.length === 10;
+        return quantidadeValida && questoes.every(q => respostasConfirmadas.has(Number(q.id)) && respostasAluno[q.id]);
+      }
+
+      function atualizarBotoesConclusao() {
+        document.querySelectorAll('.sprint-conclusao-btn').forEach(btn => {
+          btn.disabled = concluindoBateria || !bateriaRespondida();
+          btn.setAttribute('aria-disabled', String(btn.disabled));
+        });
+      }
+
       async function concluirBateriaAluno(destino) {
+        if (concluindoBateria) return;
+        if (!bateriaRespondida()) { alert("Responda todas as 10 questões pelo botão Responder antes de revisar."); return; }
         const questoesNaoRespondidas = questoes
           .filter(q => !respostasAluno[q.id])
           .map(q => q.ordem);
@@ -703,6 +732,7 @@
           }))
         };
 
+        concluindoBateria = true; atualizarBotoesConclusao();
         try {
           if (qsLocal("revisao_id")) {
             const result=await apiPostAuth(`/me/revisoes/${Number(qsLocal("revisao_id"))}/baterias/${bateriaId}/respostas?${contextoAcessoQueryLocal()}`, {respostas: payload.respostas});
@@ -731,10 +761,11 @@
         } catch (err) {
           console.error(err);
           alert("Erro ao concluir bateria: " + err.message);
-        }
+        } finally { concluindoBateria = false; atualizarBotoesConclusao(); }
       }
       
       function revisarAgora() {
+        if (!bateriaRespondida()) { alert("Responda todas as 10 questões antes de revisar."); return; }
         let html = ``;
 
         questoes.forEach((q, idx) => {
@@ -894,6 +925,7 @@
         `;
 
         document.getElementById("area_questoes").innerHTML = html;
+        atualizarBotoesConclusao();
 
         document.getElementById("area_questoes").scrollIntoView({
           behavior: "smooth",
@@ -933,7 +965,11 @@
 
       function atualizarSecaoRegistro(tipo, qid) {
         const host = document.getElementById(`registro_${tipo}_${qid}`);
-        if (host) host.outerHTML = htmlSecaoRegistro(tipo, qid, cacheRegistrosQuestao[tipo].get(Number(qid)), erroRegistrosQuestao[tipo]);
+        if (host) {
+          host.outerHTML = htmlSecaoRegistro(tipo, qid, cacheRegistrosQuestao[tipo].get(Number(qid)), erroRegistrosQuestao[tipo]);
+          const campo = document.getElementById(`${tipo}_texto_${qid}`);
+          if (campo) void RegistroEditor.iniciar(campo);
+        }
       }
 
       async function carregarRegistroQuestao(tipo) {
@@ -959,23 +995,18 @@
         resultados.forEach((r, i) => { if (r.status === "rejected") { const tipo = tipos[i]; erroRegistrosQuestao[tipo] = true; console.error(`Erro ao verificar ${tipo}`, r.reason); questoes.forEach(q => atualizarSecaoRegistro(tipo, q.id)); } });
       }
 
-      function textoRegistroValido(campo, nome) {
-        const texto = campo.value.trim();
-        if (!texto) throw new Error(`Escreva ${nome} antes de salvar.`);
-        if (texto.split(/\s+/).length > 300) throw new Error("O texto deve ter no máximo 300 palavras.");
-        return texto;
-      }
+      function textoRegistroValido(campo, nome) { return RegistroEditor.ler(campo); }
 
       async function salvarAnotacaoParaMim(qid) {
         const campo = document.getElementById(`anotacao_texto_${qid}`), botao = document.getElementById(`btn_salvar_anotacao_${qid}`);
         if (!campo || !botao || botao.disabled) return;
         let texto; try { texto = textoRegistroValido(campo, "uma anotação"); } catch (e) { alert(e.message); return; }
         if (!tentativaAnotacaoId) { alert("Tentativa não identificada."); return; }
-        const ctx = contextoAcessoLocal(); botao.disabled = true;
+        const ctx = contextoAcessoLocal(); botao.disabled = true; RegistroEditor.bloquear(campo, true);
         try {
-          await apiPostAuth("/me/anotacoes-questoes", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
+          await apiPostAuth("/me/anotacoes-questoes", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), ...texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
           alert("Anotação salva com sucesso."); cacheRegistrosQuestao.anotacao.set(Number(qid), { questao_id: qid }); atualizarSecaoRegistro("anotacao", qid);
-        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("anotacao", qid); else { botao.disabled = false; alert("Erro ao salvar anotação: " + e.message); } }
+        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("anotacao", qid); else { botao.disabled = false; RegistroEditor.bloquear(campo, false); alert("Erro ao salvar anotação: " + e.message); } }
       }
 
       async function salvarEnviarProf(qid) {
@@ -984,14 +1015,16 @@
         let texto; try { texto = textoRegistroValido(campo, "uma mensagem"); } catch (e) { alert(e.message); return; }
         if (!confirm("Confirma enviar esta mensagem ao professor?")) return;
         if (!tentativaAnotacaoId) { alert("Tentativa não identificada."); return; }
-        const ctx = contextoAcessoLocal(); botao.disabled = true;
+        const ctx = contextoAcessoLocal(); botao.disabled = true; RegistroEditor.bloquear(campo, true);
         try {
-          await apiPostAuth("/me/mensagens-prof", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
+          await apiPostAuth("/me/mensagens-prof", { questao_id: qid, tentativa_id: tentativaAnotacaoId, bateria_id: Number(bateriaId), ...texto, contratacao_id: ctx.contratacao_id, demonstracao_id: ctx.demonstracao_id });
           alert("Mensagem enviada ao professor."); cacheRegistrosQuestao.mensagem.set(Number(qid), { questao_id: qid }); atualizarSecaoRegistro("mensagem", qid);
-        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("mensagem", qid); else { botao.disabled = false; alert("Erro ao enviar mensagem: " + e.message); } }
+        } catch (e) { if (e.status === 409) await recarregarRegistroQuestao("mensagem", qid); else { botao.disabled = false; RegistroEditor.bloquear(campo, false); alert("Erro ao enviar mensagem: " + e.message); } }
       }
 
       function resetarBotaoResponder(questaoId) {
+        respostasConfirmadas.delete(Number(questaoId));
+        atualizarBotoesConclusao();
         const btn = document.getElementById(`btnResponder_${questaoId}`);
 
         if (btn) {
