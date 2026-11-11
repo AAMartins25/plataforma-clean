@@ -29,3 +29,7 @@
   line-height:1.3;
   white-space:normal;
 }
+
+.sprint-header ~ .container section.card:has(> .sprint-registro-abrir) {
+  padding-block:10px;
+}
