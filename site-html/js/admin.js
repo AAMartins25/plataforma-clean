@@ -147,7 +147,15 @@ const AdminCursos = {
       msg.innerHTML = "Salvando...";
       try {
         // Ajuste se sua rota for diferente (ex.: "/curso" ao invés de "/cursos")
-        await apiPostAuth("/cursos", { nome, ativo });
+        if (!form.reportValidity()) return;
+        const metadados = {};
+        for (const campo of ["banca", "cargo", "orgao", "ano", "uf"]) {
+          const valor = document.getElementById("novo-" + campo).value.trim();
+          if (!valor) { msg.textContent = "Preencha todos os campos do curso."; return; }
+          metadados[campo] = campo === "ano" ? Number(valor) : valor;
+        }
+        if (!nome) { msg.textContent = "Informe o nome do curso."; return; }
+        await apiPostAuth("/cursos", { nome, ativo, ...metadados });
 
         msg.innerHTML = "✅ Curso criado. Recarregando...";
         // Recarregamento (padrão desejado)

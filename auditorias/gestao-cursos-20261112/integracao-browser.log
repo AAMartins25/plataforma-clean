@@ -1,0 +1,1 @@
+{"status": "OK", "larguras": [320, 390, 768, 1366], "transbordamento_horizontal": false, "capturas": 8, "fluxos": ["criação", "edição", "curso legado", "produtor imutável", "filtros combinados", "pesquisa parcial", "ordenação", "limpar", "seleção", "duplicação", "exclusão", "erros de edição/lista", "texto sem HTML"], "api": "simulada; permissões reais testadas na suíte HTTP"}

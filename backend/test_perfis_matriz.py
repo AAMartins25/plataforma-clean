@@ -59,7 +59,7 @@ def test_fluxo_producao_sem_matricula(ambiente,uid):
         r=c.request(method,url,headers=h,**({'json':body} if body is not None else {}))
         assert r.status_code==200,(url,r.text)
         return r.json()
-    curso=request('POST','/cursos',{'nome':'Novo curso'})['id']
+    curso=request('POST','/cursos',{'nome':'Novo curso','banca':'Banca','cargo':'Cargo','orgao':'Órgão','ano':2026,'uf':'RO'})['id']
     disc=request('POST',f'/cursos/{curso}/disciplinas-proprias',{'nome':'Disciplina','curso_id':curso})['id']
     assunto=request('POST',f'/disciplinas-proprias/{disc}/assuntos-proprios',{'nome':'Assunto','curso_disciplina_propria_id':disc})['id']
     request('GET',f'/cursos/{curso}/disciplinas-proprias')

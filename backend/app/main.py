@@ -889,7 +889,7 @@ def criar_curso(curso: CursoCreate, db: Session = Depends(get_db),
             detail="Já existe um curso com esse nome"
         )
 
-    novo = Curso(nome=nome, ativo=curso.ativo)
+    novo = Curso(**curso.model_dump(), produtor_id=usuario.id)
     db.add(novo)
 
     try:
@@ -904,7 +904,7 @@ def criar_curso(curso: CursoCreate, db: Session = Depends(get_db),
     db.refresh(novo)
     return novo
 
-@app.get("/admin/cursos", response_model=list[CursoResponse])
+@app.get("/admin/cursos", response_model=list[schemas.CursoAdminResponse])
 def listar_cursos_admin(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual)
@@ -915,11 +915,13 @@ def listar_cursos_admin(
             detail="Apenas admin"
         )
 
-    return (
-        db.query(Curso)
-        .order_by(Curso.nome.asc())
-        .all()
-    )
+    # O mesmo escopo de autorização da gestão, sem expor usuários no endpoint público.
+    from sqlalchemy import func
+    cursos = (db.query(Curso, Usuario.nome.label("produtor_nome"))
+              .outerjoin(Usuario, Curso.produtor_id == Usuario.id)
+              .order_by(func.lower(Curso.nome), Curso.id).all())
+    return [dict(schemas.CursoAdminResponse.model_validate(curso).model_dump(),
+                 produtor_nome=nome) for curso, nome in cursos]
 
 # READ: listar cursos
 @app.get("/cursos", response_model=list[CursoResponse])
@@ -943,6 +945,10 @@ def editar_curso(
         garantir_exclusao_segura(db, curso)
         curso.publicado = False
     curso.nome = dados.nome.strip()
+    # PUTs legados de nome/ativo não apagam os metadados omitidos.
+    for campo in ("banca", "cargo", "orgao", "ano", "uf"):
+        if campo in dados.model_fields_set:
+            setattr(curso, campo, getattr(dados, campo))
     if dados.ativo is not None:
         curso.ativo = dados.ativo
 
@@ -9436,7 +9442,13 @@ def duplicar_curso_inteiro(
             nome=novo_nome,
             ativo=curso_origem.ativo,
             publicado=False,
-            descricao_publica=curso_origem.descricao_publica
+            descricao_publica=curso_origem.descricao_publica,
+            banca=curso_origem.banca,
+            cargo=curso_origem.cargo,
+            orgao=curso_origem.orgao,
+            ano=curso_origem.ano,
+            uf=curso_origem.uf,
+            produtor_id=usuario.id
         )
 
         db.add(novo_curso)

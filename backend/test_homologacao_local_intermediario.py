@@ -50,7 +50,7 @@ def processo_reiniciado(nome,fila):
     with carregar_main_isolado(f,e) as main,TestClient(main.app) as c:
         h={'Authorization':'Bearer '+criar_token({'sub':'56'})}
         me=c.get('/me',headers=h)
-        r=c.post('/cursos',headers=h,json={'nome':'Após reinício'})
+        r=c.post('/cursos',headers=h,json={'nome':'Após reinício','banca':'Banca','cargo':'Cargo','orgao':'Órgão','ano':2026,'uf':'RO'})
         fila.put((me.status_code,me.json().get('tipo_admin'),r.status_code))
     e.dispose()
 

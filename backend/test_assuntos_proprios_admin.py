@@ -20,7 +20,8 @@ def ambiente():
     )
     tabelas = [m.Curso.__table__, m.CursoDisciplinaPropria.__table__,
                m.CursoAssuntoProprio.__table__, m.ContratacaoCurso.__table__,
-               m.DemonstracaoCurso.__table__]
+               m.DemonstracaoCurso.__table__, m.Pagamento.__table__,
+               m.ContestacaoPagamento.__table__]
     m.Base.metadata.create_all(engine, tables=tabelas)
     factory = sessionmaker(bind=engine)
     agora = datetime.utcnow()

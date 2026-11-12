@@ -8,6 +8,7 @@
   <title>Admin • Cursos</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/admin-responsivo.css">
+  <link rel="stylesheet" href="../css/gestao-cursos.css?v=1">
   <script src="../js/cabecalho.js" defer></script>
 </head>
 <body>
@@ -30,6 +31,57 @@
           <input id="cursoNome" type="text" placeholder="Ex.: Curso Guarda Municipal" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
         </div>
 
+<div class="curso-campos">
+<div>
+<label for="novo-banca">Banca organizadora</label>
+<input id="novo-banca" type="text" maxlength="255" required />
+</div>
+<div>
+<label for="novo-cargo">Cargo</label>
+<input id="novo-cargo" type="text" maxlength="255" placeholder="Ex.: Professor Educação Infantil" required />
+</div>
+<div>
+<label for="novo-orgao">Órgão/Entidade realizador(a)</label>
+<input id="novo-orgao" type="text" maxlength="255" required />
+</div>
+<div>
+<label for="novo-ano">Ano</label>
+<input id="novo-ano" type="number" min="1000" max="9999" step="1" required />
+</div>
+<div>
+<label for="novo-uf">UF</label>
+<select id="novo-uf" required>
+<option value="">Selecione a UF</option>
+<option>AC</option>
+<option>AL</option>
+<option>AP</option>
+<option>AM</option>
+<option>BA</option>
+<option>CE</option>
+<option>DF</option>
+<option>ES</option>
+<option>GO</option>
+<option>MA</option>
+<option>MT</option>
+<option>MS</option>
+<option>MG</option>
+<option>PA</option>
+<option>PB</option>
+<option>PR</option>
+<option>PE</option>
+<option>PI</option>
+<option>RJ</option>
+<option>RN</option>
+<option>RS</option>
+<option>RO</option>
+<option>RR</option>
+<option>SC</option>
+<option>SP</option>
+<option>SE</option>
+<option>TO</option>
+</select>
+</div>
+</div>
         <div class="assunto">
           <label><b>Ativo</b></label><br/>
           <select id="cursoAtivo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">

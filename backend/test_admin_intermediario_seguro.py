@@ -53,7 +53,7 @@ def ambiente(monkeypatch):
 def headers(i):
     return {'Authorization':'Bearer '+criar_token({'sub':str(i),'is_admin':True,'tipo_admin':'admin_geral'})} if i else {}
 
-GRAVACOES=[('/cursos',{'nome':'Novo'}),('/disciplinas',{'nome':'Nova'}),
+GRAVACOES=[('/cursos',{'nome':'Novo','banca':'Banca','cargo':'Cargo','orgao':'Órgão','ano':2026,'uf':'RO'}),('/disciplinas',{'nome':'Nova'}),
            ('/cursos/1/disciplinas/1',{}),('/assuntos',{'nome':'Novo','disciplina_id':1})]
 
 @pytest.mark.parametrize('i',[1,2,3,4,5,None])
@@ -94,7 +94,7 @@ def test_login_real(ambiente,i):
     r=c.post('/login',data={'username':f'u{i}@example.com','password':'Teste123'});assert r.status_code==200
     h={'Authorization':'Bearer '+r.json()['access_token']}
     assert c.get('/me',headers=h).json()['is_admin']==(i==1)
-    assert c.post('/cursos',json={'nome':'Login'},headers=h).status_code==(200 if i in (1,2) else 403)
+    assert c.post('/cursos',json={'nome':'Login','banca':'Banca','cargo':'Cargo','orgao':'Órgão','ano':2026,'uf':'RO'},headers=h).status_code==(200 if i in (1,2) else 403)
 
 @pytest.mark.parametrize('i',[2,3,4,5,None])
 def test_escalada_e_endpoint_ausente(ambiente,i):
@@ -125,7 +125,7 @@ def test_publico_e_revogacao_com_jwt_anterior(ambiente):
     h=headers(1)
     with f() as db:u=db.get(m.Usuario,1);u.is_admin=False;u.tipo_admin='admin_prod';db.commit()
     assert c.post('/admin/alunos',json={},headers=h).status_code==403
-    assert c.post('/cursos',json={'nome':'Novo'},headers=h).status_code==200
+    assert c.post('/cursos',json={'nome':'Novo','banca':'Banca','cargo':'Cargo','orgao':'Órgão','ano':2026,'uf':'RO'},headers=h).status_code==200
     with f() as db:db.get(m.Usuario,1).ativo=False;db.commit()
     assert c.get('/me',headers=h).status_code==401
 

@@ -1,13 +1,58 @@
 from pydantic import BaseModel, Field, field_validator, StrictBool, model_validator
 from pydantic.types import UUID4
 
-class CursoCreate(BaseModel):
-    nome: str
-    ativo: bool = True
+UFS_CURSO = frozenset("AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split())
 
-class CursoUpdate(BaseModel):
-    nome: str
+class CursoMetadados(BaseModel):
+    banca: str | None = Field(default=None, max_length=255)
+    cargo: str | None = Field(default=None, max_length=255)
+    orgao: str | None = Field(default=None, max_length=255)
+    ano: int | None = Field(default=None, strict=True, ge=1000, le=9999)
+    uf: str | None = None
+
+    @field_validator('banca', 'cargo', 'orgao')
+    @classmethod
+    def texto_metadado(cls, valor):
+        if valor is None:
+            return None
+        valor = valor.strip()
+        if not valor:
+            raise ValueError('Informe um texto válido')
+        return valor
+
+    @field_validator('uf')
+    @classmethod
+    def uf_valida(cls, valor):
+        if valor is None:
+            return None
+        if valor not in UFS_CURSO:
+            raise ValueError('Selecione uma UF válida')
+        return valor
+
+class CursoCreate(CursoMetadados):
+    model_config = {'extra': 'forbid'}
+    nome: str = Field(min_length=1, max_length=255)
+    ativo: bool = True
+    banca: str = Field(min_length=1, max_length=255)
+    cargo: str = Field(min_length=1, max_length=255)
+    orgao: str = Field(min_length=1, max_length=255)
+    ano: int = Field(strict=True, ge=1000, le=9999)
+    uf: str
+
+    @field_validator('nome')
+    @classmethod
+    def nome_valido(cls, valor):
+        valor = valor.strip()
+        if not valor:
+            raise ValueError('Informe o nome do curso')
+        return valor
+
+class CursoUpdate(CursoMetadados):
+    model_config = {'extra': 'forbid'}
+    nome: str = Field(min_length=1, max_length=255)
     ativo: StrictBool | None = None
+
+    _nome_valido = field_validator('nome')(classmethod(CursoCreate.nome_valido.__func__))
 
 class CursoResponse(BaseModel):
     id: int
@@ -16,6 +61,15 @@ class CursoResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CursoAdminResponse(CursoResponse):
+    banca: str | None = None
+    cargo: str | None = None
+    orgao: str | None = None
+    ano: int | None = None
+    uf: str | None = None
+    produtor_id: int | None = None
+    produtor_nome: str | None = None
 
 class DisciplinaCreate(BaseModel):
     nome: str

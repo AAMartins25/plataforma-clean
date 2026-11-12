@@ -83,6 +83,9 @@
     e.preventDefault();
 
     const nome = cursoNome.value.trim();
+    if (!formCurso.reportValidity()) return;
+    const metadados = GestaoCursos.lerCampos("novo");
+    if (!metadados) return;
 
     if (!nome) {
       msgCurso.textContent = "Informe o nome do curso.";
@@ -93,6 +96,7 @@
     try {
       const curso = await apiPostAuth("/cursos", {
         nome,
+        ...metadados,
         ativo: true
       });
 
@@ -116,7 +120,8 @@
       cursoNome.disabled = false;
       cursoNome.value = "";
 
-      await carregarCursosExistentes();
+      formCurso.reset();
+      await carregarCursosExistentes(curso.id);
       cursoExistenteSelect.value = curso.id;
 
     } catch (err) {
@@ -247,31 +252,9 @@
     `).join("");
   }
 
-  async function carregarCursosExistentes() {
-    try {
-        const todosCursos = await apiGetAuth("/cursos");
-
-        const cursos = (todosCursos || []).filter(
-          curso => curso.ativo === true
-        );
-
-        if (!cursos || cursos.length === 0) {
-        cursoExistenteSelect.innerHTML = `<option value="">Nenhum curso cadastrado</option>`;
-        return;
-        }
-
-        cursoExistenteSelect.innerHTML = `
-        <option value="">Selecione um curso existente</option>
-        ${cursos.map(c => `
-            <option value="${c.id}">${c.nome}</option>
-        `).join("")}
-        `;
-
-    } catch (err) {
-        cursoExistenteSelect.innerHTML = `<option value="">Erro ao carregar cursos</option>`;
-        console.error(err);
-    }
-    }
+  async function carregarCursosExistentes(selecionarId) {
+    return GestaoCursos.carregar(selecionarId);
+  }
 
     btnUsarCursoExistente.addEventListener("click", async () => {
     const cursoId = cursoExistenteSelect.value;
@@ -2932,39 +2915,10 @@
       abrirVideoAula(aulaAtual.id, aulaAtual.titulo);
     };
 
-    btnEditarCurso.addEventListener("click", async () => {
-      const cursoId = cursoExistenteSelect.value;
-
-      if (!cursoId) {
-        alert("Selecione um curso para editar.");
-        return;
-      }
-
-      const nomeAtual = cursoExistenteSelect.options[cursoExistenteSelect.selectedIndex].text;
-      const novoNome = prompt("Editar nome do curso:", nomeAtual);
-
-      if (!novoNome || !novoNome.trim()) return;
-
-      const ok = confirm(`Confirmar alteração do nome do curso para:\n\n${novoNome.trim()}?`);
-      if (!ok) return;
-
-      try {
-        const curso = await apiPutAuth(`/cursos/${cursoId}`, {
-          nome: novoNome.trim()
-        });
-
-        msgCurso.textContent = `Curso atualizado: ${curso.nome}!`;
-        msgCurso.style.color = "#2f5e46";
-
-        await carregarCursosExistentes();
-        cursoExistenteSelect.value = cursoId;
-        cursoNome.disabled = false;
-        cursoNome.value = "";
-
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao editar curso: " + err.message);
-      }
+    btnEditarCurso.addEventListener("click", () => {
+      GestaoCursos.editar(cursoExistenteSelect.value, curso => {
+        if (cursoAtual?.id === curso.id) cursoAtual.nome = curso.nome;
+      });
     });
 
     btnDuplicarCurso.addEventListener("click", async () => {
@@ -3012,7 +2966,7 @@
         );
 
         try {
-          await carregarCursosExistentes();
+          await carregarCursosExistentes(resultado.novo_curso_id);
           cursoExistenteSelect.value = String(resultado.novo_curso_id);
         } catch (err) {
           console.error(err);
@@ -3435,7 +3389,7 @@
       }
     };
 
-    carregarCursosExistentes();
+    carregarCursosExistentes().catch(console.error);
 
 })();
 

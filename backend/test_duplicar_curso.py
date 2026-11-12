@@ -81,3 +81,22 @@ def test_origem_inexistente_e_estrutura_incompativel(copia):
     db.add(m.Pasta(curso_assunto_proprio_id=1,tipo='INTERATIVIDADE',nome='Legado'));db.commit()
     with pytest.raises(HTTPException) as e:executar(main,db)
     assert e.value.status_code==409 and db.query(m.Curso).count()==1
+
+
+def test_metadados_e_produtor_da_duplicacao(copia):
+    db,main=copia
+    origem=db.get(m.Curso,1)
+    origem.banca='Banca';origem.cargo='Professor';origem.orgao='Prefeitura';origem.ano=2026;origem.uf='RO';origem.produtor_id=42
+    db.commit()
+    resultado=executar(main,db)
+    novo=db.get(m.Curso,resultado['novo_curso_id'])
+    for campo in ('banca','cargo','orgao','ano','uf'): assert getattr(novo,campo)==getattr(origem,campo)
+    assert novo.produtor_id==1 and origem.produtor_id==42
+
+
+def test_duplicacao_legado_sem_metadados(copia):
+    db,main=copia
+    resultado=executar(main,db)
+    novo=db.get(m.Curso,resultado['novo_curso_id'])
+    assert novo.produtor_id==1
+    assert all(getattr(novo,campo) is None for campo in ('banca','cargo','orgao','ano','uf'))

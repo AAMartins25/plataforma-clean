@@ -30,6 +30,14 @@ class Curso(Base):
     )
 
     descricao_publica = Column(Text, nullable=True)
+    # Nulos preservam o acervo anterior à gestão de metadados.
+    banca = Column(String(255), nullable=True)
+    cargo = Column(String(255), nullable=True)
+    orgao = Column(String(255), nullable=True)
+    ano = Column(Integer, nullable=True)
+    uf = Column(String(2), nullable=True)
+    produtor_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+
 
     disciplinas = relationship(
         "Disciplina",
