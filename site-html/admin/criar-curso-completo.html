@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../css/style.css?v=questoes1" />
   <link rel="stylesheet" href="../css/admin-responsivo.css">
   <link rel="stylesheet" href="../css/admin-shell.css" />
-  <link rel="stylesheet" href="../css/gestao-cursos.css?v=4" />
+  <link rel="stylesheet" href="../css/gestao-cursos.css?v=5" />
   <script src="../js/cabecalho.js" defer></script>
   <link rel="stylesheet" href="../css/editor-teoria-markdown.css?v=ckeditor-8459c54a5f94b16f">
   <link rel="stylesheet" href="../js/vendor/katex/katex.min.css">
@@ -107,7 +107,7 @@
 
 <div class="curso-campos">
 <div>
-<label for="novo-banca">Banca organizadora</label>
+<label for="novo-banca">Banca</label>
 <input id="novo-banca" type="text" maxlength="255" required />
 </div>
 <div>
@@ -115,7 +115,7 @@
 <input id="novo-cargo" type="text" maxlength="255" placeholder="Ex.: Professor Educação Infantil" required />
 </div>
 <div>
-<label for="novo-orgao">Órgão/Entidade realizador(a)</label>
+<label for="novo-orgao">Órgão/Entidade</label>
 <input id="novo-orgao" type="text" maxlength="255" required />
 </div>
 <div>
@@ -166,7 +166,7 @@
         <h3>Selecionar curso existente</h3>
         <div class="curso-campos" id="cursoFiltros" aria-label="Filtros de cursos">
         <div>
-        <label for="filtro-banca">Banca organizadora</label>
+        <label for="filtro-banca">Banca</label>
         <select id="filtro-banca">
         <option value="">Todos</option>
         </select>
@@ -178,7 +178,7 @@
         </select>
         </div>
         <div>
-        <label for="filtro-orgao">Órgão/Entidade realizador(a)</label>
+        <label for="filtro-orgao">Órgão/Entidade</label>
         <select id="filtro-orgao">
         <option value="">Todos</option>
         </select>
@@ -204,7 +204,7 @@
         </div>
         <div class="curso-pesquisa">
         <label for="cursoPesquisa">Pesquisar por nome ou palavras-chave</label>
-        <input id="cursoPesquisa" type="search" placeholder="Nome completo, parte do nome ou palavras-chave" />
+        <input id="cursoPesquisa" type="search" placeholder="Nome completo ou palavras-chave" />
         <p id="resultadoCursos" role="status" aria-live="polite">
         </p>
         <button id="limparFiltrosCursos" type="button" class="btn">Limpar filtros e pesquisa</button>
@@ -263,7 +263,7 @@
           <input id="editar-nome" type="text" required maxlength="255" />
           <div class="curso-campos">
           <div>
-          <label for="editar-banca">Banca organizadora</label>
+          <label for="editar-banca">Banca</label>
           <input id="editar-banca" type="text" maxlength="255"  />
           </div>
           <div>
@@ -271,7 +271,7 @@
           <input id="editar-cargo" type="text" maxlength="255" placeholder="Ex.: Professor Educação Infantil"  />
           </div>
           <div>
-          <label for="editar-orgao">Órgão/Entidade realizador(a)</label>
+          <label for="editar-orgao">Órgão/Entidade</label>
           <input id="editar-orgao" type="text" maxlength="255"  />
           </div>
           <div>
