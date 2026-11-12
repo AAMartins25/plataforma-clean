@@ -4,7 +4,8 @@
 .curso-campos input,.curso-campos select,.curso-pesquisa input,#editar-nome { width:100%; min-width:0; box-sizing:border-box; padding:10px; border:1px solid #ddd; border-radius:6px; font:inherit; }
 #novo-uf { height:calc(1.6em + 22px); }
 .curso-pesquisa { display:grid; gap:8px; margin:12px 0; }
-.curso-pesquisa .btn { justify-self:start; white-space:normal; }
+.curso-pesquisa .btn { justify-self:end; white-space:normal; margin-top:0; background-color:#f8f2e6; }
+#resultadoCursos { text-align:right; }
 #cursoExistenteSelect { min-width:0; max-width:100%; box-sizing:border-box; }
 #formEditarCurso[hidden] { display:none; }
 #formEditarCurso .btn { margin:5px 0; white-space:normal; }

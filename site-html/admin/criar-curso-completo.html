@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../css/style.css?v=questoes1" />
   <link rel="stylesheet" href="../css/admin-responsivo.css">
   <link rel="stylesheet" href="../css/admin-shell.css" />
-  <link rel="stylesheet" href="../css/gestao-cursos.css?v=2" />
+  <link rel="stylesheet" href="../css/gestao-cursos.css?v=3" />
   <script src="../js/cabecalho.js" defer></script>
   <link rel="stylesheet" href="../css/editor-teoria-markdown.css?v=ckeditor-8459c54a5f94b16f">
   <link rel="stylesheet" href="../js/vendor/katex/katex.min.css">
@@ -163,7 +163,7 @@
       </form>
 
       <div class="assunto" style="margin-top:20px;">
-        <h3>Selecione um curso</h3>
+        <h3>Selecionar curso existente</h3>
         <div class="curso-campos" id="cursoFiltros" aria-label="Filtros de cursos">
         <div>
         <label for="filtro-banca">Banca organizadora</label>
@@ -205,11 +205,11 @@
         <div class="curso-pesquisa">
         <label for="cursoPesquisa">Pesquisar por nome ou palavras-chave</label>
         <input id="cursoPesquisa" type="search" placeholder="Nome completo, parte do nome ou palavras-chave" />
-        <button id="limparFiltrosCursos" type="button" class="btn">Limpar filtros e pesquisa</button>
-        </div>
         <p id="resultadoCursos" role="status" aria-live="polite">
         </p>
-        <label for="cursoExistenteSelect"><b>Selecionar curso existente</b></label><br/>
+        <button id="limparFiltrosCursos" type="button" class="btn">Limpar filtros e pesquisa</button>
+        </div>
+        <label for="cursoExistenteSelect"><b>Curso(s) encontrado(s)</b></label><br/>
 
         <select
           id="cursoExistenteSelect"
