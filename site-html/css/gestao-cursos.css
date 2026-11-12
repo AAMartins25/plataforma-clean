@@ -2,6 +2,7 @@
 .curso-campos > div { min-width:0; }
 .curso-campos label,.curso-pesquisa label,#formEditarCurso > label { display:block; margin-bottom:5px; font-weight:600; }
 .curso-campos input,.curso-campos select,.curso-pesquisa input,#editar-nome { width:100%; min-width:0; box-sizing:border-box; padding:10px; border:1px solid #ddd; border-radius:6px; font:inherit; }
+#novo-uf { height:calc(1.6em + 22px); }
 .curso-pesquisa { display:grid; gap:8px; margin:12px 0; }
 .curso-pesquisa .btn { justify-self:start; white-space:normal; }
 #cursoExistenteSelect { min-width:0; max-width:100%; box-sizing:border-box; }
