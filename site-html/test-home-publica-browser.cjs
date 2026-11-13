@@ -64,10 +64,31 @@ const server = http.createServer((req, res) => {
         assert.equal(await page.locator('.curso-publico-card').first().getAttribute('href'), `curso-info.html?curso_id=${sorted[0].id}&curso_nome=${encodeURIComponent(sorted[0].nome)}`);
         const geometry = await page.evaluate(() => {
           const r = e => {const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height};};
-          return {brand: r(document.querySelector('.home-brand-title')), access: r(document.querySelector('.ro-header-access a')), width: innerWidth};
+          return {
+            brand: r(document.querySelector('.home-brand-title')),
+            name: r(document.querySelector('.home-brand-name')),
+            tagline: r(document.querySelector('.home-brand-tagline')),
+            book: r(document.querySelector('.home-brand-symbol')),
+            access: r(document.querySelector('.ro-header-access a')),
+            controls: [...document.querySelectorAll('.ro-header-navigation a')].filter(e=>e.getClientRects().length).map(r),
+            font: parseFloat(getComputedStyle(document.querySelector('.ro-header-access a')).fontSize),
+            paddingTop: parseFloat(getComputedStyle(document.querySelector('.home-header')).paddingTop),
+            width: innerWidth
+          };
         });
         assert.ok(Math.abs(geometry.brand.x + geometry.brand.w/2 - width/2) < 1);
-        assert.ok(Math.abs(geometry.access.x + geometry.access.w/2 - width/2) < 1);
+        const center = r => r.x+r.w/2;
+        assert.ok(Math.abs(center(geometry.access)-center(geometry.name)) < 0.5, 'Minha Área centralizado no texto da marca');
+        assert.ok(Math.abs(center(geometry.tagline)-center(geometry.name)) < 0.5, 'Slogan centralizado no nome');
+        assert.ok(Math.abs(geometry.name.x-(geometry.book.x+geometry.book.w)-(width<=600?8:14)) < 0.5, 'Espaço entre livro e nome preservado');
+        assert.equal(geometry.font,width<=600?17:18);
+        assert.equal(geometry.paddingTop,width<=600?10:14);
+        assert.ok(geometry.controls.every(c=>c.x+c.w<=geometry.access.x || c.x>=geometry.access.x+geometry.access.w || c.y+c.h<=geometry.access.y || c.y>=geometry.access.y+geometry.access.h),'Sem sobreposição de controles');
+        if(process.env.HOME_BEFORE_MEASUREMENTS) {
+          const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
+          assert.equal(before.brand.y-geometry.brand.y,width<=600?6:8,'Redução efetiva do espaço superior');
+          geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
+        }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
         assert.ok(geometry.access.w >= 44 && geometry.access.h >= 44);
         assert.equal(await noOverflow(page), true);
@@ -104,18 +125,33 @@ const server = http.createServer((req, res) => {
     }
     // Mesma hierarquia da referência quando a API fornecer metadados explícitos.
     for (const width of [320,390,768,1366]) {
-      const ctx=await context(width, null, [{id:1,nome:'RESUMÃO PROFESSOR EDUCAÇÃO INFANTIL ALVORADA-RS 2026',orgao:'Alvorada',uf:'RS',ano:2026,cargo:'Professor de Educação Infantil',ativo:true}]);
-      const page=await ctx.newPage(); await page.goto(origin+'/index.html');await page.locator('.curso-publico-card').waitFor();
-      assert.equal(await page.locator('.home-course-meta').innerText(),'Alvorada/RS • 2026');
-      assert.equal(await page.locator('.curso-publico-nome').innerText(),'Professor de Educação Infantil');
+      const ctx=await context(width, null, [{id:1,nome:'RESUMÃO PROFESSOR EDUCAÇÃO INFANTIL ALVORADA-RS 2026',orgao:'Alvorada',uf:'RS',ano:2026,cargo:'Professor de Educação Infantil',ativo:true},{id:2,nome:'ZZZ Nome oficial preservado',orgao:'Município confirmado',uf:'SC',ano:2027,cargo:'Professor de Educação Infantil e Atendimento Educacional Especializado em Classes de Ensino Integral',ativo:true}]);
+      const page=await ctx.newPage(); await page.goto(origin+'/index.html');await page.locator('.curso-publico-card').first().waitFor();
+      assert.equal(await page.locator('.home-course-meta').first().innerText(),'Alvorada/RS • 2026');
+      assert.equal(await page.locator('.curso-publico-nome').first().innerText(),'Professor de Educação Infantil');
       assert.equal(await noOverflow(page),true);
       if(artifacts) await page.screenshot({path:path.join(artifacts,`referencia-${width}.png`),fullPage:true});
       await ctx.close();
     }
+    // Dados parciais ou ausentes: somente informações explícitas, sem analisar o nome.
+    for(const [fields,meta,title] of [
+      [{},null,'RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26'],
+      [{orgao:'Alvorada'},'Alvorada','RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26'],
+      [{uf:'RS',ano:2026},'RS • 2026','RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26'],
+      [{cargo:'Professor confirmado'},null,'Professor confirmado'],
+      [{orgao:'',uf:null,ano:null,cargo:' '},null,'RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26']
+    ]) {
+      const ctx=await context(320,null,[{id:39,nome:'RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26',ativo:true,publicado:true,...fields}]);
+      const page=await ctx.newPage();await page.goto(origin+'/index.html');await page.locator('.curso-publico-card').first().waitFor();
+      assert.equal(await page.locator('.curso-publico-nome').innerText(),title);
+      assert.equal(await page.locator('.home-course-meta').count(),meta?1:0);
+      if(meta)assert.equal(await page.locator('.home-course-meta').innerText(),meta);
+      assert.equal(await noOverflow(page),true);await ctx.close();
+    }
     // Dados opcionais e conteúdo não confiável: nomes preservados e escapados.
     const special = {id: 8, nome:'Nome oficial <img src=x onerror=alert(1)>', cargo:'Professor <b>teste</b>', orgao:'Órgão & Município', uf:'RS', ano:2026, ativo:true};
     const ctx = await context(320, null, [special]); const page = await ctx.newPage();
-    await page.goto(origin + '/index.html'); await page.locator('.curso-publico-card').waitFor();
+    await page.goto(origin + '/index.html'); await page.locator('.curso-publico-card').first().waitFor();
     assert.equal(await page.locator('.curso-publico-nome').innerText(), special.cargo);
     assert.equal(await page.locator('.curso-publico-card').getAttribute('title'), special.nome);
     assert.equal(await page.locator('.home-course-meta').innerText(), 'Órgão & Município/RS • 2026');

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumão Online</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/home-publica.css?v=2">
+  <link rel="stylesheet" href="css/home-publica.css?v=3">
   <script src="js/cabecalho.js" defer></script>
   <script src="js/rodape.js" defer></script>
 </head>
@@ -91,7 +91,7 @@
       onclick="alternarCursosDisponiveis()"
       onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); alternarCursosDisponiveis(); }"
     >
-      <h2><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="m4 7 5-1 4 17-5 1L4 7Zm9-2h5v18h-5V5Zm9 0h4v18h-4V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> Cursos disponíveis</h2>
+      <h2><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z"/><path d="M8 6h13M6 14h13M8 22h14"/></g></svg> Cursos disponíveis</h2>
       <svg class="home-cursos-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -295,19 +295,25 @@
 
     <div class="home-race-scene" role="img" aria-label="Carro de corrida em direção à bandeira de chegada">
       <svg class="home-race-car" viewBox="0 0 180 82" fill="none" aria-hidden="true" focusable="false">
-        <g stroke="#B7C6DA" stroke-width="3" stroke-linecap="round"><path d="M3 37h29M10 48h16M1 59h23"/></g>
-        <path d="M36 30h16v26H36z" fill="#D8202F"/>
-        <path d="M32 28h26v6H32z" fill="#F13844"/>
-        <path d="m44 55 16-13h36l20 9 37 8 13 7H39l5-11Z" fill="#E32131" stroke="#B61726" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="m66 43 12-16h17l13 23" fill="#F23946"/>
-        <path d="M82 29h9l9 16H73l9-16Z" fill="#192435"/>
-        <path d="M78 38h11l5 7H76l2-7Z" fill="#E0EDF6"/>
-        <path d="m62 49 42 5 26 6H58" stroke="#FF7376" stroke-width="3" stroke-linecap="round"/>
-        <path d="M149 57h19v6h-19zM143 66h31v5h-31z" fill="#B61827"/>
-        <path d="M40 66h98" stroke="#9F1423" stroke-width="3"/>
-        <g fill="#161D29" stroke="#0D1320" stroke-width="2"><rect x="44" y="53" width="22" height="25" rx="7"/><rect x="126" y="53" width="20" height="25" rx="7"/></g>
-        <g fill="#596578"><ellipse cx="55" cy="66" rx="5" ry="8"/><ellipse cx="136" cy="66" rx="4.5" ry="8"/></g>
-        <g fill="#AAB4C2"><ellipse cx="55" cy="66" rx="2" ry="4"/><ellipse cx="136" cy="66" rx="2" ry="4"/></g>
+        <g stroke="#B7C6DA" stroke-width="3" stroke-linecap="round"><path d="M3 37h25M10 48h16M1 59h23"/></g>
+        <!-- Aerofólio traseiro elevado, carenagem baixa e cockpit aberto. -->
+        <path d="M40 33h4v26h-4zM53 33h4v23h-4z" fill="#192435"/>
+        <path d="M34 28h27v7H34z" fill="#E32131"/>
+        <path d="M35 28h25v2H35z" fill="#FF7376"/>
+        <path d="m43 57 20-10 13-13h12l13 17 26 5 36 7-1 5H40l3-11Z" fill="#E32131" stroke="#B61726" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="m65 48 13-12h8l10 15-31-3Z" fill="#F23946"/>
+        <path d="M89 48v-9a5 5 0 0 1 10 0v9" stroke="#192435" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="105" cy="51" rx="13" ry="4" fill="#192435"/>
+        <circle cx="104" cy="45" r="5" fill="#E0EDF6"/>
+        <path d="M104 43h5v3h-5z" fill="#192435"/>
+        <path d="m69 53 44 5 34 5H70" stroke="#FF7376" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="m70 59 15-3h18l10 8H68l2-5Z" fill="#B61827"/>
+        <path d="M46 68h116" stroke="#192435" stroke-width="2"/>
+        <path d="m156 62 15 2 3 7h-24v-4h8l-2-5Z" fill="#B61827"/>
+        <path d="M153 67h20" stroke="#F23946" stroke-width="2"/>
+        <g fill="#161D29" stroke="#0D1320" stroke-width="2"><circle cx="57" cy="64" r="13"/><circle cx="140" cy="65" r="12"/></g>
+        <g fill="#596578"><circle cx="57" cy="64" r="7"/><circle cx="140" cy="65" r="6.5"/></g>
+        <g fill="#AAB4C2"><circle cx="57" cy="64" r="3"/><circle cx="140" cy="65" r="3"/></g>
       </svg>
       <svg class="home-race-flag" viewBox="0 0 66 84" fill="none" aria-hidden="true" focusable="false">
         <defs>

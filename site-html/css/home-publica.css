@@ -1,5 +1,7 @@
 /* Identidade da home pública: SVGs locais e fonte do sistema, sem dependências. */
 body.home-page {
+  --home-book-width: 84px;
+  --home-brand-gap: 14px;
   --home-blue: #0866d8;
   --home-navy: #102d75;
   --home-gold: #f5b900;
@@ -16,7 +18,7 @@ body.home-page {
   grid-template-columns: minmax(0, 1fr) 184px minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   gap: 18px 12px;
-  padding: 22px 24px 32px !important;
+  padding: 14px 24px 32px !important;
 }
 /* Ondas limitadas ao fundo; não interceptam os controles existentes. */
 .home-page .home-header::before,
@@ -42,7 +44,13 @@ body.home-page {
   max-width: 100% !important;
 }
 .home-page .home-header.ro-header .ro-identity { height: auto; font-size: 12px; color: var(--home-navy); }
-.home-page .home-header.ro-header .ro-header-access { grid-column: 2; grid-row: 3; }
+.home-page .home-header.ro-header .ro-header-access {
+  grid-column: 2;
+  grid-row: 3;
+  /* O centro do nome fica meia largura do livro + gap à direita da marca completa. */
+  position: relative;
+  left: calc((var(--home-book-width) + var(--home-brand-gap)) / 2);
+}
 .home-page .home-header.ro-header .ro-header-navigation { grid-column: 3; grid-row: 3 !important; }
 .home-page .home-header .home-nav-actions { position: static; flex-wrap: wrap; }
 .home-page .home-header .home-nav { margin: 0; }
@@ -51,12 +59,12 @@ body.home-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: var(--home-brand-gap);
   color: var(--home-blue) !important;
   font: inherit;
   line-height: 1.15;
 }
-.home-page .home-brand-symbol { width: 84px; height: 76px; flex: 0 0 auto; }
+.home-page .home-brand-symbol { width: var(--home-book-width); height: 76px; flex: 0 0 auto; }
 .home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
 .home-page .home-brand-name { font-size: clamp(25px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
 .home-page .home-brand-online { color: #d99c00; }
@@ -71,7 +79,7 @@ body.home-page {
   border-radius: 999px;
   background: linear-gradient(180deg, #1680ef, #0866d8);
   color: #fff;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 650;
   white-space: nowrap;
   box-shadow: 0 3px 8px #0866d81a;
@@ -139,11 +147,12 @@ body.home-page {
 .home-page footer { margin: 28px 0 0; padding: 0 16px 26px; color: var(--home-muted); opacity: 1; font-size: 14px; }
 .home-page :is(.home-cursos-toggle, .curso-publico-card, .home-icon-btn):focus-visible { outline: 3px solid var(--home-blue); outline-offset: 4px; }
 @media (max-width: 600px) {
-  .home-page header.home-header.ro-header { padding: 16px 12px 26px !important; gap: 16px 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
-  .home-page header .home-brand-title { gap: 8px; }
-  .home-page .home-brand-symbol { width: 56px; height: 54px; }
+  body.home-page { --home-book-width: 56px; --home-brand-gap: 8px; }
+  .home-page header.home-header.ro-header { padding: 10px 12px 26px !important; gap: 16px 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
+  .home-page header .home-brand-title { gap: var(--home-brand-gap); }
+  .home-page .home-brand-symbol { width: var(--home-book-width); height: 54px; }
   .home-page .home-brand-tagline { font-size: 10px; letter-spacing: 0.16em; }
-  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 164px; height: 50px; font-size: 16px; padding: 0 16px; }
+  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 164px; height: 50px; font-size: 17px; padding: 0 16px; }
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
   .home-page main > .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 13px; }
   .home-page main .card h2, .home-page .home-localizar label { font-size: 20px; gap: 9px; }

@@ -1,0 +1,146 @@
+[
+  {
+    "width": 320,
+    "signedIn": false,
+    "brand": {
+      "x": 12,
+      "y": 32,
+      "w": 296,
+      "h": 54
+    },
+    "access": {
+      "x": 78,
+      "y": 102,
+      "w": 164,
+      "h": 50
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "signedIn": true,
+    "brand": {
+      "x": 12,
+      "y": 76,
+      "w": 296,
+      "h": 54
+    },
+    "access": {
+      "x": 78,
+      "y": 146,
+      "w": 164,
+      "h": 50
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "signedIn": false,
+    "brand": {
+      "x": 12,
+      "y": 32,
+      "w": 366,
+      "h": 54
+    },
+    "access": {
+      "x": 113,
+      "y": 102,
+      "w": 164,
+      "h": 50
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "signedIn": true,
+    "brand": {
+      "x": 12,
+      "y": 76,
+      "w": 366,
+      "h": 54
+    },
+    "access": {
+      "x": 113,
+      "y": 169,
+      "w": 164,
+      "h": 50
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "signedIn": false,
+    "brand": {
+      "x": 24,
+      "y": 40,
+      "w": 720,
+      "h": 76
+    },
+    "access": {
+      "x": 292,
+      "y": 134,
+      "w": 184,
+      "h": 52
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "signedIn": true,
+    "brand": {
+      "x": 24,
+      "y": 84,
+      "w": 720,
+      "h": 76
+    },
+    "access": {
+      "x": 292,
+      "y": 178,
+      "w": 184,
+      "h": 52
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "signedIn": false,
+    "brand": {
+      "x": 24,
+      "y": 40,
+      "w": 1318,
+      "h": 76
+    },
+    "access": {
+      "x": 591,
+      "y": 134,
+      "w": 184,
+      "h": 52
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "signedIn": true,
+    "brand": {
+      "x": 24,
+      "y": 84,
+      "w": 1318,
+      "h": 76
+    },
+    "access": {
+      "x": 591,
+      "y": 178,
+      "w": 184,
+      "h": 52
+    },
+    "overflow": false,
+    "errors": []
+  }
+]
