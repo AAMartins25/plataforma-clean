@@ -26,9 +26,15 @@ body.admin-shell {
   font-size: 1.25rem !important; /* Substitui somente o tamanho inline legado. */
   line-height: 1.3;
 }
-/* Destaque restrito aos títulos de Cursos e Painel do Administrador. */
-.admin-shell .ro-header .ro-header-titles h1.admin-titulo-destaque {
-  font-size: 20px !important;
+/* Adesão explícita nos três cabeçalhos: vence o tamanho inline legado
+   e a regra genérica de 1.25rem, sem alterar os demais títulos administrativos. */
+:is(.admin-shell, .minha-area-page) .ro-header .ro-header-titles h1.admin-titulo-destaque {
+  font-size: 24px !important;
+  font-weight: 700;
+}
+/* Somente títulos de interface marcados no HTML; não alcança editores/conteúdo rico. */
+:is(.admin-shell, .minha-area-page) main .admin-titulo-secao {
+  font-size: 18px;
   font-weight: 600;
 }
 .admin-shell .ro-header .ro-header-navigation {

@@ -8,7 +8,7 @@
   <title>Criar Curso Completo</title>
   <link rel="stylesheet" href="../css/style.css?v=questoes1" />
   <link rel="stylesheet" href="../css/admin-responsivo.css">
-  <link rel="stylesheet" href="../css/admin-shell.css?v=titulos20px-1" />
+  <link rel="stylesheet" href="../css/admin-shell.css?v=titulos24px-1" />
   <link rel="stylesheet" href="../css/gestao-cursos.css?v=6" />
   <script src="../js/cabecalho.js" defer></script>
   <link rel="stylesheet" href="../css/editor-teoria-markdown.css?v=ckeditor-8459c54a5f94b16f">
@@ -40,7 +40,6 @@
       <h1 class="admin-titulo-destaque"
         style="
           margin:-6px 0 0 0;
-          font-size:1.55rem;
           text-align:center;
         "
       >
@@ -89,7 +88,7 @@
 
     <!-- CURSO -->
     <div class="card">
-      <h2>1) Criar / editar curso</h2>
+      <h2 class="admin-titulo-secao">1) Criar / editar curso</h2>
 
       <form id="formCurso" class="list">
 
@@ -163,7 +162,7 @@
       </form>
 
       <div class="assunto" style="margin-top:20px;">
-        <h3>Selecionar curso existente</h3>
+        <h3 class="admin-titulo-secao">Selecionar curso existente</h3>
         <div class="curso-campos" id="cursoFiltros" aria-label="Filtros de cursos">
         <div>
         <label for="filtro-banca">Banca</label>
@@ -258,7 +257,7 @@
 
         <div id="msgCurso" role="status" style="margin-top:10px;"></div>
         <form id="formEditarCurso" hidden class="assunto">
-          <h3>Editar curso</h3>
+          <h3 class="admin-titulo-secao">Editar curso</h3>
           <label for="editar-nome">Nome do curso</label>
           <input id="editar-nome" type="text" required maxlength="255" />
           <div class="curso-campos">
@@ -318,7 +317,7 @@
         </form>
 
         <div id="boxConfigPublicaCurso" class="assunto" style="display:none; margin-top:20px;">
-          <h3>Descrição pública e valores de acesso</h3>
+          <h3 class="admin-titulo-secao">Descrição pública e valores de acesso</h3>
 
           <textarea
             id="cursoDescricaoPublica"
@@ -402,7 +401,7 @@
     <!-- DISCIPLINAS -->
     <div class="card">
 
-      <h2>2) Disciplinas do curso</h2>
+      <h2 class="admin-titulo-secao">2) Disciplinas do curso</h2>
 
       <div id="boxDisciplinas" style="display:none;">
 
@@ -435,12 +434,12 @@
     <!-- CONTEÚDO -->
     <div class="card">
 
-      <h2>3) Assuntos da disciplina</h2>
+      <h2 class="admin-titulo-secao">3) Assuntos da disciplina</h2>
 
       <div id="boxConteudo" style="display:none;">
 
         <div id="areaAssuntos" style="display:none; margin-top:20px;">
-          <h3 id="tituloDisciplinaSelecionada">Disciplina selecionada</h3>
+          <h3 class="admin-titulo-secao" id="tituloDisciplinaSelecionada">Disciplina selecionada</h3>
 
           <div id="listaAssuntos" style="margin-top:15px;">
             Nenhum assunto carregado.
@@ -451,7 +450,7 @@
             class="assunto"
             style="display:none; margin-top:15px;"
           >
-            <h3>Copiar assunto para outra disciplina</h3>
+            <h3 class="admin-titulo-secao">Copiar assunto para outra disciplina</h3>
 
             <div style="margin-top:12px;">
               <label>
@@ -545,7 +544,7 @@
 
           <div id="areaAulas" style="display:none; margin-top:25px;">
 
-            <h3 id="tituloAreaAulas">Área do assunto</h3>
+            <h3 class="admin-titulo-secao" id="tituloAreaAulas">Área do assunto</h3>
 
             <div id="boxCriacaoAula" class="assunto">
               <label><b>Título da aula</b></label><br/>
@@ -569,7 +568,7 @@
 
             <div id="areaConteudoAula" style="display:none; margin-top:25px;">
 
-              <h3>Conteúdo</h3>
+              <h3 class="admin-titulo-secao">Conteúdo</h3>
 
               <div class="assunto">
 
