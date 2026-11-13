@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="../css/descricao-publica.css?v=1">
   <link rel="stylesheet" href="../css/questao-conteudo.css">
   <link rel="stylesheet" href="../css/questao-editor.css?v=1">
+  <script src="../js/rodape.js" defer></script>
 </head>
 
 <body class="admin-shell gestao-cursos-page">
@@ -589,7 +590,7 @@
 
   <footer>
     <p>
-      © <span id="ano_atual">2026</span> RO
+      © <span id="ano_atual">2026</span> Quality
     </p>
   </footer>
 
@@ -624,7 +625,7 @@
     const anoAtual = document.getElementById("ano_atual");
 
     if (anoAtual) {
-      anoAtual.textContent = 2026;
+      anoAtual.textContent = new Date().getFullYear();
     }
   </script>
 

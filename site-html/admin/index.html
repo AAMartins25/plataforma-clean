@@ -17,6 +17,7 @@
   />
   <link rel="stylesheet" href="../css/admin-shell.css?v=titulos23px-1" />
   <script src="../js/cabecalho.js" defer></script>
+  <script src="../js/rodape.js" defer></script>
 </head>
 
 <body class="admin-shell">
@@ -240,7 +241,7 @@
 
   <footer>
     <p>
-      © <span id="ano_atual">2026</span> RO
+      © <span id="ano_atual">2026</span> Quality
     </p>
   </footer>
 
@@ -263,7 +264,7 @@
     const anoAtual = document.getElementById("ano_atual");
 
     if (anoAtual) {
-      anoAtual.textContent = 2026;
+      anoAtual.textContent = new Date().getFullYear();
     }
 
     requireAdmin();

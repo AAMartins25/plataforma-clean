@@ -7,6 +7,7 @@
   <title>Checkout</title>
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/cabecalho.js" defer></script>
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body class="curso-page">
@@ -151,7 +152,7 @@
   </main>
 
   <footer style="margin-top:4px;">
-    <p>© <span id="ano_atual">2026</span> RO</p>
+    <p>© <span id="ano_atual">2026</span> Quality</p>
   </footer>
 
   <script src="js/app.js?v=venda1"></script>
@@ -409,7 +410,7 @@
     }
 
     const anoAtual = document.getElementById("ano_atual");
-    if (anoAtual) anoAtual.textContent = 2026;
+    if (anoAtual) anoAtual.textContent = new Date().getFullYear();
 
     document.getElementById("btnAplicarCupom").onclick = aplicarCupomCursoInfo;
     document.getElementById("codigo_cupom_desconto").oninput = invalidarCupomDigitado;

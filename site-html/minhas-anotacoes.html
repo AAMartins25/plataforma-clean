@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body
@@ -132,7 +133,7 @@
 
 <footer>
   <p>
-    © <span id="ano_atual">2026</span> RO
+    © <span id="ano_atual">2026</span> Quality
   </p>
 </footer>
 
@@ -785,7 +786,7 @@ const anoAtual =
 
 if (anoAtual) {
   anoAtual.textContent =
-    2026;
+    new Date().getFullYear();
 }
 
 exibirNomeUsuarioLogadoAnotacoes();

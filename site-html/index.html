@@ -6,8 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumão Online</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/home-publica.css?v=1">
+  <link rel="stylesheet" href="css/home-publica.css?v=2">
   <script src="js/cabecalho.js" defer></script>
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body class="home-page">
@@ -16,14 +17,9 @@
 
   <div class="home-brand">
     <h1 class="home-brand-title">
-      <svg class="home-brand-symbol" viewBox="0 0 48 48" fill="none" aria-hidden="true" focusable="false">
-        <rect x="1" y="1" width="46" height="46" rx="13" fill="#16324f"/>
-        <path d="M10 15c5-2 9-1 14 2 5-3 9-4 14-2v20c-5-2-9-1-14 2-5-3-9-4-14-2V15Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M24 18v18" stroke="#fff" stroke-width="1.5"/>
-        <path d="m17 23 4 4 10-10" stroke="#f4cb57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <img class="home-brand-symbol" src="assets/book-check.svg" alt="" width="80" height="72">
       <span class="home-brand-wordmark">
-        <span class="home-brand-name">Resumão Online</span>
+        <span class="home-brand-name"><span>Resumão</span> <span class="home-brand-online">Online</span></span>
         <span class="home-brand-tagline">DIRETO AO PONTO</span>
       </span>
     </h1>
@@ -36,13 +32,14 @@
         href="#"
         class="btn home-icon-btn"
         onclick="entrarEEstudar(); return false;"
-        title="Entre / Faça cadastro"
-        aria-label="Entre ou faça cadastro"
+        title="Minha Área"
+        aria-label="Minha Área"
       >
         <svg class="home-person-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
           <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/>
           <path d="M5 21v-2a7 7 0 0 1 14 0v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
         </svg>
+        <span>Minha Área</span>
       </a>
     </div>
 
@@ -94,7 +91,7 @@
       onclick="alternarCursosDisponiveis()"
       onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); alternarCursosDisponiveis(); }"
     >
-      <h2>📚 Cursos disponíveis</h2>
+      <h2><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="m4 7 5-1 4 17-5 1L4 7Zm9-2h5v18h-5V5Zm9 0h4v18h-4V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> Cursos disponíveis</h2>
       <svg class="home-cursos-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
         <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -125,55 +122,13 @@
        LOCALIZAR CURSO
   ====================================================== -->
 
-  <div
-    class="card home-localizar-card"
-    style="
-      padding:10px 18px;
-      min-height:0;
-    "
-  >
-
-    <div
-      class="home-localizar"
-      style="
-        display:flex;
-        align-items:center;
-        gap:14px;
-        flex-wrap:wrap;
-        min-height:0;
-        margin:0;
-      "
-    >
-
-      <label
-        for="buscaCurso"
-        style="
-          font-weight:bold;
-          white-space:nowrap;
-        "
-      >
-        🔎 Localizar
-      </label>
-
-      <input
-        id="buscaCurso"
-        type="text"
-        placeholder="Digite palavra(s) chave"
-        oninput="renderizarCursosPublicos()"
-        style="
-          padding:6px;
-          border:1px solid #ddd;
-          border-radius:1px;
-          width:542px;
-          max-width:100%;
-          font-style:italic;
-        "
-      >
-
+  <div class="card home-localizar-card">
+    <div class="home-localizar">
+      <label for="buscaCurso"><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2.5"/><path d="m18 18 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Localizar</label>
+      <input id="buscaCurso" type="text" placeholder="Digite palavra(s) chave"
+        oninput="renderizarCursosPublicos()">
     </div>
-
   </div>
-
 
   <!-- =====================================================
        NÃO ENCONTROU O PREPARATÓRIO
@@ -280,7 +235,7 @@
     >
 
       <h2>
-        🔗 Atendimento
+        <svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="m11 17 6-6m-7 10-2 2a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 0m0-3 2-2a5 5 0 0 1 7 7l-6 6a5 5 0 0 1-7 0" transform="translate(2 0)" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg> Atendimento
       </h2>
 
     </div>
@@ -339,22 +294,28 @@
   >
 
     <div class="home-race-scene" role="img" aria-label="Carro de corrida em direção à bandeira de chegada">
-      <svg class="home-race-car" viewBox="0 0 82 44" fill="none" aria-hidden="true" focusable="false">
-        <path d="M7 28h4l5-9h24l10 7 17 2 7 6H7v-6Z" fill="#edc550" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="m29 19 4-10h9l7 17M5 13h15M11 8h10M4 22h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M33 11h7l4 9H30l3-9Z" fill="currentColor"/>
-        <path d="M68 23v8h10v-8H68Z" fill="currentColor"/>
-        <circle cx="22" cy="33" r="7" fill="currentColor"/>
-        <circle cx="60" cy="33" r="7" fill="currentColor"/>
-        <circle cx="22" cy="33" r="3" fill="#fff"/>
-        <circle cx="60" cy="33" r="3" fill="#fff"/>
+      <svg class="home-race-car" viewBox="0 0 180 82" fill="none" aria-hidden="true" focusable="false">
+        <g stroke="#B7C6DA" stroke-width="3" stroke-linecap="round"><path d="M3 37h29M10 48h16M1 59h23"/></g>
+        <path d="M36 30h16v26H36z" fill="#D8202F"/>
+        <path d="M32 28h26v6H32z" fill="#F13844"/>
+        <path d="m44 55 16-13h36l20 9 37 8 13 7H39l5-11Z" fill="#E32131" stroke="#B61726" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="m66 43 12-16h17l13 23" fill="#F23946"/>
+        <path d="M82 29h9l9 16H73l9-16Z" fill="#192435"/>
+        <path d="M78 38h11l5 7H76l2-7Z" fill="#E0EDF6"/>
+        <path d="m62 49 42 5 26 6H58" stroke="#FF7376" stroke-width="3" stroke-linecap="round"/>
+        <path d="M149 57h19v6h-19zM143 66h31v5h-31z" fill="#B61827"/>
+        <path d="M40 66h98" stroke="#9F1423" stroke-width="3"/>
+        <g fill="#161D29" stroke="#0D1320" stroke-width="2"><rect x="44" y="53" width="22" height="25" rx="7"/><rect x="126" y="53" width="20" height="25" rx="7"/></g>
+        <g fill="#596578"><ellipse cx="55" cy="66" rx="5" ry="8"/><ellipse cx="136" cy="66" rx="4.5" ry="8"/></g>
+        <g fill="#AAB4C2"><ellipse cx="55" cy="66" rx="2" ry="4"/><ellipse cx="136" cy="66" rx="2" ry="4"/></g>
       </svg>
-      <span class="home-race-track" aria-hidden="true"></span>
-      <svg class="home-race-flag" viewBox="0 0 40 44" fill="none" aria-hidden="true" focusable="false">
-        <path d="M6 40V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M7 6h26v20H7V6Z" fill="#fff"/>
-        <path d="M7 6h6.5v6.7H7zM20 6h6.5v6.7H20zM13.5 12.7H20v6.6h-6.5zM26.5 12.7H33v6.6h-6.5zM7 19.3h6.5V26H7zM20 19.3h6.5V26H20z" fill="currentColor"/>
-        <path d="M7 6h26v20H7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <svg class="home-race-flag" viewBox="0 0 66 84" fill="none" aria-hidden="true" focusable="false">
+        <defs>
+          <pattern id="finish-checks" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#fff"/><path d="M0 0h8v8H0zM8 8h8v8H8z" fill="#182132"/></pattern>
+          <clipPath id="finish-wave"><path d="M10 9c17-10 32 9 49 0v40c-17 9-32-10-49 0V9Z"/></clipPath>
+        </defs>
+        <path d="M10 80V7" stroke="#273449" stroke-width="3.5" stroke-linecap="round"/>
+        <g clip-path="url(#finish-wave)" transform="rotate(7 10 9)"><path d="M10 9c17-10 32 9 49 0v40c-17 9-32-10-49 0V9Z" fill="url(#finish-checks)"/></g>
       </svg>
     </div>
 
@@ -365,12 +326,12 @@
 
 <footer>
   <p>
-    © <span id="ano_atual">2026</span> RO
+    © <span id="ano_atual">2026</span> Quality
   </p>
 </footer>
 
 
-<script src="js/app.js?v=home-publica-1"></script>
+<script src="js/app.js?v=home-publica-2"></script>
 
 <script>
 
@@ -421,7 +382,7 @@
   if (anoAtual) {
 
     anoAtual.textContent =
-      2026;
+      new Date().getFullYear();
   }
 
 

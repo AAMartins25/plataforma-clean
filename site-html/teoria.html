@@ -112,6 +112,7 @@
   <script src="js/teoria-cabecalho.js?v=2" defer></script>
   <link rel="stylesheet" href="css/questao-conteudo.css">
 
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body class="teoria-page">
@@ -233,7 +234,7 @@
   </main>
 
   <footer style="margin-top:4px;">
-    <p>© <span id="ano_atual">2026</span> RO</p>
+    <p>© <span id="ano_atual">2026</span> Quality</p>
   </footer>
 
   <script src="js/vendor/katex/katex.min.js"></script>
@@ -1627,7 +1628,7 @@
 
     const anoAtual = document.getElementById("ano_atual");
     if (anoAtual) {
-      anoAtual.textContent = 2026;
+      anoAtual.textContent = new Date().getFullYear();
     }
 
     window.proximaPaginaTeoria = proximaPaginaTeoria;

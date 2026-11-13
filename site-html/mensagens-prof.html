@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body
@@ -138,7 +139,7 @@
 </main>
 
 <footer>
-  <p>© <span id="anoAtual">2026</span> RO</p>
+  <p>© <span id="anoAtual">2026</span> Quality</p>
 </footer>
 
   <script src="js/vendor/dompurify-3.4.17.min.js"></script>
@@ -855,7 +856,7 @@ async function enviarNovaMensagem(conversaId) {
 }
 
 document.getElementById("anoAtual").textContent =
-  2026;
+  new Date().getFullYear();
 
 exibirNomeUsuarioLogadoMensagens();
 carregarMensagens();

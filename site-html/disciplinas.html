@@ -7,6 +7,7 @@
   <title>Disciplinas</title>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/cabecalho.js" defer></script>
+  <script src="js/rodape.js" defer></script>
 </head>
 
 <body class="disciplinas-page" data-page="disciplinas">
@@ -65,7 +66,7 @@
   </main>
 
   <footer>
-    <p>© <span id="ano_atual">2026</span> RO</p>
+    <p>© <span id="ano_atual">2026</span> Quality</p>
   </footer>
 
   <script>
@@ -95,7 +96,7 @@
   <script>
     const anoAtual = document.getElementById("ano_atual");
     if (anoAtual) {
-      anoAtual.textContent = 2026;
+      anoAtual.textContent = new Date().getFullYear();
     }
   </script>
 </body>

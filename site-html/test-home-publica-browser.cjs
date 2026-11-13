@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
   if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
     res.writeHead(404).end(); return;
   }
-  res.setHeader('Content-Type', ({'.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'application/javascript', '.woff2':'font/woff2'})[path.extname(file)] || 'application/octet-stream');
+  res.setHeader('Content-Type', ({'.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'application/javascript', '.woff2':'font/woff2', '.svg':'image/svg+xml'})[path.extname(file)] || 'application/octet-stream');
   res.end(fs.readFileSync(file));
 });
 
@@ -35,7 +35,7 @@ const server = http.createServer((req, res) => {
     const measurements = [];
     async function context(width, user = null, data = courses, fail = false) {
       const ctx = await browser.newContext({viewport: {width, height: 900}, reducedMotion: 'reduce'});
-      if (user) await ctx.addInitScript(() => localStorage.setItem('access_token', 'token-ficticio'));
+      if (user) await ctx.addInitScript(() => { if (!sessionStorage.getItem('fixture-initialized')) { localStorage.setItem('access_token', 'token-ficticio'); localStorage.setItem('pagina_antes_inicio', 'cursos.html'); sessionStorage.setItem('fixture-initialized','1'); } });
       await ctx.route('**/*', async route => {
         const u = new URL(route.request().url());
         if (u.origin === origin) return route.continue();
@@ -71,6 +71,9 @@ const server = http.createServer((req, res) => {
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
         assert.ok(geometry.access.w >= 44 && geometry.access.h >= 44);
         assert.equal(await noOverflow(page), true);
+        assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
+        assert.equal(await page.locator('.home-race-track').count(), 0);
+        assert.equal(await page.locator('.home-brand-symbol').evaluate(img => img.complete && img.naturalWidth > 0), true);
         assert.equal(await page.locator('h1').innerText(), 'Resumão Online\nDIRETO AO PONTO');
         if (artifacts) {
           await page.screenshot({path: path.join(artifacts, `home-${width}-${signedIn?'logado':'publico'}.png`), fullPage: true});
@@ -99,14 +102,25 @@ const server = http.createServer((req, res) => {
         await ctx.close();
       }
     }
+    // Mesma hierarquia da referência quando a API fornecer metadados explícitos.
+    for (const width of [320,390,768,1366]) {
+      const ctx=await context(width, null, [{id:1,nome:'RESUMÃO PROFESSOR EDUCAÇÃO INFANTIL ALVORADA-RS 2026',orgao:'Alvorada',uf:'RS',ano:2026,cargo:'Professor de Educação Infantil',ativo:true}]);
+      const page=await ctx.newPage(); await page.goto(origin+'/index.html');await page.locator('.curso-publico-card').waitFor();
+      assert.equal(await page.locator('.home-course-meta').innerText(),'Alvorada/RS • 2026');
+      assert.equal(await page.locator('.curso-publico-nome').innerText(),'Professor de Educação Infantil');
+      assert.equal(await noOverflow(page),true);
+      if(artifacts) await page.screenshot({path:path.join(artifacts,`referencia-${width}.png`),fullPage:true});
+      await ctx.close();
+    }
     // Dados opcionais e conteúdo não confiável: nomes preservados e escapados.
     const special = {id: 8, nome:'Nome oficial <img src=x onerror=alert(1)>', cargo:'Professor <b>teste</b>', orgao:'Órgão & Município', uf:'RS', ano:2026, ativo:true};
     const ctx = await context(320, null, [special]); const page = await ctx.newPage();
     await page.goto(origin + '/index.html'); await page.locator('.curso-publico-card').waitFor();
     assert.equal(await page.locator('.curso-publico-nome').innerText(), special.cargo);
-    assert.equal(await page.locator('.home-course-official-name').innerText(), special.nome);
-    assert.deepEqual(await page.locator('.home-course-meta > span').allTextContents(), ['Órgão & Município','RS','2026']);
-    assert.equal(await page.locator('.curso-publico-card img,.curso-publico-card b').count(), 0);
+    assert.equal(await page.locator('.curso-publico-card').getAttribute('title'), special.nome);
+    assert.equal(await page.locator('.home-course-meta').innerText(), 'Órgão & Município/RS • 2026');
+    assert.deepEqual(await page.locator('.home-course-content > span').evaluateAll(nodes => nodes.map(n => n.className)), ['home-course-meta', 'curso-publico-nome']);
+    assert.equal(await page.locator('.home-course-content img,.home-course-content b').count(), 0);
     assert.equal(await noOverflow(page), true);
     await page.locator('.curso-publico-card').click();
     await page.waitForURL('**/curso-info.html?**');
@@ -123,11 +137,35 @@ const server = http.createServer((req, res) => {
       const ctx = await context(390, user && {id:1,nome:'Teste',ativo:true,...user}); const page = await ctx.newPage();
       await page.goto(origin + '/index.html');
       await page.evaluate(()=>{localStorage.setItem('ultimo_curso_id_compra','1');localStorage.setItem('ultimo_checkout_curso_id','1');});
-      await page.getByRole('link',{name:'Entre ou faça cadastro',exact:true}).click();
+      await page.getByRole('link',{name:'Minha Área',exact:true}).click();
       await page.waitForURL(origin+'/'+target);
       assert.equal(await page.evaluate(()=>localStorage.getItem('ultimo_curso_id_compra')),null);
       assert.equal(await page.evaluate(()=>localStorage.getItem('ultimo_checkout_curso_id')),null);
       if(!user)assert.equal(await page.evaluate(()=>localStorage.getItem('pos_login_redirect')),'cursos.html');
+      await ctx.close();
+    }
+    // Atendimento mantém os destinos conforme a sessão, e Voltar/Sair seguem operantes.
+    for (const signedIn of [false,true]) {
+      const ctx=await context(390,signedIn?{id:1,nome:'Teste',ativo:true,is_aluno:true}:null);
+      const page=await ctx.newPage();
+      for(const [name,target] of [['Atualizar meus dados / ver meu histórico de compras','meus-dados.html'],['Solicitar reembolso','reembolso.html']]) {
+        await page.goto(origin+'/index.html?atendimento=aberto');
+        await page.locator('#area_atendimento_clean').waitFor();
+        assert.equal(new URL(page.url()).searchParams.has('atendimento'),false);
+        await page.getByRole('link',{name,exact:true}).click();
+        if(signedIn) await page.waitForURL(origin+'/'+target);
+        else { await page.waitForURL('**/login.html?next=**'); assert.equal(new URL(page.url()).searchParams.get('next'),target); }
+      }
+      await page.goto(origin+'/index.html');
+      assert.equal(await page.locator('.home-atendimento-btn[href="fale-com-a-clean.html"]').getAttribute('href'),'fale-com-a-clean.html');
+      if(signedIn) {
+        await page.locator('#btnVoltarHome').click();await page.waitForURL(origin+'/cursos.html');
+        assert.equal(await page.evaluate(()=>localStorage.getItem('pagina_antes_inicio')),null);
+        await page.goto(origin+'/index.html');
+        page.once('dialog',d=>d.accept());await Promise.all([page.waitForNavigation(),page.locator('#btnSairHome').click()]);
+        await page.waitForFunction(()=>!localStorage.getItem('access_token'));
+        assert.equal(await page.locator('#btnSairHome').isVisible(),false);
+      }
       await ctx.close();
     }
     for(const data of [[],[{id:1,nome:'CURSO'+ 'X'.repeat(400),ativo:true}]]) {
@@ -137,6 +175,20 @@ const server = http.createServer((req, res) => {
     }
     const errorCtx=await context(320,null,[],true);const errorPage=await errorCtx.newPage();
     await errorPage.goto(origin+'/index.html');await errorPage.locator('#lista-cursos-publicos h2').filter({hasText:'Erro'}).waitFor();await errorCtx.close();
+    const footerFiles = fs.readdirSync(root,{recursive:true}).filter(f=>f.endsWith('.html') && /<footer[\s>][\s\S]*?Quality[\s\S]*?<\/footer>/.test(fs.readFileSync(path.join(root,f),'utf8')));
+    const footerCtx=await browser.newContext(); const footerPage=await footerCtx.newPage();
+    await footerPage.clock.install({time:new Date('2032-06-15T12:00:00Z')});
+    for(const file of footerFiles) {
+      const html=fs.readFileSync(path.join(root,file),'utf8');
+      const footer=html.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/)[0];
+      await footerPage.setContent(footer);
+      await footerPage.addScriptTag({path:path.join(root,'js/rodape.js')});
+      assert.equal((await footerPage.locator('footer').innerText()).replace(/\s+/g,' ').trim(),'© 2032 Quality',file);
+      assert.ok(html.includes('js/rodape.js'),file);
+      assert.ok(!/(?:textContent|innerText)\s*=\s*2026\b/.test(html),file);
+    }
+    assert.equal(footerFiles.length,58);
+    await footerCtx.close();
     if(artifacts)fs.writeFileSync(path.join(artifacts,'measurements.json'),JSON.stringify(measurements,null,2));
     console.log('Home: 4 larguras × visitante/logado; alinhamento, overflow, catálogo, pesquisa, teclado, atendimento, nomes/metadados, escaping, navegação, autenticação e estados vazio/erro aprovados.');
   } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}

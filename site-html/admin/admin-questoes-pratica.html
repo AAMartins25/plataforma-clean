@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="../css/admin-responsivo.css">
   <link rel="stylesheet" href="../css/admin-shell.css" />
   <script src="../js/cabecalho.js" defer></script>
+  <script src="../js/rodape.js" defer></script>
 </head>
 
 <body class="admin-shell" data-page="admin-questoes-pratica">
@@ -225,7 +226,7 @@
 
   <footer>
     <p>
-      © <span id="ano_atual">2026</span> RO
+      © <span id="ano_atual">2026</span> Quality
     </p>
   </footer>
 
@@ -245,7 +246,7 @@
 
     if (anoAtual) {
       anoAtual.textContent =
-        2026;
+        new Date().getFullYear();
     }
   </script>
 

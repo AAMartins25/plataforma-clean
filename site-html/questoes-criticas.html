@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/teoria-matematica.css">
 <link rel="stylesheet" href="css/teoria-imagens.css">
 <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
+  <script src="js/rodape.js" defer></script>
 </head>
 <body
   class="questoes-criticas-page"
@@ -163,7 +164,7 @@
 
 <footer>
   <p>
-    © <span id="ano_atual">2026</span> RO
+    © <span id="ano_atual">2026</span> Quality
   </p>
 </footer>
 
@@ -672,7 +673,7 @@ const anoAtual =
 
 if (anoAtual) {
   anoAtual.textContent =
-    2026;
+    new Date().getFullYear();
 }
 
 carregarQuestoesCriticas();
