@@ -13,6 +13,25 @@
     if (campo) void TeoriaEditor.destruir(campo);
   }
 
+  let contextoCurso = 0;
+  const respostaAntiga = new Error("Contexto de curso encerrado");
+  // Cada chamada mantém seu destino original. Uma resposta antiga interrompe
+  // a continuação antes de alterar estado ou iniciar outra requisição.
+  const noContexto = operacao => async (...args) => {
+    const contexto = contextoCurso;
+    try {
+      const resultado = await operacao(...args);
+      if (contexto !== contextoCurso) throw respostaAntiga;
+      return resultado;
+    } catch (erro) {
+      if (contexto !== contextoCurso) throw respostaAntiga;
+      throw erro;
+    }
+  };
+  const apiGetAuth = noContexto(window.apiGetAuth);
+  const apiPostAuth = noContexto(window.apiPostAuth);
+  const apiPutAuth = noContexto(window.apiPutAuth);
+  const apiDeleteAuth = noContexto(window.apiDeleteAuth);
   let cursoAtual = null;
   let disciplinasDoCurso = [];
 
@@ -79,6 +98,59 @@
   let assuntoCopiandoId = null;
   let assuntoCopiandoNome = "";
 
+  function ativarCurso(curso) {
+    contextoCurso++;
+    GestaoCursos.encerrarEdicao();
+    cursoAtual = curso;
+    disciplinasDoCurso = [];
+    bateriasDaAula = [];
+    disciplinaNome.value = "";
+    assuntoNome.value = "";
+    aulaTitulo.value = "";
+
+    disciplinaAtualId = null;
+    assuntosDaDisciplina = [];
+    aulasDoAssunto = [];
+    pastaTeoriaAtual = null;
+    aulaAtual = null;
+    bateriaAtualId = null;
+    questoesDaBateria = [];
+    questaoEditandoId = null;
+
+    limparAreaCopiaAssunto();
+
+    // Recolhe a área de assuntos até que uma disciplina seja escolhida
+    areaAssuntos.style.display = "none";
+
+    tituloDisciplinaSelecionada.textContent =
+      "Disciplina selecionada";
+
+    listaAssuntos.innerHTML =
+      "Selecione uma disciplina para visualizar seus assuntos.";
+
+    // Fecha áreas internas que possam ter ficado abertas
+    areaAulas.style.display = "none";
+    areaConteudoAula.style.display = "none";
+
+    listaAulas.innerHTML = "";
+    encerrarEditorTeoria();
+    boxConteudoAula.innerHTML = "";
+
+    renderizarDisciplinas();
+    msgCurso.textContent = "";
+    msgConfigPublicaCurso.textContent = "";
+    DescricaoPublicaEditor.limpar();
+    cursoDescricaoPublica.value = "";
+    valor4Meses.value = valor8Meses.value = valor12Meses.value = "";
+    bloquearConfigPublicaCurso();
+    btnEditarConfigPublicaCurso.disabled = true;
+    boxConfigPublicaCurso.style.display = "none";
+    boxDisciplinas.style.display = curso ? "block" : "none";
+    boxConteudo.style.display = curso ? "block" : "none";
+    atualizarBotoesPublicacaoCurso();
+    return contextoCurso;
+  }
+
   formCurso.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -100,16 +172,11 @@
         ativo: true
       });
 
-      cursoAtual = curso;
-      cursoAtual.publicado = false;
-      atualizarBotoesPublicacaoCurso();
-
-      boxConfigPublicaCurso.style.display = "block";
+      const contexto = ativarCurso({...curso, publicado: false});
       await DescricaoPublicaEditor.carregar(cursoDescricaoPublica, "");
+      if (contexto !== contextoCurso) return;
+      boxConfigPublicaCurso.style.display = "block";
       liberarEdicaoConfigPublicaCurso();
-      valor4Meses.value = "";
-      valor8Meses.value = "";
-      valor12Meses.value = "";
 
       msgCurso.textContent = "Curso criado com sucesso!";
       msgCurso.style.color = "#2f5e46";
@@ -122,9 +189,11 @@
 
       formCurso.reset();
       await carregarCursosExistentes(curso.id);
+      if (contexto !== contextoCurso) return;
       cursoExistenteSelect.value = curso.id;
 
     } catch (err) {
+      if (err === respostaAntiga) return;
         const msg = String(err.message || "");
 
         if (msg.includes("Já existe um curso com esse nome")) {
@@ -174,6 +243,7 @@
         renderizarDisciplinas();
 
     } catch (err) {
+      if (err === respostaAntiga) return;
 
         alert("Erro ao adicionar disciplina: " + err.message);
 
@@ -266,39 +336,7 @@
 
     const nomeCurso = cursoExistenteSelect.options[cursoExistenteSelect.selectedIndex].text;
 
-    cursoAtual = {
-        id: Number(cursoId),
-        nome: nomeCurso,
-        ativo: true
-    };
-
-    // Limpa o estado visual e interno do curso anteriormente selecionado
-    disciplinaAtualId = null;
-    assuntosDaDisciplina = [];
-    aulasDoAssunto = [];
-    pastaTeoriaAtual = null;
-    aulaAtual = null;
-    bateriaAtualId = null;
-    questoesDaBateria = [];
-    questaoEditandoId = null;
-
-    limparAreaCopiaAssunto();
-
-    // Recolhe a área de assuntos até que uma disciplina seja escolhida
-    areaAssuntos.style.display = "none";
-
-    tituloDisciplinaSelecionada.textContent =
-      "Disciplina selecionada";
-
-    listaAssuntos.innerHTML =
-      "Selecione uma disciplina para visualizar seus assuntos.";
-
-    // Fecha áreas internas que possam ter ficado abertas
-    areaAulas.style.display = "none";
-    areaConteudoAula.style.display = "none";
-
-    listaAulas.innerHTML = "";
-    boxConteudoAula.innerHTML = "";
+    const contexto = ativarCurso({id: Number(cursoId), nome: nomeCurso, ativo: true});
 
     msgCurso.textContent = `Curso selecionado: ${nomeCurso}`;
     msgCurso.style.color = "#2f5e46";
@@ -310,9 +348,12 @@
 
     await carregarDisciplinasDoCurso();
 
+    if (contexto !== contextoCurso) return;
     await carregarConfigPublicaCurso();
+    if (contexto !== contextoCurso) return;
 
     setTimeout(() => {
+      if (contexto !== contextoCurso) return;
       boxDisciplinas.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -332,6 +373,7 @@
         renderizarDisciplinas();
 
     } catch (err) {
+      if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar disciplinas do curso.");
     }
@@ -355,6 +397,7 @@
         renderizarDisciplinas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao editar disciplina.");
       }
@@ -364,7 +407,14 @@
       disciplinaId,
       nomeDisciplina
     ) {
-      const todosCursos = await apiGetAuth("/cursos");
+      let todosCursos;
+      try { todosCursos = await apiGetAuth("/cursos"); }
+      catch (err) {
+        if (err === respostaAntiga) return;
+        console.error(err);
+        alert("Erro ao carregar cursos de destino.");
+        return;
+      }
 
       const cursosDestino = (todosCursos || []).filter(
         curso =>
@@ -427,6 +477,7 @@
         );
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         alert(
@@ -449,6 +500,7 @@
         renderizarDisciplinas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao excluir disciplina.");
       }
@@ -555,6 +607,7 @@
         renderizarAssuntos();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar assuntos.");
       }
@@ -598,6 +651,7 @@
         renderizarAssuntos();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao adicionar assunto.");
       }
@@ -634,6 +688,7 @@
         renderizarAssuntos();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao editar assunto.");
       }
@@ -710,6 +765,7 @@
         });
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         msgCopiarAssunto.textContent =
@@ -770,6 +826,7 @@
           disciplinaDestinoAssuntoSelect.disabled = false;
 
         } catch (err) {
+          if (err === respostaAntiga) return;
           console.error(err);
 
           disciplinaDestinoAssuntoSelect.innerHTML =
@@ -795,6 +852,7 @@
         renderizarAssuntos();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao excluir assunto.");
       }
@@ -927,6 +985,7 @@
         `;
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar área de aulas do assunto.");
       }
@@ -961,6 +1020,7 @@
         renderizarAulas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao adicionar aula.");
       }
@@ -984,6 +1044,7 @@
         renderizarAulas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao editar aula.");
       }
@@ -1002,6 +1063,7 @@
         renderizarAulas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao excluir aula.");
       }
@@ -1061,6 +1123,7 @@
         alert("Teoria salva com sucesso.");
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao salvar teoria: " + err.message);
       }
@@ -1095,6 +1158,7 @@
         alert("Vídeo salvo com sucesso.");
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao salvar vídeo: " + err.message);
       }
@@ -1103,6 +1167,7 @@
     let bateriasDaAula = [];
 
     window.criarBateriaQuestoes = async function () {
+      const contextoInicial = contextoCurso;
       if (!aulaAtual) {
         alert("Selecione uma aula.");
         return;
@@ -1125,6 +1190,7 @@
         if (bateria.erro) {
           alert(bateria.erro);
           await carregarBateriasDaAula();
+          if (contextoInicial !== contextoCurso) return;
           return;
         }
 
@@ -1132,6 +1198,7 @@
         renderizarBaterias();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao criar bateria: " + mensagemErroAula(err));
       }
@@ -1144,6 +1211,7 @@
         bateriasDaAula = await apiGetAuth(`/aulas/${aulaAtual.id}/baterias`);
         renderizarBaterias();
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar baterias: " + mensagemErroAula(err));
       }
@@ -1229,6 +1297,7 @@
       }
 
     window.abrirQuestoesDaBateria = async function (bateriaId) {
+      const contextoInicial = contextoCurso;
       bateriaAtualId = bateriaId;
 
       const bateria = bateriasDaAula.find(b => b.id === bateriaId);
@@ -1289,6 +1358,7 @@
       `;
 
       await carregarQuestoesDaBateria();
+      if (contextoInicial !== contextoCurso) return;
       renderizarCamposQuestaoCompleta();
     };
 
@@ -1299,12 +1369,14 @@
         questoesDaBateria = await apiGetAuth(`/baterias/${bateriaAtualId}/questoes`);
         renderizarQuestoes();
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar questões: " + mensagemErroAula(err));
       }
     }
 
     window.excluirBateria = async function (bateriaId) {
+      const contextoInicial = contextoCurso;
       const ok = confirm(
         "Deseja realmente excluir esta bateria?\n\n" +
         "Todas as questões vinculadas a ela também serão removidas."
@@ -1318,8 +1390,10 @@
         alert("Bateria excluída com sucesso!");
 
         await carregarBateriasDaAula();
+        if (contextoInicial !== contextoCurso) return;
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao excluir bateria: " + mensagemErroAula(err));
       }
@@ -1368,9 +1442,10 @@
     }
 
     async function carregarConfigPublicaCurso() {
+      const contexto = contextoCurso;
       if (!cursoAtual || !cursoAtual.id) return;
 
-      boxConfigPublicaCurso.style.display = "block";
+      boxConfigPublicaCurso.style.display = "none";
       msgConfigPublicaCurso.textContent =
         "Carregando descrição e valores...";
       msgConfigPublicaCurso.style.color = "";
@@ -1384,6 +1459,7 @@
 
         await DescricaoPublicaEditor.carregar(cursoDescricaoPublica, dados.descricao_publica || "");
 
+        if (contexto !== contextoCurso) return;
         const tempos = dados.tempos_acesso || [];
 
         const t4 = tempos.find(t => t.meses === 4);
@@ -1405,11 +1481,14 @@
         msgConfigPublicaCurso.textContent = "";
 
         bloquearConfigPublicaCurso();
+        boxConfigPublicaCurso.style.display = "block";
         atualizarBotoesPublicacaoCurso();
 
       } catch (err) {
+        if (err === respostaAntiga || contexto !== contextoCurso) return;
         console.error("Erro em carregarConfigPublicaCurso:", err);
 
+        boxConfigPublicaCurso.style.display = "block";
         msgConfigPublicaCurso.textContent =
           "Erro ao carregar descrição e valores.";
 
@@ -1417,11 +1496,6 @@
       }
 
     }
-
-    btnEditarConfigPublicaCurso.addEventListener("click", () => {
-      liberarEdicaoConfigPublicaCurso();
-      msgConfigPublicaCurso.textContent = "";
-    });
 
     btnEditarConfigPublicaCurso.addEventListener("click", () => {
       liberarEdicaoConfigPublicaCurso();
@@ -1464,6 +1538,7 @@
         bloquearConfigPublicaCurso();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         msgConfigPublicaCurso.textContent = "Erro ao salvar descrição e valores.";
         msgConfigPublicaCurso.style.color = "#8a1f1f";
@@ -1495,6 +1570,7 @@
         alert("Venda do curso ativada com sucesso.");
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         alert(
@@ -1530,6 +1606,7 @@
         alert("Venda desativada. Os direitos dos alunos foram preservados.");
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         alert(
@@ -1609,6 +1686,7 @@
           );
 
         } catch (err) {
+          if (err === respostaAntiga) return;
           console.error(err);
 
           msgCopiarAssunto.textContent =
@@ -1741,6 +1819,7 @@
     }
 
     window.renderizarCamposQuestaoCompleta = async function (dados = null, preservar = false) {
+      const contextoInicial = contextoCurso;
       if (preservar) {
         try { dados = QuestaoEditores.dados(); }
         catch (erro) { document.getElementById("questaoTipoQuestao").value = tipoQuestaoAtual; alert(erro.message); return; }
@@ -1864,9 +1943,11 @@
         </div>
       `;
       await QuestaoEditores.iniciar(box, dados || {});
+      if (contextoInicial !== contextoCurso) return;
     };
 
     window.criarQuestaoManual = async function () {
+      const contextoInicial = contextoCurso;
       if (!bateriaAtualId) {
         alert("Selecione uma bateria.");
         return;
@@ -1955,6 +2036,7 @@
         const questaoEditadaId = questaoEditandoId;
 
         await carregarQuestoesDaBateria();
+        if (contextoInicial !== contextoCurso) return;
 
         alert(
           estavaEditando
@@ -2039,6 +2121,7 @@
 
           await apiPutAuth(`/baterias/${bateriaAtualId}/concluir`, {});
           await carregarBateriasDaAula();
+          if (contextoInicial !== contextoCurso) return;
 
           const lista = document.getElementById("listaQuestoesBateria");
 
@@ -2085,12 +2168,14 @@
         }
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao salvar questão: " + mensagemErroAula(err));
       }
     };
 
     window.concluirBateriaQuestoes = async function () {
+      const contextoInicial = contextoCurso;
       if (!bateriaAtualId) {
         alert("Selecione uma bateria.");
         return;
@@ -2107,6 +2192,7 @@
         alert("Bateria concluída com sucesso!");
 
         await carregarBateriasDaAula();
+        if (contextoInicial !== contextoCurso) return;
 
         boxConteudoAula.innerHTML = `
           <div class="assunto">
@@ -2121,6 +2207,7 @@
         `;
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao concluir bateria: " + mensagemErroAula(err));
       }
@@ -2131,6 +2218,7 @@
     };
 
     window.voltarParaBaterias = async function () {
+      const contextoInicial = contextoCurso;
       boxConteudoAula.innerHTML = `
         <div class="assunto">
 
@@ -2147,6 +2235,7 @@
       `;
 
       await carregarBateriasDaAula();
+      if (contextoInicial !== contextoCurso) return;
     };
 
     window.abrirTeoriaAula = async function (aulaId, titulo) {
@@ -2234,6 +2323,7 @@
         }, 100);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar textos: " + mensagemErroAula(err));
       }
@@ -2303,12 +2393,14 @@
         }, 100);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao carregar vídeos: " + mensagemErroAula(err));
       }
     };
 
     window.abrirQuestoesAula = async function (aulaId, titulo) {
+      const contextoInicial = contextoCurso;
       abrirConteudoAula(aulaId, titulo);
       document.querySelector("#areaConteudoAula h3").textContent = "Questões";
 
@@ -2334,6 +2426,7 @@
       `;
 
       await carregarBateriasDaAula();
+      if (contextoInicial !== contextoCurso) return;
 
       setTimeout(() => {
         areaConteudoAula.scrollIntoView({
@@ -2344,21 +2437,27 @@
     };
 
     window.excluirTextoTeoria = async function (materialId) {
+      const contextoInicial = contextoCurso;
       if (!confirm("Deseja realmente excluir este texto?")) return;
       try {
         await apiDeleteAuth(`/materiais/${materialId}`);
         await abrirTeoriaAula(aulaAtual.id, aulaAtual.titulo);
+        if (contextoInicial !== contextoCurso) return;
       } catch (err) {
+        if (err === respostaAntiga) return;
         alert("Erro ao excluir texto: " + mensagemErroAula(err));
       }
     };
 
     window.excluirResumoVideo = async function (videoId) {
+      const contextoInicial = contextoCurso;
       if (!confirm("Deseja realmente excluir este vídeo?")) return;
       try {
         await apiDeleteAuth(`/videos/${videoId}`);
         await abrirVideoAula(aulaAtual.id, aulaAtual.titulo);
+        if (contextoInicial !== contextoCurso) return;
       } catch (err) {
+        if (err === respostaAntiga) return;
         alert("Erro ao excluir vídeo: " + mensagemErroAula(err));
       }
     };
@@ -2425,8 +2524,10 @@
       const campo = document.getElementById("textoTeoriaAula");
       const botaoSalvar = boxConteudoAula.querySelector("button[onclick='salvarNovoTextoTeoria()']");
       if (botaoSalvar) botaoSalvar.disabled = true;
+      const contexto = contextoCurso;
       TeoriaEditor.iniciar(campo, "")
         .catch(erro => {
+          if (contexto !== contextoCurso) return;
           document.getElementById("avisoEditorTeoria").textContent =
             `${erro.message} O cadastro em texto simples continua disponível.`;
         })
@@ -2474,12 +2575,14 @@
         abrirTeoriaAula(aulaAtual.id, aulaAtual.titulo);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao salvar texto: " + mensagemErroAula(err));
       }
     };
 
     window.abrirEditarTexto = async function (materialId) {
+      const contextoInicial = contextoCurso;
 
       try {
 
@@ -2564,21 +2667,25 @@
           if (botaoSalvar) botaoSalvar.disabled = true;
           try {
             await TeoriaEditor.iniciar(campo, material.conteudo);
+            if (contextoInicial !== contextoCurso) return;
             campo.readOnly = false;
             if (botaoSalvar) botaoSalvar.disabled = false;
           } catch (erro) {
+            if (contextoInicial !== contextoCurso) return;
             document.getElementById("avisoEditorTeoria").textContent =
               `${erro.message} A edição deste HTML permanece bloqueada para evitar perda de formatação.`;
           }
         }
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao abrir texto.");
       }
     };
 
     window.converterTextoLegadoParaHtml = async function () {
+      const contextoInicial = contextoCurso;
       const campo = document.getElementById("textoTeoriaAula");
       if (!campo || !confirm("Converter este texto puro para HTML? A alteração só será salva ao concluir a edição.")) return;
       const botaoSalvar = boxConteudoAula.querySelector("button[onclick^='salvarEdicaoTexto']");
@@ -2586,9 +2693,11 @@
       if (botaoSalvar) botaoSalvar.disabled = true;
       try {
         await TeoriaEditor.iniciar(campo, TeoriaEditor.legadoParaHtml(campo.value));
+        if (contextoInicial !== contextoCurso) return;
         const botao = boxConteudoAula.querySelector("button[onclick='converterTextoLegadoParaHtml()']");
         if (botao) botao.remove();
       } catch (erro) {
+        if (contextoInicial !== contextoCurso) return;
         document.getElementById("avisoEditorTeoria").textContent = erro.message;
       } finally {
         campo.readOnly = false;
@@ -2632,6 +2741,7 @@
         abrirTeoriaAula(aulaAtual.id, aulaAtual.titulo);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao atualizar texto: " + mensagemErroAula(err));
       }
@@ -2765,6 +2875,7 @@
         abrirVideoAula(aulaAtual.id, aulaAtual.titulo);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao salvar vídeo: " + mensagemErroAula(err));
       }
@@ -2853,6 +2964,7 @@
         alternarCamposVideo();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao abrir vídeo.");
       }
@@ -2905,6 +3017,7 @@
         abrirVideoAula(aulaAtual.id, aulaAtual.titulo);
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao atualizar vídeo: " + mensagemErroAula(err));
       }
@@ -2916,7 +3029,8 @@
     };
 
     btnEditarCurso.addEventListener("click", () => {
-      GestaoCursos.editar(cursoExistenteSelect.value, curso => {
+      if (!cursoAtual) { alert("Ative um curso antes de editar."); return; }
+      GestaoCursos.editar(cursoAtual.id, curso => {
         if (cursoAtual?.id === curso.id) cursoAtual.nome = curso.nome;
       });
     });
@@ -2965,10 +3079,17 @@
           }
         );
 
+        const contexto = ativarCurso({id: resultado.novo_curso_id, nome: resultado.novo_curso_nome, ativo: true});
+        await carregarDisciplinasDoCurso();
+        if (contexto !== contextoCurso) return;
+        await carregarConfigPublicaCurso();
+        if (contexto !== contextoCurso) return;
         try {
           await carregarCursosExistentes(resultado.novo_curso_id);
+          if (contexto !== contextoCurso) return;
           cursoExistenteSelect.value = String(resultado.novo_curso_id);
         } catch (err) {
+          if (err === respostaAntiga) return;
           console.error(err);
           msgCurso.textContent = `Curso duplicado com sucesso: ${resultado.novo_curso_nome} (ID ${resultado.novo_curso_id}). Não foi possível atualizar a lista; recarregue a página. Não repita a duplicação.`;
           msgCurso.style.color = "#8a1f1f";
@@ -2981,6 +3102,7 @@
         msgCurso.style.color = "#2f5e46";
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         const mensagem =
@@ -3027,10 +3149,9 @@
       try {
         await apiDeleteAuth(`/cursos/${cursoId}`);
 
+        ativarCurso(null);
         msgCurso.textContent = "Curso excluído do painel. Seu conteúdo foi preservado.";
         msgCurso.style.color = "#2f5e46";
-
-        cursoAtual = null;
         disciplinasDoCurso = [];
 
         renderizarDisciplinas();
@@ -3056,6 +3177,7 @@
         await carregarCursosExistentes();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
 
         alert(
@@ -3066,6 +3188,7 @@
     });
 
     window.trabalharNestaDisciplina = async function (disciplinaId) {
+      const contextoInicial = contextoCurso;
 
       limparAreaCopiaAssunto();
 
@@ -3087,6 +3210,7 @@
       boxConteudoAula.innerHTML = "";
 
       await carregarAssuntosDaDisciplina(disciplinaId);
+      if (contextoInicial !== contextoCurso) return;
 
       areaAssuntos.scrollIntoView({
         behavior: "smooth",
@@ -3128,6 +3252,7 @@
         renderizarDisciplinas();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao alterar a ordem da disciplina.");
       }
@@ -3167,6 +3292,7 @@
         renderizarAssuntos();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao alterar a ordem do assunto.");
       }
@@ -3191,12 +3317,14 @@
         renderizarBaterias();
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao editar título da bateria: " + mensagemErroAula(err));
       }
     };
 
     window.editarQuestao = async function (questaoId) {
+      const contextoInicial = contextoCurso;
       const questao = questoesDaBateria.find(q => q.id === questaoId);
 
       if (!questao) {
@@ -3247,6 +3375,7 @@
       const radio = document.querySelector(`input[name="gabarito_certo_errado"][value="${questao.gabarito}"]`);
       if (radio) radio.checked = true;
       await abertura;
+      if (contextoInicial !== contextoCurso) return;
 
       document.getElementById("questaoTipoQuestao").scrollIntoView({
         behavior: "smooth",
@@ -3255,6 +3384,7 @@
     };
 
     window.excluirQuestao = async function (questaoId) {
+      const contextoInicial = contextoCurso;
       const ok = confirm("Deseja realmente excluir esta questão?");
 
       if (!ok) return;
@@ -3267,6 +3397,7 @@
         questaoEditandoId = null;
 
         await carregarQuestoesDaBateria();
+        if (contextoInicial !== contextoCurso) return;
 
         const boxFormulario = document.getElementById("boxFormularioQuestao");
 
@@ -3304,6 +3435,7 @@
         }
 
       } catch (err) {
+        if (err === respostaAntiga) return;
         console.error(err);
         alert("Erro ao excluir questão: " + mensagemErroAula(err));
       }
@@ -3389,50 +3521,35 @@
       }
     };
 
+
+    function bloquearConfigPublicaCurso() {
+      cursoDescricaoPublica.disabled = true;
+      DescricaoPublicaEditor.bloquear(true);
+      valor4Meses.disabled = true;
+      valor8Meses.disabled = true;
+      valor12Meses.disabled = true;
+
+      btnEditarConfigPublicaCurso.disabled = false;
+      btnEditarConfigPublicaCurso.style.opacity = "1";
+
+      btnSalvarConfigPublicaCurso.disabled = true;
+      btnSalvarConfigPublicaCurso.style.opacity = ".45";
+    }
+
+    function liberarEdicaoConfigPublicaCurso() {
+      cursoDescricaoPublica.disabled = false;
+      DescricaoPublicaEditor.bloquear(false);
+      valor4Meses.disabled = false;
+      valor8Meses.disabled = false;
+      valor12Meses.disabled = false;
+
+      btnEditarConfigPublicaCurso.disabled = true;
+      btnEditarConfigPublicaCurso.style.opacity = ".45";
+
+      btnSalvarConfigPublicaCurso.disabled = false;
+      btnSalvarConfigPublicaCurso.style.opacity = "1";
+    }
+
     carregarCursosExistentes().catch(console.error);
 
 })();
-
-function bloquearConfigPublicaCurso() {
-  cursoDescricaoPublica.disabled = true;
-  DescricaoPublicaEditor.bloquear(true);
-  valor4Meses.disabled = true;
-  valor8Meses.disabled = true;
-  valor12Meses.disabled = true;
-
-  btnEditarConfigPublicaCurso.disabled = false;
-  btnEditarConfigPublicaCurso.style.opacity = "1";
-
-  btnSalvarConfigPublicaCurso.disabled = true;
-  btnSalvarConfigPublicaCurso.style.opacity = ".45";
-}
-
-function liberarEdicaoConfigPublicaCurso() {
-  cursoDescricaoPublica.disabled = false;
-  DescricaoPublicaEditor.bloquear(false);
-  valor4Meses.disabled = false;
-  valor8Meses.disabled = false;
-  valor12Meses.disabled = false;
-
-  btnEditarConfigPublicaCurso.disabled = true;
-  btnEditarConfigPublicaCurso.style.opacity = ".45";
-
-  btnSalvarConfigPublicaCurso.disabled = false;
-  btnSalvarConfigPublicaCurso.style.opacity = "1";
-}
-
-function atualizarBotoesPublicacaoCurso() {
-  if (!cursoAtual || !cursoAtual.id) {
-    btnPublicarCurso.style.display = "none";
-    btnRetirarCursoVenda.style.display = "none";
-    return;
-  }
-
-  if (cursoAtual.publicado === true) {
-    btnPublicarCurso.style.display = "none";
-    btnRetirarCursoVenda.style.display = "inline-block";
-  } else {
-    btnPublicarCurso.style.display = "inline-block";
-    btnRetirarCursoVenda.style.display = "none";
-  }
-}

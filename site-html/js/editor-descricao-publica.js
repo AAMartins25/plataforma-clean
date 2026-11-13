@@ -12,6 +12,7 @@
     const atual = ++geracao;
     campo = textarea;
     if (editor) { const anterior = editor; editor = null; await anterior.destroy(); }
+    if (atual !== geracao) return;
     original = valor;
     const dados = DescricaoPublica.separar(valor);
     textarea.value = dados.texto;
@@ -45,7 +46,7 @@
       if (atual !== geracao) { await novo.destroy(); return; }
       editor = novo;
       inicial = editor.getData();
-      editor.ui.view.editable.element.setAttribute('aria-label', 'Informações do curso');
+      editor.ui.view.editable.element.setAttribute('aria-label', 'Descrição pública e valores de acesso');
       bloquear(bloqueado);
       aviso.textContent = '';
     } catch (erro) {
@@ -57,11 +58,18 @@
         : 'Editor de formatação indisponível. Você pode editar o texto simples. ' + erro.message;
     }
   }
+  function limpar() {
+    geracao++;
+    original = inicial = '';
+    if (campo) campo.value = '';
+    if (editor) editor.setData('');
+    bloquear(true);
+  }
   function conteudo(textarea) {
     if (editor && editor.getData() !== inicial) {
       return { descricao_publica: editor.getData(), descricao_publica_formato: 'html_v1' };
     }
     return { descricao_publica: editor || DescricaoPublica.separar(original).html ? original : textarea.value };
   }
-  window.DescricaoPublicaEditor = { carregar, bloquear, conteudo };
+  window.DescricaoPublicaEditor = { carregar, bloquear, conteudo, limpar };
 })();

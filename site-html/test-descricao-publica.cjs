@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{
  try {
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin=`http://127.0.0.1:${server.address().port}`;
- browser=await chromium.launch({executablePath:'/home/codespace/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
+ browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE||'/home/codespace/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
  for (const width of [1366,768,390,320]) {
   const page=await browser.newPage({viewport:{width,height:1000}});
   let raw='  Legado <b>literal</b> & prova\n\nSegunda linha  ', saves=[], cdnFailure=false;
@@ -24,12 +24,13 @@ const server=http.createServer((req,res)=>{
    if(url.hostname==='cdn.ckeditor.com'){
     if(cdnFailure)return route.abort();
     if(url.pathname.endsWith('.umd.js'))return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(process.env.CKEDITOR_TEST_BUNDLE||'/workspaces/resumao-editor-teoria-dev/.local/ckeditor-seguranca-tools/node_modules/ckeditor5/dist/browser/ckeditor5.umd.js')});
-    if(url.pathname.endsWith('.css'))return route.fulfill({contentType:'text/css',body:fs.readFileSync('/workspaces/resumao-editor-teoria-dev/.local/ckeditor-seguranca-tools/node_modules/ckeditor5/dist/ckeditor5.css')});
+    if(url.pathname.endsWith('.css'))return route.fulfill({contentType:'text/css',body:fs.readFileSync(process.env.CKEDITOR_TEST_CSS||'/workspaces/resumao-editor-teoria-dev/.local/ckeditor-seguranca-tools/node_modules/ckeditor5/dist/ckeditor5.css')});
     return route.abort();
    }
    if(url.hostname!=='plataforma-quality-backend.onrender.com')return route.abort();
    let json={};const p=url.pathname;
    if(p==='/me')json={id:2,nome:'ADM teste',is_admin:true,tipo_admin:'admin_geral',ativo:true};
+   else if(p==='/admin/cursos')json=[{id:1,nome:'Curso teste',ativo:true,publicado:true}];
    else if(p==='/cursos')json=req.method()==='POST'?{id:1,nome:'Curso novo',ativo:true,publicado:false}:[{id:1,nome:'Curso teste',ativo:true,publicado:true}];
    else if(p==='/admin/ckeditor-chave')json={licenseKey:'GPL'};
    else if(p==='/admin/cursos/1/config-publica'){
@@ -83,6 +84,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#informacoes_curso b').count(),0);
   await page.goto(origin+'/admin/criar-curso-completo.html');
   await page.fill('#cursoNome','Curso novo');
+  await page.evaluate(()=>{for(const [k,v] of Object.entries({banca:'Banca',cargo:'Cargo',orgao:'Órgão',ano:2026,uf:'AM'}))document.getElementById('novo-'+k).value=v;});
   await page.locator('#formCurso button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#avisoDescricaoPublica')?.textContent==='');
   await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content')?.getAttribute('contenteditable')==='true');

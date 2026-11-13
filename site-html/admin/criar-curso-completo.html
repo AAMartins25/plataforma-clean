@@ -312,7 +312,6 @@
           </select>
           </div>
           </div>
-          <p>Metadados ausentes em cursos antigos podem ser preenchidos posteriormente.</p>
           <button class="btn" type="submit">Salvar curso</button>
           <button class="btn" id="cancelarEdicaoCurso" type="button">Cancelar</button>
           <p id="erroEditarCurso" role="alert"></p>
@@ -321,9 +320,9 @@
         <div id="boxConfigPublicaCurso" class="assunto" style="display:none; margin-top:20px;">
           <h3>Descrição pública e valores de acesso</h3>
 
-          <label for="cursoDescricaoPublica"><b>Informações do curso</b></label><br/>
           <textarea
             id="cursoDescricaoPublica"
+            aria-label="Descrição pública e valores de acesso"
             placeholder="Descreva como funciona o curso, professor, cargo, remuneração, prova etc."
             style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px;"
           ></textarea>
@@ -607,12 +606,12 @@
   <script src="../js/editor-teoria-markdown.js?v=imagens3"></script>
   <script src="../js/editor-teoria.js?v=descricao1"></script>
   <script src="../js/descricao-publica.js?v=1"></script>
-  <script src="../js/editor-descricao-publica.js?v=1"></script>
+  <script src="../js/editor-descricao-publica.js?v=contexto2"></script>
   <script src="../js/teoria-tabelas.js"></script>
   <script src="../js/questao-conteudo.js"></script>
   <script src="../js/editor-questoes.js"></script>
-  <script src="../js/gestao-cursos.js?v=1"></script>
-  <script src="../js/admin-criar-curso-completo.js?v=metadados1"></script>
+  <script src="../js/gestao-cursos.js?v=contexto2"></script>
+  <script src="../js/admin-criar-curso-completo.js?v=contexto2"></script>
 
   <script>
     function confirmarSaidaAdmin() {

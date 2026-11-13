@@ -44,7 +44,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
   if path.endswith('/js/app.js'):content=MOCK
   elif path.endswith('/js/admin.js'):content=(ROOT/'site-html/js/admin.js').read_text()+'\n'+MOCK
   elif path.endswith(('/js/sessao.js','/js/admin-acesso.js')):content=''
-  elif path.endswith('/js/editor-descricao-publica.js'):content='window.DescricaoPublicaEditor={carregar:async()=>{},bloquear:()=>{},obter:()=>""};'
+  elif path.endswith('/js/editor-descricao-publica.js'):content='window.DescricaoPublicaEditor={carregar:async()=>{},bloquear:()=>{},limpar:()=>{},obter:()=>""};'
   if content is not None:
    self.send_response(200);self.send_header('Content-Type','application/javascript');self.end_headers();self.wfile.write(content.encode());return
   super().do_GET()
@@ -86,7 +86,7 @@ try:
   settle()
   check('document.documentElement.scrollWidth<=innerWidth && document.body.scrollWidth<=innerWidth')
   screenshot(f'cursos-{width}.png')
-  js('cursoExistenteSelect.value="2";btnEditarCurso.click()')
+  js('cursoExistenteSelect.value="2";btnUsarCursoExistente.click();btnEditarCurso.click()')
   check('!formEditarCurso.hidden && document.querySelector("#editar-cargo").value==="Professor"')
   check('document.documentElement.scrollWidth<=innerWidth && document.body.scrollWidth<=innerWidth')
   screenshot(f'editar-{width}.png')
@@ -98,13 +98,13 @@ try:
  check('cursoExistenteSelect.options.length===1 && resultadoCursos.textContent.includes("Nenhum curso")')
  js('limparFiltrosCursos.click();cursoPesquisa.value="legad";cursoPesquisa.dispatchEvent(new Event("input"))')
  check('cursoExistenteSelect.options.length===2 && cursoExistenteSelect.options[1].value==="1"')
- js('limparFiltrosCursos.click();cursoExistenteSelect.value="1";btnEditarCurso.click()')
+ js('limparFiltrosCursos.click();cursoExistenteSelect.value="1";btnUsarCursoExistente.click();btnEditarCurso.click()')
  check('document.querySelector("#editar-banca").value==="" && !document.querySelector("#editar-banca").required')
  # Existing course can still be renamed without retroactive metadata.
  js('document.querySelector("#editar-nome").value="Legado editado";formEditarCurso.requestSubmit()');settle()
  check('formEditarCurso.hidden && dadosCursos[0].nome==="Legado editado" && dadosCursos[0].ano===null')
  # Editing persists metadata, preserves producer, handles errors, and selects a renamed course outside prior filters.
- js('cursoExistenteSelect.value="2";btnEditarCurso.click();document.querySelector("#editar-nome").value="Nome alterado";document.querySelector("#editar-cargo").value="Professor novo";falhaSalvar=true;formEditarCurso.requestSubmit()');settle()
+ js('cursoExistenteSelect.value="2";btnUsarCursoExistente.click();btnEditarCurso.click();document.querySelector("#editar-nome").value="Nome alterado";document.querySelector("#editar-cargo").value="Professor novo";falhaSalvar=true;formEditarCurso.requestSubmit()');settle()
  check('!formEditarCurso.hidden && erroEditarCurso.textContent.includes("Falha simulada")')
  js('falhaSalvar=false;formEditarCurso.requestSubmit()');settle()
  check('formEditarCurso.hidden && dadosCursos[1].cargo==="Professor novo" && dadosCursos[1].produtor_id===7 && cursoExistenteSelect.value==="2"')

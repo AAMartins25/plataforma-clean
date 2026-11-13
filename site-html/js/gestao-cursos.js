@@ -5,7 +5,7 @@ window.GestaoCursos = (() => {
   const el = id => document.getElementById(id);
   const normalizar = texto => String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
   const comparar = (a, b) => a.localeCompare(b, 'pt-BR', {sensitivity:'base'}) || a.localeCompare(b, 'pt-BR');
-  let cursos = [], editandoId = null, aoSalvar = null;
+  let cursos = [], editandoId = null, aoSalvar = null, edicao = 0, carga = 0;
   const lista = el('cursoExistenteSelect');
   const form = el('formEditarCurso');
   function mensagem(texto, erro = false) {
@@ -34,8 +34,10 @@ window.GestaoCursos = (() => {
     el('resultadoCursos').textContent = resultado.length ? `${resultado.length} curso(s) encontrado(s).` : 'Nenhum curso encontrado para os filtros e a pesquisa informados.';
   }
   async function carregar(selecionarId) {
+    const requisicao = ++carga;
     try {
       const resposta = await apiGetAuth('/admin/cursos');
+      if (requisicao !== carga) return;
       cursos = (resposta || []).filter(c => c.ativo === true);
       filtros.forEach(chave => {
         const select = el('filtro-' + chave), anterior = select.value;
@@ -52,6 +54,7 @@ window.GestaoCursos = (() => {
         lista.value = String(selecionarId);
       }
     } catch (erro) {
+      if (requisicao !== carga) return;
       cursos = [];
       filtros.forEach(c => opcoes(el('filtro-' + c), [], 'Todos'));
       opcoes(lista, [], 'Erro ao carregar cursos');
@@ -72,7 +75,19 @@ window.GestaoCursos = (() => {
     }
     return dados;
   }
+  function encerrarEdicao() {
+    edicao++;
+    carga++; // Uma lista pendente não deve restaurar a seleção anterior.
+    editandoId = null;
+    aoSalvar = null;
+    form.hidden = true;
+    form.reset();
+    form.querySelectorAll('input,select').forEach(input => input.setCustomValidity(''));
+    el('erroEditarCurso').textContent = '';
+    form.querySelector('[type=submit]').disabled = false;
+  }
   function editar(id, callback) {
+    encerrarEdicao();
     const curso = cursos.find(c => String(c.id) === String(id));
     if (!curso) { alert('Selecione um curso para editar.'); return; }
     editandoId = curso.id; aoSalvar = callback;
@@ -85,25 +100,29 @@ window.GestaoCursos = (() => {
   filtros.forEach(c => el('filtro-' + c).addEventListener('change', renderizar));
   el('cursoPesquisa').addEventListener('input', renderizar);
   el('limparFiltrosCursos').addEventListener('click', limpar);
-  el('cancelarEdicaoCurso').addEventListener('click', () => { form.hidden = true; editandoId = null; });
+  el('cancelarEdicaoCurso').addEventListener('click', encerrarEdicao);
   document.querySelectorAll('.curso-campos input,.curso-campos select').forEach(input => input.addEventListener('input', () => input.setCustomValidity('')));
   form.addEventListener('submit', async evento => {
     evento.preventDefault();
+    if (form.hidden || editandoId == null) return;
     const dados = lerCampos('editar');
     const nome = el('editar-nome').value.trim();
     if (!dados || !nome || !form.reportValidity() || editandoId == null) return;
     const botao = form.querySelector('[type=submit]');
     botao.disabled = true;
-    const id = editandoId;
+    const id = editandoId, sessao = edicao, callback = aoSalvar;
     try {
       const curso = await apiPutAuth(`/cursos/${id}`, {nome, ...dados});
-      if (aoSalvar) aoSalvar(curso);
-      form.hidden = true;
+      if (sessao !== edicao) return;
+      if (callback) callback(curso);
+      encerrarEdicao();
+      const concluida = edicao;
       mensagem(`Curso atualizado: ${curso.nome}!`);
-      try { await carregar(id); } catch (_) { mensagem('Curso salvo. Não foi possível atualizar a lista; recarregue a página.', true); }
+      try { await carregar(id); } catch (_) { if (concluida === edicao) mensagem('Curso salvo. Não foi possível atualizar a lista; recarregue a página.', true); }
     } catch (erro) {
+      if (sessao !== edicao) return;
       el('erroEditarCurso').textContent = 'Erro ao salvar curso: ' + (erro.message || 'Tente novamente.');
-    } finally { botao.disabled = false; }
+    } finally { if (sessao === edicao) botao.disabled = false; }
   });
-  return {carregar, lerCampos, editar};
+  return {carregar, lerCampos, editar, encerrarEdicao};
 })();
