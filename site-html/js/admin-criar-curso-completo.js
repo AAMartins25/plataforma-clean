@@ -322,6 +322,14 @@
     `).join("");
   }
 
+  function rolarParaSecao(secao, contexto) {
+    // Aguarda o layout da seção atualizada e invalida rolagens de outro curso.
+    requestAnimationFrame(() => {
+      if (contexto !== contextoCurso || secao.style.display === "none") return;
+      secao.scrollIntoView({behavior: "smooth", block: "start"});
+    });
+  }
+
   async function carregarCursosExistentes(selecionarId) {
     return GestaoCursos.carregar(selecionarId);
   }
@@ -352,13 +360,7 @@
     await carregarConfigPublicaCurso();
     if (contexto !== contextoCurso) return;
 
-    setTimeout(() => {
-      if (contexto !== contextoCurso) return;
-      boxDisciplinas.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }, 100);
+    rolarParaSecao(boxConfigPublicaCurso, contexto);
 
     });
 
@@ -1503,6 +1505,7 @@
     });
 
     btnSalvarConfigPublicaCurso.addEventListener("click", async () => {
+      const contexto = contextoCurso;
       if (!cursoAtual || !cursoAtual.id) {
         alert("Selecione ou crie um curso primeiro.");
         return;
@@ -1536,6 +1539,7 @@
         msgConfigPublicaCurso.style.color = "#2f5e46";
 
         bloquearConfigPublicaCurso();
+        rolarParaSecao(boxDisciplinas, contexto);
 
       } catch (err) {
         if (err === respostaAntiga) return;

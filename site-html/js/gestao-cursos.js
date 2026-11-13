@@ -19,9 +19,9 @@ window.GestaoCursos = (() => {
   function limpar() {
     filtros.forEach(c => el('filtro-' + c).value = '');
     el('cursoPesquisa').value = '';
-    renderizar();
+    renderizar(true);
   }
-  function renderizar() {
+  function renderizar(selecionarPrimeiro = false) {
     const selecionado = lista.value;
     const termos = normalizar(el('cursoPesquisa').value).trim().split(/\s+/).filter(Boolean);
     const resultado = cursos.filter(c => filtros.every(chave => {
@@ -30,7 +30,10 @@ window.GestaoCursos = (() => {
     }) && termos.every(t => normalizar([c.nome, c.banca, c.cargo, c.orgao, c.ano, c.uf].filter(Boolean).join(' ')).includes(t)))
       .sort((a,b) => comparar(a.nome,b.nome) || a.id-b.id);
     opcoes(lista, resultado.map(c => [String(c.id), c.nome]), resultado.length ? 'Selecione um curso existente' : 'Nenhum curso encontrado');
-    if (resultado.some(c => String(c.id) === selecionado)) lista.value = selecionado;
+    if (resultado.length) {
+      lista.value = !selecionarPrimeiro && resultado.some(c => String(c.id) === selecionado)
+        ? selecionado : String(resultado[0].id);
+    }
     el('resultadoCursos').textContent = resultado.length ? `${resultado.length} curso(s) encontrado(s).` : 'Nenhum curso encontrado para os filtros e a pesquisa informados.';
   }
   async function carregar(selecionarId) {
@@ -97,8 +100,8 @@ window.GestaoCursos = (() => {
     form.hidden = false;
     el('editar-nome').focus();
   }
-  filtros.forEach(c => el('filtro-' + c).addEventListener('change', renderizar));
-  el('cursoPesquisa').addEventListener('input', renderizar);
+  filtros.forEach(c => el('filtro-' + c).addEventListener('change', () => renderizar(true)));
+  el('cursoPesquisa').addEventListener('input', () => renderizar(true));
   el('limparFiltrosCursos').addEventListener('click', limpar);
   el('cancelarEdicaoCurso').addEventListener('click', encerrarEdicao);
   document.querySelectorAll('.curso-campos input,.curso-campos select').forEach(input => input.addEventListener('input', () => input.setCustomValidity('')));

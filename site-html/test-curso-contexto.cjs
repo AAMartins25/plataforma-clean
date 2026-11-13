@@ -33,6 +33,39 @@ const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL
  async function ready(id){await page.waitForFunction(id=>document.getElementById('boxConfigPublicaCurso').style.display==='block'&&document.getElementById('cursoDescricaoPublica').value===`Descrição ${id}`&&!document.getElementById('avisoDescricaoPublica').textContent,id);}
  async function activate(id){const mutations=await js('calls.filter(c=>c.method!=="GET").length');await js(`cursoExistenteSelect.value='${id}';btnUsarCursoExistente.click()`);await ready(id);assert.equal(await js('calls.filter(c=>c.method!=="GET").length'),mutations,"Trocar curso não deve salvar");}
  await page.goto(origin+'/admin/criar-curso-completo.html');await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').options.length===3);
+ // Filtering selects the first result without activating it or issuing requests.
+ await check(`cursoExistenteSelect.value==='1' && cursoExistenteSelect.selectedOptions[0].text==='Curso A legado' && boxConfigPublicaCurso.style.display==='none'`);
+ const callsBeforeFilters=await js('calls.length');
+ await page.selectOption('#cursoExistenteSelect','2');await check(`cursoExistenteSelect.value==='2'`);
+ await page.fill('#cursoPesquisa','curso');await check(`cursoExistenteSelect.value==='1'`);
+ await page.fill('#cursoPesquisa','curso b');await check(`cursoExistenteSelect.value==='2' && cursoExistenteSelect.selectedOptions[0].text==='Curso B'`);
+ await page.fill('#cursoPesquisa','sem resultado');await check(`cursoExistenteSelect.value==='' && cursoExistenteSelect.options.length===1 && resultadoCursos.textContent.includes('Nenhum curso')`);
+ await page.fill('#cursoPesquisa','');await page.selectOption('#filtro-uf','AM');await check(`cursoExistenteSelect.value==='2'`);
+ await page.selectOption('#filtro-uf','');await check(`cursoExistenteSelect.value==='1'`);
+ assert.equal(await js('calls.length'),callsBeforeFilters);await check(`boxConfigPublicaCurso.style.display==='none' && formEditarCurso.hidden`);
+ await js(`window.scrolls=[];const original=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(options){scrolls.push({id:this.id,visible:this.getBoundingClientRect().height>0,descricao:cursoDescricaoPublica.value});return original.call(this,options);}`);
+ async function scrollAt(id){await page.waitForFunction(id=>scrolls.some(s=>s.id===id),id);await page.waitForFunction(id=>{const e=document.getElementById(id),target=Math.min(scrollY+e.getBoundingClientRect().top,document.documentElement.scrollHeight-innerHeight);return Math.abs(scrollY-target)<3;},id);}
+ for(const width of [320,390,768,1366]){
+  await page.setViewportSize({width,height:900});
+  // The asynchronous configuration must finish before scrolling to its visible section.
+  await js(`scrolls=[];delay='GET /admin/cursos/2/config-publica';cursoExistenteSelect.value='2';btnUsarCursoExistente.click()`);
+  await page.waitForFunction(()=>pending.length===1);await page.waitForTimeout(150);await check('scrolls.length===0');
+  await js('delay=null;pending.shift().resolve()');await ready(2);await scrollAt('boxConfigPublicaCurso');
+  await check(`scrolls.length===1 && scrolls[0].visible && scrolls[0].descricao==='Descrição 2'`);
+  await page.waitForTimeout(200);await check(`!scrolls.some(s=>s.id==='boxDisciplinas')`);
+  // Manual dropdown selection leaves the active B form and its description intact.
+  const requests=await js('calls.length');await page.selectOption('#cursoExistenteSelect','1');await check(`cursoDescricaoPublica.value==='Descrição 2'`);assert.equal(await js('calls.length'),requests);
+  await js('btnUsarCursoExistente.click()');await ready(1);await page.waitForTimeout(100);
+  await check(`listaDisciplinasCurso.textContent.includes('Disciplina 1') && valor4Meses.value==='10,00'`);
+  // Only a successful explicit save advances to disciplines.
+  await js(`scrolls=[];btnEditarConfigPublicaCurso.click();delay='PUT /admin/cursos/1/config-publica';btnSalvarConfigPublicaCurso.click()`);await page.waitForFunction(()=>pending.length===1);await page.waitForTimeout(100);await check('scrolls.length===0');
+  await js('delay=null;pending.shift().resolve()');await page.waitForFunction(()=>msgConfigPublicaCurso.textContent.includes('sucesso'));await scrollAt('boxDisciplinas');await check(`scrolls.length===1`);
+  await js('scrolls=[];btnUsarCursoExistente.click()');await ready(1);await scrollAt('boxConfigPublicaCurso');
+  await js(`scrolls=[];btnEditarConfigPublicaCurso.click();fail='PUT /admin/cursos/1/config-publica'`);await page.locator('#btnSalvarConfigPublicaCurso').click();await page.waitForFunction(()=>msgConfigPublicaCurso.textContent.includes('Erro'));await page.waitForTimeout(150);await check(`scrolls.length===0`);await check(`boxConfigPublicaCurso.getBoundingClientRect().bottom>0 && boxConfigPublicaCurso.getBoundingClientRect().top<innerHeight`);await js('fail=null');
+  await check('document.documentElement.scrollWidth<=innerWidth && document.body.scrollWidth<=innerWidth');
+ }
+ // A successful save from an old course cannot scroll the new context to disciplines.
+ await activate(1);await page.waitForTimeout(100);await js(`btnEditarConfigPublicaCurso.click();delay='PUT /admin/cursos/1/config-publica';btnSalvarConfigPublicaCurso.click()`);await page.waitForFunction(()=>pending.length===1);await activate(2);await page.waitForTimeout(100);await js('scrolls=[];delay=null;pending.shift().resolve()');await page.waitForTimeout(150);await check(`scrolls.length===0 && msgConfigPublicaCurso.textContent===''`);
  await activate(1);await js('btnEditarCurso.click()');await check('!formEditarCurso.hidden');
  await js(`cursoNome.value='RESUMÃO ASSISTENTE ADMINISTRATIVO SEDUC-AM 2026';for(const [k,v] of Object.entries({banca:'Banca',cargo:'Cargo',orgao:'Órgão',ano:2026,uf:'AM'}))document.getElementById('novo-'+k).value=v;formCurso.requestSubmit()`);
  await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').value==='3');await check(`formEditarCurso.hidden && document.getElementById('editar-nome').value==='' && !listaDisciplinasCurso.textContent.includes('Disciplina 1')`);
@@ -65,11 +98,11 @@ const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL
  await js(`btnEditarConfigPublicaCurso.click();document.querySelector('.ck-editor__editable').ckeditorInstance.setData('<p><strong>Descrição B editada</strong></p>');btnSalvarConfigPublicaCurso.click()`);await page.waitForFunction(()=>document.getElementById('msgConfigPublicaCurso').textContent.includes('sucesso'));await check(`calls.some(c=>c.method==='PUT'&&c.url==='/admin/cursos/2/config-publica'&&c.data.descricao_publica.includes('<strong>Descrição B editada</strong>'))`);
  // Legacy course remains editable with null metadata.
  await activate(1);await js(`btnEditarCurso.click();formEditarCurso.requestSubmit()`);await page.waitForFunction(()=>document.getElementById('formEditarCurso').hidden);await check(`calls.some(c=>c.method==='PUT'&&c.url==='/cursos/1'&&c.data.ano===null)`);
- await activate(2);await js('btnEditarCurso.click();btnDuplicarCurso.click()');await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').value==='4');await ready(4);await check('formEditarCurso.hidden && listaDisciplinasCurso.textContent.includes("Disciplina 4")');await js('btnEditarCurso.click();btnExcluirCurso.click()');await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').value==='');await check(`formEditarCurso.hidden && boxConfigPublicaCurso.style.display==='none' && boxDisciplinas.style.display==='none'`);
+ await activate(2);await js('btnEditarCurso.click();btnDuplicarCurso.click()');await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').value==='4');await ready(4);await check('formEditarCurso.hidden && listaDisciplinasCurso.textContent.includes("Disciplina 4")');await js('btnEditarCurso.click();btnExcluirCurso.click()');await page.waitForFunction(()=>document.getElementById('boxDisciplinas').style.display==='none');await check(`formEditarCurso.hidden && boxConfigPublicaCurso.style.display==='none' && boxDisciplinas.style.display==='none'`);
  // Search and filters still work.
  await js(`cursoPesquisa.value='curso b';cursoPesquisa.dispatchEvent(new Event('input'))`);await check(`cursoExistenteSelect.options.length===2 && cursoExistenteSelect.options[1].value==='2'`);await js(`limparFiltrosCursos.click();document.getElementById('filtro-uf').value='AM';document.getElementById('filtro-uf').dispatchEvent(new Event('change'))`);await check(`![...cursoExistenteSelect.options].some(o=>o.value==='1')`);await js('limparFiltrosCursos.click()');
  await activate(2);
  for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:900});await js('btnEditarCurso.click()');await check('document.documentElement.scrollWidth<=innerWidth && document.body.scrollWidth<=innerWidth');await check(`!document.body.innerText.includes('Metadados ausentes') && !document.querySelector('label[for="cursoDescricaoPublica"]')`);await js('cancelarEdicaoCurso.click()');}
- await page.reload();await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').options.length===3);await check(`formEditarCurso.hidden && cursoExistenteSelect.value==='' && boxConfigPublicaCurso.style.display==='none'`);
- assert.deepEqual(errors,[]);console.log('OK: criação A→B, ativação, edição explícita, legado, duplicação, exclusão, reload, filtros, pesquisa, CKEditor/salvamento, respostas atrasadas/erros e larguras 320/390/768/1366; API inteiramente simulada.');
+ await page.reload();await page.waitForFunction(()=>document.getElementById('cursoExistenteSelect').options.length===3);await check(`formEditarCurso.hidden && cursoExistenteSelect.value==='1' && boxConfigPublicaCurso.style.display==='none'`);
+ assert.deepEqual(errors,[]);console.log('OK: seleção automática/manual/vazia sem ativação, rolagem após renderização/salvamento com sucesso e sem rolagem em erro/resposta antiga, criação A→B, ativação, edição explícita, legado, duplicação, exclusão, reload, filtros, pesquisa, CKEditor/salvamento, respostas atrasadas/erros e larguras 320/390/768/1366; API inteiramente simulada.');
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1});
