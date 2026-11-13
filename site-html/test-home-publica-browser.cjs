@@ -82,11 +82,11 @@ const server = http.createServer((req, res) => {
         assert.ok(Math.abs(center(geometry.tagline)-center(geometry.name)) < 0.5, 'Slogan centralizado no nome');
         assert.ok(Math.abs(geometry.name.x-(geometry.book.x+geometry.book.w)-(width<=600?8:14)) < 0.5, 'Espaço entre livro e nome preservado');
         assert.equal(geometry.font,width<=600?17:18);
-        assert.equal(geometry.paddingTop,width<=600?10:14);
+        assert.equal(geometry.paddingTop,width<=600?4:6);
         assert.ok(geometry.controls.every(c=>c.x+c.w<=geometry.access.x || c.x>=geometry.access.x+geometry.access.w || c.y+c.h<=geometry.access.y || c.y>=geometry.access.y+geometry.access.h),'Sem sobreposição de controles');
         if(process.env.HOME_BEFORE_MEASUREMENTS) {
           const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
-          assert.equal(before.brand.y-geometry.brand.y,width<=600?6:8,'Redução efetiva do espaço superior');
+          assert.equal(before.brand.y-geometry.brand.y,(width<=600?6:8)+(signedIn?0:(width<=600?16:18)),'Redução efetiva do espaço superior');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
@@ -94,6 +94,8 @@ const server = http.createServer((req, res) => {
         assert.equal(await noOverflow(page), true);
         assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
         assert.equal(await page.locator('.home-race-track').count(), 0);
+        assert.equal(await page.locator('.home-course-arrow').count(), 0);
+        assert.equal(await page.getByLabel('Localizar curso',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave');
         assert.equal(await page.locator('.home-brand-symbol').evaluate(img => img.complete && img.naturalWidth > 0), true);
         assert.equal(await page.locator('h1').innerText(), 'Resumão Online\nDIRETO AO PONTO');
         if (artifacts) {

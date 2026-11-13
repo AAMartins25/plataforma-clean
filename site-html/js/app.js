@@ -2808,7 +2808,7 @@ function renderizarCursosPublicos() {
     : cursos.slice(0, limiteInicial);
 
   el.innerHTML = cursosVisiveis.map(c => {
-    // Metadados são opcionais: a API pública atual entrega somente o nome oficial.
+    // Metadados opcionais da API pública; cursos legados mantêm o nome oficial.
     const texto = valor => typeof valor === "string" ? valor.trim() : "";
     const cargo = texto(c.cargo);
     const orgao = texto(c.orgao);
@@ -2829,9 +2829,6 @@ function renderizarCursosPublicos() {
           ${metadados ? `<span class="home-course-meta">${escapeHtml(metadados)}</span>` : ""}
           <span class="curso-publico-nome">${escapeHtml(cargo || c.nome)}</span>
         </span>
-        <svg class="home-course-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-          <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
       </a>
     `;
   }).join("") || "<p>Nenhum curso encontrado.</p>";

@@ -3925,7 +3925,11 @@ def listar_cursos_publicos(
             "id": curso.id,
             "nome": curso.nome,
             "ativo": curso.ativo,
-            "publicado": curso.publicado
+            "publicado": curso.publicado,
+            "cargo": curso.cargo,
+            "orgao": curso.orgao,
+            "uf": curso.uf,
+            "ano": curso.ano
         }
         for curso in cursos
     ]

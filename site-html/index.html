@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumão Online</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/home-publica.css?v=3">
+  <link rel="stylesheet" href="css/home-publica.css?v=4">
   <script src="js/cabecalho.js" defer></script>
   <script src="js/rodape.js" defer></script>
 </head>
@@ -124,9 +124,12 @@
 
   <div class="card home-localizar-card">
     <div class="home-localizar">
-      <label for="buscaCurso"><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2.5"/><path d="m18 18 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Localizar</label>
-      <input id="buscaCurso" type="text" placeholder="Digite palavra(s) chave"
-        oninput="renderizarCursosPublicos()">
+      <label for="buscaCurso"><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2.5"/><path d="m18 18 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Localizar curso</label>
+      <div class="home-search-field">
+        <input id="buscaCurso" type="text" placeholder="Digite o nome completo ou palavra(s)-chave"
+          oninput="renderizarCursosPublicos()">
+        <span class="home-search-placeholder" aria-hidden="true">Digite o nome completo ou palavra(s)-chave</span>
+      </div>
     </div>
   </div>
 
@@ -337,7 +340,7 @@
 </footer>
 
 
-<script src="js/app.js?v=home-publica-2"></script>
+<script src="js/app.js?v=home-publica-4"></script>
 
 <script>
 

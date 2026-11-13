@@ -18,7 +18,7 @@ body.home-page {
   grid-template-columns: minmax(0, 1fr) 184px minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   gap: 18px 12px;
-  padding: 14px 24px 32px !important;
+  padding: 6px 24px 32px !important;
 }
 /* Ondas limitadas ao fundo; não interceptam os controles existentes. */
 .home-page .home-header::before,
@@ -116,7 +116,7 @@ body.home-page {
 .home-page #lista-cursos-publicos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .home-page #lista-cursos-publicos .curso-publico-card {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 28px;
+  grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
   gap: 18px;
   padding: 20px;
@@ -133,7 +133,6 @@ body.home-page {
 .home-page .home-course-content { display: flex; flex-direction: column; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
 .home-page .curso-publico-nome { font-size: 20px; font-weight: 750; line-height: 1.4; letter-spacing: -0.02em; color: var(--home-blue); }
 .home-page .home-course-meta { font-size: 16px; font-weight: 650; line-height: 1.5; color: var(--home-navy); }
-.home-page .home-course-arrow { width: 28px; height: 28px; color: var(--home-blue); }
 .home-page #mais-cursos-box:empty { display: none; }
 .home-page #mais-cursos-box .btn { margin: 0; min-height: 44px; background: #eef5ff; color: var(--home-blue); font-family: inherit; font-weight: 650; cursor: pointer; }
 .home-page .home-localizar { display: flex; align-items: center; gap: 22px; margin: 0; }
@@ -148,7 +147,7 @@ body.home-page {
 .home-page :is(.home-cursos-toggle, .curso-publico-card, .home-icon-btn):focus-visible { outline: 3px solid var(--home-blue); outline-offset: 4px; }
 @media (max-width: 600px) {
   body.home-page { --home-book-width: 56px; --home-brand-gap: 8px; }
-  .home-page header.home-header.ro-header { padding: 10px 12px 26px !important; gap: 16px 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
+  .home-page header.home-header.ro-header { padding: 4px 12px 26px !important; gap: 16px 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
   .home-page .home-brand-symbol { width: var(--home-book-width); height: 54px; }
   .home-page .home-brand-tagline { font-size: 10px; letter-spacing: 0.16em; }
@@ -156,11 +155,10 @@ body.home-page {
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
   .home-page main > .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 13px; }
   .home-page main .card h2, .home-page .home-localizar label { font-size: 20px; gap: 9px; }
-  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 44px minmax(0, 1fr) 22px; padding: 16px 12px; gap: 10px; }
+  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 44px minmax(0, 1fr); padding: 16px 12px; gap: 10px; }
   .home-page .home-course-icon img { width: 44px; height: 42px; }
   .home-page .curso-publico-nome { font-size: 17px; }
   .home-page .home-course-meta { font-size: 14px; }
-  .home-page .home-course-arrow { width: 22px; height: 24px; }
   .home-page .home-localizar { flex-direction: column; align-items: stretch; gap: 14px; }
   .home-page .home-race-car { width: 140px; height: 64px; }
   .home-page .home-race-flag { width: 49px; height: 64px; }
@@ -177,7 +175,34 @@ body.home-page {
   .home-page main .card h2 { font-size: 18px; }
   .home-page .home-cursos-toggle { gap: 8px; }
   .home-page .home-section-icon { width: 24px; height: 24px; }
-  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 36px minmax(0, 1fr) 20px; gap: 8px; }
+  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 36px minmax(0, 1fr); gap: 8px; }
   .home-page .home-course-icon img { width: 36px; height: 36px; }
   .home-page .curso-publico-nome { font-size: 16px; font-weight: 700; }
+}
+
+/* Visitantes não precisam da linha reservada à identificação de usuário. */
+.home-page header.home-header.ro-header:not(.ro-header--identified) { grid-template-rows: auto auto; }
+.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-titles { grid-row: 1 !important; }
+.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-access { grid-row: 2; }
+.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-navigation { grid-row: 2 !important; }
+/* O placeholder nativo permanece no input; a cópia visual permite duas linhas no mobile. */
+.home-page .home-search-field { position: relative; flex: 1; min-width: 0; }
+.home-page .home-search-placeholder { display: none; }
+@media (max-width: 600px) {
+  .home-page #buscaCurso { min-height: 66px; }
+  .home-page #buscaCurso::placeholder { color: transparent; }
+  .home-page .home-search-placeholder {
+    display: block;
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    pointer-events: none;
+  }
+  .home-page #buscaCurso:not(:placeholder-shown) + .home-search-placeholder { display: none; }
 }
