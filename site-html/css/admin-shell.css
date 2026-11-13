@@ -29,13 +29,13 @@ body.admin-shell {
 /* Adesão explícita nos três cabeçalhos: vence o tamanho inline legado
    e a regra genérica de 1.25rem, sem alterar os demais títulos administrativos. */
 :is(.admin-shell, .minha-area-page) .ro-header .ro-header-titles h1.admin-titulo-destaque {
-  font-size: 24px !important;
-  font-weight: 700;
+  font-size: 23px !important;
+  font-weight: 600;
 }
 /* Somente títulos de interface marcados no HTML; não alcança editores/conteúdo rico. */
 :is(.admin-shell, .minha-area-page) main .admin-titulo-secao {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 500;
 }
 .admin-shell .ro-header .ro-header-navigation {
   grid-column: 1 / -1;
