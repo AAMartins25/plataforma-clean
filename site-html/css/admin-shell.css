@@ -26,6 +26,11 @@ body.admin-shell {
   font-size: 1.25rem !important; /* Substitui somente o tamanho inline legado. */
   line-height: 1.3;
 }
+/* Destaque restrito aos títulos de Cursos e Painel do Administrador. */
+.admin-shell .ro-header .ro-header-titles h1.admin-titulo-destaque {
+  font-size: 20px !important;
+  font-weight: 600;
+}
 .admin-shell .ro-header .ro-header-navigation {
   grid-column: 1 / -1;
   grid-row: 2 !important;
