@@ -11,3 +11,9 @@
 #formEditarCurso[hidden] { display:none; }
 #formEditarCurso .btn { margin:5px 0; white-space:normal; }
 #formCurso input { box-sizing:border-box; }
+
+/* Apenas títulos de interface da Gestão de Cursos; preserva conteúdo dos editores. */
+body.gestao-cursos-page main .admin-titulo-secao {
+  font-size: 21px;
+  font-weight: 550;
+}
