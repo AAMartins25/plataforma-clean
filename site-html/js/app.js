@@ -2839,7 +2839,7 @@ function renderizarCursosPublicos() {
         href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
       >
         <span class="home-course-icon" aria-hidden="true">
-          <img src="assets/book-check.svg" alt="" width="64" height="58">
+          <img src="assets/book-check-course.svg" alt="" width="64" height="58">
         </span>
         <span class="home-course-content">
           ${metadados ? `<span class="home-course-meta">${escapeHtml(metadados)}</span>` : ""}

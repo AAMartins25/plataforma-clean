@@ -66,6 +66,7 @@ const server = http.createServer((req, res) => {
           const r = e => {const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height};};
           return {
             brand: r(document.querySelector('.home-brand-title')),
+            header: r(document.querySelector('.home-header')),
             name: r(document.querySelector('.home-brand-name')),
             tagline: r(document.querySelector('.home-brand-tagline')),
             book: r(document.querySelector('.home-brand-symbol')),
@@ -103,6 +104,8 @@ const server = http.createServer((req, res) => {
           const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
           assert.equal(before.brand.y-geometry.brand.y,0,'Posição superior do cabeçalho preservada');
           assert.equal(before.access.y,geometry.access.y,'Posição vertical do acesso preservada');
+          assert.equal(before.brand.h,geometry.brand.h,'Altura da marca preservada');
+          assert.deepEqual(before.controls,geometry.controls,'Navegação preservada');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
@@ -114,6 +117,31 @@ const server = http.createServer((req, res) => {
           buttonText:getComputedStyle(document.querySelector('.ro-header-access a')).color,
           buttonBackground:getComputedStyle(document.querySelector('.ro-header-access a')).backgroundColor
         }));
+        assert.equal(await page.locator('.home-brand-name').textContent(),'ResumãoOnline');
+        const wordGap=await page.locator('.home-brand-name').evaluate(e=>{
+          const [first,last]=e.children;
+          return last.getBoundingClientRect().left-first.getBoundingClientRect().right;
+        });
+        assert.ok(Math.abs(wordGap)<.1,'Sem espaço, gap ou margem entre as palavras');
+        // Verificar os pixels efetivamente renderizados dos SVGs, não só o CSS do img.
+        geometry.bookColors=await page.evaluate(async()=>{
+          const result={};
+          for(const [kind,selector,colors] of [
+            ['header','.home-brand-symbol',[[46,125,50],[217,156,0]]],
+            ['course','.home-course-icon img',[[23,54,93],[245,185,0]]]
+          ]) {
+            const img=document.querySelector(selector);await img.decode();
+            const canvas=document.createElement('canvas');canvas.width=80;canvas.height=72;
+            const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,80,72);
+            const pixels=ctx.getImageData(0,0,80,72).data;
+            result[kind]=colors.map(rgb=>{
+              let count=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]===rgb[0]&&pixels[i+1]===rgb[1]&&pixels[i+2]===rgb[2]&&pixels[i+3]===255)count++;
+              return {rgb,count};
+            });
+          }
+          return result;
+        });
+        for(const colors of Object.values(geometry.bookColors))assert.ok(colors.every(c=>c.count>50),'Cores corretas nos pixels renderizados dos livros');
         assert.equal(colors.resumao,'rgb(46, 125, 50)');
         assert.equal(colors.online,'rgb(217, 156, 0)');
         assert.equal(colors.course,'rgb(23, 54, 93)');
@@ -150,7 +178,7 @@ const server = http.createServer((req, res) => {
         assert.equal(await page.locator('.home-course-arrow').count(), 0);
         assert.equal(await page.getByLabel('Localizar curso',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave');
         assert.equal(await page.locator('.home-brand-symbol').evaluate(img => img.complete && img.naturalWidth > 0), true);
-        assert.equal(await page.locator('h1').innerText(), 'Resumão Online\nDIRETO AO PONTO');
+        assert.equal(await page.locator('h1').innerText(), 'ResumãoOnline\nDIRETO AO PONTO');
         if (artifacts) {
           await page.screenshot({path: path.join(artifacts, `home-${width}-${signedIn?'logado':'publico'}.png`), fullPage: true});
           await page.screenshot({path: path.join(artifacts, `top-${width}-${signedIn?'logado':'publico'}.png`), clip:{x:0,y:0,width,height:Math.min(900,await page.evaluate(()=>document.documentElement.scrollHeight))}});

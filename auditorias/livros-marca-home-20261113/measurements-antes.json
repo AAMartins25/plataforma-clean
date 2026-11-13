@@ -1,0 +1,586 @@
+[
+  {
+    "width": 320,
+    "signedIn": false,
+    "brand": {
+      "x": 12,
+      "y": 2,
+      "w": 296,
+      "h": 49.25
+    },
+    "name": {
+      "x": 82.046875,
+      "y": 2,
+      "w": 212.90625,
+      "h": 28.75
+    },
+    "tagline": {
+      "x": 124.1875,
+      "y": 39.75,
+      "w": 128.609375,
+      "h": 11.5
+    },
+    "book": {
+      "x": 25.046875,
+      "y": 3,
+      "w": 49,
+      "h": 47.25
+    },
+    "identity": null,
+    "access": {
+      "x": 163.5,
+      "y": 67.25,
+      "w": 50,
+      "h": 50
+    },
+    "controls": [],
+    "font": 17,
+    "paddingTop": 2,
+    "courseBook": {
+      "x": 42,
+      "y": 270.578125,
+      "width": 31.5,
+      "height": 31.5
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 24,
+          "h": 24
+        }
+      ],
+      "height": "626.766px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "signedIn": true,
+    "brand": {
+      "x": 12,
+      "y": 19,
+      "w": 296,
+      "h": 49.25
+    },
+    "name": {
+      "x": 82.046875,
+      "y": 19,
+      "w": 212.90625,
+      "h": 28.75
+    },
+    "tagline": {
+      "x": 124.1875,
+      "y": 56.75,
+      "w": 128.609375,
+      "h": 11.5
+    },
+    "book": {
+      "x": 25.046875,
+      "y": 20,
+      "w": 49,
+      "h": 47.25
+    },
+    "identity": {
+      "x": 223.28125,
+      "y": 2,
+      "w": 84.71875,
+      "h": 17
+    },
+    "access": {
+      "x": 163.5,
+      "y": 84.25,
+      "w": 50,
+      "h": 50
+    },
+    "controls": [
+      {
+        "x": 212,
+        "y": 150.25,
+        "w": 44,
+        "h": 44
+      },
+      {
+        "x": 264,
+        "y": 150.25,
+        "w": 44,
+        "h": 44
+      }
+    ],
+    "font": 17,
+    "paddingTop": 2,
+    "courseBook": {
+      "x": 42,
+      "y": 347.578125,
+      "width": 31.5,
+      "height": 31.5
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 24,
+          "h": 24
+        }
+      ],
+      "height": "626.766px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "signedIn": false,
+    "brand": {
+      "x": 12,
+      "y": 2,
+      "w": 366,
+      "h": 49.25
+    },
+    "name": {
+      "x": 117.046875,
+      "y": 2,
+      "w": 212.90625,
+      "h": 28.75
+    },
+    "tagline": {
+      "x": 159.1875,
+      "y": 39.75,
+      "w": 128.609375,
+      "h": 11.5
+    },
+    "book": {
+      "x": 60.046875,
+      "y": 3,
+      "w": 49,
+      "h": 47.25
+    },
+    "identity": null,
+    "access": {
+      "x": 198.5,
+      "y": 67.25,
+      "w": 50,
+      "h": 50
+    },
+    "controls": [],
+    "font": 17,
+    "paddingTop": 2,
+    "courseBook": {
+      "x": 42,
+      "y": 261.5625,
+      "width": 38.5,
+      "height": 36.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "543.125px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "signedIn": true,
+    "brand": {
+      "x": 12,
+      "y": 19,
+      "w": 366,
+      "h": 49.25
+    },
+    "name": {
+      "x": 117.046875,
+      "y": 19,
+      "w": 212.90625,
+      "h": 28.75
+    },
+    "tagline": {
+      "x": 159.1875,
+      "y": 56.75,
+      "w": 128.609375,
+      "h": 11.5
+    },
+    "book": {
+      "x": 60.046875,
+      "y": 20,
+      "w": 49,
+      "h": 47.25
+    },
+    "identity": {
+      "x": 293.28125,
+      "y": 2,
+      "w": 84.71875,
+      "h": 17
+    },
+    "access": {
+      "x": 198.5,
+      "y": 107.25,
+      "w": 50,
+      "h": 50
+    },
+    "controls": [
+      {
+        "x": 334,
+        "y": 84.25,
+        "w": 44,
+        "h": 44
+      },
+      {
+        "x": 334,
+        "y": 136.25,
+        "w": 44,
+        "h": 44
+      }
+    ],
+    "font": 17,
+    "paddingTop": 2,
+    "courseBook": {
+      "x": 42,
+      "y": 324.5625,
+      "width": 38.5,
+      "height": 36.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "543.125px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "signedIn": false,
+    "brand": {
+      "x": 24,
+      "y": 4,
+      "w": 720,
+      "h": 66.5
+    },
+    "name": {
+      "x": 280.65625,
+      "y": 5.40625,
+      "w": 294.1875,
+      "h": 39.734375
+    },
+    "tagline": {
+      "x": 340.25,
+      "y": 54.140625,
+      "w": 174.984375,
+      "h": 14.9375
+    },
+    "book": {
+      "x": 193.15625,
+      "y": 4,
+      "w": 73.5,
+      "h": 66.5
+    },
+    "identity": null,
+    "access": {
+      "x": 401.75,
+      "y": 88.5,
+      "w": 52,
+      "h": 52
+    },
+    "controls": [],
+    "font": 18,
+    "paddingTop": 4,
+    "courseBook": {
+      "x": 68,
+      "y": 292.8125,
+      "width": 56,
+      "height": 50.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "572.188px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "signedIn": true,
+    "brand": {
+      "x": 24,
+      "y": 21,
+      "w": 720,
+      "h": 66.5
+    },
+    "name": {
+      "x": 280.65625,
+      "y": 22.40625,
+      "w": 294.1875,
+      "h": 39.734375
+    },
+    "tagline": {
+      "x": 340.25,
+      "y": 71.140625,
+      "w": 174.984375,
+      "h": 14.9375
+    },
+    "book": {
+      "x": 193.15625,
+      "y": 21,
+      "w": 73.5,
+      "h": 66.5
+    },
+    "identity": {
+      "x": 659.28125,
+      "y": 4,
+      "w": 84.71875,
+      "h": 17
+    },
+    "access": {
+      "x": 401.75,
+      "y": 105.5,
+      "w": 52,
+      "h": 52
+    },
+    "controls": [
+      {
+        "x": 648,
+        "y": 109.5,
+        "w": 44,
+        "h": 44
+      },
+      {
+        "x": 700,
+        "y": 109.5,
+        "w": 44,
+        "h": 44
+      }
+    ],
+    "font": 18,
+    "paddingTop": 4,
+    "courseBook": {
+      "x": 68,
+      "y": 309.8125,
+      "width": 56,
+      "height": 50.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "572.188px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "signedIn": false,
+    "brand": {
+      "x": 24,
+      "y": 4,
+      "w": 1318,
+      "h": 74.53125
+    },
+    "name": {
+      "x": 539.40625,
+      "y": 4,
+      "w": 374.6875,
+      "h": 50.59375
+    },
+    "tagline": {
+      "x": 639.25,
+      "y": 63.59375,
+      "w": 174.984375,
+      "h": 14.9375
+    },
+    "book": {
+      "x": 451.90625,
+      "y": 8.015625,
+      "w": 73.5,
+      "h": 66.5
+    },
+    "identity": null,
+    "access": {
+      "x": 700.75,
+      "y": 96.53125,
+      "w": 52,
+      "h": 52
+    },
+    "controls": [],
+    "font": 18,
+    "paddingTop": 4,
+    "courseBook": {
+      "x": 291,
+      "y": 300.84375,
+      "width": 56,
+      "height": 50.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "566.938px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "signedIn": true,
+    "brand": {
+      "x": 24,
+      "y": 21,
+      "w": 1318,
+      "h": 74.53125
+    },
+    "name": {
+      "x": 539.40625,
+      "y": 21,
+      "w": 374.6875,
+      "h": 50.59375
+    },
+    "tagline": {
+      "x": 639.25,
+      "y": 80.59375,
+      "w": 174.984375,
+      "h": 14.9375
+    },
+    "book": {
+      "x": 451.90625,
+      "y": 25.015625,
+      "w": 73.5,
+      "h": 66.5
+    },
+    "identity": {
+      "x": 1257.28125,
+      "y": 4,
+      "w": 84.71875,
+      "h": 17
+    },
+    "access": {
+      "x": 700.75,
+      "y": 113.53125,
+      "w": 52,
+      "h": 52
+    },
+    "controls": [
+      {
+        "x": 1246,
+        "y": 117.53125,
+        "w": 44,
+        "h": 44
+      },
+      {
+        "x": 1298,
+        "y": 117.53125,
+        "w": 44,
+        "h": 44
+      }
+    ],
+    "font": 18,
+    "paddingTop": 4,
+    "courseBook": {
+      "x": 291,
+      "y": 317.84375,
+      "width": 56,
+      "height": 50.75
+    },
+    "catalog": {
+      "svgs": [
+        {
+          "w": 27,
+          "h": 27
+        }
+      ],
+      "height": "566.938px",
+      "firstGap": 15
+    },
+    "colors": {
+      "resumao": "rgb(46, 125, 50)",
+      "online": "rgb(217, 156, 0)",
+      "course": "rgb(23, 54, 93)",
+      "buttonText": "rgb(255, 255, 255)",
+      "buttonBackground": "rgb(120, 155, 69)"
+    },
+    "buttonContrast": 3.194846345853973,
+    "overflow": false,
+    "errors": []
+  }
+]
