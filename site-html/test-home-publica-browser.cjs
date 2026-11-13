@@ -67,6 +67,8 @@ const server = http.createServer((req, res) => {
           return {
             brand: r(document.querySelector('.home-brand-title')),
             header: r(document.querySelector('.home-header')),
+            car: r(document.querySelector('.home-race-car')),
+            flag: r(document.querySelector('.home-race-flag')),
             name: r(document.querySelector('.home-brand-name')),
             tagline: r(document.querySelector('.home-brand-tagline')),
             book: r(document.querySelector('.home-brand-symbol')),
@@ -105,6 +107,7 @@ const server = http.createServer((req, res) => {
           assert.equal(before.brand.y-geometry.brand.y,0,'Posição superior do cabeçalho preservada');
           assert.equal(before.access.y,geometry.access.y,'Posição vertical do acesso preservada');
           assert.equal(before.brand.h,geometry.brand.h,'Altura da marca preservada');
+          assert.equal(before.header.h,geometry.header.h,'Altura total do cabeçalho preservada');
           assert.deepEqual(before.controls,geometry.controls,'Navegação preservada');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
@@ -112,6 +115,9 @@ const server = http.createServer((req, res) => {
         assert.ok(geometry.access.w >= 44 && geometry.access.h >= 44);
         const colors=await page.evaluate(()=>({
           resumao:getComputedStyle(document.querySelector('.home-brand-name > span:first-child')).color,
+          resumaoBackground:getComputedStyle(document.querySelector('.home-brand-name > span:first-child')).backgroundColor,
+          onlineBackground:getComputedStyle(document.querySelector('.home-brand-online')).backgroundColor,
+          tagline:getComputedStyle(document.querySelector('.home-brand-tagline')).color,
           online:getComputedStyle(document.querySelector('.home-brand-online')).color,
           course:getComputedStyle(document.querySelector('.curso-publico-nome')).color,
           buttonText:getComputedStyle(document.querySelector('.ro-header-access a')).color,
@@ -142,7 +148,10 @@ const server = http.createServer((req, res) => {
           return result;
         });
         for(const colors of Object.values(geometry.bookColors))assert.ok(colors.every(c=>c.count>50),'Cores corretas nos pixels renderizados dos livros');
-        assert.equal(colors.resumao,'rgb(46, 125, 50)');
+        assert.equal(colors.resumao,'rgb(255, 255, 255)');
+        assert.equal(colors.resumaoBackground,'rgb(36, 91, 214)');
+        assert.equal(colors.onlineBackground,'rgba(0, 0, 0, 0)');
+        assert.equal(colors.tagline,'rgb(120, 155, 69)');
         assert.equal(colors.online,'rgb(217, 156, 0)');
         assert.equal(colors.course,'rgb(23, 54, 93)');
         assert.equal(colors.buttonText,'rgb(255, 255, 255)');
@@ -174,6 +183,10 @@ const server = http.createServer((req, res) => {
         geometry.colors=colors;geometry.buttonContrast=contrast;
         assert.equal(await noOverflow(page), true);
         assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
+        geometry.carColors=await page.locator('.home-race-car').evaluate(e=>[...e.querySelectorAll('[fill],[stroke]')].flatMap(n=>['fill','stroke'].map(k=>n.getAttribute(k)).filter(Boolean)));
+        for(const color of ['#789B45','#C0C0C0','#D9DDE1','#69737D'])assert.ok(geometry.carColors.includes(color));
+        assert.ok(!geometry.carColors.some(c=>['#E32131','#FF7376','#B61726','#F23946','#B61827'].includes(c)));
+        assert.equal(await page.evaluate(()=>getSelection().toString()),'','Efeito azul permanente sem seleção de texto');
         assert.equal(await page.locator('.home-race-track').count(), 0);
         assert.equal(await page.locator('.home-course-arrow').count(), 0);
         assert.equal(await page.getByLabel('Localizar curso',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave');

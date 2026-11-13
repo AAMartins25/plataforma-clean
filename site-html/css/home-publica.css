@@ -89,9 +89,9 @@ body.home-page {
 .home-page .home-brand-symbol { width: var(--home-book-width); height: 66.5px; flex: 0 0 auto; }
 .home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
 .home-page .home-brand-name { font-size: clamp(25px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
-.home-page .home-brand-name > span:first-child { color: #2e7d32; }
+.home-page .home-brand-name > span:first-child { color: #fff; background: #245bd6; padding: 0 0.045em; }
 .home-page .home-brand-online { color: #d99c00; }
-.home-page .home-brand-tagline { font-size: 13px; font-weight: 650; letter-spacing: 0.2em; color: var(--home-blue); }
+.home-page .home-brand-tagline { font-size: 13px; font-weight: 650; letter-spacing: 0.2em; color: #789b45; }
 .home-page .home-header.ro-header .ro-header-access .home-icon-btn {
   display: inline-flex;
   align-items: center;
