@@ -1,7 +1,8 @@
 /* Identidade da home pública: SVGs locais e fonte do sistema, sem dependências. */
 body.home-page {
-  --home-book-width: 84px;
+  --home-book-width: 73.5px;
   --home-brand-gap: 14px;
+  --home-row-gap: 18px;
   --home-blue: #0866d8;
   --home-navy: #102d75;
   --home-gold: #f5b900;
@@ -17,7 +18,7 @@ body.home-page {
   border-bottom: 1px solid #f5df85;
   grid-template-columns: minmax(0, 1fr) 184px minmax(0, 1fr);
   grid-template-rows: auto auto auto;
-  gap: 18px 12px;
+  gap: 0 12px;
   padding: 6px 24px 32px !important;
 }
 /* Ondas limitadas ao fundo; não interceptam os controles existentes. */
@@ -37,13 +38,34 @@ body.home-page {
   background: #f7d96840;
   clip-path: ellipse(68% 95% at 75% 100%);
 }
-.home-page .home-header.ro-header .ro-header-titles { grid-column: 1 / -1; grid-row: 2 !important; }
+.home-page .home-header.ro-header .ro-header-titles { grid-column: 1 / -1; grid-row: 2 !important; margin-bottom: var(--home-row-gap); }
 .home-page .home-header.ro-header .ro-header-identity {
   grid-column: 1 / -1;
   grid-row: 1;
+  padding-bottom: 8px;
   max-width: 100% !important;
 }
-.home-page .home-header.ro-header .ro-identity { height: auto; font-size: 12px; color: var(--home-navy); }
+.home-page .home-header.ro-header .ro-identity {
+  position: relative;
+  height: auto;
+  min-height: 0; /* Identificação é texto; não deve herdar o alvo interativo de 44 px. */
+  padding: 0;
+  font-size: 12px;
+  color: var(--home-navy);
+}
+/* O nome ampliado ocupa a mesma linha no hover, sem reservar uma segunda linha invisível. */
+.home-page .home-header.ro-header .ro-identity::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  color: var(--home-navy);
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-page .home-header.ro-header .ro-identity:hover { color: transparent; }
+}
 .home-page .home-header.ro-header .ro-header-access {
   grid-column: 2;
   grid-row: 3;
@@ -64,7 +86,7 @@ body.home-page {
   font: inherit;
   line-height: 1.15;
 }
-.home-page .home-brand-symbol { width: var(--home-book-width); height: 76px; flex: 0 0 auto; }
+.home-page .home-brand-symbol { width: var(--home-book-width); height: 66.5px; flex: 0 0 auto; }
 .home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
 .home-page .home-brand-name { font-size: clamp(25px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
 .home-page .home-brand-online { color: #d99c00; }
@@ -146,10 +168,10 @@ body.home-page {
 .home-page footer { margin: 28px 0 0; padding: 0 16px 26px; color: var(--home-muted); opacity: 1; font-size: 14px; }
 .home-page :is(.home-cursos-toggle, .curso-publico-card, .home-icon-btn):focus-visible { outline: 3px solid var(--home-blue); outline-offset: 4px; }
 @media (max-width: 600px) {
-  body.home-page { --home-book-width: 56px; --home-brand-gap: 8px; }
-  .home-page header.home-header.ro-header { padding: 4px 12px 26px !important; gap: 16px 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
+  body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 16px; }
+  .home-page header.home-header.ro-header { padding: 4px 12px 26px !important; gap: 0 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
-  .home-page .home-brand-symbol { width: var(--home-book-width); height: 54px; }
+  .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; }
   .home-page .home-brand-tagline { font-size: 10px; letter-spacing: 0.16em; }
   .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 164px; height: 50px; font-size: 17px; padding: 0 16px; }
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
@@ -165,7 +187,7 @@ body.home-page {
 }
 @media (max-width: 370px) {
   /* As ações preservam seus alvos confortáveis sem disputar espaço com Minha Área. */
-  .home-page .home-header.ro-header .ro-header-navigation { grid-column: 1 / -1; grid-row: 4 !important; }
+  .home-page .home-header.ro-header .ro-header-navigation { grid-column: 1 / -1; grid-row: 4 !important; margin-top: var(--home-row-gap); }
   .home-page .home-header.ro-header .ro-header-navigation:not(:has(a:not([style*="none"]))) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

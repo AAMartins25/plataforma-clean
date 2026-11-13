@@ -67,6 +67,33 @@ def test_contrato_http_publico_compativel_e_somente_leitura(catalogo_publico):
         assert db.execute(m.Curso.__table__.select()).all() == antes
 
 
+def test_gestao_e_publico_usam_mesmo_registro_por_id(catalogo_publico):
+    """Reproduz o caso legado e seu preenchimento manual apenas no banco descartável."""
+    from types import SimpleNamespace
+    main, factory = catalogo_publico
+    with factory() as db:
+        curso = db.get(m.Curso, 39)
+        for campo in ('cargo', 'orgao', 'uf', 'ano'):
+            setattr(curso, campo, None)
+        db.commit()
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: SimpleNamespace(
+        id=1, is_admin=True, tipo_admin='admin_geral')
+    with TestClient(main.app) as client:
+        publico = next(c for c in client.get('/cursos-publicos').json() if c['id'] == 39)
+        gestao = next(c for c in client.get('/admin/cursos').json() if c['id'] == 39)
+        assert gestao['nome'] == publico['nome']
+        assert all(gestao[k] is None and publico[k] is None for k in ('cargo', 'orgao', 'uf', 'ano'))
+        dados = dict(nome=publico['nome'], cargo='Professor de Educação Infantil', orgao='Alvorada', uf='RS', ano=2026)
+        salvo = client.put('/cursos/39', json=dados)
+        assert salvo.status_code == 200, salvo.text
+        assert salvo.json()['id'] == 39
+        publico = next(c for c in client.get('/cursos-publicos').json() if c['id'] == 39)
+        gestao = next(c for c in client.get('/admin/cursos').json() if c['id'] == 39)
+        for campo, valor in dados.items():
+            assert publico[campo] == gestao[campo] == valor
+        assert publico['nome'] == 'RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26'
+
+
 @pytest.mark.skipif(os.environ.get('PUBLIC_HOME_BROWSER') != '1', reason='Chromium opt-in')
 def test_integracao_http_backend_frontend_chromium(catalogo_publico):
     import uvicorn

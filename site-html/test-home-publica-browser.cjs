@@ -69,6 +69,7 @@ const server = http.createServer((req, res) => {
             name: r(document.querySelector('.home-brand-name')),
             tagline: r(document.querySelector('.home-brand-tagline')),
             book: r(document.querySelector('.home-brand-symbol')),
+            identity: document.querySelector('.ro-header-identity') ? r(document.querySelector('.ro-header-identity')) : null,
             access: r(document.querySelector('.ro-header-access a')),
             controls: [...document.querySelectorAll('.ro-header-navigation a')].filter(e=>e.getClientRects().length).map(r),
             font: parseFloat(getComputedStyle(document.querySelector('.ro-header-access a')).fontSize),
@@ -82,11 +83,23 @@ const server = http.createServer((req, res) => {
         assert.ok(Math.abs(center(geometry.tagline)-center(geometry.name)) < 0.5, 'Slogan centralizado no nome');
         assert.ok(Math.abs(geometry.name.x-(geometry.book.x+geometry.book.w)-(width<=600?8:14)) < 0.5, 'Espaço entre livro e nome preservado');
         assert.equal(geometry.font,width<=600?17:18);
+        assert.equal(geometry.book.w,width<=600?49:73.5);
+        assert.equal(geometry.book.h,width<=600?47.25:66.5);
+        const courseBook=await page.locator('.home-course-icon img').first().boundingBox();
+        assert.equal(courseBook.width,width<=370?36:width<=600?44:64,'Livro dos cartões preservado');
+        if(signedIn){
+          assert.ok(geometry.identity.y+geometry.identity.h<=geometry.brand.y,'Identificação acima da marca, sem sobreposição');
+          assert.equal(await page.locator('.ro-identity').evaluate(e=>getComputedStyle(e).minHeight),'0px');
+          await page.locator('.ro-identity').hover();
+          assert.equal(await page.locator('.ro-identity').evaluate(e=>getComputedStyle(e,'::after').visibility),'visible');
+          assert.equal((await page.locator('.home-brand-title').boundingBox()).y,geometry.brand.y,'Hover não cria espaço reservado');
+          await page.mouse.move(0,0);
+        }
         assert.equal(geometry.paddingTop,width<=600?4:6);
         assert.ok(geometry.controls.every(c=>c.x+c.w<=geometry.access.x || c.x>=geometry.access.x+geometry.access.w || c.y+c.h<=geometry.access.y || c.y>=geometry.access.y+geometry.access.h),'Sem sobreposição de controles');
         if(process.env.HOME_BEFORE_MEASUREMENTS) {
           const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
-          assert.equal(before.brand.y-geometry.brand.y,(width<=600?6:8)+(signedIn?0:(width<=600?16:18)),'Redução efetiva do espaço superior');
+          assert.equal(before.brand.y-geometry.brand.y,signedIn?(width<=600?37:39):0,'Redução efetiva da faixa reservada à identificação');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
