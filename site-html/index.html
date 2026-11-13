@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumão Online</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/home-publica.css?v=5">
+  <link rel="stylesheet" href="css/home-publica.css?v=6">
   <script src="js/cabecalho.js" defer></script>
   <script src="js/rodape.js" defer></script>
 </head>
@@ -82,25 +82,11 @@
 
   <div class="card home-cursos-disponiveis-card">
 
-    <div
-      class="home-cursos-toggle"
-      role="button"
-      tabindex="0"
-      aria-expanded="true"
-      aria-controls="area_cursos_disponiveis"
-      onclick="alternarCursosDisponiveis()"
-      onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); alternarCursosDisponiveis(); }"
-    >
+    <div class="home-cursos-heading">
       <h2><svg class="home-section-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z"/><path d="M8 6h13M6 14h13M8 22h14"/></g></svg> Cursos disponíveis</h2>
-      <svg class="home-cursos-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-        <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
     </div>
 
-    <div
-      id="area_cursos_disponiveis"
-      style="display:block;"
-    >
+    <div id="area_cursos_disponiveis">
 
       <div
         id="lista-cursos-publicos"
@@ -395,49 +381,6 @@
   }
 
 
-  function alternarCursosDisponiveis() {
-
-    const area =
-      document.getElementById(
-        "area_cursos_disponiveis"
-      );
-
-    const lista =
-      document.getElementById(
-        "lista-cursos-publicos"
-      );
-
-    if (!area) {
-      return;
-    }
-
-    const estavaFechada =
-      area.style.display === "none";
-
-    area.style.display =
-      estavaFechada
-        ? "block"
-        : "none";
-
-    document.querySelector('.home-cursos-toggle')?.setAttribute('aria-expanded', String(estavaFechada));
-
-    if (
-      estavaFechada &&
-      lista
-    ) {
-
-      setTimeout(() => {
-
-        lista.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
-      }, 100);
-    }
-  }
-
-
   async function iniciarPaginaInicial() {
 
     await pageHomeCursosPublico();
@@ -458,21 +401,10 @@
 
     if (abrirCursos) {
 
-      const area =
-        document.getElementById(
-          "area_cursos_disponiveis"
-        );
-
       const lista =
         document.getElementById(
           "lista-cursos-publicos"
         );
-
-      if (area) {
-
-        area.style.display =
-          "block";
-      }
 
       if (lista) {
 

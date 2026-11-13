@@ -1,0 +1,8 @@
+Fonte: commit 0790bbec0bb89a55b43320c292754e9bd5c3f01a (imediatamente anterior à primeira modernização, 70a6adb).
+Arquivo: site-html/css/style.css
+
+/* Nome da marca no topo da Home */
+.home-page header h1 {
+  color: #2e7d32 !important;
+}
+

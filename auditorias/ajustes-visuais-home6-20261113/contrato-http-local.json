@@ -1,0 +1,42 @@
+[
+  {
+    "id": 41,
+    "nome": "Curso antigo sem metadados",
+    "ativo": true,
+    "publicado": true,
+    "cargo": null,
+    "orgao": null,
+    "uf": null,
+    "ano": null
+  },
+  {
+    "id": 40,
+    "nome": "Curso parcial",
+    "ativo": true,
+    "publicado": true,
+    "cargo": null,
+    "orgao": "Órgão confirmado",
+    "uf": null,
+    "ano": 2027
+  },
+  {
+    "id": 42,
+    "nome": "Outro cargo extenso",
+    "ativo": true,
+    "publicado": true,
+    "cargo": "Professor de Educação Infantil e Atendimento Educacional Especializado em Classes de Ensino Integral",
+    "orgao": null,
+    "uf": "SC",
+    "ano": 2027
+  },
+  {
+    "id": 39,
+    "nome": "RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 26",
+    "ativo": true,
+    "publicado": true,
+    "cargo": "Professor de Educação Infantil",
+    "orgao": "Alvorada",
+    "uf": "RS",
+    "ano": 2026
+  }
+]

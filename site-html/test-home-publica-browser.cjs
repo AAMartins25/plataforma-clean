@@ -86,7 +86,9 @@ const server = http.createServer((req, res) => {
         assert.equal(geometry.book.w,width<=600?49:73.5);
         assert.equal(geometry.book.h,width<=600?47.25:66.5);
         const courseBook=await page.locator('.home-course-icon img').first().boundingBox();
-        assert.equal(courseBook.width,width<=370?36:width<=600?44:64,'Livro dos cartões preservado');
+        assert.equal(courseBook.width,width<=370?31.5:width<=600?38.5:56,'Livro dos cartões reduzido em 12,5%');
+        assert.equal(courseBook.height,width<=370?31.5:width<=600?36.75:50.75);
+        geometry.courseBook=courseBook;
         if(signedIn){
           assert.ok(geometry.identity.y+geometry.identity.h<=geometry.brand.y,'Identificação acima da marca, sem sobreposição');
           assert.equal(await page.locator('.ro-identity').evaluate(e=>getComputedStyle(e).minHeight),'0px');
@@ -95,15 +97,32 @@ const server = http.createServer((req, res) => {
           assert.equal((await page.locator('.home-brand-title').boundingBox()).y,geometry.brand.y,'Hover não cria espaço reservado');
           await page.mouse.move(0,0);
         }
-        assert.equal(geometry.paddingTop,width<=600?4:6);
+        assert.equal(geometry.paddingTop,width<=600?2:4);
         assert.ok(geometry.controls.every(c=>c.x+c.w<=geometry.access.x || c.x>=geometry.access.x+geometry.access.w || c.y+c.h<=geometry.access.y || c.y>=geometry.access.y+geometry.access.h),'Sem sobreposição de controles');
         if(process.env.HOME_BEFORE_MEASUREMENTS) {
           const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
-          assert.equal(before.brand.y-geometry.brand.y,signedIn?(width<=600?37:39):0,'Redução efetiva da faixa reservada à identificação');
+          assert.equal(before.brand.y-geometry.brand.y,signedIn?8:2,'Redução adicional segura do cabeçalho');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
         assert.ok(geometry.access.w >= 44 && geometry.access.h >= 44);
+        const colors=await page.evaluate(()=>({
+          resumao:getComputedStyle(document.querySelector('.home-brand-name > span:first-child')).color,
+          online:getComputedStyle(document.querySelector('.home-brand-online')).color,
+          course:getComputedStyle(document.querySelector('.curso-publico-nome')).color,
+          buttonText:getComputedStyle(document.querySelector('.ro-header-access a')).color,
+          buttonBackground:getComputedStyle(document.querySelector('.ro-header-access a')).backgroundImage
+        }));
+        assert.equal(colors.resumao,'rgb(46, 125, 50)');
+        assert.equal(colors.online,'rgb(217, 156, 0)');
+        assert.equal(colors.course,'rgb(23, 54, 93)');
+        assert.equal(colors.buttonText,'rgb(255, 255, 255)');
+        const luminance=values=>values.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0);
+        const stops=[...colors.buttonBackground.matchAll(/rgb\((\d+), (\d+), (\d+)\)/g)];
+        assert.equal(stops.length,2);
+        const contrast=stops.map(m=>1.05/(luminance(m.slice(1).map(Number))+.05));
+        assert.ok(Math.min(...contrast)>=4.5,'Contraste do botão com texto branco');
+        geometry.colors=colors;geometry.buttonContrast=contrast;
         assert.equal(await noOverflow(page), true);
         assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
         assert.equal(await page.locator('.home-race-track').count(), 0);
@@ -124,15 +143,18 @@ const server = http.createServer((req, res) => {
         await page.locator('#buscaCurso').fill('sem-resultado');
         assert.equal(await page.locator('#lista-cursos-publicos').innerText(), 'Nenhum curso encontrado.');
         await page.locator('#buscaCurso').fill('');
-        const toggle = page.locator('.home-cursos-toggle');
-        await toggle.focus(); await page.keyboard.press('Enter');
-        assert.equal(await page.locator('#area_cursos_disponiveis').isVisible(), false);
-        assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
-        await page.keyboard.press('Space');
-        assert.equal(await page.locator('#area_cursos_disponiveis').isVisible(), true);
+        const heading = page.locator('.home-cursos-heading');
+        assert.equal(await page.locator('.home-cursos-toggle-icon,.home-cursos-toggle').count(),0);
+        assert.equal(await heading.getAttribute('role'),null);
+        assert.equal(await heading.getAttribute('onclick'),null);
+        assert.equal(await heading.getAttribute('tabindex'),null);
+        assert.equal(await page.evaluate(()=>typeof alternarCursosDisponiveis),'undefined');
+        await heading.click();
+        assert.equal(await page.locator('#area_cursos_disponiveis').isVisible(),true,'Lista continua visível ao clicar no título');
         await page.locator('.home-atendimento-header').click();
         assert.equal(await page.locator('#area_atendimento_clean').isVisible(), true);
         assert.equal(await noOverflow(page), true);
+        assert.equal(await page.locator('#area_cursos_disponiveis').isVisible(),true);
         assert.deepEqual(errors, []);
         measurements.push({width,signedIn,...geometry,overflow:false,errors});
         await ctx.close();
@@ -241,6 +263,6 @@ const server = http.createServer((req, res) => {
     assert.equal(footerFiles.length,58);
     await footerCtx.close();
     if(artifacts)fs.writeFileSync(path.join(artifacts,'measurements.json'),JSON.stringify(measurements,null,2));
-    console.log('Home: 4 larguras × visitante/logado; alinhamento, overflow, catálogo, pesquisa, teclado, atendimento, nomes/metadados, escaping, navegação, autenticação e estados vazio/erro aprovados.');
+    console.log('Home: 4 larguras × visitante/logado; alinhamento, overflow, catálogo, pesquisa, lista permanente, atendimento, nomes/metadados, escaping, navegação, autenticação e estados vazio/erro aprovados.');
   } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
