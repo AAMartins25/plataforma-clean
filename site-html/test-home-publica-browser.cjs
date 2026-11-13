@@ -101,7 +101,8 @@ const server = http.createServer((req, res) => {
         assert.ok(geometry.controls.every(c=>c.x+c.w<=geometry.access.x || c.x>=geometry.access.x+geometry.access.w || c.y+c.h<=geometry.access.y || c.y>=geometry.access.y+geometry.access.h),'Sem sobreposição de controles');
         if(process.env.HOME_BEFORE_MEASUREMENTS) {
           const before=JSON.parse(fs.readFileSync(process.env.HOME_BEFORE_MEASUREMENTS,'utf8')).find(m=>m.width===width&&m.signedIn===signedIn);
-          assert.equal(before.brand.y-geometry.brand.y,signedIn?8:2,'Redução adicional segura do cabeçalho');
+          assert.equal(before.brand.y-geometry.brand.y,0,'Posição superior do cabeçalho preservada');
+          assert.equal(before.access.y,geometry.access.y,'Posição vertical do acesso preservada');
           geometry.reducaoSuperior=before.brand.y-geometry.brand.y;
         }
         assert.ok(geometry.access.y >= geometry.brand.y + geometry.brand.h, 'Acesso abaixo da marca');
@@ -111,17 +112,37 @@ const server = http.createServer((req, res) => {
           online:getComputedStyle(document.querySelector('.home-brand-online')).color,
           course:getComputedStyle(document.querySelector('.curso-publico-nome')).color,
           buttonText:getComputedStyle(document.querySelector('.ro-header-access a')).color,
-          buttonBackground:getComputedStyle(document.querySelector('.ro-header-access a')).backgroundImage
+          buttonBackground:getComputedStyle(document.querySelector('.ro-header-access a')).backgroundColor
         }));
         assert.equal(colors.resumao,'rgb(46, 125, 50)');
         assert.equal(colors.online,'rgb(217, 156, 0)');
         assert.equal(colors.course,'rgb(23, 54, 93)');
         assert.equal(colors.buttonText,'rgb(255, 255, 255)');
         const luminance=values=>values.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0);
-        const stops=[...colors.buttonBackground.matchAll(/rgb\((\d+), (\d+), (\d+)\)/g)];
-        assert.equal(stops.length,2);
-        const contrast=stops.map(m=>1.05/(luminance(m.slice(1).map(Number))+.05));
-        assert.ok(Math.min(...contrast)>=4.5,'Contraste do botão com texto branco');
+        assert.equal(colors.buttonBackground,'rgb(120, 155, 69)');
+        const contrast=1.05/(luminance([120,155,69])+.05);
+        assert.ok(contrast>=3,'Contraste do ícone branco (elemento gráfico)');
+        const access=page.getByRole('link',{name:'Minha Área',exact:true});
+        assert.equal(await access.innerText(),'','Sem texto visível');
+        assert.equal(await access.getAttribute('title'),'Minha Área');
+        assert.equal(geometry.access.w,width<=600?50:52);
+        assert.equal(geometry.access.h,width<=600?50:52);
+        const person=await access.locator('svg').boundingBox();
+        assert.equal(person.width,24);assert.equal(person.height,24);
+        assert.ok(Math.abs(person.x+12-center(geometry.access))<.5);
+        assert.ok(Math.abs(person.y+12-geometry.access.y-geometry.access.h/2)<.5);
+        for(const [state,color] of [['hover','rgb(112, 143, 64)'],['focus','rgb(112, 143, 64)'],['active','rgb(104, 133, 59)']]) {
+          if(state==='hover')await access.hover();
+          if(state==='focus'){await page.mouse.move(0,0);await page.keyboard.press('Tab');await access.focus();}
+          if(state==='active'){await access.hover();await page.mouse.down();}
+          assert.equal(await access.evaluate(e=>getComputedStyle(e).backgroundColor),color,state);
+          if(state==='active')await page.mouse.move(0,0),await page.mouse.up();
+        }
+        await access.evaluate(e=>e.blur());await page.mouse.move(0,0);
+        const catalog=await page.locator('.home-cursos-disponiveis-card').evaluate(e=>({svgs:[...e.querySelectorAll('svg')].map(s=>({w:s.getBoundingClientRect().width,h:s.getBoundingClientRect().height})),height:getComputedStyle(e).height,firstGap:e.querySelector('.curso-publico-card').getBoundingClientRect().top-e.querySelector('h2').getBoundingClientRect().bottom}));
+        assert.equal(catalog.svgs.length,1);assert.ok(catalog.svgs.every(s=>s.w<=27&&s.h<=27));
+        assert.ok(catalog.firstGap>=0&&catalog.firstGap<=16);
+        geometry.catalog=catalog;
         geometry.colors=colors;geometry.buttonContrast=contrast;
         assert.equal(await noOverflow(page), true);
         assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
@@ -159,6 +180,33 @@ const server = http.createServer((req, res) => {
         measurements.push({width,signedIn,...geometry,overflow:false,errors});
         await ctx.close();
       }
+    }
+    // Regressão real: HTML anterior + CSS/JS atuais, antes e após carregar app.js.
+    for(const width of [320,390,768,1366]) {
+      const ctx=await context(width,null,[courses[0]]);
+      const legacy=fs.readFileSync(path.join(root,'index.html'),'utf8')
+        .replace('<div class="home-cursos-heading">','<div class="home-cursos-toggle" role="button" tabindex="0" aria-expanded="true" aria-controls="area_cursos_disponiveis" onclick="alternarCursosDisponiveis()" onkeydown="alternarCursosDisponiveis()">')
+        .replace(' Cursos disponíveis</h2>',' Cursos disponíveis</h2><svg class="home-cursos-toggle-icon" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.7"/></svg>')
+        .replace('<div id="area_cursos_disponiveis">','<div id="area_cursos_disponiveis" style="display:none">')
+        .replace('</svg>\n      </a>','</svg><span>Minha Área</span>\n      </a>');
+      await ctx.route(origin+'/index.html',r=>r.fulfill({contentType:'text/html',body:legacy}));
+      let release;const gate=new Promise(r=>release=r);
+      await ctx.route('**/js/app.js?*',async r=>{await gate;await r.continue()});
+      const page=await ctx.newPage();const loaded=page.goto(origin+'/index.html');
+      await page.locator('.home-cursos-toggle-icon').waitFor({state:'attached'});
+      try {
+        await page.waitForFunction(()=>getComputedStyle(document.querySelector('.home-cursos-toggle-icon')).display==='none');
+        assert.equal(await page.locator('.home-cursos-toggle-icon').evaluate(e=>e.getBoundingClientRect().height),0,'Sem seta gigante mesmo antes do JS');
+        assert.equal(await page.locator('.home-nav-center a').innerText(),'','Texto legado oculto antes do JS');
+      } finally {release();}
+      await loaded;await page.locator('.curso-publico-card').waitFor();
+      assert.equal(await page.locator('.home-cursos-toggle-icon,.home-cursos-toggle').count(),0);
+      assert.equal(await page.locator('.home-nav-center a > span').count(),0);
+      const heading=page.locator('.home-cursos-heading');
+      for(const attr of ['role','tabindex','aria-expanded','aria-controls','onclick','onkeydown'])assert.equal(await heading.getAttribute(attr),null);
+      await heading.click();assert.equal(await page.locator('#area_cursos_disponiveis').isVisible(),true);
+      assert.ok((await page.locator('.home-cursos-disponiveis-card').boundingBox()).height<230,'Um curso sem espaço excessivo');
+      await ctx.close();
     }
     // Mesma hierarquia da referência quando a API fornecer metadados explícitos.
     for (const width of [320,390,768,1366]) {

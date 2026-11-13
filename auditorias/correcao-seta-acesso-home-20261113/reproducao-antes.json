@@ -1,0 +1,266 @@
+[
+  {
+    "legacy": false,
+    "width": 320,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 29,
+          "y": 185.390625,
+          "w": 24,
+          "h": 24
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      }
+    ],
+    "section": {
+      "x": 12,
+      "y": 164.25,
+      "w": 296,
+      "h": 144.796875
+    },
+    "card": {
+      "x": 29,
+      "y": 224.546875,
+      "w": 262,
+      "h": 65.5
+    }
+  },
+  {
+    "legacy": false,
+    "width": 390,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 29,
+          "y": 185.25,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      }
+    ],
+    "section": {
+      "x": 12,
+      "y": 164.25,
+      "w": 366,
+      "h": 152.75
+    },
+    "card": {
+      "x": 29,
+      "y": 227.25,
+      "w": 332,
+      "h": 70.75
+    }
+  },
+  {
+    "legacy": false,
+    "width": 768,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 47,
+          "y": 225.84375,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      }
+    ],
+    "section": {
+      "x": 20,
+      "y": 199.5,
+      "w": 728,
+      "h": 185.4375
+    },
+    "card": {
+      "x": 47,
+      "y": 269.1875,
+      "w": 674,
+      "h": 92.75
+    }
+  },
+  {
+    "legacy": false,
+    "width": 1366,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 270,
+          "y": 233.875,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      }
+    ],
+    "section": {
+      "x": 243,
+      "y": 207.53125,
+      "w": 880,
+      "h": 185.4375
+    },
+    "card": {
+      "x": 270,
+      "y": 277.21875,
+      "w": 826,
+      "h": 92.75
+    }
+  },
+  {
+    "legacy": true,
+    "width": 320,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 29,
+          "y": 185.390625,
+          "w": 24,
+          "h": 24
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      },
+      {
+        "class": "home-cursos-toggle-icon",
+        "rect": {
+          "x": 29,
+          "y": 209.546875,
+          "w": 262,
+          "h": 262
+        },
+        "html": "<svg class=\"home-cursos-toggle-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n        <path d=\"m6 9 6 6 6-6\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>"
+      }
+    ],
+    "section": {
+      "x": 12,
+      "y": 164.25,
+      "w": 296,
+      "h": 414.390625
+    },
+    "card": {
+      "x": 29,
+      "y": 494.140625,
+      "w": 262,
+      "h": 65.5
+    }
+  },
+  {
+    "legacy": true,
+    "width": 390,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 29,
+          "y": 185.25,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      },
+      {
+        "class": "home-cursos-toggle-icon",
+        "rect": {
+          "x": 29,
+          "y": 212.25,
+          "w": 332,
+          "h": 332
+        },
+        "html": "<svg class=\"home-cursos-toggle-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n        <path d=\"m6 9 6 6 6-6\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>"
+      }
+    ],
+    "section": {
+      "x": 12,
+      "y": 164.25,
+      "w": 366,
+      "h": 492.34375
+    },
+    "card": {
+      "x": 29,
+      "y": 566.84375,
+      "w": 332,
+      "h": 70.75
+    }
+  },
+  {
+    "legacy": true,
+    "width": 768,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 47,
+          "y": 225.84375,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      },
+      {
+        "class": "home-cursos-toggle-icon",
+        "rect": {
+          "x": 47,
+          "y": 254.1875,
+          "w": 674,
+          "h": 674
+        },
+        "html": "<svg class=\"home-cursos-toggle-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n        <path d=\"m6 9 6 6 6-6\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>"
+      }
+    ],
+    "section": {
+      "x": 20,
+      "y": 199.5,
+      "w": 728,
+      "h": 867.03125
+    },
+    "card": {
+      "x": 47,
+      "y": 950.78125,
+      "w": 674,
+      "h": 92.75
+    }
+  },
+  {
+    "legacy": true,
+    "width": 1366,
+    "svgs": [
+      {
+        "class": "home-section-icon",
+        "rect": {
+          "x": 270,
+          "y": 233.875,
+          "w": 27,
+          "h": 27
+        },
+        "html": "<svg class=\"home-section-icon\" viewBox=\"0 0 28 28\" fill=\"none\" aria-hidden=\"true\"><g stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3h17v6H7a3 3 0 0 1 0-6Zm-2 8h17v6H5a3 3 0 0 1 0-6Zm2 8h18v6H7a3 3 0 0 1 0-6Z\"></path><path d=\"M8 6h13M6 14h13M8 22h14\"></path></g></svg>"
+      },
+      {
+        "class": "home-cursos-toggle-icon",
+        "rect": {
+          "x": 270,
+          "y": 262.21875,
+          "w": 826,
+          "h": 826
+        },
+        "html": "<svg class=\"home-cursos-toggle-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n        <path d=\"m6 9 6 6 6-6\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>"
+      }
+    ],
+    "section": {
+      "x": 243,
+      "y": 207.53125,
+      "w": 880,
+      "h": 1019.03125
+    },
+    "card": {
+      "x": 270,
+      "y": 1110.8125,
+      "w": 826,
+      "h": 92.75
+    }
+  }
+]

@@ -1,0 +1,2143 @@
+{
+  "origin": "https://plataforma-quality.onrender.com",
+  "assets": {
+    "/css/home-publica.css": {
+      "status": 200,
+      "sha256": "1ae9a9765b296ad3fcff9da0b79d53988ad563500fb36c49ef1d55fa5995bf5b",
+      "sameAsOriginMain": true
+    },
+    "/css/style.css": {
+      "status": 200,
+      "sha256": "d05ce9d944d2fe327a822c503d4c1c5544d364422d3138e9a9a580b9427592ac",
+      "sameAsOriginMain": true
+    },
+    "/js/app.js": {
+      "status": 200,
+      "sha256": "a150fce6463302ee366e2b8248c2fd65414c74bf13b1c083b3410661977b8209",
+      "sameAsOriginMain": true
+    },
+    "/js/cabecalho.js": {
+      "status": 200,
+      "sha256": "1d2910eac9f8682f30c31b7b3f9e0280119a8f909d941a18faccc85cb35e17ed",
+      "sameAsOriginMain": true
+    }
+  },
+  "samples": [
+    {
+      "width": 320,
+      "signedIn": false,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 320,
+            "h": 144.25
+          },
+          "styles": {
+            "display": "grid",
+            "height": "144.25px",
+            "minHeight": "0px",
+            "paddingTop": "2px",
+            "paddingBottom": "26px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "65.25px 50px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "16px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 25.046875,
+            "y": 3,
+            "w": 49,
+            "h": 47.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "47.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 82.046875,
+            "y": 2,
+            "w": 212.90625,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 82.046875,
+            "y": 2,
+            "w": 212.90625,
+            "h": 28.75
+          },
+          "styles": {
+            "display": "block",
+            "height": "28.75px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 124.1875,
+            "y": 39.75,
+            "w": 128.609375,
+            "h": 11.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "11.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 106.5,
+            "y": 67.25,
+            "w": 164,
+            "h": 50
+          },
+          "styles": {
+            "display": "flex",
+            "height": "50px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          },
+          "styles": {
+            "display": "none",
+            "height": "auto",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "16px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header\">\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display:none;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: none;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 320,
+      "signedIn": true,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 320,
+            "h": 221.25
+          },
+          "styles": {
+            "display": "grid",
+            "height": "221.25px",
+            "minHeight": "0px",
+            "paddingTop": "2px",
+            "paddingBottom": "26px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "17px 65.25px 50px 60px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-identity": {
+          "rect": {
+            "x": 223.28125,
+            "y": 2,
+            "w": 84.71875,
+            "h": 17
+          },
+          "styles": {
+            "display": "block",
+            "height": "17px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "2px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-identity": {
+          "rect": {
+            "x": 223.28125,
+            "y": 2,
+            "w": 84.71875,
+            "h": 15
+          },
+          "styles": {
+            "display": "block",
+            "height": "15px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          },
+          "after": {
+            "display": "block",
+            "position": "absolute",
+            "height": "15.5938px",
+            "visibility": "hidden",
+            "marginTop": "0px"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "16px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 296,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 25.046875,
+            "y": 20,
+            "w": 49,
+            "h": 47.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "47.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 82.046875,
+            "y": 19,
+            "w": 212.90625,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 82.046875,
+            "y": 19,
+            "w": 212.90625,
+            "h": 28.75
+          },
+          "styles": {
+            "display": "block",
+            "height": "28.75px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 124.1875,
+            "y": 56.75,
+            "w": 128.609375,
+            "h": 11.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "11.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 106.5,
+            "y": 84.25,
+            "w": 164,
+            "h": 50
+          },
+          "styles": {
+            "display": "flex",
+            "height": "50px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 12,
+            "y": 150.25,
+            "w": 296,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "16px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "4",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header ro-header--identified\"><div id=\"nomeUsuarioLogadoGlobal\" style=\"position: fixed; top: 9px; right: 47px; z-index: 9999; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.4px; color: rgb(75, 85, 99); opacity: 0.78; cursor: default; user-select: none; white-space: nowrap;\" class=\"ro-header-identity\"><span class=\"ro-identity\" data-nome-ampliado=\"ALEXANDRE ADMINISTRADOR\">ALEXANDRE</span></div>\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display: inline-block;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: inline-block;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 390,
+      "signedIn": false,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 390,
+            "h": 144.25
+          },
+          "styles": {
+            "display": "grid",
+            "height": "144.25px",
+            "minHeight": "0px",
+            "paddingTop": "2px",
+            "paddingBottom": "26px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "65.25px 50px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "16px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 12,
+            "y": 2,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 60.046875,
+            "y": 3,
+            "w": 49,
+            "h": 47.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "47.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 117.046875,
+            "y": 2,
+            "w": 212.90625,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 117.046875,
+            "y": 2,
+            "w": 212.90625,
+            "h": 28.75
+          },
+          "styles": {
+            "display": "block",
+            "height": "28.75px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 159.1875,
+            "y": 39.75,
+            "w": 128.609375,
+            "h": 11.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "11.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 141.5,
+            "y": 67.25,
+            "w": 164,
+            "h": 50
+          },
+          "styles": {
+            "display": "flex",
+            "height": "50px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 283,
+            "y": 70.25,
+            "w": 95,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header\">\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display:none;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: none;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 390,
+      "signedIn": true,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 390,
+            "h": 207.25
+          },
+          "styles": {
+            "display": "grid",
+            "height": "207.25px",
+            "minHeight": "0px",
+            "paddingTop": "2px",
+            "paddingBottom": "26px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "17px 65.25px 96px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-identity": {
+          "rect": {
+            "x": 293.28125,
+            "y": 2,
+            "w": 84.71875,
+            "h": 17
+          },
+          "styles": {
+            "display": "block",
+            "height": "17px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "2px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-identity": {
+          "rect": {
+            "x": 293.28125,
+            "y": 2,
+            "w": 84.71875,
+            "h": 15
+          },
+          "styles": {
+            "display": "block",
+            "height": "15px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          },
+          "after": {
+            "display": "block",
+            "position": "absolute",
+            "height": "15.5938px",
+            "visibility": "hidden",
+            "marginTop": "0px"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "16px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 12,
+            "y": 19,
+            "w": 366,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 60.046875,
+            "y": 20,
+            "w": 49,
+            "h": 47.25
+          },
+          "styles": {
+            "display": "block",
+            "height": "47.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 117.046875,
+            "y": 19,
+            "w": 212.90625,
+            "h": 49.25
+          },
+          "styles": {
+            "display": "flex",
+            "height": "49.25px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 117.046875,
+            "y": 19,
+            "w": 212.90625,
+            "h": 28.75
+          },
+          "styles": {
+            "display": "block",
+            "height": "28.75px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 159.1875,
+            "y": 56.75,
+            "w": 128.609375,
+            "h": 11.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "11.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 141.5,
+            "y": 107.25,
+            "w": 164,
+            "h": 50
+          },
+          "styles": {
+            "display": "flex",
+            "height": "50px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 283,
+            "y": 84.25,
+            "w": 95,
+            "h": 96
+          },
+          "styles": {
+            "display": "flex",
+            "height": "96px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header ro-header--identified\"><div id=\"nomeUsuarioLogadoGlobal\" class=\"ro-header-identity\" style=\"position: fixed; top: 9px; right: 47px; z-index: 9999; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.4px; color: rgb(75, 85, 99); opacity: 0.78; cursor: default; user-select: none; white-space: nowrap;\"><span class=\"ro-identity\" data-nome-ampliado=\"ALEXANDRE ADMINISTRADOR\">ALEXANDRE</span></div>\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display: inline-block;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: inline-block;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 768,
+      "signedIn": false,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 768,
+            "h": 173.5
+          },
+          "styles": {
+            "display": "grid",
+            "height": "173.5px",
+            "minHeight": "0px",
+            "paddingTop": "4px",
+            "paddingBottom": "32px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "84.5px 52px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "18px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "flex",
+            "height": "66.5px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "14px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 193.15625,
+            "y": 4,
+            "w": 73.5,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 280.65625,
+            "y": 5.40625,
+            "w": 294.1875,
+            "h": 63.671875
+          },
+          "styles": {
+            "display": "flex",
+            "height": "63.6719px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 280.65625,
+            "y": 5.40625,
+            "w": 294.1875,
+            "h": 39.734375
+          },
+          "styles": {
+            "display": "block",
+            "height": "39.7344px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 340.25,
+            "y": 54.140625,
+            "w": 174.984375,
+            "h": 14.9375
+          },
+          "styles": {
+            "display": "block",
+            "height": "14.9375px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 335.75,
+            "y": 88.5,
+            "w": 184,
+            "h": 52
+          },
+          "styles": {
+            "display": "flex",
+            "height": "52px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 488,
+            "y": 92.5,
+            "w": 256,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header\">\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display:none;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: none;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 768,
+      "signedIn": true,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 768,
+            "h": 190.5
+          },
+          "styles": {
+            "display": "grid",
+            "height": "190.5px",
+            "minHeight": "0px",
+            "paddingTop": "4px",
+            "paddingBottom": "32px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "17px 84.5px 52px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-identity": {
+          "rect": {
+            "x": 659.28125,
+            "y": 4,
+            "w": 84.71875,
+            "h": 17
+          },
+          "styles": {
+            "display": "block",
+            "height": "17px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "2px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-identity": {
+          "rect": {
+            "x": 659.28125,
+            "y": 4,
+            "w": 84.71875,
+            "h": 15
+          },
+          "styles": {
+            "display": "block",
+            "height": "15px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          },
+          "after": {
+            "display": "block",
+            "position": "absolute",
+            "height": "15.5938px",
+            "visibility": "hidden",
+            "marginTop": "0px"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "18px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 720,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "flex",
+            "height": "66.5px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "14px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 193.15625,
+            "y": 21,
+            "w": 73.5,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 280.65625,
+            "y": 22.40625,
+            "w": 294.1875,
+            "h": 63.671875
+          },
+          "styles": {
+            "display": "flex",
+            "height": "63.6719px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 280.65625,
+            "y": 22.40625,
+            "w": 294.1875,
+            "h": 39.734375
+          },
+          "styles": {
+            "display": "block",
+            "height": "39.7344px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 340.25,
+            "y": 71.140625,
+            "w": 174.984375,
+            "h": 14.9375
+          },
+          "styles": {
+            "display": "block",
+            "height": "14.9375px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 335.75,
+            "y": 105.5,
+            "w": 184,
+            "h": 52
+          },
+          "styles": {
+            "display": "flex",
+            "height": "52px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 488,
+            "y": 109.5,
+            "w": 256,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header ro-header--identified\"><div id=\"nomeUsuarioLogadoGlobal\" class=\"ro-header-identity\" style=\"position: fixed; top: 9px; right: 47px; z-index: 9999; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.4px; color: rgb(75, 85, 99); opacity: 0.78; cursor: default; user-select: none; white-space: nowrap;\"><span class=\"ro-identity\" data-nome-ampliado=\"ALEXANDRE ADMINISTRADOR\">ALEXANDRE</span></div>\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display: inline-block;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: inline-block;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 1366,
+      "signedIn": false,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1366,
+            "h": 181.53125
+          },
+          "styles": {
+            "display": "grid",
+            "height": "181.531px",
+            "minHeight": "0px",
+            "paddingTop": "4px",
+            "paddingBottom": "32px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "92.5312px 52px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "block",
+            "height": "74.5312px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "18px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "block",
+            "height": "74.5312px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 24,
+            "y": 4,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "flex",
+            "height": "74.5312px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "14px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 451.90625,
+            "y": 8.015625,
+            "w": 73.5,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 539.40625,
+            "y": 4,
+            "w": 374.6875,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "flex",
+            "height": "74.5312px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 539.40625,
+            "y": 4,
+            "w": 374.6875,
+            "h": 50.59375
+          },
+          "styles": {
+            "display": "block",
+            "height": "50.5938px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 639.25,
+            "y": 63.59375,
+            "w": 174.984375,
+            "h": 14.9375
+          },
+          "styles": {
+            "display": "block",
+            "height": "14.9375px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 634.75,
+            "y": 96.53125,
+            "w": 184,
+            "h": 52
+          },
+          "styles": {
+            "display": "flex",
+            "height": "52px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 787,
+            "y": 100.53125,
+            "w": 555,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header\">\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display:none;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: none;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    },
+    {
+      "width": 1366,
+      "signedIn": true,
+      "nodes": {
+        ".home-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 1366,
+            "h": 198.53125
+          },
+          "styles": {
+            "display": "grid",
+            "height": "198.531px",
+            "minHeight": "0px",
+            "paddingTop": "4px",
+            "paddingBottom": "32px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "17px 92.5312px 52px",
+            "gridRowStart": "auto",
+            "rowGap": "0px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-identity": {
+          "rect": {
+            "x": 1257.28125,
+            "y": 4,
+            "w": 84.71875,
+            "h": 17
+          },
+          "styles": {
+            "display": "block",
+            "height": "17px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "2px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "1",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-identity": {
+          "rect": {
+            "x": 1257.28125,
+            "y": 4,
+            "w": 84.71875,
+            "h": 15
+          },
+          "styles": {
+            "display": "block",
+            "height": "15px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          },
+          "after": {
+            "display": "block",
+            "position": "absolute",
+            "height": "15.5938px",
+            "visibility": "hidden",
+            "marginTop": "0px"
+          }
+        },
+        ".ro-header-titles": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "block",
+            "height": "74.5312px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "18px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "2",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "block",
+            "height": "74.5312px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-title": {
+          "rect": {
+            "x": 24,
+            "y": 21,
+            "w": 1318,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "flex",
+            "height": "74.5312px",
+            "minHeight": "0px",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "14px",
+            "alignItems": "center",
+            "justifyContent": "center"
+          }
+        },
+        ".home-brand-symbol": {
+          "rect": {
+            "x": 451.90625,
+            "y": 25.015625,
+            "w": 73.5,
+            "h": 66.5
+          },
+          "styles": {
+            "display": "block",
+            "height": "66.5px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-wordmark": {
+          "rect": {
+            "x": 539.40625,
+            "y": 21,
+            "w": 374.6875,
+            "h": 74.53125
+          },
+          "styles": {
+            "display": "flex",
+            "height": "74.5312px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "9px",
+            "alignItems": "center",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-name": {
+          "rect": {
+            "x": 539.40625,
+            "y": 21,
+            "w": 374.6875,
+            "h": 50.59375
+          },
+          "styles": {
+            "display": "block",
+            "height": "50.5938px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".home-brand-tagline": {
+          "rect": {
+            "x": 639.25,
+            "y": 80.59375,
+            "w": 174.984375,
+            "h": 14.9375
+          },
+          "styles": {
+            "display": "block",
+            "height": "14.9375px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "auto",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "normal"
+          }
+        },
+        ".ro-header-access": {
+          "rect": {
+            "x": 634.75,
+            "y": 113.53125,
+            "w": 184,
+            "h": 52
+          },
+          "styles": {
+            "display": "flex",
+            "height": "52px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "relative",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "normal",
+            "alignItems": "normal",
+            "justifyContent": "center"
+          }
+        },
+        ".ro-header-navigation": {
+          "rect": {
+            "x": 787,
+            "y": 117.53125,
+            "w": 555,
+            "h": 44
+          },
+          "styles": {
+            "display": "flex",
+            "height": "44px",
+            "minHeight": "auto",
+            "paddingTop": "0px",
+            "paddingBottom": "0px",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "position": "static",
+            "gridTemplateRows": "none",
+            "gridRowStart": "3",
+            "rowGap": "8px",
+            "alignItems": "center",
+            "justifyContent": "flow-end"
+          }
+        }
+      },
+      "overflow": false,
+      "headerHTML": "<header class=\"home-header ro-header ro-header--identified\"><div id=\"nomeUsuarioLogadoGlobal\" class=\"ro-header-identity\" style=\"position: fixed; top: 9px; right: 47px; z-index: 9999; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.4px; color: rgb(75, 85, 99); opacity: 0.78; cursor: default; user-select: none; white-space: nowrap;\"><span class=\"ro-identity\" data-nome-ampliado=\"ALEXANDRE ADMINISTRADOR\">ALEXANDRE</span></div>\n\n  \n\n  \n\n<div class=\"ro-header-titles\"><div class=\"home-brand\">\n    <h1 class=\"home-brand-title\">\n      <img class=\"home-brand-symbol\" src=\"assets/book-check.svg\" alt=\"\" width=\"80\" height=\"72\">\n      <span class=\"home-brand-wordmark\">\n        <span class=\"home-brand-name\"><span>Resumão</span> <span class=\"home-brand-online\">Online</span></span>\n        <span class=\"home-brand-tagline\">DIRETO AO PONTO</span>\n      </span>\n    </h1>\n  </div></div><div class=\"ro-header-navigation\"><nav class=\"home-nav ro-header-action-group\">\n\n    \n\n    <div class=\"home-nav-actions\">\n\n      <a id=\"btnVoltarHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"voltarDaPaginaInicial(); return false;\" title=\"Voltar\" aria-label=\"Voltar\" style=\"display: inline-block;\">\n        ⇦\n      </a>\n\n      <a id=\"btnSairHome\" href=\"#\" class=\"btn home-icon-btn\" onclick=\"sairComConfirmacao(); return false;\" title=\"Sair\" aria-label=\"Sair\" style=\"display: inline-block;\">\n        ⎋\n      </a>\n\n    </div>\n\n  </nav></div><div class=\"home-nav-center ro-header-access\">\n      <a href=\"#\" class=\"btn home-icon-btn\" onclick=\"entrarEEstudar(); return false;\" title=\"Minha Área\" aria-label=\"Minha Área\">\n        <svg class=\"home-person-icon\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n          <circle cx=\"12\" cy=\"8\" r=\"3.5\" stroke=\"currentColor\" stroke-width=\"1.7\"></circle>\n          <path d=\"M5 21v-2a7 7 0 0 1 14 0v2\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"></path>\n        </svg>\n        <span>Minha Área</span>\n      </a>\n    </div></header>"
+    }
+  ]
+}

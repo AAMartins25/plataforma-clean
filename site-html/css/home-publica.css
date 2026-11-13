@@ -94,20 +94,27 @@ body.home-page {
 .home-page .home-brand-tagline { font-size: 13px; font-weight: 650; letter-spacing: 0.2em; color: var(--home-blue); }
 .home-page .home-header.ro-header .ro-header-access .home-icon-btn {
   display: inline-flex;
-  gap: 10px;
-  width: 184px;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 52px;
   height: 52px;
-  padding: 0 22px;
-  border: 1px solid #1e73c8;
+  padding: 0;
+  border: 1px solid #738f43;
   border-radius: 999px;
-  background: linear-gradient(180deg, #2278ce, #1e73c8);
+  background: #789b45;
   color: #fff;
   font-size: 18px;
   font-weight: 650;
   white-space: nowrap;
-  box-shadow: 0 3px 8px #0866d81a;
+  box-shadow: 0 3px 8px #536e331a;
 }
-.home-page .home-header.ro-header .ro-header-access .home-icon-btn:hover { background: linear-gradient(180deg, #1e73c8, #1968ba); color: #fff; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:hover { background: #708f40; color: #fff; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:focus-visible { background: #708f40; outline-color: #536e33; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:active { background: #68853b; }
+/* Compatibilidade visual com HTML anterior mantido em cache. */
+.home-page .home-header .home-nav-center .home-icon-btn > span { display: none; }
+.home-page .home-cursos-disponiveis-card .home-cursos-toggle-icon { display: none !important; }
 .home-page .home-header.ro-header .ro-header-navigation .home-icon-btn { color: var(--home-navy); min-width: 44px; }
 .home-page .home-person-icon { width: 24px; height: 24px; flex-shrink: 0; }
 .home-page main.container { max-width: 920px; margin: 26px auto; padding: 0 20px; }
@@ -172,7 +179,7 @@ body.home-page {
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
   .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; }
   .home-page .home-brand-tagline { font-size: 10px; letter-spacing: 0.16em; }
-  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 164px; height: 50px; font-size: 17px; padding: 0 16px; }
+  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 50px; height: 50px; font-size: 17px; padding: 0; }
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
   .home-page main > .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 13px; }
   .home-page main .card h2, .home-page .home-localizar label { font-size: 20px; gap: 9px; }

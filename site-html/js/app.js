@@ -1,4 +1,20 @@
 // js/app.js
+// Compatibilidade restrita à Home com HTML anterior mantido em cache.
+// O catálogo não possui mais controle de expansão; o CSS também oculta o SVG
+// legado antes da primeira pintura, enquanto este código remove o controle.
+if (document.body?.classList?.contains("home-page")) {
+  document.querySelectorAll('.home-header .home-nav-center .home-icon-btn > span').forEach(texto => texto.remove());
+  const catalogo = document.querySelector(".home-cursos-disponiveis-card");
+  catalogo?.querySelectorAll(".home-cursos-toggle-icon").forEach(icone => icone.remove());
+  catalogo?.querySelectorAll(".home-cursos-toggle").forEach(controle => {
+    controle.classList.replace("home-cursos-toggle", "home-cursos-heading");
+    for (const atributo of ["role", "tabindex", "aria-expanded", "aria-controls", "onclick", "onkeydown"]) {
+      controle.removeAttribute(atributo);
+    }
+  });
+  catalogo?.querySelector("#area_cursos_disponiveis")?.style.removeProperty("display");
+}
+
 const API_BASE = "https://plataforma-quality-backend.onrender.com";
 
 // HTMLs mantidos em cache podem anteceder a inclusão de sessao.js no <head>.
