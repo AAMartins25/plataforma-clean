@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumão Online</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home-publica.css?v=1">
   <script src="js/cabecalho.js" defer></script>
 </head>
 
@@ -14,23 +15,16 @@
 <header class="home-header">
 
   <div class="home-brand">
-    <h1
-      class="home-brand-title"
-      style="
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        text-align:center;
-        line-height:1.05;
-      "
-    >
-      <span class="home-brand-resumao">
-        <span class="home-brand-r">R</span>ESUM<span class="home-brand-a">A<span class="home-brand-til">~</span></span>O
-      </span>
-
-      <span class="home-brand-concursos">
-        Concursos
+    <h1 class="home-brand-title">
+      <svg class="home-brand-symbol" viewBox="0 0 48 48" fill="none" aria-hidden="true" focusable="false">
+        <rect x="1" y="1" width="46" height="46" rx="13" fill="#16324f"/>
+        <path d="M10 15c5-2 9-1 14 2 5-3 9-4 14-2v20c-5-2-9-1-14 2-5-3-9-4-14-2V15Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M24 18v18" stroke="#fff" stroke-width="1.5"/>
+        <path d="m17 23 4 4 10-10" stroke="#f4cb57" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="home-brand-wordmark">
+        <span class="home-brand-name">Resumão Online</span>
+        <span class="home-brand-tagline">DIRETO AO PONTO</span>
       </span>
     </h1>
   </div>
@@ -45,7 +39,10 @@
         title="Entre / Faça cadastro"
         aria-label="Entre ou faça cadastro"
       >
-        👤
+        <svg class="home-person-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M5 21v-2a7 7 0 0 1 14 0v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
       </a>
     </div>
 
@@ -89,10 +86,18 @@
   <div class="card home-cursos-disponiveis-card">
 
     <div
+      class="home-cursos-toggle"
+      role="button"
+      tabindex="0"
+      aria-expanded="true"
+      aria-controls="area_cursos_disponiveis"
       onclick="alternarCursosDisponiveis()"
-      style="cursor:pointer;"
+      onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); alternarCursosDisponiveis(); }"
     >
       <h2>📚 Cursos disponíveis</h2>
+      <svg class="home-cursos-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
 
     <div
@@ -333,78 +338,24 @@
     style="text-align:center;"
   >
 
-    <div
-      style="
-        display:flex;
-        align-items:flex-end;
-        justify-content:center;
-        gap:22px;
-        margin:8px 0;
-      "
-    >
-
-      <span
-        style="
-          font-size:2.4rem;
-          transform:scaleX(-1) scale(1.25);
-          line-height:1;
-        "
-      >
-        🏎️
-      </span>
-
-      <span
-        style="
-          font-size:2rem;
-          color:#999;
-          letter-spacing:8px;
-          line-height:1;
-          position:relative;
-          top:-2px;
-        "
-      >
-        ...
-      </span>
-
-      <span
-        style="
-          display:inline-block;
-          position:relative;
-          width:30px;
-          height:30px;
-          top:-5px;
-          transform:scale(1.25);
-        "
-      >
-
-        <span
-          style="
-            position:absolute;
-            left:4px;
-            bottom:0;
-            width:2px;
-            height:27px;
-            background:#555;
-            border-radius:2px;
-            z-index:2;
-          "
-        ></span>
-
-        <span
-          style="
-            position:absolute;
-            left:1px;
-            top:-1px;
-            font-size:1.7rem;
-            line-height:1;
-            z-index:1;
-          "
-        >
-          🏁
-        </span>
-
-      </span>
-
+    <div class="home-race-scene" role="img" aria-label="Carro de corrida em direção à bandeira de chegada">
+      <svg class="home-race-car" viewBox="0 0 82 44" fill="none" aria-hidden="true" focusable="false">
+        <path d="M7 28h4l5-9h24l10 7 17 2 7 6H7v-6Z" fill="#edc550" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="m29 19 4-10h9l7 17M5 13h15M11 8h10M4 22h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M33 11h7l4 9H30l3-9Z" fill="currentColor"/>
+        <path d="M68 23v8h10v-8H68Z" fill="currentColor"/>
+        <circle cx="22" cy="33" r="7" fill="currentColor"/>
+        <circle cx="60" cy="33" r="7" fill="currentColor"/>
+        <circle cx="22" cy="33" r="3" fill="#fff"/>
+        <circle cx="60" cy="33" r="3" fill="#fff"/>
+      </svg>
+      <span class="home-race-track" aria-hidden="true"></span>
+      <svg class="home-race-flag" viewBox="0 0 40 44" fill="none" aria-hidden="true" focusable="false">
+        <path d="M6 40V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7 6h26v20H7V6Z" fill="#fff"/>
+        <path d="M7 6h6.5v6.7H7zM20 6h6.5v6.7H20zM13.5 12.7H20v6.6h-6.5zM26.5 12.7H33v6.6h-6.5zM7 19.3h6.5V26H7zM20 19.3h6.5V26H20z" fill="currentColor"/>
+        <path d="M7 6h26v20H7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
     </div>
 
   </div>
@@ -419,7 +370,7 @@
 </footer>
 
 
-<script src="js/app.js"></script>
+<script src="js/app.js?v=home-publica-1"></script>
 
 <script>
 
@@ -497,6 +448,8 @@
       estavaFechada
         ? "block"
         : "none";
+
+    document.querySelector('.home-cursos-toggle')?.setAttribute('aria-expanded', String(estavaFechada));
 
     if (
       estavaFechada &&

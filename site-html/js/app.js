@@ -2807,16 +2807,36 @@ function renderizarCursosPublicos() {
     ? cursos
     : cursos.slice(0, limiteInicial);
 
-  el.innerHTML = cursosVisiveis.map(c => `
-    <a
-      class="curso-linha curso-publico-card"
-      href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
-    >
-      <span class="curso-publico-nome">
-        ${escapeHtml(c.nome)}
-      </span>
-    </a>
-  `).join("") || "<p>Nenhum curso encontrado.</p>";
+  el.innerHTML = cursosVisiveis.map(c => {
+    // Metadados são opcionais: a API pública atual entrega somente o nome oficial.
+    const texto = valor => typeof valor === "string" ? valor.trim() : "";
+    const cargo = texto(c.cargo);
+    const orgao = texto(c.orgao);
+    const uf = texto(c.uf);
+    const ano = typeof c.ano === "number" && Number.isInteger(c.ano) ? String(c.ano) : texto(c.ano);
+    const metadados = [orgao, uf, ano].filter(Boolean);
+    return `
+      <a
+        class="curso-linha curso-publico-card"
+        href="curso-info.html?curso_id=${c.id}&curso_nome=${encodeURIComponent(c.nome)}"
+      >
+        <span class="home-course-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" focusable="false">
+            <path d="M3 5c3-1 6 0 9 2 3-2 6-3 9-2v14c-3-1-6 0-9 2-3-2-6-3-9-2V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M12 7v14" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <span class="home-course-content">
+          <span class="curso-publico-nome">${escapeHtml(cargo || c.nome)}</span>
+          ${cargo && cargo !== c.nome ? `<span class="home-course-official-name">${escapeHtml(c.nome)}</span>` : ""}
+          ${metadados.length ? `<span class="home-course-meta">${metadados.map(valor => `<span>${escapeHtml(valor)}</span>`).join("")}</span>` : ""}
+        </span>
+        <svg class="home-course-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    `;
+  }).join("") || "<p>Nenhum curso encontrado.</p>";
 
   if (maisBox) {
     if (cursos.length > limiteInicial && !mostrarTodosCursos) {

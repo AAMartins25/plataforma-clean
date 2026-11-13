@@ -1,0 +1,225 @@
+/* Apresentação exclusiva da home pública. Fontes locais, sem dependências. */
+body.home-page {
+  --home-navy: #16324f;
+  --home-gold: #b58213;
+  --home-muted: #536779;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.home-page header.home-header.ro-header {
+  background: #fdee8a;
+  border-bottom: 1px solid #e5d67d;
+  grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: 12px 8px;
+  padding: 18px 24px 22px !important;
+}
+.home-page .home-header.ro-header .ro-header-titles {
+  grid-column: 1 / -1;
+  grid-row: 2 !important;
+}
+.home-page .home-header.ro-header .ro-header-identity {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  max-width: 100% !important;
+}
+.home-page .home-header.ro-header .ro-identity {
+  height: auto;
+  font-size: 12px;
+  color: #46586a;
+}
+.home-page .home-header.ro-header .ro-header-access {
+  grid-column: 2;
+  grid-row: 3;
+}
+.home-page .home-header.ro-header .ro-header-navigation {
+  grid-column: 3;
+  grid-row: 3 !important;
+}
+.home-page .home-brand {
+  padding: 0;
+}
+.home-page header .home-brand-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--home-navy) !important; /* Neutraliza o verde legado do h1 da home. */
+  font: inherit;
+  line-height: 1.15;
+}
+.home-page .home-brand-symbol {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+}
+.home-page .home-brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  min-width: 0;
+}
+.home-page .home-brand-name {
+  font-size: clamp(24px, 3.5vw, 34px);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+.home-page .home-brand-tagline {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.24em;
+  color: #4f563d;
+}
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #16324f;
+  border-radius: 50%;
+  background: var(--home-navy);
+  color: #fff;
+  padding: 11px;
+  box-shadow: 0 3px 8px #16324f14;
+}
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:hover {
+  background: #254b6f;
+}
+.home-page .home-person-icon {
+  width: 24px;
+  height: 24px;
+}
+.home-page .home-cursos-disponiveis-card {
+  border-top: 4px solid #e5ba41;
+  box-shadow: 0 4px 18px #16324f08;
+}
+.home-page .home-cursos-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.home-page .home-cursos-disponiveis-card .home-cursos-toggle h2 {
+  margin: 0;
+  font-size: clamp(20px, 2.5vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: var(--home-navy);
+}
+.home-page .home-cursos-toggle-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--home-muted);
+  transition: transform 150ms ease;
+}
+.home-page .home-cursos-toggle[aria-expanded="false"] .home-cursos-toggle-icon {
+  transform: rotate(-90deg);
+}
+.home-page #lista-cursos-publicos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.home-page #lista-cursos-publicos .curso-publico-card {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 18px;
+  align-items: start;
+  gap: 12px;
+  padding: 20px 16px;
+  border: 1px solid #dbe3eb;
+  border-radius: 12px;
+  color: var(--home-navy);
+  background: #fff;
+  box-shadow: 0 2px 4px #16324f04;
+  text-decoration: none;
+}
+.home-page #lista-cursos-publicos .curso-publico-card:hover {
+  border-color: #b58213;
+  background: #fffdf5;
+  box-shadow: 0 4px 12px #16324f0a;
+}
+.home-page .home-course-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #faf2d8;
+  color: #795b13;
+}
+.home-page .home-course-icon svg {
+  width: 21px;
+  height: 21px;
+}
+.home-page .home-course-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.home-page .curso-publico-nome {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+.home-page .home-course-official-name,
+.home-page .home-course-meta {
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.5;
+  color: var(--home-muted);
+}
+.home-page .home-course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.home-page .home-course-arrow {
+  width: 18px;
+  height: 18px;
+  margin-top: 8px;
+  color: #52677b;
+}
+/* Atendimento mantém posição, caixas e espaçamentos; só a tipografia muda. */
+.home-page .home-atendimento-card {
+  font-family: inherit;
+}
+.home-page .home-atendimento-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.home-page .home-atendimento-btn {
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+.home-page .home-race-scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 8px 0;
+  color: var(--home-navy);
+}
+.home-page .home-race-car { width: 68px; height: 40px; flex-shrink: 0; }
+.home-page .home-race-track { width: 48px; height: 2px; background: repeating-linear-gradient(to right, #c4a04a 0 6px, transparent 6px 12px); }
+.home-page .home-race-flag { width: 40px; height: 44px; flex-shrink: 0; }
+.home-page :is(.home-cursos-toggle, .curso-publico-card, .home-icon-btn):focus-visible {
+  outline: 3px solid #16324f;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .home-page header.home-header.ro-header { padding: 14px 16px 20px !important; }
+  .home-page .home-brand-title { gap: 9px; }
+  .home-page .home-brand-symbol { width: 36px; height: 36px; }
+  .home-page .home-brand-tagline { font-size: 9px; letter-spacing: 0.2em; }
+  .home-page .home-cursos-disponiveis-card { padding: 20px 16px; }
+  .home-page #lista-cursos-publicos { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .home-page #lista-cursos-publicos .curso-publico-card { padding: 16px 12px; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page :is(.curso-publico-card, .home-icon-btn, .home-cursos-toggle-icon) { transition: none; transform: none; }
+}
