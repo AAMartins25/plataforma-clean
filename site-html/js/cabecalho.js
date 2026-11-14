@@ -93,16 +93,23 @@
     nome.style.top = `${topo - origem.getBoundingClientRect().top}px`;
     const acesso = cabecalho.querySelector(".ro-header-access a");
     const navegacao = cabecalho.querySelector(".ro-header-navigation");
+    const controles = Array.from(navegacao?.querySelectorAll("a, button") || [])
+      .filter(elemento => elemento.getClientRects().length);
     const sobrepoe = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
     // Se um nome precisar de várias linhas, usa o espaço abaixo do livro e ao lado do acesso.
-    if (!aoLado && acesso && [livro, acesso, navegacao].filter(Boolean)
+    if (!aoLado && acesso && [livro, acesso, ...controles]
       .some(elemento => sobrepoe(nome.getBoundingClientRect(), elemento.getBoundingClientRect()))) {
       const botao = acesso.getBoundingClientRect();
-      const esquerda = cabecalho.getBoundingClientRect().left + parseFloat(getComputedStyle(cabecalho).paddingLeft);
+      let esquerda = cabecalho.getBoundingClientRect().left + parseFloat(getComputedStyle(cabecalho).paddingLeft);
+      const topoAbaixo = Math.max(logo.bottom, livro.getBoundingClientRect().bottom) + 4;
+      for (const controle of controles) {
+        const caixa = controle.getBoundingClientRect();
+        if (caixa.left < botao.left - 4 && caixa.bottom > topoAbaixo) esquerda = Math.max(esquerda, caixa.right + 4);
+      }
       nome.style.width = `${Math.min(largura, Math.max(1, botao.left - esquerda - 4))}px`;
       const caixa = origem.getBoundingClientRect();
       nome.style.left = `${botao.left - 4 - nome.getBoundingClientRect().width - caixa.left}px`;
-      nome.style.top = `${Math.max(logo.bottom, livro.getBoundingClientRect().bottom) + 4 - caixa.top}px`;
+      nome.style.top = `${topoAbaixo - caixa.top}px`;
     }
     cabecalho.dataset.nomePosicao = aoLado ? "direita" : "abaixo";
     // O nome completo continua disponível sem uma cópia sobrepor a marca no hover.

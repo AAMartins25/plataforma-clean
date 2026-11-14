@@ -64,8 +64,8 @@ body.home-page {
   white-space: nowrap;
   color: var(--home-navy);
 }
-/* A identificação autenticada se desloca sem alterar a linha reservada na grade. */
-.home-page .home-header.ro-header--identified .ro-header-identity { height: 17px; }
+/* O nome se posiciona no espaço disponível sem acrescentar altura à faixa. */
+.home-page .home-header.ro-header--identified .ro-header-identity { height: 0; padding-bottom: 0; }
 .home-page .home-header.ro-header--identified .ro-identity {
   max-width: none;
   white-space: normal;
@@ -88,6 +88,7 @@ body.home-page {
   left: calc((var(--home-book-width) + var(--home-brand-gap)) / 2);
 }
 .home-page .home-header.ro-header .ro-header-navigation { grid-column: 3; grid-row: 3 !important; }
+.home-page .home-header.ro-header--identified .ro-header-navigation :is(.home-nav, .home-nav-actions) { flex-wrap: nowrap; }
 .home-page .home-header .home-nav-actions { position: static; flex-wrap: wrap; }
 .home-page .home-header .home-nav { margin: 0; }
 .home-page .home-brand { padding: 0; }
@@ -210,6 +211,11 @@ body.home-page {
   /* As ações preservam seus alvos confortáveis sem disputar espaço com Minha Área. */
   .home-page .home-header.ro-header .ro-header-navigation { grid-column: 1 / -1; grid-row: 4 !important; margin-top: var(--home-row-gap); }
   .home-page .home-header.ro-header .ro-header-navigation:not(:has(a:not([style*="none"]))) { display: none; }
+  /* A navegação autenticada usa as laterais da linha do acesso, sem uma linha extra. */
+  .home-page .home-header.ro-header--identified .ro-header-navigation { grid-row: 3 !important; margin-top: 0; }
+  .home-page .home-header.ro-header--identified .ro-header-navigation :is(.home-nav, .home-nav-actions) { width: 100%; }
+  .home-page .home-header.ro-header--identified .ro-header-navigation .home-nav-actions { justify-content: space-between; }
+  .home-page .home-header.ro-header--identified .ro-header-navigation #btnSairHome { margin-left: auto !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-page :is(.curso-publico-card, .home-icon-btn) { transition: none; }
