@@ -71,6 +71,9 @@ body.home-page {
 .home-page .home-header.ro-header .ro-header-access {
   grid-column: 2;
   grid-row: 3;
+  /* Conserva a altura da linha mesmo com o botão menor. */
+  height: 52px;
+  align-items: flex-start;
   /* O centro do nome fica meia largura do livro + gap à direita da marca completa. */
   position: relative;
   left: calc((var(--home-book-width) + var(--home-brand-gap)) / 2);
@@ -113,26 +116,28 @@ body.home-page {
   align-items: center;
   justify-content: center;
   gap: 0;
-  width: 52px;
-  height: 52px;
+  position: relative;
+  top: 3px;
+  width: 47px;
+  height: 47px;
   padding: 0;
-  border: 1px solid #398bc7;
+  border: 1px solid #008a3d;
   border-radius: 999px;
-  background: #599ad3;
-  color: #fff;
+  background: #fff;
+  color: #008a3d;
   font-size: 18px;
   font-weight: 650;
   white-space: nowrap;
-  box-shadow: 0 3px 8px #246a9e1a;
+  box-shadow: 0 3px 8px #008a3d1a;
 }
-.home-page .home-header.ro-header .ro-header-access .home-icon-btn:hover { background: #398bc7; color: #fff; }
-.home-page .home-header.ro-header .ro-header-access .home-icon-btn:focus-visible { background: #398bc7; outline-color: #246a9e; }
-.home-page .home-header.ro-header .ro-header-access .home-icon-btn:active { background: #2e7fb9; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:hover { background: #f0faf4; color: #007a35; transform: none; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:focus-visible { background: #f0faf4; outline-color: #008a3d; }
+.home-page .home-header.ro-header .ro-header-access .home-icon-btn:active { background: #ddf2e5; color: #007a35; }
 /* Compatibilidade visual com HTML anterior mantido em cache. */
 .home-page .home-header .home-nav-center .home-icon-btn > span { display: none; }
 .home-page .home-cursos-disponiveis-card .home-cursos-toggle-icon { display: none !important; }
 .home-page .home-header.ro-header .ro-header-navigation .home-icon-btn { color: var(--home-navy); min-width: 44px; }
-.home-page .home-person-icon { width: 32px; height: 32px; flex-shrink: 0; }
+.home-page .home-person-icon { width: 29px; height: 29px; flex-shrink: 0; }
 .home-page main.container { max-width: 920px; margin: 26px auto; padding: 0 20px; }
 .home-page main > .card {
   background: #fff;
@@ -196,7 +201,8 @@ body.home-page {
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
   .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 20.5px - 47.25px) / 2)); }
   .home-page .home-brand-wordmark { top: 0; }
-  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 50px; height: 50px; font-size: 17px; padding: 0; }
+  .home-page .home-header.ro-header .ro-header-access { height: 50px; }
+  .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 45px; height: 45px; font-size: 17px; padding: 0; }
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
   .home-page main > .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 13px; }
   .home-page main .card h2, .home-page .home-localizar label { font-size: 20px; gap: 9px; }
