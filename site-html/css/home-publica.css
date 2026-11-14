@@ -2,7 +2,7 @@
 body.home-page {
   --home-book-width: 73.5px;
   --home-brand-gap: 14px;
-  --home-row-gap: 8px;
+  --home-row-gap: 5px;
   --home-wordmark-top: max(0px, calc((66.5px - (clamp(25px, 4.5vw, 44px) * 1.15 + 23.95px)) / 2));
   --home-blue: #0866d8;
   --home-navy: #102d75;
@@ -20,7 +20,7 @@ body.home-page {
   grid-template-columns: minmax(0, 1fr) 184px minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   gap: 0 12px;
-  padding: 4px 24px 32px !important;
+  padding: 4px 24px 18.5px !important;
 }
 /* Ondas limitadas ao fundo; não interceptam os controles existentes. */
 .home-page .home-header::before,
@@ -95,7 +95,7 @@ body.home-page {
 .home-page .home-brand { padding: 0; }
 .home-page header .home-brand-title {
   display: flex;
-  transform: translateY(8px);
+  transform: translateY(6px);
   align-items: center;
   justify-content: center;
   gap: var(--home-brand-gap);
@@ -115,7 +115,7 @@ body.home-page {
   justify-content: center;
   gap: 0;
   position: relative;
-  top: 6.5px;
+  top: 4.5px;
   width: 55.836px;
   height: 55.836px;
   padding: 0;
@@ -193,8 +193,8 @@ body.home-page {
 .home-page footer { margin: 28px 0 0; padding: 0 16px 26px; color: var(--home-muted); opacity: 1; font-size: 14px; }
 .home-page :is(.curso-publico-card, .home-icon-btn):focus-visible { outline: 3px solid var(--home-blue); outline-offset: 4px; }
 @media (max-width: 600px) {
-  body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 6px; --home-wordmark-top: 0px; }
-  .home-page header.home-header.ro-header { padding: 2px 12px 26px !important; gap: 0 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
+  body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 3px; --home-wordmark-top: 0px; }
+  .home-page header.home-header.ro-header { padding: 2px 12px 15.75px !important; gap: 0 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
   .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 20.5px - 47.25px) / 2)); }
   .home-page .home-brand-wordmark { top: 0; }
