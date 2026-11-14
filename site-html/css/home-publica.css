@@ -86,12 +86,12 @@ body.home-page {
   font: inherit;
   line-height: 1.15;
 }
-.home-page .home-brand-symbol { width: var(--home-book-width); height: 66.5px; flex: 0 0 auto; }
-.home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
+/* Compensa o alinhamento anterior para preservar a posição do livro e do nome sem o slogan. */
+.home-page .home-brand-symbol { width: var(--home-book-width); height: 66.5px; flex: 0 0 auto; position: relative; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 23.95px - 66.5px) / 2)); }
+.home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; align-self: flex-start; min-width: 0; position: relative; top: max(0px, calc((66.5px - (clamp(25px, 4.5vw, 44px) * 1.15 + 23.95px)) / 2)); }
 .home-page .home-brand-name { font-size: clamp(25px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
-.home-page .home-brand-name > span:first-child { color: #fff; background: #245bd6; padding: 0 0.045em; }
+.home-page .home-brand-name > span:first-child { color: #fff; background: linear-gradient(to bottom, transparent 0.1em, #245bd6 0.1em); padding: 0 0.045em; }
 .home-page .home-brand-online { color: #d99c00; }
-.home-page .home-brand-tagline { font-size: 13px; font-weight: 650; letter-spacing: 0.2em; color: #789b45; }
 .home-page .home-header.ro-header .ro-header-access .home-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -144,10 +144,10 @@ body.home-page {
 .home-page #lista-cursos-publicos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .home-page #lista-cursos-publicos .curso-publico-card {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
   gap: 18px;
-  padding: 20px;
+  padding: 16px 20px;
   border: 1px solid #d5dfed;
   border-radius: 12px;
   color: var(--home-navy);
@@ -157,7 +157,8 @@ body.home-page {
 }
 .home-page #lista-cursos-publicos .curso-publico-card:hover { border-color: var(--home-blue); background: #f8fbff; box-shadow: 0 4px 12px #102d750a; }
 .home-page .home-course-icon { display: flex; align-items: center; justify-content: center; }
-.home-page .home-course-icon img { width: 56px; height: 50.75px; }
+/* O SVG tem viewBox 80 × 72 e o livro desenhado a +8°: desfaz somente essa inclinação. */
+.home-page .home-course-icon img { display: block; width: 44px; height: auto; transform: rotate(-8deg); }
 .home-page .home-course-content { display: flex; flex-direction: column; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
 .home-page .curso-publico-nome { font-size: 20px; font-weight: 750; line-height: 1.4; letter-spacing: -0.02em; color: #17365d; }
 .home-page .home-course-meta { font-size: 16px; font-weight: 650; line-height: 1.5; color: var(--home-navy); }
@@ -177,14 +178,14 @@ body.home-page {
   body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 16px; }
   .home-page header.home-header.ro-header { padding: 2px 12px 26px !important; gap: 0 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
-  .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; }
-  .home-page .home-brand-tagline { font-size: 10px; letter-spacing: 0.16em; }
+  .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 20.5px - 47.25px) / 2)); }
+  .home-page .home-brand-wordmark { top: 0; }
   .home-page .home-header.ro-header .ro-header-access .home-icon-btn { width: 50px; height: 50px; font-size: 17px; padding: 0; }
   .home-page main.container { margin: 20px auto; padding: 0 12px; }
   .home-page main > .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 13px; }
   .home-page main .card h2, .home-page .home-localizar label { font-size: 20px; gap: 9px; }
-  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 38.5px minmax(0, 1fr); padding: 16px 12px; gap: 10px; }
-  .home-page .home-course-icon img { width: 38.5px; height: 36.75px; }
+  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 32px minmax(0, 1fr); padding: 13px 12px; gap: 10px; }
+  .home-page .home-course-icon img { width: 32px; }
   .home-page .curso-publico-nome { font-size: 17px; }
   .home-page .home-course-meta { font-size: 14px; }
   .home-page .home-localizar { flex-direction: column; align-items: stretch; gap: 14px; }
@@ -203,8 +204,8 @@ body.home-page {
   .home-page main .card h2 { font-size: 18px; }
   .home-page .home-cursos-heading { gap: 8px; }
   .home-page .home-section-icon { width: 24px; height: 24px; }
-  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 31.5px minmax(0, 1fr); gap: 8px; }
-  .home-page .home-course-icon img { width: 31.5px; height: 31.5px; }
+  .home-page #lista-cursos-publicos .curso-publico-card { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
+  .home-page .home-course-icon img { width: 28px; }
   .home-page .curso-publico-nome { font-size: 16px; font-weight: 700; }
 }
 
