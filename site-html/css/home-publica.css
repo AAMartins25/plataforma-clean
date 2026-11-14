@@ -2,8 +2,7 @@
 body.home-page {
   --home-book-width: 73.5px;
   --home-brand-gap: 14px;
-  --home-row-gap: 18px;
-  --home-brand-height: 66.5px;
+  --home-row-gap: 8px;
   --home-wordmark-top: max(0px, calc((66.5px - (clamp(25px, 4.5vw, 44px) * 1.15 + 23.95px)) / 2));
   --home-blue: #0866d8;
   --home-navy: #102d75;
@@ -91,26 +90,12 @@ body.home-page {
   font: inherit;
   line-height: 1.15;
 }
-/* Compensa o alinhamento anterior para preservar a posição do livro e do nome sem o slogan. */
+/* Preserva a posição do livro e do nome. */
 .home-page .home-brand-symbol { width: var(--home-book-width); height: 66.5px; flex: 0 0 auto; position: relative; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 23.95px - 66.5px) / 2)); }
 .home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; align-self: flex-start; min-width: 0; position: relative; top: var(--home-wordmark-top); }
 .home-page .home-brand-name { font-size: clamp(25px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
 .home-page .home-brand-name > span:first-child { color: #008a3d; background: none; padding: 0 0.045em; }
 .home-page .home-brand-online { color: #d99c00; }
-/* Centraliza a frase no nome e a aproxima 2 px dele, preservando o acesso. */
-.home-page .home-brand-slogan {
-  position: absolute;
-  left: 50%;
-  top: calc((100% + var(--home-brand-height) + var(--home-row-gap) - var(--home-wordmark-top)) / 2 - 2px);
-  transform: translate(-50%, -50%);
-  margin: 0;
-  color: #007a35;
-  font-size: clamp(13px, 2vw, 16px);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
 .home-page .home-header.ro-header .ro-header-access .home-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -190,13 +175,11 @@ body.home-page {
 .home-page #buscaCurso { width: 100%; min-width: 0; min-height: 46px; padding: 11px 15px; border: 1px solid #d5dfed; border-radius: 9px !important; font-size: 16px; font-style: normal; color: var(--home-navy); background: #fff; }
 .home-page #buscaCurso::placeholder { color: #64748b; opacity: 1; }
 .home-page .home-atendimento-btn { font-family: inherit; font-weight: 550; overflow-wrap: anywhere; max-width: 100%; }
-.home-page .home-race-scene { display: flex; align-items: flex-end; justify-content: center; gap: clamp(40px, 9vw, 115px); margin: 5px 0; }
-.home-page .home-race-car { width: 180px; height: 82px; flex-shrink: 0; }
-.home-page .home-race-flag { width: 66px; height: 84px; flex-shrink: 0; }
+.home-page .home-motivation-card { min-height: 142px; }
 .home-page footer { margin: 28px 0 0; padding: 0 16px 26px; color: var(--home-muted); opacity: 1; font-size: 14px; }
 .home-page :is(.curso-publico-card, .home-icon-btn):focus-visible { outline: 3px solid var(--home-blue); outline-offset: 4px; }
 @media (max-width: 600px) {
-  body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 16px; --home-brand-height: 47.25px; --home-wordmark-top: 0px; }
+  body.home-page { --home-book-width: 49px; --home-brand-gap: 8px; --home-row-gap: 6px; --home-wordmark-top: 0px; }
   .home-page header.home-header.ro-header { padding: 2px 12px 26px !important; gap: 0 6px; grid-template-columns: minmax(0, 1fr) 164px minmax(0, 1fr); }
   .home-page header .home-brand-title { gap: var(--home-brand-gap); }
   .home-page .home-brand-symbol { width: var(--home-book-width); height: 47.25px; top: max(0px, calc((clamp(25px, 4.5vw, 44px) * 1.15 + 20.5px - 47.25px) / 2)); }
@@ -211,8 +194,7 @@ body.home-page {
   .home-page .curso-publico-nome { font-size: 17px; }
   .home-page .home-course-meta { font-size: 14px; }
   .home-page .home-localizar { flex-direction: column; align-items: stretch; gap: 14px; }
-  .home-page .home-race-car { width: 140px; height: 64px; }
-  .home-page .home-race-flag { width: 49px; height: 64px; }
+  .home-page .home-motivation-card { min-height: 114px; }
 }
 @media (max-width: 370px) {
   /* As ações preservam seus alvos confortáveis sem disputar espaço com Minha Área. */
