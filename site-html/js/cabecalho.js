@@ -82,14 +82,15 @@
     texto.selectNodeContents(nome);
     const largura = Math.ceil(texto.getBoundingClientRect().width * 64) / 64;
     nome.style.whiteSpace = "";
+    const espaco = parseFloat(getComputedStyle(document.documentElement).fontSize) / 4;
     const logo = marca.getBoundingClientRect();
     const direita = origem.getBoundingClientRect().right;
-    const aoLado = largura <= direita - logo.right - 4;
-    const limite = direita - livro.getBoundingClientRect().right - 4;
+    const aoLado = largura <= direita - logo.right - espaco;
+    const limite = direita - livro.getBoundingClientRect().right - espaco;
     nome.style.left = "";
     nome.style.width = `${Math.min(largura, Math.max(1, limite))}px`;
     const altura = nome.getBoundingClientRect().height;
-    const topo = aoLado ? logo.top + (logo.height - altura) / 2 : logo.bottom + 4;
+    const topo = aoLado ? logo.top + (logo.height - altura) / 2 : logo.bottom + espaco;
     nome.style.top = `${topo - origem.getBoundingClientRect().top}px`;
     const acesso = cabecalho.querySelector(".ro-header-access a");
     const navegacao = cabecalho.querySelector(".ro-header-navigation");
@@ -101,14 +102,14 @@
       .some(elemento => sobrepoe(nome.getBoundingClientRect(), elemento.getBoundingClientRect()))) {
       const botao = acesso.getBoundingClientRect();
       let esquerda = cabecalho.getBoundingClientRect().left + parseFloat(getComputedStyle(cabecalho).paddingLeft);
-      const topoAbaixo = Math.max(logo.bottom, livro.getBoundingClientRect().bottom) + 4;
+      const topoAbaixo = Math.max(logo.bottom, livro.getBoundingClientRect().bottom) + espaco;
       for (const controle of controles) {
         const caixa = controle.getBoundingClientRect();
-        if (caixa.left < botao.left - 4 && caixa.bottom > topoAbaixo) esquerda = Math.max(esquerda, caixa.right + 4);
+        if (caixa.left < botao.left - espaco && caixa.bottom > topoAbaixo) esquerda = Math.max(esquerda, caixa.right + espaco);
       }
-      nome.style.width = `${Math.min(largura, Math.max(1, botao.left - esquerda - 4))}px`;
+      nome.style.width = `${Math.min(largura, Math.max(1, botao.left - esquerda - espaco))}px`;
       const caixa = origem.getBoundingClientRect();
-      nome.style.left = `${botao.left - 4 - nome.getBoundingClientRect().width - caixa.left}px`;
+      nome.style.left = `${botao.left - espaco - nome.getBoundingClientRect().width - caixa.left}px`;
       nome.style.top = `${topoAbaixo - caixa.top}px`;
     }
     cabecalho.dataset.nomePosicao = aoLado ? "direita" : "abaixo";

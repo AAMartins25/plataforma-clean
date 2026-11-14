@@ -13,14 +13,14 @@
 <body class="atendimento-page">
   <header
     style="
-      padding-top:8px;
-      padding-bottom:24px;
+      padding-top:0.5rem;
+      padding-bottom:1.5rem;
       position:relative;
     "
   >
     <div
       style="
-        margin-top:32px;
+        margin-top:2rem;
         display:flex;
         justify-content:center;
         align-items:center;
@@ -35,10 +35,10 @@
     <nav class="ro-header-icon-actions"
       style="
         position:absolute;
-        right:24px;
-        top:29px;
+        right:1.5rem;
+        top:1.8125rem;
         display:flex;
-        gap:10px;
+        gap:0.625rem;
         align-items:center;
       "
     >
@@ -78,9 +78,9 @@
 
       <div style="
         display:flex;
-        gap:10px;
+        gap:0.625rem;
         flex-wrap:wrap;
-        margin-bottom:16px;
+        margin-bottom:1rem;
         justify-content:center;
       ">
         <button
@@ -189,7 +189,7 @@
             id="assuntoAluno"
             type="text"
             placeholder="Ex.: acesso, pagamento, curso, aula, reembolso..."
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin:6px 0 12px;"
+            style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin:0.375rem 0 0.75rem;"
           >
 
           <label><b>Mensagem</b></label>
@@ -197,7 +197,7 @@
           <textarea
             id="mensagemAluno"
             placeholder="Descreva sua dúvida ou solicitação"
-            style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px; margin-top:6px;"
+            style="width:100%; min-height:8.125rem; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin-top:0.375rem;"
           ></textarea>
 
           <button
@@ -208,7 +208,7 @@
             Enviar mensagem
           </button>
 
-          <div id="msgAluno" style="margin-top:10px;"></div>
+          <div id="msgAluno" style="margin-top:0.625rem;"></div>
 
         </div>
 
@@ -226,7 +226,7 @@
           <div
             id="historicoAtendimentos"
             class="list"
-            style="display:none; margin:14px 0;"
+            style="display:none; margin:0.875rem 0;"
           ></div>
 
         </div>
@@ -318,7 +318,7 @@
           Mensagem enviada com sucesso!<br/>
           A Clean responderá pelo atendimento interno.
 
-          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="margin-top:0.875rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
             <a class="btn" href="index.html">VOLTAR À PÁGINA INICIAL</a>
             <a class="btn" href="cursos.html">IR PARA MEUS CURSOS</a>
           </div>
@@ -382,12 +382,12 @@
               Status: ${a.status}
             </span>
 
-            <div style="margin-top:10px; white-space:pre-wrap;">
+            <div style="margin-top:0.625rem; white-space:pre-wrap;">
               <b>Sua mensagem:</b><br/>
               ${a.mensagem}
             </div>
 
-            <div style="margin-top:10px; white-space:pre-wrap;">
+            <div style="margin-top:0.625rem; white-space:pre-wrap;">
               <b>Resposta da Clean:</b><br/>
               ${a.resposta_admin || "Ainda não respondido."}
             </div>

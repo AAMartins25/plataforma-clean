@@ -18,7 +18,7 @@ window.Juridico = window.Juridico || (() => {
     box = document.createElement("div");
     box.id = "boxAceiteJuridico";
     box.hidden = true;
-    box.style.cssText = "margin-top:16px;line-height:1.6;overflow-wrap:anywhere;";
+    box.style.cssText = "margin-top:1rem;line-height:1.6;overflow-wrap:anywhere;";
     // Marcação estática: nenhum metadado externo é inserido como HTML.
     box.innerHTML = '<input type="checkbox" id="aceiteJuridico" aria-labelledby="textoAceiteJuridico" /> '
       + '<span id="textoAceiteJuridico">Ciente dos <a id="linkTermos" target="_blank" rel="noopener noreferrer">Termos de Contratação</a> e da '

@@ -30,10 +30,10 @@
     }
 
     .pagina-minhas-vendas .card {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      padding-top: 14px;
-      padding-bottom: 14px;
+      margin-top: 0.625rem;
+      margin-bottom: 0.625rem;
+      padding-top: 0.875rem;
+      padding-bottom: 0.875rem;
     }
 
     .pagina-minhas-vendas .titulo-resumo {
@@ -43,11 +43,11 @@
     }
 
     .pagina-minhas-vendas .linha-resumo {
-      padding: 10px 0;
+      padding: 0.625rem 0;
     }
 
     .pagina-minhas-vendas .linha-resumo + .linha-resumo {
-      border-top: 1px solid #e5e5e5;
+      border-top: 0.0625rem solid #e5e5e5;
     }
 
     main.container.pagina-minhas-vendas {
@@ -55,9 +55,9 @@
     }
 
     .pagina-minhas-vendas .list .disciplina {
-      padding: 7px 10px;
+      padding: 0.4375rem 0.625rem;
       min-height: 0;
-      margin-bottom: 6px;
+      margin-bottom: 0.375rem;
     }
 
     .pagina-minhas-vendas .list .disciplina:last-child {
@@ -65,10 +65,10 @@
     }
 
     .pagina-minhas-vendas .list .assunto {
-      padding: 5px 10px;
+      padding: 0.3125rem 0.625rem;
       min-height: 0;
-      margin-top: 2px;
-      margin-bottom: 2px;
+      margin-top: 0.125rem;
+      margin-bottom: 0.125rem;
       line-height: 1.15;
     }
 
@@ -120,22 +120,22 @@
     }
 
     :is(.minhas-vendas-page) header.ro-header {
-      grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-      gap: 6px 8px;
+      grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+      gap: 0.375rem 0.5rem;
       flex-shrink: 0;
     }
 
     :is(.minhas-vendas-page) .ro-header-titles {
       grid-column: 1 / -1;
       grid-row: 1 !important;
-      min-height: 44px;
+      min-height: 2.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     :is(.minhas-vendas-page) header.ro-header .ro-header-titles > * {
-      max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+      max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
     }
 
     :is(.minhas-vendas-page) .ro-header-titles h1 {
@@ -144,7 +144,7 @@
     }
 
     :is(.minhas-vendas-page) .ro-header-titles h2 {
-      margin-top: 3px !important;
+      margin-top: 0.1875rem !important;
       font-size: 0.95rem;
       line-height: 1.35;
     }
@@ -160,12 +160,12 @@
       grid-row: 1;
       align-self: start;
       min-width: 0;
-      max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+      max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
     }
 
     :is(.minhas-vendas-page) .ro-identity {
       font-weight: 400;
-      height: 44px;
+      height: 2.75rem;
       min-width: 0;
       text-transform: uppercase;
       white-space: nowrap;
@@ -179,19 +179,19 @@
     }
 
     :is(.minhas-vendas-page) .ro-header .ro-header-navigation .btn {
-      height: 44px !important;
+      height: 2.75rem !important;
       line-height: 1;
     }
 
     :is(.minhas-vendas-page) > footer {
       flex-shrink: 0;
       margin-top: 0;
-      padding: 24px 15px;
+      padding: 1.5rem 0.9375rem;
     }
 
     @media (max-width: 480px) {
     :is(.minhas-vendas-page) .ro-header-titles {
-        padding-top: 44px;
+        padding-top: 2.75rem;
       }
 
     :is(.minhas-vendas-page) header.ro-header .ro-header-titles > * {
@@ -207,7 +207,7 @@
     :is(.minhas-vendas-page) .ro-header-identity {
       color: #4b5563;
       opacity: 0.78;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.025rem;
     }
 
     .minhas-vendas-page main.container {
@@ -224,14 +224,14 @@
 
   <header
     style="
-      padding-top:8px;
-      padding-bottom:24px;
+      padding-top:0.5rem;
+      padding-bottom:1.5rem;
       position:relative;
     "
   >
     <div
       style="
-        margin-top:32px;
+        margin-top:2rem;
         display:flex;
         justify-content:center;
         align-items:center;
@@ -239,7 +239,7 @@
     >
       <h1
         style="
-          margin:-6px 0 0 0;
+          margin:-0.375rem 0 0 0;
           font-size:1.25rem;
           text-align:center;
         "
@@ -251,10 +251,10 @@
     <nav class="ro-header-icon-actions"
       style="
         position:absolute;
-        right:24px;
-        top:22px;
+        right:1.5rem;
+        top:1.375rem;
         display:flex;
-        gap:10px;
+        gap:0.625rem;
         align-items:center;
       "
     >
@@ -292,7 +292,7 @@
     <div
       class="card"
       style="
-        min-height:42px;
+        min-height:2.625rem;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -304,7 +304,7 @@
           display:flex;
           align-items:center;
           justify-content:center;
-          gap:6px;
+          gap:0.375rem;
           font-size:.95rem;
           font-weight:100;
         "
@@ -321,7 +321,7 @@
     <div
       class="card"
       style="
-        min-height:42px;
+        min-height:2.625rem;
         display:flex;
         align-items:center;
       "
@@ -350,7 +350,7 @@
         style="
           display:flex;
           align-items:baseline;
-          gap:5px;
+          gap:0.3125rem;
           flex-wrap:wrap;
         "
       >
@@ -401,7 +401,7 @@
           <div
             id="detalhesTotalVendas"
             class="list"
-            style="margin-top:10px;"
+            style="margin-top:0.625rem;"
           >
           </div>
         </div>
@@ -432,7 +432,7 @@
           <div
             id="detalhesVendasEfetivas"
             class="list"
-            style="margin-top:10px;"
+            style="margin-top:0.625rem;"
           >
           </div>
         </div>
@@ -463,7 +463,7 @@
           <div
             id="detalhesVendasAConfirmar"
             class="list"
-            style="margin-top:10px;"
+            style="margin-top:0.625rem;"
           >
           </div>
         </div>
@@ -480,7 +480,7 @@
         style="
           display:flex;
           align-items:center;
-          gap:10px;
+          gap:0.625rem;
           flex-wrap:wrap;
         "
       >
@@ -502,10 +502,10 @@
           step="0.01"
           placeholder="Ex.: 10"
           style="
-            width:60px;
-            padding:9px 8px;
-            border:1px solid #ddd;
-            border-radius:6px;
+            width:3.75rem;
+            padding:0.5625rem 0.5rem;
+            border:0.0625rem solid #ddd;
+            border-radius:0.375rem;
             box-sizing:border-box;
           "
         >
@@ -524,11 +524,11 @@
           class="btn"
           type="button"
           style="
-            margin-left:8px;
+            margin-left:0.5rem;
             align-self:center;
             margin-top:0;
             margin-bottom:0;
-            padding:9px 13px;
+            padding:0.5625rem 0.8125rem;
             line-height:1;
           "
         >
@@ -567,7 +567,7 @@
           <div
             id="detalhesComissaoEfetivada"
             class="list"
-            style="margin-top:10px;"
+            style="margin-top:0.625rem;"
           >
           </div>
         </div>
@@ -599,7 +599,7 @@
           <div
             id="detalhesComissaoAConfirmar"
             class="list"
-            style="margin-top:10px;"
+            style="margin-top:0.625rem;"
           >
           </div>
         </div>

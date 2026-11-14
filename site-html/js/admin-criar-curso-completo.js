@@ -263,12 +263,12 @@
           display:flex;
           justify-content:space-between;
           align-items:center;
-          gap:10px;
+          gap:0.625rem;
           flex-wrap:wrap;
         ">
           <b>${d.nome}</b>
 
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; gap:0.625rem; flex-wrap:wrap;">
             <button
             class="btn"
             type="button"
@@ -522,7 +522,7 @@
             display:flex;
             justify-content:space-between;
             align-items:center;
-            gap:10px;
+            gap:0.625rem;
             flex-wrap:wrap;
           ">
 
@@ -530,12 +530,12 @@
               <b>${a.nome}</b>
               ${
                 a.descricao
-                  ? `<div style="opacity:.8; margin-top:4px;">${a.descricao}</div>`
+                  ? `<div style="opacity:.8; margin-top:0.25rem;">${a.descricao}</div>`
                   : ""
               }
             </div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:0.625rem; flex-wrap:wrap;">
 
               <button
                 class="btn"
@@ -868,10 +868,10 @@
 
       listaAulas.innerHTML = aulasDoAssunto.map(a => `
         <div class="assunto">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.625rem; flex-wrap:wrap;">
             <b>${a.titulo}</b>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:0.625rem; flex-wrap:wrap;">
 
               <button
                 class="btn"
@@ -956,7 +956,7 @@
 
         listaAulas.innerHTML = `
           <div class="assunto">
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:0.625rem; flex-wrap:wrap;">
 
               <button
                 class="btn"
@@ -1240,9 +1240,9 @@
           status = `
             <span
               style="
-                padding:4px 10px;
-                border:1px solid #2f5e46;
-                border-radius:999px;
+                padding:0.25rem 0.625rem;
+                border:0.0625rem solid #2f5e46;
+                border-radius:62.4375rem;
               "
             >
               Concluída
@@ -1253,9 +1253,9 @@
           status = `
             <span
               style="
-                padding:4px 10px;
-                border:1px solid #8a5a00;
-                border-radius:999px;
+                padding:0.25rem 0.625rem;
+                border:0.0625rem solid #8a5a00;
+                border-radius:62.4375rem;
               "
             >
               Em andamento
@@ -1265,13 +1265,13 @@
 
         return `
           <div class="assunto">
-            <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap;">
-              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:space-between; gap:0.625rem; align-items:center; flex-wrap:wrap;">
+              <div style="display:flex; gap:0.625rem; align-items:center; flex-wrap:wrap;">
                 <b>${b.titulo || `Bateria ${b.id}`}</b>
                 ${status}
               </div>
 
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:0.625rem; flex-wrap:wrap;">
                 <button class="btn" type="button" onclick="abrirQuestoesDaBateria(${b.id})">
                   Abrir / editar questões
                 </button>
@@ -1310,7 +1310,7 @@
       boxConteudoAula.innerHTML = `
         <div class="assunto">
 
-          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:15px;">
+          <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:0.9375rem;">
             <button class="btn" type="button" onclick="voltarParaBaterias()">
               Voltar
             </button>
@@ -1324,16 +1324,16 @@
             <select
               id="questaoTipoQuestao"
               onchange="renderizarCamposQuestaoCompleta(null, true)"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
             >
               <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
               <option value="MULTIPLA_4">Múltipla-escolha com 4 alternativas</option>
               <option value="CERTO_ERRADO">CERTO ou ERRADO</option>
             </select>
 
-            <div id="camposQuestaoCompleta" style="margin-top:15px;"></div>
+            <div id="camposQuestaoCompleta" style="margin-top:0.9375rem;"></div>
 
-            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
 
               <button class="btn" type="button" onclick="criarQuestaoManual()">
                 <span id="textoBotaoSalvarQuestao">Salvar questão</span>
@@ -1353,7 +1353,7 @@
 
           </div>
 
-          <div id="listaQuestoesBateria" style="margin-top:15px;">
+          <div id="listaQuestoesBateria" style="margin-top:0.9375rem;">
             Carregando questões...
           </div>
         </div>
@@ -1751,9 +1751,9 @@
 
         const alternativasHtml = (q.alternativas || []).length > 0
           ? `
-            <div style="margin-top:10px;">
+            <div style="margin-top:0.625rem;">
               ${(q.alternativas || []).map(a => `
-                <div style="margin-top:6px;">
+                <div style="margin-top:0.375rem;">
                   <b>${a.letra})</b> ${QuestaoConteudo.renderizar(a.texto, a.texto_formato, bateriaAtualId, true)}
                 </div>
               `).join("")}
@@ -1772,17 +1772,17 @@
 
             <b>Questão ${q.ordem}</b>
 
-            <div style="white-space:pre-wrap; margin-top:10px;">
+            <div style="white-space:pre-wrap; margin-top:0.625rem;">
               ${QuestaoConteudo.renderizar(q.enunciado, q.enunciado_formato, bateriaAtualId, true)}
             </div>
 
             ${alternativasHtml}
 
-            <div style="margin-top:10px;">
+            <div style="margin-top:0.625rem;">
               <b>Gabarito:</b> ${q.gabarito || "-"}
             </div>
 
-            <div style="margin-top:10px;">
+            <div style="margin-top:0.625rem;">
               <b>Comentário:</b>
 
               <div id="comentarioQuestao_${q.id}" data-aberto="false">
@@ -1791,7 +1791,7 @@
               ${longo ? `<button class="btn" type="button" id="btnComentarioQuestao_${q.id}" onclick="alternarComentarioQuestao(${q.id})">Visualizar comentário</button>` : ""}
             </div>
 
-            <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="margin-top:0.625rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
               <button
                 class="btn"
                 type="button"
@@ -1870,31 +1870,31 @@
         <textarea
           id="questaoEnunciado"
           placeholder="Enunciado"
-          style="width:100%; min-height:120px; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          style="width:100%; min-height:7.5rem; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
         ></textarea>
 
         ${
           tipo === "CERTO_ERRADO"
             ? `
-              <div style="margin-top:15px;">
-                <label style="display:block; margin-top:10px; cursor:pointer;">
+              <div style="margin-top:0.9375rem;">
+                <label style="display:block; margin-top:0.625rem; cursor:pointer;">
                   <input
                     type="radio"
                     name="gabarito_certo_errado"
                     value="C"
                     onchange="document.getElementById('questaoGabarito').value = 'C'"
-                    style="margin-right:10px;"
+                    style="margin-right:0.625rem;"
                   />
                   <b>CERTO</b>
                 </label>
 
-                <label style="display:block; margin-top:12px; cursor:pointer;">
+                <label style="display:block; margin-top:0.75rem; cursor:pointer;">
                   <input
                     type="radio"
                     name="gabarito_certo_errado"
                     value="E"
                     onchange="document.getElementById('questaoGabarito').value = 'E'"
-                    style="margin-right:10px;"
+                    style="margin-right:0.625rem;"
                   />
                   <b>ERRADO</b>
                 </label>
@@ -1917,7 +1917,7 @@
                       id="alternativa_${letra}"
                       aria-label="Alternativa ${letra}"
                       placeholder="Alternativa ${letra}"
-                      style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                      style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
                     ></textarea>
                   </div>
                 `).join("")}
@@ -1927,7 +1927,7 @@
                 <label><b>Gabarito</b></label><br/>
                 <select
                   id="questaoGabarito"
-                  style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                  style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
                 >
                   ${letras.map(letra => `
                     <option value="${letra}">${letra}</option>
@@ -1942,7 +1942,7 @@
           <textarea
             id="questaoComentario"
             placeholder="Comentário"
-            style="width:100%; min-height:140px; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            style="width:100%; min-height:8.75rem; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
           ></textarea>
         </div>
       `;
@@ -2078,16 +2078,16 @@
                 <select
                   id="questaoTipoQuestao"
                   onchange="renderizarCamposQuestaoCompleta(null, true)"
-                  style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                  style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
                 >
                   <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
                   <option value="MULTIPLA_4">Múltipla-escolha com 4 alternativas</option>
                   <option value="CERTO_ERRADO">CERTO ou ERRADO</option>
                 </select>
 
-                <div id="camposQuestaoCompleta" style="margin-top:15px;"></div>
+                <div id="camposQuestaoCompleta" style="margin-top:0.9375rem;"></div>
 
-                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
                   <button class="btn" type="button" onclick="criarQuestaoManual()">
                     <span id="textoBotaoSalvarQuestao">Salvar questão</span>
                   </button>
@@ -2134,9 +2134,9 @@
               <div
                 class="assunto"
                 id="boxBateriaConcluida"
-                style="margin-top:20px;"
+                style="margin-top:1.25rem;"
               >
-                <h3 style="margin-bottom:15px;">
+                <h3 style="margin-bottom:0.9375rem;">
                   Bateria concluída!
                 </h3>
 
@@ -2202,7 +2202,7 @@
           <div class="assunto">
             Bateria concluída.
 
-            <div style="margin-top:15px;">
+            <div style="margin-top:0.9375rem;">
               <button class="btn" type="button" onclick="voltarParaBaterias()">
                 Voltar
               </button>
@@ -2226,13 +2226,13 @@
       boxConteudoAula.innerHTML = `
         <div class="assunto">
 
-          <div style="margin-top:12px;">
+          <div style="margin-top:0.75rem;">
             <button class="btn" type="button" onclick="criarBateriaQuestoes()">
               Criar bateria de questões
             </button>
           </div>
 
-          <div id="listaBateriasAula" style="margin-top:15px;">
+          <div id="listaBateriasAula" style="margin-top:0.9375rem;">
             Carregando baterias...
           </div>
         </div>
@@ -2260,7 +2260,7 @@
         boxConteudoAula.innerHTML = `
           <div class="assunto">
 
-            <div style="margin-top:12px;">
+            <div style="margin-top:0.75rem;">
               <button
                 class="btn"
                 type="button"
@@ -2273,13 +2273,13 @@
                 class="btn"
                 type="button"
                 onclick="voltarAreaAssunto()"
-                style="margin-left:10px;"
+                style="margin-left:0.625rem;"
               >
                 Voltar
               </button>
             </div>
 
-            <div id="listaTextosTeoria" style="margin-top:20px;">
+            <div id="listaTextosTeoria" style="margin-top:1.25rem;">
               ${
                 textos.length === 0
                   ? "Nenhum texto criado ainda."
@@ -2290,7 +2290,7 @@
                           display:flex;
                           justify-content:space-between;
                           align-items:center;
-                          gap:10px;
+                          gap:0.625rem;
                           flex-wrap:wrap;
                         ">
 
@@ -2346,23 +2346,23 @@
         boxConteudoAula.innerHTML = `
           <div class="assunto">
 
-            <div style="margin-top:12px;">
+            <div style="margin-top:0.75rem;">
               <button class="btn" type="button" onclick="novoResumoVideo()">
                 Novo vídeo
               </button>
 
-              <button class="btn" type="button" onclick="voltarAreaAssunto()" style="margin-left:10px;">
+              <button class="btn" type="button" onclick="voltarAreaAssunto()" style="margin-left:0.625rem;">
                 Voltar
               </button>
             </div>
 
-            <div id="listaVideosAula" style="margin-top:20px;">
+            <div id="listaVideosAula" style="margin-top:1.25rem;">
               ${
                 !videos || videos.length === 0
                   ? "Nenhum vídeo criado ainda."
                   : videos.map(v => `
                       <div class="assunto">
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.625rem; flex-wrap:wrap;">
                           <div>
                             <b>${v.titulo || "Vídeo sem título"}</b><br/>
 
@@ -2413,7 +2413,7 @@
       boxConteudoAula.innerHTML = `
         <div class="assunto">
 
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
             <button class="btn" type="button" onclick="criarBateriaQuestoes()">
               Criar bateria de questões
             </button>
@@ -2423,7 +2423,7 @@
             </button>
           </div>
 
-          <div id="listaBateriasAula" style="margin-top:15px;">
+          <div id="listaBateriasAula" style="margin-top:0.9375rem;">
             Nenhuma bateria carregada.
           </div>
         </div>
@@ -2477,10 +2477,10 @@
             placeholder="Título do texto"
             style="
               width:100%;
-              padding:12px;
-              border:1px solid #ddd;
-              border-radius:6px;
-              margin-bottom:12px;
+              padding:0.75rem;
+              border:0.0625rem solid #ddd;
+              border-radius:0.375rem;
+              margin-bottom:0.75rem;
             "
           />
 
@@ -2489,19 +2489,19 @@
             placeholder="Digite a teoria..."
             style="
               width:100%;
-              min-height:260px;
-              padding:12px;
-              border:1px solid #ddd;
-              border-radius:6px;
+              min-height:16.25rem;
+              padding:0.75rem;
+              border:0.0625rem solid #ddd;
+              border-radius:0.375rem;
             "
           ></textarea>
 
-          <div id="avisoEditorTeoria" role="status" style="margin-top:6px;"></div>
+          <div id="avisoEditorTeoria" role="status" style="margin-top:0.375rem;"></div>
 
           <div style="
-            margin-top:15px;
+            margin-top:0.9375rem;
             display:flex;
-            gap:10px;
+            gap:0.625rem;
             flex-wrap:wrap;
           ">
 
@@ -2610,10 +2610,10 @@
               type="text"
               style="
                 width:100%;
-                padding:12px;
-                border:1px solid #ddd;
-                border-radius:6px;
-                margin-bottom:12px;
+                padding:0.75rem;
+                border:0.0625rem solid #ddd;
+                border-radius:0.375rem;
+                margin-bottom:0.75rem;
               "
             />
 
@@ -2621,23 +2621,23 @@
               id="textoTeoriaAula"
               style="
                 width:100%;
-                min-height:260px;
-                padding:12px;
-                border:1px solid #ddd;
-                border-radius:6px;
+                min-height:16.25rem;
+                padding:0.75rem;
+                border:0.0625rem solid #ddd;
+                border-radius:0.375rem;
               "
             ></textarea>
 
-            <div id="avisoEditorTeoria" role="status" style="margin-top:6px;"></div>
+            <div id="avisoEditorTeoria" role="status" style="margin-top:0.375rem;"></div>
             ${material.conteudo_formato === "html_v1" ? "" : `
               <button class="btn" type="button" onclick="converterTextoLegadoParaHtml()">
                 Converter explicitamente para editor visual
               </button>`}
 
             <div style="
-              margin-top:15px;
+              margin-top:0.9375rem;
               display:flex;
-              gap:10px;
+              gap:0.625rem;
               flex-wrap:wrap;
             ">
 
@@ -2772,17 +2772,17 @@
             id="tituloVideoAula"
             type="text"
             placeholder="Título do vídeo"
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+            style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin-bottom:0.75rem;"
           />
 
-          <label for="provedorVideoAula" style="display:block; margin-bottom:6px;">
+          <label for="provedorVideoAula" style="display:block; margin-bottom:0.375rem;">
             Provedor do vídeo
           </label>
 
           <select
             id="provedorVideoAula"
             onchange="alternarCamposVideo()"
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+            style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin-bottom:0.75rem;"
           >
             <option value="YOUTUBE">YouTube</option>
             <option value="CLOUDFLARE">Cloudflare Stream</option>
@@ -2793,7 +2793,7 @@
               id="urlVideoAula"
               type="text"
               placeholder="URL do vídeo do YouTube"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
             />
           </div>
 
@@ -2802,11 +2802,11 @@
               id="uidCloudflareVideoAula"
               type="text"
               placeholder="UID do vídeo no Cloudflare Stream"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
             />
           </div>
 
-          <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="margin-top:0.9375rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
             <button class="btn" type="button" onclick="salvarNovoResumoVideo()">
               Concluir vídeo
             </button>
@@ -2905,17 +2905,17 @@
             <input
               id="tituloVideoAula"
               type="text"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin-bottom:0.75rem;"
             />
 
-            <label for="provedorVideoAula" style="display:block; margin-bottom:6px;">
+            <label for="provedorVideoAula" style="display:block; margin-bottom:0.375rem;">
               Provedor do vídeo
             </label>
 
             <select
               id="provedorVideoAula"
               onchange="alternarCamposVideo()"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; margin-bottom:12px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem; margin-bottom:0.75rem;"
             >
               <option value="YOUTUBE">YouTube</option>
               <option value="CLOUDFLARE">Cloudflare Stream</option>
@@ -2926,7 +2926,7 @@
                 id="urlVideoAula"
                 type="text"
                 placeholder="URL do vídeo do YouTube"
-                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
               />
             </div>
 
@@ -2935,11 +2935,11 @@
                 id="uidCloudflareVideoAula"
                 type="text"
                 placeholder="UID do vídeo no Cloudflare Stream"
-                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
               />
             </div>
 
-            <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="margin-top:0.9375rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
               <button
                 class="btn"
                 type="button"
@@ -3345,16 +3345,16 @@
         <select
           id="questaoTipoQuestao"
           onchange="renderizarCamposQuestaoCompleta(null, true)"
-          style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
         >
           <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
           <option value="MULTIPLA_4">Múltipla-escolha com 4 alternativas</option>
           <option value="CERTO_ERRADO">CERTO ou ERRADO</option>
         </select>
 
-        <div id="camposQuestaoCompleta" style="margin-top:15px;"></div>
+        <div id="camposQuestaoCompleta" style="margin-top:0.9375rem;"></div>
 
-        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
           <button class="btn" type="button" onclick="criarQuestaoManual()">
             <span id="textoBotaoSalvarQuestao">Salvar edição</span>
           </button>
@@ -3411,16 +3411,16 @@
             <select
               id="questaoTipoQuestao"
               onchange="renderizarCamposQuestaoCompleta(null, true)"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
             >
               <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
               <option value="MULTIPLA_4">Múltipla-escolha com 4 alternativas</option>
               <option value="CERTO_ERRADO">CERTO ou ERRADO</option>
             </select>
 
-            <div id="camposQuestaoCompleta" style="margin-top:15px;"></div>
+            <div id="camposQuestaoCompleta" style="margin-top:0.9375rem;"></div>
 
-            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
               <button class="btn" type="button" onclick="criarQuestaoManual()">
                 <span id="textoBotaoSalvarQuestao">Salvar questão</span>
               </button>
@@ -3495,16 +3495,16 @@
         <select
           id="questaoTipoQuestao"
           onchange="renderizarCamposQuestaoCompleta(null, true)"
-          style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
         >
           <option value="MULTIPLA_5">Múltipla-escolha com 5 alternativas</option>
           <option value="MULTIPLA_4">Múltipla-escolha com 4 alternativas</option>
           <option value="CERTO_ERRADO">CERTO ou ERRADO</option>
         </select>
 
-        <div id="camposQuestaoCompleta" style="margin-top:15px;"></div>
+        <div id="camposQuestaoCompleta" style="margin-top:0.9375rem;"></div>
 
-        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
           <button class="btn" type="button" onclick="criarQuestaoManual()">
             <span id="textoBotaoSalvarQuestao">Salvar questão</span>
           </button>

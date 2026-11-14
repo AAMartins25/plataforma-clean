@@ -27,7 +27,7 @@
   function controlesPix(r) {
     if (r.status !== "REFUND_IN_PROCESS") return "";
     if (!r.reembolso_id) return `
-      <form onsubmit="registrarPixManual(event, ${Number(r.pagamento_id)}); return false;" style="margin-top:12px;">
+      <form onsubmit="registrarPixManual(event, ${Number(r.pagamento_id)}); return false;" style="margin-top:0.75rem;">
         <p>Registro de transferência já realizada. Este formulário não transfere dinheiro. Registre somente após realizar a transferência externa. O registro ainda não confirma a devolução.</p>
         <label>Valor devolvido (R$)
           <input name="valor" required inputmode="decimal" value="${(Number(r.valor_cents) / 100).toFixed(2).replace('.', ',')}" />
@@ -38,7 +38,7 @@
         <button class="btn" type="submit">Registrar Pix manual</button>
       </form>`;
     if (r.reembolso_metodo === "PIX_MANUAL" && r.reembolso_status === "PENDENTE") return `
-      <form onsubmit="confirmarPixManual(event, ${Number(r.reembolso_id)}); return false;" style="margin-top:12px;">
+      <form onsubmit="confirmarPixManual(event, ${Number(r.reembolso_id)}); return false;" style="margin-top:0.75rem;">
         <p>A confirmação poderá encerrar o acesso correspondente a esta compra. Outros direitos de acesso válidos serão preservados.</p>
         <label><input name="extrato" type="checkbox" required /> Conferi o extrato e confirmei a efetiva devolução.</label>
         <button class="btn" type="submit">Confirmar devolução</button>
@@ -112,7 +112,7 @@
         ${
           podeDecidir
             ? `
-              <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+              <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
                 <button class="btn" onclick="aprovarReembolso(${r.pagamento_id})">
                   Aprovar reembolso
                 </button>
@@ -183,7 +183,7 @@
       );
 
       lista.innerHTML = `
-        <div style="margin-bottom:30px;">
+        <div style="margin-bottom:1.875rem;">
           <h3>Pendentes de análise</h3>
           ${
             pendentes.length === 0
@@ -192,7 +192,7 @@
           }
         </div>
 
-        <div style="margin-bottom:30px;">
+        <div style="margin-bottom:1.875rem;">
           <h3>Aprovados — aguardando devolução financeira</h3>
           ${
             emProcessamento.length === 0
@@ -201,7 +201,7 @@
           }
         </div>
 
-        <div style="margin-bottom:30px;">
+        <div style="margin-bottom:1.875rem;">
           <h3>Reembolsos concluídos</h3>
           ${
             concluidos.length === 0
@@ -210,7 +210,7 @@
           }
         </div>
 
-        <div style="margin-bottom:30px;">
+        <div style="margin-bottom:1.875rem;">
           <h3>Solicitações recusadas</h3>
           ${
             recusados.length === 0

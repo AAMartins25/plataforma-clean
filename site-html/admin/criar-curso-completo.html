@@ -25,14 +25,14 @@
 
   <header
     style="
-      padding-top:8px;
-      padding-bottom:24px;
+      padding-top:0.5rem;
+      padding-bottom:1.5rem;
       position:relative;
     "
   >
     <div
       style="
-        margin-top:32px;
+        margin-top:2rem;
         display:flex;
         justify-content:center;
         align-items:center;
@@ -40,7 +40,7 @@
     >
       <h1 class="admin-titulo-destaque"
         style="
-          margin:-6px 0 0 0;
+          margin:-0.375rem 0 0 0;
           text-align:center;
         "
       >
@@ -51,10 +51,10 @@
     <nav
       style="
         position:absolute;
-        right:24px;
-        top:22px;
+        right:1.5rem;
+        top:1.375rem;
         display:flex;
-        gap:10px;
+        gap:0.625rem;
         align-items:center;
       "
     >
@@ -101,7 +101,7 @@
             required maxlength="255"
             type="text"
             placeholder="Ex.: RESUMÃO PROF EDUC INFANTIL ALVORADA-RS 2026"
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
           />
         </div>
 
@@ -162,7 +162,7 @@
 
       </form>
 
-      <div class="assunto" style="margin-top:20px;">
+      <div class="assunto" style="margin-top:1.25rem;">
         <h3 class="admin-titulo-secao">Selecionar curso existente</h3>
         <div class="curso-campos" id="cursoFiltros" aria-label="Filtros de cursos">
         <div>
@@ -213,12 +213,12 @@
 
         <select
           id="cursoExistenteSelect"
-          style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+          style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
         >
           <option value="">Carregando cursos...</option>
         </select>
 
-        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="margin-top:0.75rem; display:flex; gap:0.625rem; flex-wrap:wrap;">
 
           <button class="btn" id="btnUsarCursoExistente" type="button">
             Usar curso selecionado
@@ -256,7 +256,7 @@
 
         </div>
 
-        <div id="msgCurso" role="status" style="margin-top:10px;"></div>
+        <div id="msgCurso" role="status" style="margin-top:0.625rem;"></div>
         <form id="formEditarCurso" hidden class="assunto">
           <h3 class="admin-titulo-secao">Editar curso</h3>
           <label for="editar-nome">Nome do curso</label>
@@ -317,40 +317,40 @@
           <p id="erroEditarCurso" role="alert"></p>
         </form>
 
-        <div id="boxConfigPublicaCurso" class="assunto" style="display:none; margin-top:20px;">
+        <div id="boxConfigPublicaCurso" class="assunto" style="display:none; margin-top:1.25rem;">
           <h3 class="admin-titulo-secao">Descrição pública e valores de acesso</h3>
 
           <textarea
             id="cursoDescricaoPublica"
             aria-label="Descrição pública e valores de acesso"
             placeholder="Descreva como funciona o curso, professor, cargo, remuneração, prova etc."
-            style="width:100%; min-height:130px; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            style="width:100%; min-height:8.125rem; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
           ></textarea>
 
-          <div style="margin-top:16px;">
+          <div style="margin-top:1rem;">
             <label><b>4 meses</b></label><br/>
             <input id="valor4Meses" type="text" placeholder="Ex.: 149,90"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;" />
           </div>
 
-          <div style="margin-top:12px;">
+          <div style="margin-top:0.75rem;">
             <label><b>8 meses</b></label><br/>
             <input id="valor8Meses" type="text" placeholder="Ex.: 229,90"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;" />
           </div>
 
-          <div style="margin-top:12px;">
+          <div style="margin-top:0.75rem;">
             <label><b>12 meses</b></label><br/>
             <input id="valor12Meses" type="text" placeholder="Ex.: 299,90"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" />
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;" />
           </div>
 
           <div style="
-            margin-top:14px;
+            margin-top:0.875rem;
             display:flex;
             justify-content:space-between;
             align-items:flex-start;
-            gap:12px;
+            gap:0.75rem;
           ">
 
             <button
@@ -379,8 +379,8 @@
               <div
                 id="msgConfigPublicaCurso"
                 style="
-                  margin-top:8px;
-                  min-height:18px;
+                  margin-top:0.5rem;
+                  min-height:1.125rem;
                   font-size:.90rem;
                   font-weight:bold;
                   color:#2f5e46;
@@ -409,7 +409,7 @@
         
         <div
           id="listaDisciplinasCurso"
-          style="margin-top:15px;"
+          style="margin-top:0.9375rem;"
         >
         </div>
 
@@ -419,9 +419,9 @@
             id="disciplinaNome"
             type="text"
             placeholder="Ex.: Língua Portuguesa"
-            style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+            style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
           />
-          <div style="margin-top:12px;">
+          <div style="margin-top:0.75rem;">
             <button class="btn" id="btnAdicionarDisciplina">
               Adicionar disciplina
             </button>
@@ -439,21 +439,21 @@
 
       <div id="boxConteudo" style="display:none;">
 
-        <div id="areaAssuntos" style="display:none; margin-top:20px;">
+        <div id="areaAssuntos" style="display:none; margin-top:1.25rem;">
           <h3 class="admin-titulo-secao" id="tituloDisciplinaSelecionada">Disciplina selecionada</h3>
 
-          <div id="listaAssuntos" style="margin-top:15px;">
+          <div id="listaAssuntos" style="margin-top:0.9375rem;">
             Nenhum assunto carregado.
           </div>
 
           <div
             id="boxCopiarAssunto"
             class="assunto"
-            style="display:none; margin-top:15px;"
+            style="display:none; margin-top:0.9375rem;"
           >
             <h3 class="admin-titulo-secao">Copiar assunto para outra disciplina</h3>
 
-            <div style="margin-top:12px;">
+            <div style="margin-top:0.75rem;">
               <label>
                 <b>Curso de destino</b>
               </label>
@@ -462,10 +462,10 @@
                 id="cursoDestinoAssuntoSelect"
                 style="
                   width:100%;
-                  padding:12px;
-                  border:1px solid #ddd;
-                  border-radius:6px;
-                  margin-top:6px;
+                  padding:0.75rem;
+                  border:0.0625rem solid #ddd;
+                  border-radius:0.375rem;
+                  margin-top:0.375rem;
                 "
               >
                 <option value="">
@@ -474,7 +474,7 @@
               </select>
             </div>
 
-            <div style="margin-top:12px;">
+            <div style="margin-top:0.75rem;">
               <label>
                 <b>Disciplina de destino</b>
               </label>
@@ -484,10 +484,10 @@
                 disabled
                 style="
                   width:100%;
-                  padding:12px;
-                  border:1px solid #ddd;
-                  border-radius:6px;
-                  margin-top:6px;
+                  padding:0.75rem;
+                  border:0.0625rem solid #ddd;
+                  border-radius:0.375rem;
+                  margin-top:0.375rem;
                 "
               >
                 <option value="">
@@ -498,9 +498,9 @@
 
             <div
               style="
-                margin-top:15px;
+                margin-top:0.9375rem;
                 display:flex;
-                gap:10px;
+                gap:0.625rem;
                 flex-wrap:wrap;
               "
             >
@@ -523,7 +523,7 @@
 
             <div
               id="msgCopiarAssunto"
-              style="margin-top:10px;"
+              style="margin-top:0.625rem;"
             ></div>
           </div>
           
@@ -533,17 +533,17 @@
               id="assuntoNome"
               type="text"
               placeholder="Ex.: Interpretação de textos"
-              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+              style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
             />
 
-            <div style="margin-top:12px;">
+            <div style="margin-top:0.75rem;">
               <button class="btn" id="btnAdicionarAssunto" type="button">
                 Adicionar assunto
               </button>
             </div>
           </div>
 
-          <div id="areaAulas" style="display:none; margin-top:25px;">
+          <div id="areaAulas" style="display:none; margin-top:1.5625rem;">
 
             <h3 class="admin-titulo-secao" id="tituloAreaAulas">Área do assunto</h3>
 
@@ -553,27 +553,27 @@
                 id="aulaTitulo"
                 type="text"
                 placeholder="Ex.: Aula 1 — Introdução"
-                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"
+                style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"
               />
 
-              <div style="margin-top:12px;">
+              <div style="margin-top:0.75rem;">
                 <button class="btn" id="btnAdicionarAula" type="button">
                   Adicionar aula
                 </button>
               </div>
             </div>
 
-            <div id="listaAulas" style="margin-top:15px;">
+            <div id="listaAulas" style="margin-top:0.9375rem;">
               Nenhuma aula carregada.
             </div>
 
-            <div id="areaConteudoAula" style="display:none; margin-top:25px;">
+            <div id="areaConteudoAula" style="display:none; margin-top:1.5625rem;">
 
               <h3 class="admin-titulo-secao">Conteúdo</h3>
 
               <div class="assunto">
 
-                <div id="boxConteudoAula" style="margin-top:15px;"></div>
+                <div id="boxConteudoAula" style="margin-top:0.9375rem;"></div>
               </div>
 
             </div>

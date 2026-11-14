@@ -35,7 +35,7 @@
 
   function montarAreaHistorico() {
     return `
-      <div class="assunto" style="margin-top:16px;">
+      <div class="assunto" style="margin-top:1rem;">
         <button
           class="btn reembolso-btn-solicitados"
           type="button"
@@ -47,7 +47,7 @@
         <div
           id="historicoReembolsos"
           class="list"
-          style="display:none; margin-top:14px;"
+          style="display:none; margin-top:0.875rem;"
         ></div>
       </div>
     `;
@@ -112,10 +112,10 @@
 
           return `
             <div class="assunto">
-              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+              <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;flex-wrap:wrap;">
                 <div>
                   ${tipo === "mais_recente"
-                    ? `<div style="margin-bottom:8px;">
+                    ? `<div style="margin-bottom:0.5rem;">
                         Sua compra mais recente foi:
                     </div>`
                     : ""
@@ -131,7 +131,7 @@
                 ${botaoCancelar}
               </div>
 
-              <div id="confirmacao_${c.pagamento_id}" style="margin-top:10px;"></div>
+              <div id="confirmacao_${c.pagamento_id}" style="margin-top:0.625rem;"></div>
             </div>
           `;
         }).join("");
@@ -145,7 +145,7 @@
       lista.innerHTML = `
         <div class="assunto">
           <b>Erro ao carregar compras para reembolso.</b><br/>
-          <pre style="white-space:pre-wrap; margin-top:8px;">${err.message}</pre>
+          <pre style="white-space:pre-wrap; margin-top:0.5rem;">${err.message}</pre>
         </div>
       `;
       console.error(err);
@@ -156,7 +156,7 @@
     const box = document.getElementById(`confirmacao_${pagamentoId}`);
 
     box.innerHTML = `
-      <div style="margin-top:10px;">
+      <div style="margin-top:0.625rem;">
         <p>Confirmar cancelamento de <b>${nomeCurso}</b>?</p>
 
         <button class="btn" onclick="executarCancelamento(${pagamentoId})">

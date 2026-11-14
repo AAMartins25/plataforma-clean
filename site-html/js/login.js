@@ -5,17 +5,17 @@
 
   function show(text, ok = false) {
     msg.textContent = text;
-    msg.style.padding = "10px";
-    msg.style.borderRadius = "6px";
-    msg.style.border = "1px solid #ddd";
+    msg.style.padding = "0.625rem";
+    msg.style.borderRadius = "0.375rem";
+    msg.style.border = "0.0625rem solid #ddd";
     msg.style.background = ok ? "#e7f7ee" : "#fde8e8";
   }
 
   function showErroLogin(text) {
     msg.textContent = "";
-    msg.style.padding = "10px";
-    msg.style.borderRadius = "6px";
-    msg.style.border = "1px solid #ddd";
+    msg.style.padding = "0.625rem";
+    msg.style.borderRadius = "0.375rem";
+    msg.style.border = "0.0625rem solid #ddd";
     msg.style.background = "#fde8e8";
 
     const trechoNegrito =

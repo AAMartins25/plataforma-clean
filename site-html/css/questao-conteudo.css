@@ -2,7 +2,7 @@
 .questao-conteudo-rico { white-space: normal; min-width: 0; max-width: 100%; overflow-wrap: anywhere; font-weight: normal; }
 .questao-texto-legado { white-space: pre-wrap; overflow-wrap: anywhere; }
 .questao-editor-aviso { overflow-wrap: anywhere; }
-#camposQuestaoCompleta .ck-editor__editable_inline { min-height: 100px; }
+#camposQuestaoCompleta .ck-editor__editable_inline { min-height: 6.25rem; }
 #camposQuestaoCompleta .ck-editor { min-width: 0; max-width: 100%; }
 .questao-conteudo-rico img { max-width: 100%; height: auto; }
 /* A página também contém o editor compacto da descrição do curso. */
@@ -13,13 +13,13 @@
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   align-items: start;
-  column-gap: 7px;
+  column-gap: 0.4375rem;
 }
 .questao-alternativa-selecionavel {
   grid-template-columns: max-content max-content minmax(0, 1fr);
 }
 .questao-alternativa > input[type="radio"] {
-  margin: 0.25em 5px 0 0;
+  margin: 0.25em 0.3125rem 0 0;
 }
 .questao-alternativa > b {
   margin: 0;

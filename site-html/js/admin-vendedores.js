@@ -917,7 +917,7 @@ function cnpjValido(cnpj) {
                   display:flex;
                   justify-content:space-between;
                   align-items:center;
-                  gap:12px;
+                  gap:0.75rem;
                   flex-wrap:wrap;
                 "
               >
@@ -959,7 +959,7 @@ function cnpjValido(cnpj) {
                 <div
                   style="
                     display:flex;
-                    gap:8px;
+                    gap:0.5rem;
                     flex-wrap:wrap;
                   "
                 >

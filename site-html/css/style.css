@@ -1,3 +1,24 @@
+/* Densidade da interface: reflow normal e respeito ao tamanho de fonte do navegador.
+   Celular: 100%; tablet: 95%; desktop: 90%. Breakpoints continuam em pixels.
+   Dimensões visuais próprias usam rem; conteúdo e bibliotecas não são reescritos. */
+html { --ro-ui-scale: 1; font-size: calc(100% * var(--ro-ui-scale)); }
+@media (min-width: 768px) { html { --ro-ui-scale: 0.95; } }
+@media (min-width: 1024px) { html { --ro-ui-scale: 0.9; } }
+@media print { html { --ro-ui-scale: 1; font-size: 100%; } }
+/* Os controles nativos têm 13 1/3 px por padrão; acompanham a mesma proporção. */
+button, input, select, textarea { font-size: 0.833333rem; }
+/* Tokens públicos do CKEditor, sem modificar seu CSS ou sua geometria interna. */
+html:root {
+  --ck-font-size-base: 1rem;
+  --ck-content-font-size: 1rem;
+  --ck-spacing-unit: 0.5rem;
+  --ck-radius-unit: 0.5rem;
+  --ck-icon-size: 1.25rem;
+  --ck-button-standard-min-width: 3.75rem;
+  --ck-button-small-min-width: 2.5rem;
+}
+
+
 /* RESET */
 * {
   margin: 0;
@@ -26,45 +47,45 @@ body {
 header {
   background-color: var(--amarelo);
   color: var(--azul);
-  padding: 20px 20px;
+  padding: 1.25rem 1.25rem;
   text-align: center;
 }
 
 /* TÍTULOS */
 h1, h2 {
-  margin-bottom: 15px;
+  margin-bottom: 0.9375rem;
 }
 
 /* CONTAINER */
 .container {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 0 15px;
+  max-width: 56.25rem;
+  margin: 1.875rem auto;
+  padding: 0 0.9375rem;
 }
 
 /* CARD */
 .card {
   background-color: #ffffff;
-  border-top: 6px solid var(--amarelo);
-  border-radius: 8px;
-  padding: 18px 25px 25px 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+  border-top: 0.375rem solid var(--amarelo);
+  border-radius: 0.5rem;
+  padding: 1.125rem 1.5625rem 1.5625rem 1.5625rem;
+  margin-bottom: 1.5625rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.06);
 }
 
 /* LISTAS */
 .list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.9375rem;
 }
 
 /* ITENS */
 .disciplina,
 .assunto {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 0.9375rem;
+  border: 0.0625rem solid #ddd;
+  border-radius: 0.375rem;
   background-color: #ffffff;
 }
 
@@ -83,11 +104,11 @@ a:hover {
 /* LINKS COM CARA DE BOTÃO */
 .btn {
   display: inline-block;
-  margin-top: 15px;
+  margin-top: 0.9375rem;
   background-color: var(--amarelo);
   color: var(--azul);
-  padding: 12px 20px;
-  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.375rem;
   font-weight: bold;
   text-align: center;
 }
@@ -107,8 +128,8 @@ a:hover {
 /* FOOTER */
 footer {
   text-align: center;
-  margin-top: 40px;
-  padding: 15px;
+  margin-top: 2.5rem;
+  padding: 0.9375rem;
   font-size: 0.9em;
   color: var(--marrom);
 }
@@ -116,28 +137,28 @@ footer {
 /* BLOCO DE VÍDEO */
 .video-box {
   background-color: #000;
-  height: 260px;
+  height: 16.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-size: 1.1em;
 }
 
 /* SEÇÃO DA AULA */
 .aula-info p {
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 }
 
 /* LISTA DA SPRINT */
 .sprint-list {
-  margin-left: 20px;
-  margin-top: 10px;
+  margin-left: 1.25rem;
+  margin-top: 0.625rem;
 }
 
 .sprint-list li {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 /* ===== Cursos públicos - layout em linha ===== */
@@ -147,11 +168,11 @@ footer {
   justify-content: space-between;
   align-items: center;
 
-  padding: 12px 16px;
-  margin-bottom: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.625rem;
 
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 0.0625rem solid #ddd;
+  border-radius: 0.5rem;
   background: #fff;
 }
 
@@ -162,35 +183,35 @@ footer {
 
 /* Garante que TODOS os botões fiquem alinhados */
 .curso-linha .btn {
-  min-width: 110px;
+  min-width: 6.875rem;
   text-align: center;
 }
 
 /* Estilo de aula ativa */ 
 .disciplina.ativa {
-  border: 2px solid #6B4F3F;
+  border: 0.125rem solid #6B4F3F;
   background-color: #f9f5f2;
 }
 
 .barra-progresso {
   width: 100%;
-  height: 6px;
+  height: 0.375rem;
   background: #eee;
-  border-radius: 999px;
+  border-radius: 62.4375rem;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 0.625rem;
 }
 
 .barra-progresso-preenchida {
   height: 100%;
   background: #66bb6a;
-  border-radius: 999px;
+  border-radius: 62.4375rem;
   transition: width 0.3s ease;
 }
 
 /* Aula concluída */
 .disciplina.concluida {
-  border-left: 6px solid #2e7d32;
+  border-left: 0.375rem solid #2e7d32;
   background-color: #f0fff4;
 }
 
@@ -200,9 +221,9 @@ footer {
 }
 
 .status-aula {
-  margin-top: 10px;
+  margin-top: 0.625rem;
   display: flex;
-  gap: 16px;
+  gap: 1rem;
   flex-wrap: wrap;
   font-size: 0.8rem;
   opacity: 0.85;
@@ -212,18 +233,18 @@ footer {
 .status-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.3125rem;
 }
 
 .status-box {
-  width: 14px;   /* 🔽 menor */
-  height: 14px;  /* 🔽 menor */
-  border: 1px solid #ccc; /* 🔽 contorno discreto (padrão) */
-  border-radius: 3px;
+  width: 0.875rem;   /* 🔽 menor */
+  height: 0.875rem;  /* 🔽 menor */
+  border: 0.0625rem solid #ccc; /* 🔽 contorno discreto (padrão) */
+  border-radius: 0.1875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px; /* 🔽 check menor */
+  font-size: 0.625rem; /* 🔽 check menor */
   font-weight: bold;
 }
 
@@ -249,7 +270,7 @@ footer {
 .filtros-aulas {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
@@ -261,18 +282,18 @@ footer {
 }
 
 .revisao-atrasada {
-  border-left: 6px solid #c62828;
+  border-left: 0.375rem solid #c62828;
   background-color: #fff5f5;
 }
 
 .revisao-hoje {
-  border-left: 6px solid #f9a825;
+  border-left: 0.375rem solid #f9a825;
   background-color: #fffde7;
 }
 
 .status-revisao {
   display: inline-block;
-  margin-top: 6px;
+  margin-top: 0.375rem;
   font-size: 0.85rem;
   font-weight: bold;
 }
@@ -284,15 +305,15 @@ footer {
 }
 
 .alerta-revisoes h3 {
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 }
 
 .btn-area{
   background:#3a7849;
   color:white;
   border:none;
-  padding:2px 11px;
-  border-radius:8px;
+  padding:0.125rem 0.6875rem;
+  border-radius:0.5rem;
   cursor:pointer;
   font-weight:600;
   transition:0.1s;
@@ -328,9 +349,9 @@ footer {
 /* CONTEÚDO PRINCIPAL */
 
 .home-page .container {
-  max-width: 920px;
-  margin-top: 23px;
-  margin-bottom: 44px;
+  max-width: 57.5rem;
+  margin-top: 1.4375rem;
+  margin-bottom: 2.75rem;
 }
 
 
@@ -339,20 +360,20 @@ footer {
 .home-page .card {
   position: relative;
 
-  border-top: 4px solid var(--amarelo);
+  border-top: 0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
-  padding: 22px 26px 27px;
+  padding: 1.375rem 1.625rem 1.6875rem;
 
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 
-  border-left: 1px solid rgba(31, 78, 121, 0.05);
-  border-right: 1px solid rgba(31, 78, 121, 0.05);
-  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+  border-left: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-right: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-bottom: 0.0625rem solid rgba(31, 78, 121, 0.05);
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 
   transition:
     transform 0.18s ease,
@@ -365,7 +386,7 @@ footer {
 
 .home-page .card:hover {
   box-shadow:
-    0 8px 24px rgba(31, 78, 121, 0.09);
+    0 0.5rem 1.5rem rgba(31, 78, 121, 0.09);
 }
 
 
@@ -376,7 +397,7 @@ footer {
   line-height: 1.35;
   letter-spacing: -0.01em;
 
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 
@@ -386,7 +407,7 @@ footer {
   border-color:
     rgba(31, 78, 121, 0.14);
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background:
     #ffffff;
@@ -396,10 +417,10 @@ footer {
 /* BOTÕES */
 
 .home-page .btn {
-  border: 1px solid
+  border: 0.0625rem solid
     rgba(31, 78, 121, 0.12);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   transition:
     transform 0.15s ease,
@@ -407,7 +428,7 @@ footer {
     background-color 0.15s ease;
 
   box-shadow:
-    0 1px 2px rgba(31, 78, 121, 0.04);
+    0 0.0625rem 0.125rem rgba(31, 78, 121, 0.04);
 }
 
 
@@ -418,10 +439,10 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.10);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.10);
 }
 
 
@@ -432,7 +453,7 @@ footer {
 .home-page select {
   font-family: inherit;
 
-  border-radius: 7px !important;
+  border-radius: 0.4375rem !important;
 
   transition:
     border-color 0.15s ease,
@@ -449,7 +470,7 @@ footer {
     rgba(31, 78, 121, 0.55) !important;
 
   box-shadow:
-    0 0 0 3px
+    0 0 0 0.1875rem
     rgba(31, 78, 121, 0.08);
 }
 
@@ -468,7 +489,7 @@ footer {
 .home-page .home-header {
   position: relative;
 
-  padding: 24px 24px 12px;
+  padding: 1.5rem 1.5rem 0.75rem;
 
   background:
     linear-gradient(
@@ -478,7 +499,7 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
@@ -505,7 +526,7 @@ footer {
 
 
 .home-page .home-brand-subtitle {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   color: #697b63;
 
@@ -522,9 +543,9 @@ footer {
 .home-page .home-nav {
   position: relative;
 
-  min-height: 44px;
+  min-height: 2.75rem;
 
-  margin-top: 10px;
+  margin-top: 0.625rem;
 }
 
 
@@ -544,7 +565,7 @@ footer {
 
   display: flex;
 
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 
@@ -557,21 +578,21 @@ footer {
 
   justify-content: center;
 
-  width: 38px;
+  width: 2.375rem;
 
-  height: 38px;
+  height: 2.375rem;
 
   margin-top: 0;
 
   padding: 0;
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   background:
     rgba(255, 255, 255, 0.28);
 
   border:
-    1px solid rgba(31, 78, 121, 0.10);
+    0.0625rem solid rgba(31, 78, 121, 0.10);
 
   box-shadow: none;
 
@@ -579,7 +600,7 @@ footer {
 
   font-weight: normal;
 
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(0.1875rem);
 }
 
 
@@ -588,10 +609,10 @@ footer {
     rgba(255, 255, 255, 0.55);
 
   transform:
-    translateY(-1px);
+    translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.08);
 }
 
@@ -650,19 +671,19 @@ footer {
 .home-page .curso-linha .btn {
   min-width: 0;
 
-  padding: 9px 14px;
+  padding: 0.5625rem 0.875rem;
 
   background: #ffffff;
 
   border:
-    1px solid rgba(31, 78, 121, 0.18);
+    0.0625rem solid rgba(31, 78, 121, 0.18);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   color: var(--azul);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 }
 
 
@@ -672,7 +693,7 @@ footer {
   border-color:
     rgba(31, 78, 121, 0.16);
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
 /* =========================================================
@@ -682,9 +703,9 @@ footer {
 
 .home-page #lista-cursos-publicos {
   display: grid;
-  grid-template-columns: minmax(0, 560px);
+  grid-template-columns: minmax(0, 35rem);
   justify-content: center;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .home-page #lista-cursos-publicos .curso-publico-card {
@@ -703,27 +724,27 @@ footer {
 
   justify-content: space-between;
 
-  gap: 14px;
+  gap: 0.875rem;
 
-  min-width: 250px;
+  min-width: 15.625rem;
 
-  padding: 12px 14px;
+  padding: 0.75rem 0.875rem;
 
   margin: 0;
 
   background: #ffffff;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   color: var(--azul);
 
   text-decoration: none;
 
   box-shadow:
-    0 2px 8px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.5rem rgba(31, 78, 121, 0.05);
 
   transition:
     transform 0.15s ease,
@@ -740,10 +761,10 @@ footer {
   border-color:
     rgba(31, 78, 121, 0.28);
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 5px 14px rgba(31, 78, 121, 0.09);
+    0 0.3125rem 0.875rem rgba(31, 78, 121, 0.09);
 }
 
 
@@ -761,7 +782,7 @@ footer {
    ========================================================= */
 
 .home-page .home-curso-nao-encontrado {
-  padding: 10px 16px;
+  padding: 0.625rem 1rem;
 
   background:
     linear-gradient(
@@ -771,14 +792,14 @@ footer {
     );
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 }
 
 
 .home-page .home-curso-nao-encontrado h3 {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 
   font-size: 1rem;
 
@@ -787,13 +808,13 @@ footer {
 
 
 .home-page .home-curso-nao-encontrado p {
-  margin-top: 6px !important;
+  margin-top: 0.375rem !important;
 }
 
 .home-page .home-curso-nao-encontrado strong {
   display: inline-block;
 
-  margin-top: 4px;
+  margin-top: 0.25rem;
 
   font-weight: 650;
 
@@ -802,7 +823,7 @@ footer {
 }
 
 .home-page .home-curso-nao-encontrado strong:hover {
-  transform: translateX(2px);
+  transform: translateX(0.125rem);
 }
 
 /* =========================================================
@@ -811,7 +832,7 @@ footer {
    ========================================================= */
 
 .home-page .home-video-placeholder {
-  height: 180px;
+  height: 11.25rem;
 
   display: flex;
   flex-direction: column;
@@ -819,7 +840,7 @@ footer {
   align-items: center;
   justify-content: center;
 
-  gap: 10px;
+  gap: 0.625rem;
 
   background:
     linear-gradient(
@@ -829,9 +850,9 @@ footer {
     );
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   color: #52677b;
 
@@ -844,8 +865,8 @@ footer {
   align-items: center;
   justify-content: center;
 
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
 
   border-radius: 50%;
 
@@ -855,7 +876,7 @@ footer {
   font-size: 0.9rem;
 
   box-shadow:
-    0 3px 10px rgba(31, 78, 121, 0.08);
+    0 0.1875rem 0.625rem rgba(31, 78, 121, 0.08);
 }
 
 /* =========================================================
@@ -864,7 +885,7 @@ footer {
    ========================================================= */
 
 .home-page .home-atendimento-card {
-  padding-top: 18px;
+  padding-top: 1.125rem;
 }
 
 
@@ -882,12 +903,12 @@ footer {
 
 
 .home-page .home-atendimento-conteudo {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
-  padding-top: 16px;
+  padding-top: 1rem;
 
   border-top:
-    1px solid rgba(31, 78, 121, 0.08);
+    0.0625rem solid rgba(31, 78, 121, 0.08);
 }
 
 /* =========================================================
@@ -910,11 +931,11 @@ footer {
 
 
 .home-page .home-como-funciona-conteudo {
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: 1.125rem;
+  padding-top: 1rem;
 
   border-top:
-    1px solid rgba(31, 78, 121, 0.08);
+    0.0625rem solid rgba(31, 78, 121, 0.08);
 }
 
 /* Nome da marca no topo da Home */
@@ -924,7 +945,7 @@ footer {
 
 /* Localizar - Home */
 .home-page .home-localizar {
-  margin-top: 34px;
+  margin-top: 2.125rem;
 }
 
 /* =========================================================
@@ -949,30 +970,30 @@ footer {
 }
 
 .login-page .container {
-  max-width: 760px;
-  margin-top: 34px;
-  margin-bottom: 44px;
+  max-width: 47.5rem;
+  margin-top: 2.125rem;
+  margin-bottom: 2.75rem;
 }
 
 .login-page .card {
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
-  padding: 24px 28px 28px;
+  padding: 1.5rem 1.75rem 1.75rem;
 
   box-shadow:
-    0 6px 20px rgba(31, 78, 121, 0.07);
+    0 0.375rem 1.25rem rgba(31, 78, 121, 0.07);
 
-  border-left: 1px solid rgba(31, 78, 121, 0.05);
-  border-right: 1px solid rgba(31, 78, 121, 0.05);
-  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+  border-left: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-right: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-bottom: 0.0625rem solid rgba(31, 78, 121, 0.05);
 }
 
 .login-page .card h2 {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.015em;
-  margin-bottom: 18px;
+  margin-bottom: 1.125rem;
 }
 
 .login-page label {
@@ -982,7 +1003,7 @@ footer {
 .login-page input {
   font-family: inherit;
 
-  border-radius: 8px !important;
+  border-radius: 0.5rem !important;
 
   transition:
     border-color 0.15s ease,
@@ -996,11 +1017,11 @@ footer {
     rgba(31, 78, 121, 0.50) !important;
 
   box-shadow:
-    0 0 0 3px rgba(31, 78, 121, 0.08);
+    0 0 0 0.1875rem rgba(31, 78, 121, 0.08);
 }
 
 .login-page .btn {
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   transition:
     transform 0.15s ease,
@@ -1013,10 +1034,10 @@ footer {
   color: var(--azul);
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.10);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.10);
 }
 
 .login-page footer {
@@ -1030,19 +1051,19 @@ footer {
 .login-page #formLogin .btn {
   width: 100%;
 
-  margin-top: 6px;
+  margin-top: 0.375rem;
 
-  padding: 11px 18px;
+  padding: 0.6875rem 1.125rem;
 
   background: var(--amarelo);
 
   border:
-    1px solid rgba(31, 78, 121, 0.16);
+    0.0625rem solid rgba(31, 78, 121, 0.16);
 
   font-weight: 700;
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.06);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.06);
 }
 
 
@@ -1050,16 +1071,16 @@ footer {
   background: #f8e66f;
 
   box-shadow:
-    0 5px 12px rgba(31, 78, 121, 0.10);
+    0 0.3125rem 0.75rem rgba(31, 78, 121, 0.10);
 }
 
 
 /* Recuperação de senha */
 
 .login-page .assunto {
-  margin-top: 26px !important;
+  margin-top: 1.625rem !important;
 
-  padding: 16px 18px;
+  padding: 1rem 1.125rem;
 
   background:
     linear-gradient(
@@ -1069,16 +1090,16 @@ footer {
     );
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 }
 
 
 .login-page .assunto h3 {
   font-size: 1rem;
 
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 
   color: var(--azul);
 }
@@ -1087,19 +1108,19 @@ footer {
 /* Não possuo cadastro */
 
 .login-page #areaNaoPossuoCadastro {
-  margin-top: 20px !important;
+  margin-top: 1.25rem !important;
 }
 
 
 .login-page #areaNaoPossuoCadastro .btn {
   height: auto !important;
 
-  padding: 10px 18px;
+  padding: 0.625rem 1.125rem;
 
   background: #ffffff;
 
   border:
-    1px solid rgba(31, 78, 121, 0.16);
+    0.0625rem solid rgba(31, 78, 121, 0.16);
 
   color: var(--azul);
 
@@ -1113,7 +1134,7 @@ footer {
   border-color:
     rgba(31, 78, 121, 0.28);
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
 .login-page .assunto .btn {
@@ -1142,30 +1163,30 @@ footer {
 }
 
 .cursos-page .container {
-  max-width: 920px;
-  margin-top: 34px;
-  margin-bottom: 44px;
+  max-width: 57.5rem;
+  margin-top: 2.125rem;
+  margin-bottom: 2.75rem;
 }
 
 .cursos-page .card {
-  border-top: 4px solid var(--amarelo);
+  border-top: 0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
-  padding: 22px 26px 26px;
+  padding: 1.375rem 1.625rem 1.625rem;
 
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 
-  border-left: 1px solid rgba(31, 78, 121, 0.05);
-  border-right: 1px solid rgba(31, 78, 121, 0.05);
-  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+  border-left: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-right: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-bottom: 0.0625rem solid rgba(31, 78, 121, 0.05);
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .cursos-page #titulo_cursos {
-  margin-bottom: 18px;
+  margin-bottom: 1.125rem;
 
   font-size: 1.15rem !important;
   font-weight: 700 !important;
@@ -1176,15 +1197,15 @@ footer {
 .cursos-page #lista .btn {
   margin-top: 0;
 
-  padding: 9px 16px;
+  padding: 0.5625rem 1rem;
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 
   transition:
     transform 0.15s ease,
@@ -1199,29 +1220,29 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.09);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 /* Linha do curso ativo - Meus Cursos */
 .cursos-page #lista .curso-linha {
-  padding: 7px 14px;
+  padding: 0.4375rem 0.875rem;
 }
 
 .cursos-page #lista .btn {
   margin-top: 0;
 
-  padding: 7px 15px;
+  padding: 0.4375rem 0.9375rem;
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 
   transition:
     transform 0.15s ease,
@@ -1231,7 +1252,7 @@ footer {
 
 /* Títulos das seções - Meus Cursos */
 .cursos-page .cursos-status-titulo {
-  margin: 0 0 18px 0;
+  margin: 0 0 1.125rem 0;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--azul);
@@ -1240,7 +1261,7 @@ footer {
 /* Espaçamento entre os cursos - Meus Cursos */
 .cursos-page #lista .disciplina + .disciplina,
 .cursos-page #lista_expirados .disciplina + .disciplina {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 }
 
 /* =========================================================
@@ -1250,7 +1271,7 @@ footer {
 .cursos-page .cursos-header {
   position: relative;
 
-  padding: 22px 24px 24px;
+  padding: 1.375rem 1.5rem 1.5rem;
 
   background:
     linear-gradient(
@@ -1260,19 +1281,19 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
 .cursos-page .cursos-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 38px;
+  right: 1.5rem;
+  top: 2.375rem;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 
@@ -1282,19 +1303,19 @@ footer {
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
 
   margin-top: 0;
   padding: 0;
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background:
     rgba(255, 255, 255, 0.28);
 
   border:
-    1px solid rgba(31, 78, 121, 0.10);
+    0.0625rem solid rgba(31, 78, 121, 0.10);
 
   font-weight: normal;
 
@@ -1310,12 +1331,12 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
 /* Alinhamento do título dos cursos expirados */
 .cursos-page #card_cursos_expirados .cursos-status-titulo {
-  margin-left: 24px;
+  margin-left: 1.5rem;
 }
 
 /* =========================================================
@@ -1341,34 +1362,34 @@ footer {
 
 
 .curso-page .container {
-  max-width: 920px;
-  margin-top: 34px;
-  margin-bottom: 44px;
+  max-width: 57.5rem;
+  margin-top: 2.125rem;
+  margin-bottom: 2.75rem;
 }
 
 
 .curso-page .card {
-  border-top: 4px solid var(--amarelo);
+  border-top: 0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
-  padding: 22px 26px 26px;
+  padding: 1.375rem 1.625rem 1.625rem;
 
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 
-  border-left: 1px solid rgba(31, 78, 121, 0.05);
-  border-right: 1px solid rgba(31, 78, 121, 0.05);
-  border-bottom: 1px solid rgba(31, 78, 121, 0.05);
+  border-left: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-right: 0.0625rem solid rgba(31, 78, 121, 0.05);
+  border-bottom: 0.0625rem solid rgba(31, 78, 121, 0.05);
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 
 .curso-page .curso-header {
   position: relative;
 
-  padding: 22px 24px 24px;
+  padding: 1.375rem 1.5rem 1.5rem;
 
   background:
     linear-gradient(
@@ -1378,19 +1399,19 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
 .curso-page .curso-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 38px;
+  right: 1.5rem;
+  top: 2.375rem;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 
@@ -1400,19 +1421,19 @@ footer {
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
 
   margin-top: 0;
   padding: 0;
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background:
     rgba(255, 255, 255, 0.28);
 
   border:
-    1px solid rgba(31, 78, 121, 0.10);
+    0.0625rem solid rgba(31, 78, 121, 0.10);
 
   font-weight: normal;
 
@@ -1428,7 +1449,7 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
 /* =========================================================
@@ -1436,16 +1457,16 @@ footer {
    ========================================================= */
 
 .curso-page .curso-acao-card {
-  padding: 9px 14px;
+  padding: 0.5625rem 0.875rem;
 
-  margin-bottom: 18px;
+  margin-bottom: 1.125rem;
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background: #ffffff;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 }
 
 
@@ -1455,14 +1476,14 @@ footer {
   justify-content: space-between;
   align-items: center;
 
-  gap: 14px;
+  gap: 0.875rem;
 
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 
 .curso-page .curso-acao-linha + .curso-acao-linha {
-  margin-top: 14px;
+  margin-top: 0.875rem;
 }
 
 
@@ -1484,15 +1505,15 @@ footer {
 
   margin-top: 0;
 
-  padding: 8px 15px;
+  padding: 0.5rem 0.9375rem;
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 }
 
 .curso-page .curso-acao-btn:hover {
@@ -1502,10 +1523,10 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.09);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 
@@ -1529,22 +1550,22 @@ footer {
 
   position: absolute;
 
-  left: 210px;
+  left: 13.125rem;
   top: 50%;
 
   width: max-content;
-  max-width: 320px;
+  max-width: 20rem;
 
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 
   background: #ffffff;
   color: #405c75;
 
-  border: 1px solid rgba(31, 78, 121, 0.16);
-  border-radius: 8px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.16);
+  border-radius: 0.5rem;
 
   box-shadow:
-    0 6px 18px rgba(31, 78, 121, 0.10);
+    0 0.375rem 1.125rem rgba(31, 78, 121, 0.10);
 
   font-size: 0.82rem;
   font-weight: 500;
@@ -1555,7 +1576,7 @@ footer {
   opacity: 0;
   visibility: hidden;
 
-  transform: translateY(-50%) translateX(-4px);
+  transform: translateY(-50%) translateX(-0.25rem);
 
   transition:
     opacity 0.15s ease,
@@ -1572,16 +1593,16 @@ footer {
 
   position: absolute;
 
-  left: 205px;
+  left: 12.8125rem;
   top: 50%;
 
-  width: 9px;
-  height: 9px;
+  width: 0.5625rem;
+  height: 0.5625rem;
 
   background: #ffffff;
 
-  border-left: 1px solid rgba(31, 78, 121, 0.16);
-  border-bottom: 1px solid rgba(31, 78, 121, 0.16);
+  border-left: 0.0625rem solid rgba(31, 78, 121, 0.16);
+  border-bottom: 0.0625rem solid rgba(31, 78, 121, 0.16);
 
   transform:
     translateY(-50%)
@@ -1615,10 +1636,10 @@ footer {
 @media (max-width: 767px) {
   .curso-page .curso-tooltip::after {
     left: 0;
-    top: calc(100% + 8px);
-    width: min(320px, calc(100vw - 112px));
+    top: calc(100% + 0.5rem);
+    width: min(20rem, calc(100vw - 7rem));
     overflow-wrap: anywhere;
-    transform: translateX(-4px);
+    transform: translateX(-0.25rem);
   }
 
   .curso-page .curso-tooltip:hover::after {
@@ -1626,8 +1647,8 @@ footer {
   }
 
   .curso-page .curso-tooltip::before {
-    left: 12px;
-    top: calc(100% + 4px);
+    left: 0.75rem;
+    top: calc(100% + 0.25rem);
     transform: rotate(135deg);
   }
 }
@@ -1668,16 +1689,16 @@ footer {
 
 
 .disciplinas-page .container {
-  max-width: 920px;
-  margin-top: 34px;
-  margin-bottom: 44px;
+  max-width: 57.5rem;
+  margin-top: 2.125rem;
+  margin-bottom: 2.75rem;
 }
 
 
 .disciplinas-page .disciplinas-header {
   position: relative;
 
-  padding: 22px 24px 24px;
+  padding: 1.375rem 1.5rem 1.5rem;
 
   background:
     linear-gradient(
@@ -1687,19 +1708,19 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
 .disciplinas-page .disciplinas-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 38px;
+  right: 1.5rem;
+  top: 2.375rem;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 
@@ -1709,19 +1730,19 @@ footer {
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
 
   margin-top: 0;
   padding: 0;
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background:
     rgba(255, 255, 255, 0.28);
 
   border:
-    1px solid rgba(31, 78, 121, 0.10);
+    0.0625rem solid rgba(31, 78, 121, 0.10);
 
   font-weight: normal;
 
@@ -1730,16 +1751,16 @@ footer {
 
 
 .disciplinas-page .disciplinas-intro-card {
-  padding: 15px 22px;
+  padding: 0.9375rem 1.375rem;
 
-  margin-bottom: 14px;
+  margin-bottom: 0.875rem;
 
-  border-top: 4px solid var(--amarelo);
+  border-top: 0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 
@@ -1752,7 +1773,7 @@ footer {
 
 
 .disciplinas-page .disciplinas-subtitulo {
-  margin-left: 4px;
+  margin-left: 0.25rem;
 
   font-size: 0.88rem;
   font-weight: 500;
@@ -1762,17 +1783,17 @@ footer {
 
 
 .disciplinas-page #lista {
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 
 .disciplinas-page .disciplina-curso-card {
-  padding: 14px 16px;
+  padding: 0.875rem 1rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background: #ffffff;
 }
@@ -1784,7 +1805,7 @@ footer {
   justify-content: space-between;
   align-items: center;
 
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 
@@ -1804,49 +1825,49 @@ footer {
 
   margin-top: 0;
 
-  padding: 8px 15px;
+  padding: 0.5rem 0.9375rem;
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 }
 
 .disciplinas-page .disciplina-curso-btn:hover {
   background: #f8e66f;
   color: var(--azul);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(31, 78, 121, 0.09);
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 .disciplinas-page .disciplina-progresso {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .disciplinas-page .disciplina-progresso-trilho {
   flex: 1;
-  height: 6px;
+  height: 0.375rem;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: 62.4375rem;
   background: #e5e9ee;
 }
 
 .disciplinas-page .disciplina-progresso-preenchimento {
   height: 100%;
-  border-radius: 999px;
+  border-radius: 62.4375rem;
   background: #b9e3f5; /* azul-céu bem claro */
   transition: width 0.25s ease;
 }
 
 .disciplinas-page .disciplina-progresso-percentual {
-  min-width: 42px;
+  min-width: 2.625rem;
   text-align: right;
   font-size: 0.84rem;
   font-weight: 700;
@@ -1889,16 +1910,16 @@ footer {
 
 
 .assuntos-page .container {
-  max-width: 920px;
-  margin-top: 34px;
-  margin-bottom: 44px;
+  max-width: 57.5rem;
+  margin-top: 2.125rem;
+  margin-bottom: 2.75rem;
 }
 
 
 .assuntos-page .assuntos-header {
   position: relative;
 
-  padding: 22px 24px 24px;
+  padding: 1.375rem 1.5rem 1.5rem;
 
   background:
     linear-gradient(
@@ -1908,19 +1929,19 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
 .assuntos-page .assuntos-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 38px;
+  right: 1.5rem;
+  top: 2.375rem;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 
@@ -1930,19 +1951,19 @@ footer {
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
 
   margin-top: 0;
   padding: 0;
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background:
     rgba(255, 255, 255, 0.28);
 
   border:
-    1px solid rgba(31, 78, 121, 0.10);
+    0.0625rem solid rgba(31, 78, 121, 0.10);
 
   font-weight: normal;
 
@@ -1952,16 +1973,16 @@ footer {
 
 .assuntos-page .assuntos-disciplina-card,
 .assuntos-page .assuntos-intro-card {
-  padding: 15px 22px;
+  padding: 0.9375rem 1.375rem;
 
-  margin-bottom: 14px;
+  margin-bottom: 0.875rem;
 
-  border-top: 4px solid var(--amarelo);
+  border-top: 0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 
@@ -1976,7 +1997,7 @@ footer {
 
 
 .assuntos-page .assuntos-subtitulo {
-  margin-left: 4px;
+  margin-left: 0.25rem;
 
   font-size: 0.88rem;
 
@@ -1987,17 +2008,17 @@ footer {
 
 
 .assuntos-page #lista {
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 
 .assuntos-page .assunto-curso-card {
-  padding: 7px 12px;
+  padding: 0.4375rem 0.75rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 9px;
+  border-radius: 0.5625rem;
 
   background: #ffffff;
 }
@@ -2010,9 +2031,9 @@ footer {
 
   align-items: center;
 
-  gap: 14px;
+  gap: 0.875rem;
 
-  min-height: 34px;
+  min-height: 2.125rem;
 }
 
 
@@ -2032,23 +2053,23 @@ footer {
 
   margin-top: 0;
 
-  padding: 6px 13px;
+  padding: 0.375rem 0.8125rem;
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 }
 
 .assuntos-page .assunto-curso-btn:hover {
   background: #f8e66f;
   color: var(--azul);
   text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(31, 78, 121, 0.09);
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 .assuntos-page .assunto-progresso {
@@ -2056,20 +2077,20 @@ footer {
 
   align-items: center;
 
-  gap: 12px;
+  gap: 0.75rem;
 
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 }
 
 
 .assuntos-page .assunto-progresso-trilho {
   flex: 1;
 
-  height: 6px;
+  height: 0.375rem;
 
   overflow: hidden;
 
-  border-radius: 999px;
+  border-radius: 62.4375rem;
 
   background: #e5e9ee;
 }
@@ -2077,14 +2098,14 @@ footer {
 
 .assuntos-page .assunto-progresso-preenchimento {
   height: 100%;
-  border-radius: 999px;
+  border-radius: 62.4375rem;
   background: #b9e3f5;
   transition: width 0.25s ease;
 }
 
 
 .assuntos-page .assunto-progresso-percentual {
-  min-width: 42px;
+  min-width: 2.625rem;
   text-align: right;
   font-size: 0.84rem;
   font-weight: 700;
@@ -2119,8 +2140,8 @@ footer {
 
 .teoria-page .teoria-header {
   position: relative;
-  padding-top: 26px;
-  padding-bottom: 33px;
+  padding-top: 1.625rem;
+  padding-bottom: 2.0625rem;
   min-height: 0;
 
   background:
@@ -2131,17 +2152,17 @@ footer {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 
 .teoria-page .teoria-header-acoes {
   position: absolute;
-  right: 24px;
-  top: 38px;
+  right: 1.5rem;
+  top: 2.375rem;
   display: flex;
   align-items: center;
-  gap: 17px;
+  gap: 1.0625rem;
 }
 
 
@@ -2187,8 +2208,8 @@ footer {
 .teoria-page .teoria-aluno {
   position: absolute;
 
-  right: 24px;
-  top: 7px;
+  right: 1.5rem;
+  top: 0.4375rem;
 
   font-size: 0.72rem;
   font-weight: 600;
@@ -2217,7 +2238,7 @@ footer {
 }
 
 .teoria-page #titulo_assunto_header {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   font-size: 1.08rem;
   font-weight: 500;
@@ -2229,11 +2250,11 @@ footer {
 /* Faixa com "Assunto - Parte I" */
 
 .teoria-page .teoria-assunto-faixa {
-  min-height: 52px;
+  min-height: 3.25rem;
 
-  padding: 0 36px;
+  padding: 0 2.25rem;
 
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 
   display: flex;
   align-items: center;
@@ -2245,7 +2266,7 @@ footer {
 
 .teoria-page .teoria-assunto-faixa h2 {
   position: relative;
-  top: -3px;
+  top: -0.1875rem;
 }
 
 .teoria-page .teoria-assunto-faixa h2 {
@@ -2264,12 +2285,12 @@ footer {
    ========================================================= */
 
 .teoria-page .questoes-bateria-card {
-  padding: 11px 13px;
+  padding: 0.6875rem 0.8125rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   background: #ffffff;
 }
@@ -2280,7 +2301,7 @@ footer {
   justify-content: space-between;
   align-items: center;
 
-  gap: 14px;
+  gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -2288,7 +2309,7 @@ footer {
 .teoria-page .questoes-bateria-info {
   flex: 1;
 
-  min-width: 220px;
+  min-width: 13.75rem;
 }
 
 .teoria-page .questoes-bateria-titulo {
@@ -2298,7 +2319,7 @@ footer {
 }
 
 .teoria-page .questoes-bateria-desempenho {
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 
   font-size: 0.84rem;
 
@@ -2310,7 +2331,7 @@ footer {
 
   align-items: center;
 
-  gap: 8px;
+  gap: 0.5rem;
 
   flex-wrap: wrap;
 
@@ -2322,8 +2343,8 @@ footer {
    ========================================================= */
 
 .teoria-page .questoes-status-feita {
-  height: 28px;
-  padding: 0 10px;
+  height: 1.75rem;
+  padding: 0 0.625rem;
 
   display: inline-flex;
   align-items: center;
@@ -2331,8 +2352,8 @@ footer {
 
   box-sizing: border-box;
 
-  border: 1px solid #72a987;
-  border-radius: 999px;
+  border: 0.0625rem solid #72a987;
+  border-radius: 62.4375rem;
 
   background: #e2f3e7;
 
@@ -2346,8 +2367,8 @@ footer {
 
 
 .teoria-page .questoes-status-andamento {
-  height: 28px;
-  padding: 0 10px;
+  height: 1.75rem;
+  padding: 0 0.625rem;
 
   display: inline-flex;
   align-items: center;
@@ -2355,8 +2376,8 @@ footer {
 
   box-sizing: border-box;
 
-  border: 1px solid #d8bd7a;
-  border-radius: 999px;
+  border: 0.0625rem solid #d8bd7a;
+  border-radius: 62.4375rem;
 
   background: #fffdf6;
 
@@ -2370,10 +2391,10 @@ footer {
 
 
 .teoria-page .questoes-btn-visualizar {
-  min-width: 100px;
-  height: 36px;
+  min-width: 6.25rem;
+  height: 2.25rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
@@ -2385,10 +2406,10 @@ footer {
 
 
 .teoria-page .questoes-btn-refazer {
-  min-width: 118px;
-  height: 36px;
+  min-width: 7.375rem;
+  height: 2.25rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
@@ -2400,7 +2421,7 @@ footer {
 
   background: #fff8cc;
 
-  border: 1px solid #eadf9a;
+  border: 0.0625rem solid #eadf9a;
 
   box-shadow: none;
 
@@ -2428,9 +2449,9 @@ footer {
 
 .teoria-page .questoes-status-feita,
 .teoria-page .questoes-status-andamento {
-  height: 28px;
+  height: 1.75rem;
 
-  padding: 0 10px;
+  padding: 0 0.625rem;
 
   display: inline-flex;
   align-items: center;
@@ -2438,19 +2459,19 @@ footer {
 
   box-sizing: border-box;
 
-  border-radius: 999px;
+  border-radius: 62.4375rem;
 
   font-size: 0.76rem;
   font-weight: 500;
 
-  margin: 0 34px 0 0;
+  margin: 0 2.125rem 0 0;
 }
 
 .teoria-page .questoes-btn-continuar {
-  min-width: 100px;
-  height: 36px;
+  min-width: 6.25rem;
+  height: 2.25rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
@@ -2464,9 +2485,9 @@ footer {
 .teoria-page .questoes-btn-continuar,
 .teoria-page .questoes-btn-visualizar,
 .teoria-page .questoes-btn-refazer {
-  height: 40px;
+  height: 2.5rem;
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   display: inline-flex;
   align-items: center;
@@ -2480,8 +2501,8 @@ footer {
 .teoria-page .questoes-btn-fazer,
 .teoria-page .questoes-btn-continuar,
 .teoria-page .questoes-btn-visualizar {
-  min-width: 100px;
-  padding: 0 14px;
+  min-width: 6.25rem;
+  padding: 0 0.875rem;
 
   font-size: 0.82rem;
   font-weight: 700;
@@ -2492,14 +2513,14 @@ footer {
    ========================================================= */
 
 .teoria-page .video-vazio {
-  min-height: 86px;
+  min-height: 5.375rem;
 
   display: flex;
   align-items: center;
 
-  gap: 12px;
+  gap: 0.75rem;
 
-  padding: 12px 16px;
+  padding: 0.75rem 1rem;
 }
 
 .teoria-page .video-vazio-icone {
@@ -2524,7 +2545,7 @@ footer {
 }
 
 .teoria-page .teoria-paragrafo {
-  margin: 0 0 18.5px 0;
+  margin: 0 0 1.15625rem 0;
   line-height: 1.7;
   white-space: pre-line;
 }
@@ -2535,8 +2556,8 @@ footer {
 
 /* Margens internas da área de leitura da teoria */
 .teoria-page .teoria-texto-conteudo {
-  padding-left: 18px;
-  padding-right: 18px;
+  padding-left: 1.125rem;
+  padding-right: 1.125rem;
 }
 
 :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) {
@@ -2602,7 +2623,7 @@ footer {
 
 :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) th,
 :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) td {
-  border: 1px solid #cbd5e1;
+  border: 0.0625rem solid #cbd5e1;
   padding: 0.45rem 0.65rem;
   vertical-align: top;
   overflow-wrap: anywhere;
@@ -2637,14 +2658,14 @@ footer {
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr {
     margin-block: 0 1rem;
-    border: 1px solid #cbd5e1;
+    border: 0.0625rem solid #cbd5e1;
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) > :is(thead, tbody, tfoot) > tr > :is(th, td) {
     display: block;
     width: 100% !important;
     box-sizing: border-box;
     border: 0;
-    border-bottom: 1px solid #cbd5e1;
+    border-bottom: 0.0625rem solid #cbd5e1;
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table:is([data-teoria-colunas="muitas"], [data-teoria-colunas="extensas"]) [data-teoria-rotulo]::before {
     content: attr(data-teoria-rotulo);
@@ -2663,14 +2684,14 @@ footer {
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr {
     margin-block: 0 1rem;
-    border: 1px solid #cbd5e1;
+    border: 0.0625rem solid #cbd5e1;
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] > :is(thead, tbody, tfoot) > tr > :is(th, td) {
     display: block;
     width: 100% !important;
     box-sizing: border-box;
     border: 0;
-    border-bottom: 1px solid #cbd5e1;
+    border-bottom: 0.0625rem solid #cbd5e1;
   }
   :is(.teoria-page .teoria-conteudo-rico, .questao-conteudo-rico) table[data-teoria-colunas="extensas"] [data-teoria-rotulo]::before {
     content: attr(data-teoria-rotulo);
@@ -2687,7 +2708,7 @@ footer {
 }
 
 .assunto .ck-editor__editable_inline {
-  min-height: 260px;
+  min-height: 16.25rem;
 }
 
 @media (max-width: 600px) {
@@ -2701,10 +2722,10 @@ footer {
 .sprint-header {
   position: relative;
 
-  padding-top: 25px;
-  padding-bottom: 30px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-top: 1.5625rem;
+  padding-bottom: 1.875rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 
   background: var(--amarelo);
 
@@ -2727,7 +2748,7 @@ footer {
 }
 
 .sprint-header #subtitulo_bateria {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   font-size: 1.2rem;
   font-weight: 500;
@@ -2737,8 +2758,8 @@ footer {
 
 .sprint-header-direita {
   position: absolute;
-  right: 24px;
-  top: 6px;
+  right: 1.5rem;
+  top: 0.375rem;
 
   display: flex;
   flex-direction: column;
@@ -2754,17 +2775,17 @@ footer {
   text-align: right;
 
   position: relative;
-  left: 10px;
+  left: 0.625rem;
 }
 
 .sprint-header-acoes {
   position: static;
 
-  margin-top: 35px;
+  margin-top: 2.1875rem;
 
   display: flex;
   align-items: center;
-  gap: 17px;
+  gap: 1.0625rem;
 }
 
 /* =========================================================
@@ -2825,8 +2846,8 @@ footer {
 }
 
 .sprint-questao-enunciado {
-  margin-top: 7.5px;
-  margin-bottom: 18px;
+  margin-top: 0.46875rem;
+  margin-bottom: 1.125rem;
 
   white-space: pre-line;
 
@@ -2837,24 +2858,24 @@ footer {
 }
 
 .sprint-questao-card {
-  padding: 24px 28px 28px;
+  padding: 1.5rem 1.75rem 1.75rem;
 }
 
 .sprint-dificuldade-card {
-  margin-top: 10px;
-  padding: 14px 16px;
+  margin-top: 0.625rem;
+  padding: 0.875rem 1rem;
 }
 
 .sprint-dificuldade-linha {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
 .sprint-dificuldade-texto {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
   font-weight: 700;
 }
 
@@ -2862,21 +2883,21 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .sprint-dificuldade-opcao {
-  width: 90px;
-  min-height: 28px;
+  width: 5.625rem;
+  min-height: 1.75rem;
 
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.3125rem;
 
-  padding: 3px 7px;
+  padding: 0.1875rem 0.4375rem;
 
-  border: 1px solid rgba(31, 78, 121, 0.28);
-  border-radius: 25px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.28);
+  border-radius: 1.5625rem;
 
   background: #ffffff;
 
@@ -2893,10 +2914,10 @@ footer {
 }
 
 .sprint-btn-responder {
-  min-width: 112px;
-  height: 40px;
+  min-width: 7rem;
+  height: 2.5rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
@@ -2906,7 +2927,7 @@ footer {
   font-size: 0.9rem;
   font-weight: 700;
 
-  border: 1px solid #e2c95f;
+  border: 0.0625rem solid #e2c95f;
   box-shadow: none;
 }
 
@@ -2920,9 +2941,9 @@ footer {
 
 /* Tela exibida após concluir as 10 questões */
 .sprint-conclusao-card {
-  min-height: 135px;
+  min-height: 8.4375rem;
 
-  padding: 28px 30px;
+  padding: 1.75rem 1.875rem;
 
   display: flex;
   flex-direction: column;
@@ -2933,31 +2954,31 @@ footer {
 
     font-size: 1.45rem;
 
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 /* Botões Revisar agora / Revisar depois */
 .sprint-conclusao-acoes {
-  margin-top: 24px;
+  margin-top: 1.5rem;
 
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 1.125rem;
 
   flex-wrap: wrap;
 }
 
 .sprint-conclusao-btn {
-  min-width: 118px;
-  min-height: 40px;
+  min-width: 7.375rem;
+  min-height: 2.5rem;
 
-  padding: 0 16px;
+  padding: 0 1rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border-width: 1px;
+  border-width: 0.0625rem;
   border-color: #e2c85b;
 }
 
@@ -2980,8 +3001,8 @@ footer {
   background: var(--amarelo);
   color: var(--azul);
 
-  border: 1px solid rgba(31, 78, 121, 0.16);
-  border-radius: 6px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.16);
+  border-radius: 0.375rem;
 
   box-shadow: none;
 
@@ -2997,22 +3018,22 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.09);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 .sprint-conclusao-acoes {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .sprint-conclusao-btn {
-  height: 40px;
-  padding: 0 16px;
+  height: 2.5rem;
+  padding: 0 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3026,9 +3047,9 @@ footer {
 
 /* Faixa superior "Revisão" */
 .sprint-revisao-faixa {
-  min-height: 52px;
+  min-height: 3.25rem;
 
-  padding: 0 28px;
+  padding: 0 1.75rem;
 
   display: flex;
   align-items: center;
@@ -3046,9 +3067,9 @@ footer {
 
 /* Card individual de cada questão */
 .sprint-revisao-questao-card {
-  padding: 22px 28px 20px;
+  padding: 1.375rem 1.75rem 1.25rem;
 
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 }
 
 
@@ -3065,8 +3086,8 @@ footer {
 
 /* Enunciado */
 .sprint-revisao-enunciado {
-  margin-top: 20px;
-  margin-bottom: 10.5px;
+  margin-top: 1.25rem;
+  margin-bottom: 0.65625rem;
 
   white-space: normal;
 
@@ -3088,19 +3109,19 @@ footer {
 
 /* Alternativa padrão */
 .sprint-revisao-alternativa {
-  min-height: 48px;
+  min-height: 3rem;
 
-  padding: 12px 14px;
+  padding: 0.75rem 0.875rem;
 
   display: flex;
   align-items: center;
 
-  margin-top: 9px;
+  margin-top: 0.5625rem;
 
   line-height: 1.45;
 
-  border: 1px solid #d7dce2;
-  border-radius: 7px;
+  border: 0.0625rem solid #d7dce2;
+  border-radius: 0.4375rem;
 
   box-shadow: none;
 }
@@ -3130,7 +3151,7 @@ footer {
 
 /* Resultado da questão */
 .sprint-revisao-resultado {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 }
 
 .sprint-revisao-acerto,
@@ -3150,7 +3171,7 @@ footer {
 
 /* Gabarito */
 .sprint-revisao-gabarito {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   line-height: 1.5;
 }
@@ -3158,11 +3179,11 @@ footer {
 
 /* Comentário */
 .sprint-revisao-comentario {
-  margin-top: 22px;
+  margin-top: 1.375rem;
 }
 
 .sprint-revisao-comentario-texto {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   white-space: normal;
 
@@ -3175,7 +3196,7 @@ footer {
 }
 
 .sprint-revisao-alternativa b {
-  margin-right: 7px;
+  margin-right: 0.4375rem;
   flex-shrink: 0;
 }
 
@@ -3184,12 +3205,12 @@ footer {
 ========================================================= */
 
 .sprint-revisao-anotacao-acoes{
-    margin-top:12px;
+    margin-top:0.75rem;
 
     display:flex;
     align-items:center;
 
-    gap:12px;
+    gap:0.75rem;
 
     flex-wrap:wrap;
 }
@@ -3198,14 +3219,14 @@ footer {
 /* Botões da anotação */
 
 .sprint-revisao-btn-acao {
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 2.5rem;
+  padding: 0 1rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border: 1px solid #d8bf56;
+  border: 0.0625rem solid #d8bf56;
   box-shadow: none;
 
   transition:
@@ -3239,7 +3260,7 @@ footer {
 /* Card final */
 
 .sprint-revisao-finalizar-card {
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
 }
 
 
@@ -3247,16 +3268,16 @@ footer {
 /* Botão finalizar */
 
 .sprint-revisao-btn-finalizar {
-  margin-left: 18px;
+  margin-left: 1.125rem;
 
-  min-height: 42px;
-  padding: 0 20px;
+  min-height: 2.625rem;
+  padding: 0 1.25rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border: 1px solid #d8bf56;
+  border: 0.0625rem solid #d8bf56;
   box-shadow: none;
 
   transition:
@@ -3273,10 +3294,10 @@ footer {
 
   text-decoration: none;
 
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 
   box-shadow:
-    0 4px 10px rgba(31, 78, 121, 0.09);
+    0 0.25rem 0.625rem rgba(31, 78, 121, 0.09);
 }
 
 .sprint-revisao-btn-finalizar:focus{
@@ -3290,11 +3311,11 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 .questoes-disciplinas-page .container {
-  margin-top: 40px;
+  margin-top: 2.5rem;
 }
 
 .questoes-disciplinas-page .questoes-header-btn-secundario {
@@ -3338,18 +3359,18 @@ footer {
 }
 
 .questoes-disciplinas-page .disciplina-curso-nome {
-  padding-left: 8px;
+  padding-left: 0.5rem;
 }
 
 .questoes-disciplinas-page .disciplina-curso-card {
-  padding: 9px 14px;
+  padding: 0.5625rem 0.875rem;
 }
 
 .questoes-disciplinas-page .disciplina-curso-topo {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .questoes-disciplinas-page .disciplina-curso-btn {
@@ -3362,24 +3383,24 @@ footer {
 ========================================================= */
 
 .questoes-disciplinas-page .questoes-disciplina-card {
-  padding: 12px 10px;
+  padding: 0.75rem 0.625rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   background: #ffffff;
 }
 
 .questoes-disciplinas-page .questoes-disciplina-linha {
-  min-height: 38px;
+  min-height: 2.375rem;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .questoes-disciplinas-page .questoes-disciplina-nome {
@@ -3387,7 +3408,7 @@ footer {
 
   min-width: 0;
 
-  padding-left: 8px;
+  padding-left: 0.5rem;
 
   font-weight: 600;
 
@@ -3399,13 +3420,13 @@ footer {
 
   margin-top: 0;
 
-  padding: 7px 13px;
+  padding: 0.4375rem 0.8125rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 }
 
 .questoes-disciplinas-page .questoes-disciplina-bloqueada {
@@ -3435,7 +3456,7 @@ footer {
 }
 
 .questoes-disciplinas-page #titulo_modulo_questoes {
-  margin: 4px 0 0 0;
+  margin: 0.25rem 0 0 0;
 
   font-size: 1.35rem;
   font-weight: 500;
@@ -3456,7 +3477,7 @@ footer {
   transform: none;
 
   box-shadow:
-    0 3px 8px rgba(31, 78, 121, 0.08);
+    0 0.1875rem 0.5rem rgba(31, 78, 121, 0.08);
 }
 
 .questoes-disciplinas-page #lista .questoes-disciplina-btn:hover {
@@ -3472,15 +3493,15 @@ footer {
   transform: none;
 
   box-shadow:
-    0 3px 8px rgba(31, 78, 121, 0.08);
+    0 0.1875rem 0.5rem rgba(31, 78, 121, 0.08);
 }
 
 .questoes-disciplinas-page .questoes-disciplinas-titulo {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 0.5rem;
 
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 
   font-size: 1.26rem;
 }
@@ -3517,7 +3538,7 @@ footer {
 /* Cabeçalho */
 
 .questoes-assuntos-page .questoes-assuntos-header-identificacao {
-  margin-top: 11px;
+  margin-top: 0.6875rem;
 
   display: flex;
   flex-direction: column;
@@ -3536,7 +3557,7 @@ footer {
 }
 
 .questoes-assuntos-page .questoes-assuntos-modulo {
-  margin: 9px 0 0;
+  margin: 0.5625rem 0 0;
 
   font-size: 1.18rem;
   font-weight: 500;
@@ -3548,25 +3569,25 @@ footer {
 /* Conteúdo principal */
 
 .questoes-assuntos-page .container {
-  max-width: 900px;
+  max-width: 56.25rem;
 
-  margin-top: 40px;
-  margin-bottom: 44px;
+  margin-top: 2.5rem;
+  margin-bottom: 2.75rem;
 }
 
 
 /* Card com o nome da disciplina */
 
 .questoes-assuntos-page .questoes-assuntos-disciplina-card {
-  padding: 15px 22px;
+  padding: 0.9375rem 1.375rem;
 
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-assuntos-page .questoes-assuntos-disciplina-card h2 {
@@ -3586,28 +3607,28 @@ footer {
 /* Card da lista de assuntos */
 
 .questoes-assuntos-page .questoes-assuntos-lista-card {
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
-  padding: 18px 22px 22px;
+  padding: 1.125rem 1.375rem 1.375rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-assuntos-page .questoes-assuntos-titulo {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 0.5rem;
 
   font-size: 1.0rem;
   font-weight: 700;
 
   color: var(--azul);
   position: relative;
-  top: 2px;
+  top: 0.125rem;
 }
 
 .questoes-assuntos-page .questoes-assuntos-subtitulo {
@@ -3621,30 +3642,30 @@ footer {
 /* Lista */
 
 .questoes-assuntos-page #lista {
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 
 /* Card individual do assunto */
 
 .questoes-assuntos-page .questoes-assunto-card {
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   background: #ffffff;
 }
 
 .questoes-assuntos-page .questoes-assunto-linha {
-  min-height: 32px;
+  min-height: 2rem;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 
@@ -3655,7 +3676,7 @@ footer {
 
   min-width: 0;
 
-  padding-left: 8px;
+  padding-left: 0.5rem;
 
   font-size: 0.85rem;
 
@@ -3671,19 +3692,19 @@ footer {
   flex: 0 0 auto;
 
   margin-top: 0;
-  padding: 7px 13px;
+  padding: 0.4375rem 0.8125rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   box-shadow:
-    0 2px 6px rgba(31, 78, 121, 0.05);
+    0 0.125rem 0.375rem rgba(31, 78, 121, 0.05);
 }
 
 .questoes-assuntos-page #lista .questoes-assunto-btn:hover {
@@ -3699,7 +3720,7 @@ footer {
   transform: none;
 
   box-shadow:
-    0 3px 8px rgba(31, 78, 121, 0.08);
+    0 0.1875rem 0.5rem rgba(31, 78, 121, 0.08);
 }
 
 /* =========================================================
@@ -3710,12 +3731,12 @@ footer {
 .questoes-assuntos-page .questoes-assuntos-header-acoes {
   position: absolute;
 
-  right: 43px;
-  top: 44px;
+  right: 2.6875rem;
+  top: 2.75rem;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .questoes-assuntos-page .questoes-assuntos-header-acoes .btn {
@@ -3782,7 +3803,7 @@ footer {
 /* Cabeçalho */
 
 .questoes-pratica-page .questoes-pratica-header-identificacao {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
   display: flex;
   flex-direction: column;
@@ -3801,7 +3822,7 @@ footer {
 }
 
 .questoes-pratica-page .questoes-pratica-modulo {
-  margin: 9px 0 0;
+  margin: 0.5625rem 0 0;
 
   font-size: 1.18rem;
   font-weight: 500;
@@ -3815,12 +3836,12 @@ footer {
 .questoes-pratica-page .questoes-pratica-header-acoes {
   position: absolute;
 
-  right: 43px;
-  top: 44px;
+  right: 2.6875rem;
+  top: 2.75rem;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .questoes-pratica-page .questoes-pratica-header-acoes .btn {
@@ -3866,25 +3887,25 @@ footer {
 /* Conteúdo */
 
 .questoes-pratica-page .container {
-  max-width: 900px;
+  max-width: 56.25rem;
 
-  margin-top: 22px;
-  margin-bottom: 44px;
+  margin-top: 1.375rem;
+  margin-bottom: 2.75rem;
 }
 
 
 /* Card Disciplina / Assunto */
 
 .questoes-pratica-page .questoes-pratica-identificacao-card {
-  padding: 13px 22px;
+  padding: 0.8125rem 1.375rem;
 
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-pratica-page .questoes-pratica-identificacao-linha {
@@ -3899,28 +3920,28 @@ footer {
 .questoes-pratica-identificacao-linha
 +
 .questoes-pratica-identificacao-linha {
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 }
 
 
 /* Filtros */
 
 .questoes-pratica-page .questoes-pratica-filtros-card {
-  padding: 11px 20px;
+  padding: 0.6875rem 1.25rem;
 
-  margin-bottom: 18px;
+  margin-bottom: 1.125rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-pratica-page .questoes-pratica-filtros {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -3928,7 +3949,7 @@ footer {
 .questoes-pratica-page .questoes-pratica-filtro {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 
   font-size: 0.84rem;
 
@@ -3946,13 +3967,13 @@ footer {
 /* Card da questão */
 
 .questoes-pratica-page .questoes-pratica-questao-card {
-  padding: 20px 24px 22px;
+  padding: 1.25rem 1.5rem 1.375rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-pratica-page .questoes-pratica-numero {
@@ -3965,7 +3986,7 @@ footer {
 }
 
 .questoes-pratica-page .questoes-pratica-enunciado {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
   font-size: 0.98rem;
   line-height: 1.65;
@@ -3979,35 +4000,35 @@ footer {
 /* Respostas */
 
 .questoes-pratica-page .questoes-pratica-respostas-bloco {
-  margin-top: 15px;
+  margin-top: 0.9375rem;
 }
 
 .questoes-pratica-page .questoes-pratica-alternativas {
   display: flex;
   flex-direction: column;
 
-  gap: 13px;
+  gap: 0.8125rem;
 }
 
 .questoes-pratica-page .questoes-pratica-orientacao {
-  margin-bottom: 2px;
+  margin-bottom: 0.125rem;
 
   font-size: 0.9rem;
   font-weight: 700;
 }
 
 .questoes-pratica-page .questoes-pratica-alternativa {
-  min-height: 44px;
-  padding: 9px 12px;
+  min-height: 2.75rem;
+  padding: 0.5625rem 0.75rem;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.18);
+    0.0625rem solid rgba(31, 78, 121, 0.18);
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   background: #ffffff;
 
@@ -4022,7 +4043,7 @@ footer {
 }
 
 .questoes-pratica-page .questoes-pratica-nao-sei {
-  border-radius: 16px;
+  border-radius: 1rem;
 }
 
 .questoes-pratica-page .questoes-pratica-alternativa:hover {
@@ -4040,7 +4061,7 @@ footer {
 /* Rever */
 
 .questoes-pratica-page .questoes-pratica-rever {
-  margin-top: 10px;
+  margin-top: 0.625rem;
 
   display: flex;
   justify-content: flex-end;
@@ -4051,18 +4072,18 @@ footer {
 .questoes-pratica-page .questoes-pratica-rever label {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.3125rem;
 }
 
 
 /* Classificação — mantém a posição atual */
 
 .questoes-pratica-page .questoes-pratica-dificuldade {
-  margin-top: 5px;
+  margin-top: 0.3125rem;
 }
 
 .questoes-pratica-page .questoes-pratica-dificuldade-titulo {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 
   font-size: 0.9rem;
   font-weight: 700;
@@ -4071,7 +4092,7 @@ footer {
 .questoes-pratica-page .questoes-pratica-dificuldade-opcoes {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 1.875rem;
 
   flex-wrap: wrap;
 }
@@ -4081,12 +4102,12 @@ footer {
 label {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 
-  padding: 4px 10px;
+  padding: 0.25rem 0.625rem;
 
-  border: 1px solid rgba(31, 78, 121, 0.28);
-  border-radius: 999px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.28);
+  border-radius: 62.4375rem;
 
   font-size: 0.88rem;
 }
@@ -4094,7 +4115,7 @@ label {
 /* Mensagem */
 
 .questoes-pratica-page .questoes-pratica-mensagem {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   line-height: 1.55;
 }
@@ -4103,20 +4124,20 @@ label {
 /* Ações */
 
 .questoes-pratica-page .questoes-pratica-acoes {
-  margin-top: 29px;
+  margin-top: 1.8125rem;
 
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 1.625rem;
 
   flex-wrap: wrap;
 }
 
 .questoes-pratica-page .questoes-pratica-btn {
-  min-height: 38px;
+  min-height: 2.375rem;
 
   margin-top: 0;
-  padding: 0 15px;
+  padding: 0 0.9375rem;
 
   display: inline-flex;
   align-items: center;
@@ -4124,8 +4145,8 @@ label {
 
   background: var(--amarelo);
 
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
 
@@ -4159,29 +4180,29 @@ label {
 }
 
 .questoes-pratica-page .questoes-pratica-btn-responder {
-  min-width: 128px;
+  min-width: 8rem;
 }
 
 .questoes-pratica-page .questoes-pratica-rever input {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
 }
 
 .questoes-pratica-page
 .questoes-pratica-dificuldade-opcoes
 label {
-  min-width: 68px;
-  min-height: 30px;
+  min-width: 4.25rem;
+  min-height: 1.875rem;
 
-  padding: 4px 8px;
+  padding: 0.25rem 0.5rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 5px;
+  gap: 0.3125rem;
 
-  border: 1px solid rgba(31,78,121,.16);
-  border-radius: 999px;
+  border: 0.0625rem solid rgba(31,78,121,.16);
+  border-radius: 62.4375rem;
 
   background: #fff;
 
@@ -4219,15 +4240,15 @@ label:hover {
 .revisoes-programadas-header {
   position: relative;
 
-  padding-top: 11px;
-  padding-bottom: 17px;
+  padding-top: 0.6875rem;
+  padding-bottom: 1.0625rem;
 
   min-height: 0;
 }
 
 .revisoes-programadas-page
 .revisoes-programadas-header-identificacao {
-  margin-top: 2px;
+  margin-top: 0.125rem;
 
   display: flex;
   flex-direction: column;
@@ -4255,7 +4276,7 @@ label:hover {
   line-height: 1.1;
 
   color: #36597b;
-  transform: translateY(2px);
+  transform: translateY(0.125rem);
 }
 
 
@@ -4265,12 +4286,12 @@ label:hover {
 .revisoes-programadas-header-acoes {
   position: absolute;
 
-  right: 38px;
-  top: 45px;
+  right: 2.375rem;
+  top: 2.8125rem;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .revisoes-programadas-page
@@ -4317,10 +4338,10 @@ label:hover {
 
 .revisoes-programadas-page
 .container {
-  max-width: 900px;
+  max-width: 56.25rem;
 
-  margin-top: 23px;
-  margin-bottom: 44px;
+  margin-top: 1.4375rem;
+  margin-bottom: 2.75rem;
 }
 
 
@@ -4329,18 +4350,18 @@ label:hover {
 .revisoes-programadas-page
 .revisoes-programadas-card {
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 12px;
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px
+    0 0.25rem 0.875rem
     rgba(31, 78, 121, 0.06);
 }
 
 .revisoes-programadas-page
 .revisoes-programadas-titulo {
-  margin-bottom: 14px;
+  margin-bottom: 0.875rem;
 
   font-size: 0.98rem;
   font-weight: 400;
@@ -4353,19 +4374,19 @@ label:hover {
 
 .revisoes-programadas-page
 .revisoes-programadas-btn {
-  width: 179px;
-  min-height: 38px;
+  width: 11.1875rem;
+  min-height: 2.375rem;
 
   margin-top: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
 
@@ -4393,7 +4414,7 @@ label:hover {
 
 .revisoes-programadas-page
 .revisoes-programadas-lista {
-  margin-top: 14px;
+  margin-top: 0.875rem;
 }
 
 /* =========================================================
@@ -4405,18 +4426,18 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-escolha-card {
-  padding: 15px 20px 17px;
+  padding: 0.9375rem 1.25rem 1.0625rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 12px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.75rem;
 
   box-shadow:
-    0 4px 14px rgba(31, 78, 121, 0.06);
+    0 0.25rem 0.875rem rgba(31, 78, 121, 0.06);
 }
 
 .questoes-criticas-page
 .questoes-criticas-escolha-titulo {
-  margin: 0 0 14px;
+  margin: 0 0 0.875rem;
 
   font-size: 1.02rem;
   font-weight: 600;
@@ -4432,8 +4453,8 @@ label:hover {
   display: flex;
   align-items: flex-end;
 
-  column-gap: 34px;
-  row-gap: 14px;
+  column-gap: 2.125rem;
+  row-gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -4446,7 +4467,7 @@ label:hover {
   display: flex;
   flex-direction: column;
 
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .questoes-criticas-page
@@ -4466,15 +4487,15 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-select {
-  width: 205px;
-  min-height: 34px;
+  width: 12.8125rem;
+  min-height: 2.125rem;
 
-  padding: 5px 9px;
+  padding: 0.3125rem 0.5625rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.24);
+    0.0625rem solid rgba(31, 78, 121, 0.24);
 
-  border-radius: 5px;
+  border-radius: 0.3125rem;
 
   background: #ffffff;
 
@@ -4489,13 +4510,13 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-total-card {
-  padding: 13px 20px;
+  padding: 0.8125rem 1.25rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 10px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px rgba(31, 78, 121, 0.05);
+    0 0.25rem 0.75rem rgba(31, 78, 121, 0.05);
 }
 
 .questoes-criticas-page
@@ -4513,13 +4534,13 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-disciplina-card {
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 10px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px rgba(31, 78, 121, 0.05);
+    0 0.25rem 0.75rem rgba(31, 78, 121, 0.05);
 }
 
 .questoes-criticas-page
@@ -4554,8 +4575,8 @@ label:hover {
 
   position: relative;
 
-  padding-top: 11px;
-  padding-bottom: 17px;
+  padding-top: 0.6875rem;
+  padding-bottom: 1.0625rem;
 
   min-height: 0;
 
@@ -4567,14 +4588,14 @@ label:hover {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 
 }
 
 .questoes-criticas-page
 .questoes-criticas-header-identificacao {
 
-  margin-top: 2px;
+  margin-top: 0.125rem;
 
   display: flex;
   flex-direction: column;
@@ -4599,7 +4620,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-header-identificacao h2 {
-  margin: 11px 0 0;
+  margin: 0.6875rem 0 0;
 
   font-size: 1.16rem;
   font-weight: 500;
@@ -4612,13 +4633,13 @@ label:hover {
 
   position: absolute;
 
-  right: 38px;
-  top: 45px;
+  right: 2.375rem;
+  top: 2.8125rem;
 
   display: flex;
   align-items: center;
 
-  gap: 26px;
+  gap: 1.625rem;
 
 }
 
@@ -4690,7 +4711,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-escolha-titulo {
-  margin: 0 0 23px;
+  margin: 0 0 1.4375rem;
 
   font-size: 1.05rem;
   font-weight: 600;
@@ -4706,8 +4727,8 @@ label:hover {
   display: flex;
   align-items: flex-end;
 
-  column-gap: 38px;
-  row-gap: 14px;
+  column-gap: 2.375rem;
+  row-gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -4717,13 +4738,13 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-select {
-  width: 180px;
-  min-height: 29px;
+  width: 11.25rem;
+  min-height: 1.8125rem;
 
-  padding: 4px 10px;
+  padding: 0.25rem 0.625rem;
 
-  border: 1px solid rgba(31, 78, 121, 0.24);
-  border-radius: 5px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.24);
+  border-radius: 0.3125rem;
 
   background: #ffffff;
   color: var(--azul);
@@ -4737,18 +4758,18 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-assunto-card {
-  margin-top: -8px;
+  margin-top: -0.5rem;
 }
 
 .questoes-criticas-page
 .questoes-criticas-identificacao-card {
-  padding: 16px 20px 12px;
+  padding: 1rem 1.25rem 0.75rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 10px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px rgba(31, 78, 121, 0.05);
+    0 0.25rem 0.75rem rgba(31, 78, 121, 0.05);
 }
 
 .questoes-criticas-page
@@ -4765,7 +4786,7 @@ label:hover {
 .questoes-criticas-page
 .questoes-criticas-identificacao-card
 .questoes-criticas-assunto-titulo {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
 
   font-size: 0.90rem;
   font-weight: 400;
@@ -4777,13 +4798,13 @@ label:hover {
 .questoes-criticas-header {
   position: relative;
 
-  padding-top: 6px;
-  padding-bottom: 21.5px;
+  padding-top: 0.375rem;
+  padding-bottom: 1.34375rem;
 }
 
 .questoes-criticas-page
 .questoes-criticas-header-identificacao {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   display: flex;
   flex-direction: column;
@@ -4815,13 +4836,13 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-questao-card {
-  padding: 18px 22px 16px;
+  padding: 1.125rem 1.375rem 1rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 10px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.06);
 }
 
@@ -4843,7 +4864,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-enunciado {
-  margin-top: 16px;
+  margin-top: 1rem;
 
   white-space: normal;
 
@@ -4860,7 +4881,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-gabarito {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
   font-size: 0.90rem;
   line-height: 1.45;
@@ -4873,7 +4894,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-comentario {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
   white-space: normal;
 
@@ -4889,7 +4910,7 @@ label:hover {
 .questoes-criticas-comentario strong {
   display: block;
 
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 
   font-size: 0.91rem;
   font-weight: 600;
@@ -4908,12 +4929,12 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-rodape-questao {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 
@@ -4955,7 +4976,7 @@ label:hover {
   flex-direction: column;
   align-items: flex-end;
 
-  gap: 0px;
+  gap: 0rem;
 }
 
 .questoes-criticas-page
@@ -4988,16 +5009,16 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-relatorio-titulo-card {
-  margin-top: 45px;
-  padding: 14px 20px;
+  margin-top: 2.8125rem;
+  padding: 0.875rem 1.25rem;
 
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.05);
 }
 
@@ -5017,17 +5038,17 @@ label:hover {
 .questoes-criticas-page
 .questoes-criticas-relatorio-conteudo-card {
 
-  margin-top: 4px;
+  margin-top: 0.25rem;
 
-  padding: 16px 20px;
+  padding: 1rem 1.25rem;
 
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.05);
 }
 
@@ -5045,7 +5066,7 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-relatorio-assunto {
-    margin-top: 3px;
+    margin-top: 0.1875rem;
 }
 
 .questoes-criticas-page
@@ -5059,11 +5080,11 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-relatorio-totais {
-  margin-top: 22px;
+  margin-top: 1.375rem;
 
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.3125rem;
 
   font-size: 0.88rem;
   line-height: 1.45;
@@ -5076,32 +5097,32 @@ label:hover {
 
 .questoes-criticas-page
 .questoes-criticas-voltar-card {
-  min-height: 68px;
+  min-height: 4.25rem;
 
-  padding: 14px 20px;
+  padding: 0.875rem 1.25rem;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.05);
-  gap: 16px;
+  gap: 1rem;
 }
 
 .questoes-criticas-page
 .questoes-criticas-btn-voltar {
-  min-width: 100px;
-  min-height: 38px;
+  min-width: 6.25rem;
+  min-height: 2.375rem;
 
   margin: 0;
-  padding: 0 16px;
+  padding: 0 1rem;
 
   display: inline-flex;
   align-items: center;
@@ -5110,9 +5131,9 @@ label:hover {
   background: var(--amarelo);
 
   border:
-    1px solid #e2c85b;
+    0.0625rem solid #e2c85b;
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
 
@@ -5148,7 +5169,7 @@ label:hover {
 
 .questoes-criticas-page
 footer {
-  margin-top: 34px;
+  margin-top: 2.125rem;
 
   text-align: center;
 }
@@ -5169,13 +5190,13 @@ footer p {
 .minhas-anotacoes-page
 .minhas-anotacoes-header {
   position: relative;
-  padding-top: 4px;
-  padding-bottom: 18px;
+  padding-top: 0.25rem;
+  padding-bottom: 1.125rem;
 }
 
 .minhas-anotacoes-page
 .minhas-anotacoes-header-identificacao {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   display: flex;
   flex-direction: column;
@@ -5197,7 +5218,7 @@ footer p {
 :is(.consulta-expirada-page, .desempenho-expirado-page) .historico-header-identificacao h2,
 .minhas-anotacoes-page
 .minhas-anotacoes-header-identificacao h2 {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
 
   font-size: 1.24rem;
   font-weight: 500;
@@ -5212,12 +5233,12 @@ footer p {
 .minhas-anotacoes-header-acoes {
   position: absolute;
 
-  right: 38px;
-  top: 43px;
+  right: 2.375rem;
+  top: 2.6875rem;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 :is(.consulta-expirada-page, .desempenho-expirado-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-icon-actions .btn,
@@ -5268,12 +5289,12 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-escolha-card {
-  padding: 15px 20px 17px;
+  padding: 0.9375rem 1.25rem 1.0625rem;
 }
 
 .minhas-anotacoes-page
 .minhas-anotacoes-escolha-titulo {
-  margin: 0 0 22px;
+  margin: 0 0 1.375rem;
 
   font-size: 1.10rem;
   font-weight: 600;
@@ -5286,8 +5307,8 @@ footer p {
   display: flex;
   align-items: flex-end;
 
-  column-gap: 38px;
-  row-gap: 14px;
+  column-gap: 2.375rem;
+  row-gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -5297,7 +5318,7 @@ footer p {
   display: flex;
   flex-direction: column;
 
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .minhas-anotacoes-page
@@ -5310,13 +5331,13 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-select {
-  width: 300px;
-  height: 28px;
-  min-height: 28px;
-  padding: 2px 10px;
+  width: 18.75rem;
+  height: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.625rem;
   border:
-    1px solid rgba(31, 78, 121, 0.24);
-  border-radius: 5px;
+    0.0625rem solid rgba(31, 78, 121, 0.24);
+  border-radius: 0.3125rem;
   background: #ffffff;
   color: var(--azul);
   font-family: inherit;
@@ -5328,7 +5349,7 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-total-card {
-  padding: 13px 20px;
+  padding: 0.8125rem 1.25rem;
 }
 
 .minhas-anotacoes-page
@@ -5347,15 +5368,15 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-identificacao-card {
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
 
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.05);
 }
 
@@ -5371,7 +5392,7 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-assunto-titulo {
-  margin-top: 4px;
+  margin-top: 0.25rem;
 
   font-size: 0.98rem;   /* antes 0.84rem */
   font-weight: 400;
@@ -5383,15 +5404,15 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-anotacao-card {
-  padding: 18px 22px;
+  padding: 1.125rem 1.375rem;
 
   border-top:
-    4px solid var(--amarelo);
+    0.25rem solid var(--amarelo);
 
-  border-radius: 10px;
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px
+    0 0.25rem 0.75rem
     rgba(31, 78, 121, 0.06);
 }
 
@@ -5412,7 +5433,7 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-resposta {
-  margin-top: 6px;
+  margin-top: 0.375rem;
   font-size: 0.90rem;
   color: var(--azul);
 }
@@ -5421,7 +5442,7 @@ footer p {
 .minhas-anotacoes-resposta strong {
   display: block;
 
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 
   font-weight: 600;
 }
@@ -5438,7 +5459,7 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-comentario {
-  margin-top: 8px;
+  margin-top: 0.5rem;
   font-size: 0.90rem;
   color: var(--azul);
 }
@@ -5447,7 +5468,7 @@ footer p {
 .minhas-anotacoes-comentario strong {
   display: block;
 
-  margin-bottom: 7px;
+  margin-bottom: 0.4375rem;
 
   font-weight: 600;
 }
@@ -5464,17 +5485,17 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-bloco-aluno {
-  margin-top: 17px;
-  padding: 14px 16px;
+  margin-top: 1.0625rem;
+  padding: 0.875rem 1rem;
   background: #fffdf1;
   border:
-    1px solid rgba(226, 200, 91, 0.35);
-  border-radius: 7px;
+    0.0625rem solid rgba(226, 200, 91, 0.35);
+  border-radius: 0.4375rem;
 }
 
 .minhas-anotacoes-page
 .minhas-anotacoes-bloco-aluno-titulo {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 
   font-size: 0.88rem;
   font-weight: 600;
@@ -5496,20 +5517,20 @@ footer p {
 
 .minhas-anotacoes-page
 .minhas-anotacoes-acoes {
-  margin-top: 24px;
+  margin-top: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .minhas-anotacoes-page
 .minhas-anotacoes-btn {
-  min-width: 92px;
-  min-height: 36px;
+  min-width: 5.75rem;
+  min-height: 2.25rem;
 
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
@@ -5518,9 +5539,9 @@ footer p {
   background: var(--amarelo);
 
   border:
-    1px solid #e2c85b;
+    0.0625rem solid #e2c85b;
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
 
@@ -5554,14 +5575,14 @@ footer p {
 .minhas-anotacoes-page
 .minhas-anotacoes-textarea-edicao {
   width: 100%;
-  min-height: 105px;
+  min-height: 6.5625rem;
 
-  padding: 12px;
+  padding: 0.75rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.22);
+    0.0625rem solid rgba(31, 78, 121, 0.22);
 
-  border-radius: 6px;
+  border-radius: 0.375rem;
 
   background: #ffffff;
 
@@ -5582,17 +5603,17 @@ footer p {
     rgba(31, 78, 121, 0.48);
 
   box-shadow:
-    0 0 0 2px
+    0 0 0 0.125rem
     rgba(31, 78, 121, 0.06);
 }
 
 .minhas-anotacoes-page
 .minhas-anotacoes-edicao-acoes {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
 
   flex-wrap: wrap;
 }
@@ -5605,13 +5626,13 @@ footer p {
 .mensagens-prof-header {
   position: relative;
 
-  padding-top: 4px;
-  padding-bottom: 16px;
+  padding-top: 0.25rem;
+  padding-bottom: 1rem;
 }
 
 .mensagens-prof-page
 .mensagens-prof-header-identificacao {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   display: flex;
   flex-direction: column;
@@ -5632,7 +5653,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-header-identificacao h2 {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
 
   font-size: 1.28rem;
   font-weight: 500;
@@ -5647,12 +5668,12 @@ footer p {
 .mensagens-prof-header-acoes {
   position: absolute;
 
-  right: 38px;
-  top: 37px;
+  right: 2.375rem;
+  top: 2.3125rem;
 
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .mensagens-prof-page
@@ -5681,7 +5702,7 @@ footer p {
 
   box-shadow: none;
 
-  transform: translateY(1px);
+  transform: translateY(0.0625rem);
 }
 
 .mensagens-prof-page
@@ -5703,12 +5724,12 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-escolha-card {
-  padding: 15px 20px 17px;
+  padding: 0.9375rem 1.25rem 1.0625rem;
 }
 
 .mensagens-prof-page
 .mensagens-prof-escolha-titulo {
-  margin: 0 0 22px;
+  margin: 0 0 1.375rem;
 
   font-size: 1.10rem;
   font-weight: 600;
@@ -5721,8 +5742,8 @@ footer p {
   display: flex;
   align-items: flex-end;
 
-  column-gap: 38px;
-  row-gap: 14px;
+  column-gap: 2.375rem;
+  row-gap: 0.875rem;
 
   flex-wrap: wrap;
 }
@@ -5732,7 +5753,7 @@ footer p {
   display: flex;
   flex-direction: column;
 
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .mensagens-prof-page
@@ -5745,15 +5766,15 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-select {
-  width: 300px;
-  min-height: 32px;
+  width: 18.75rem;
+  min-height: 2rem;
 
-  padding: 4px 10px;
+  padding: 0.25rem 0.625rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.24);
+    0.0625rem solid rgba(31, 78, 121, 0.24);
 
-  border-radius: 5px;
+  border-radius: 0.3125rem;
 
   background: #ffffff;
 
@@ -5768,7 +5789,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-total-card {
-  padding: 13px 20px;
+  padding: 0.8125rem 1.25rem;
 }
 
 .mensagens-prof-page
@@ -5785,13 +5806,13 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-identificacao-card {
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
 
-  border-top: 4px solid var(--amarelo);
-  border-radius: 10px;
+  border-top: 0.25rem solid var(--amarelo);
+  border-radius: 0.625rem;
 
   box-shadow:
-    0 4px 12px rgba(31, 78, 121, 0.05);
+    0 0.25rem 0.75rem rgba(31, 78, 121, 0.05);
 }
 
 .mensagens-prof-page
@@ -5806,7 +5827,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-assunto-titulo {
-  margin-top: 4px;
+  margin-top: 0.25rem;
 
   font-size: 0.92rem;
   font-weight: 400;
@@ -5832,7 +5853,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-comentario {
-  margin-top: 20px;
+  margin-top: 1.25rem;
 
   font-size: 0.90rem;
 
@@ -5843,7 +5864,7 @@ footer p {
 .mensagens-prof-comentario strong {
   display: block;
 
-  margin-bottom: 9px;
+  margin-bottom: 0.5625rem;
 
   font-size: 0.86rem;
   font-weight: 550;
@@ -5862,11 +5883,11 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-mensagem {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
-  padding: 11px 11px;
+  padding: 0.6875rem 0.6875rem;
 
-  border-radius: 6px;
+  border-radius: 0.375rem;
 
   font-size: 0.88rem;
   line-height: 1.55;
@@ -5880,7 +5901,7 @@ footer p {
   background: #fffdf1;
 
   border-left:
-    4px solid #e6d85a;
+    0.25rem solid #e6d85a;
 }
 
 
@@ -5891,7 +5912,7 @@ footer p {
   background: #eef6ff;
 
   border-left:
-    4px solid #7aa7d9;
+    0.25rem solid #7aa7d9;
 }
 
 
@@ -5899,7 +5920,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-mensagem-autor {
-  margin-bottom: 5px;
+  margin-bottom: 0.3125rem;
 
   font-size: 0.73rem;
   font-weight: 550;
@@ -5912,7 +5933,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-mensagem-texto {
-  margin: -1.5rem 0 0 56px;
+  margin: -1.5rem 0 0 3.5rem;
   padding: 0;
 
   white-space: pre-line;
@@ -5931,13 +5952,13 @@ footer p {
 .dashboard-aluno-header {
   position: relative;
 
-  padding-top: 4px;
-  padding-bottom: 16px;
+  padding-top: 0.25rem;
+  padding-bottom: 1rem;
 }
 
 .dashboard-aluno-page
 .dashboard-aluno-header-identificacao {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   display: flex;
   flex-direction: column;
@@ -5958,7 +5979,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-header-identificacao h2 {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
 
   font-size: 1.24rem;
   font-weight: 500;
@@ -5972,15 +5993,15 @@ footer p {
 .dashboard-aluno-nome {
   position: fixed;
 
-  top: 9px;
-  right: 47px;
+  top: 0.5625rem;
+  right: 2.9375rem;
 
   z-index: 9999;
 
   font-size: 0.68rem;
   font-weight: 600;
 
-  letter-spacing: 0.4px;
+  letter-spacing: 0.025rem;
 
   color: #4b5563;
 
@@ -5994,7 +6015,7 @@ footer p {
 .dashboard-aluno-nome-tooltip {
   position: absolute;
 
-  right: calc(100% + 8px);
+  right: calc(100% + 0.5rem);
   top: 50%;
 
   transform: translateY(-50%);
@@ -6002,7 +6023,7 @@ footer p {
   font-size: 0.68rem;
   font-weight: 600;
 
-  letter-spacing: 0.2px;
+  letter-spacing: 0.0125rem;
 
   color: #4b5563;
 
@@ -6029,13 +6050,13 @@ footer p {
 .dashboard-aluno-header-acoes {
   position: absolute;
 
-  right: 38px;
-  top: 37px;
+  right: 2.375rem;
+  top: 2.3125rem;
 
   display: flex;
   align-items: center;
 
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .dashboard-aluno-page
@@ -6084,7 +6105,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-disciplinas-card {
-  padding: 18px 24px;
+  padding: 1.125rem 1.5rem;
 }
 
 .dashboard-aluno-page
@@ -6107,7 +6128,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-lista-disciplinas {
-  margin-top: 22px;
+  margin-top: 1.375rem;
 }
 
 
@@ -6115,14 +6136,14 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-card {
-  margin-bottom: 11px;
+  margin-bottom: 0.6875rem;
 
-  padding: 12px 14px;
+  padding: 0.75rem 0.875rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.14);
+    0.0625rem solid rgba(31, 78, 121, 0.14);
 
-  border-radius: 8px;
+  border-radius: 0.5rem;
 
   background: #ffffff;
 
@@ -6140,14 +6161,14 @@ footer p {
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 
   cursor: pointer;
 }
 
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-nome {
-  padding-left: 8px;
+  padding-left: 0.5rem;
 
   font-size: 0.94rem;
   font-weight: 600;
@@ -6160,21 +6181,21 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-assuntos {
-  margin-top: 10px;
+  margin-top: 0.625rem;
 }
 
 .dashboard-aluno-page
 .dashboard-aluno-assunto-card {
-  margin-top: 8px;
+  margin-top: 0.5rem;
 
-  margin-left: 8px;
+  margin-left: 0.5rem;
 
-  padding: 9px 12px;
+  padding: 0.5625rem 0.75rem;
 
   border:
-    1px solid rgba(31, 78, 121, 0.12);
+    0.0625rem solid rgba(31, 78, 121, 0.12);
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   background: #ffffff;
 }
@@ -6185,12 +6206,12 @@ footer p {
   align-items: center;
   justify-content: space-between;
 
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .dashboard-aluno-page
 .dashboard-aluno-assunto-nome {
-  padding-left: 10px;
+  padding-left: 0.625rem;
 
   font-size: 0.84rem;
   font-weight: 400;
@@ -6203,7 +6224,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-assunto-nota {
-  min-width: 32px;
+  min-width: 2rem;
   text-align: right;
   font-size: 0.90rem;
   font-weight: 600;
@@ -6219,7 +6240,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-nota {
-  min-width: 42px;
+  min-width: 2.625rem;
   text-align: right;
   font-size: 0.90rem;
   font-weight: 600;
@@ -6279,21 +6300,21 @@ footer p {
   position: absolute;
 
   right: 0;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 0.5rem);
 
-  width: 285px;
+  width: 17.8125rem;
 
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 
   background: #ffffff;
 
   border:
-    1px solid rgba(31, 78, 121, 0.18);
+    0.0625rem solid rgba(31, 78, 121, 0.18);
 
-  border-radius: 7px;
+  border-radius: 0.4375rem;
 
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.10);
+    0 0.25rem 0.75rem rgba(0, 0, 0, 0.10);
 
   color: #4b5563;
 
@@ -6330,7 +6351,7 @@ footer p {
 
 .dashboard-aluno-page
 .dashboard-aluno-sem-assuntos {
-  margin: 8px 0 2px 28px;
+  margin: 0.5rem 0 0.125rem 1.75rem;
 
   font-size: 0.80rem;
 
@@ -6344,8 +6365,8 @@ footer p {
 ===================================================== */
 
 .home-page .home-header {
-  padding-top: 10px;
-  padding-bottom: 3px;
+  padding-top: 0.625rem;
+  padding-bottom: 0.1875rem;
   min-height: 0;
 }
 
@@ -6379,8 +6400,8 @@ footer p {
 ===================================================== */
 
 .login-page header {
-  padding-top: 11px;
-  padding-bottom: 23px;
+  padding-top: 0.6875rem;
+  padding-bottom: 1.4375rem;
   min-height: 0;
 }
 
@@ -6393,8 +6414,8 @@ footer p {
 ===================================================== */
 
 .cursos-page .cursos-header {
-  padding-top: 26px;
-  padding-bottom: 30px;
+  padding-top: 1.625rem;
+  padding-bottom: 1.875rem;
   min-height: 0;
 }
 
@@ -6430,8 +6451,8 @@ footer p {
 ===================================================== */
 
 .curso-page .curso-header {
-  padding-top: 25px;
-  padding-bottom: 33px;
+  padding-top: 1.5625rem;
+  padding-bottom: 2.0625rem;
   min-height: 0;
 }
 
@@ -6460,7 +6481,7 @@ footer p {
 }
 
 .curso-page main.container {
-  margin-top: 18px;
+  margin-top: 1.125rem;
 }
 
 /* =====================================================
@@ -6468,8 +6489,8 @@ footer p {
 ===================================================== */
 
 .disciplinas-page .disciplinas-header {
-  padding-top: 28px;
-  padding-bottom: 34px;
+  padding-top: 1.75rem;
+  padding-bottom: 2.125rem;
   min-height: 0;
 }
 
@@ -6499,8 +6520,8 @@ footer p {
 
 /* Cards das disciplinas mais compactos */
 .disciplinas-page .disciplina-curso-card {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
   min-height: 0;
 }
 
@@ -6509,7 +6530,7 @@ footer p {
 }
 
 .disciplinas-page .disciplina-progresso {
-  margin-top: 8px;
+  margin-top: 0.5rem;
 }
 
 /* =====================================================
@@ -6517,8 +6538,8 @@ footer p {
 ===================================================== */
 
 .assuntos-page .assuntos-header {
-  padding-top: 28px;
-  padding-bottom: 34px;
+  padding-top: 1.75rem;
+  padding-bottom: 2.125rem;
   min-height: 0;
 }
 
@@ -6566,7 +6587,7 @@ footer p {
 
 .teoria-page .teoria-header-identificacao {
   width: max-content;
-  max-width: calc(100% - 220px);
+  max-width: calc(100% - 13.75rem);
   margin: 0 auto;
   text-align: center;
 }
@@ -6580,14 +6601,14 @@ footer p {
   font-size: 0.95rem;
   font-weight: 400;
   display: block;
-  margin-top: 3px;
+  margin-top: 0.1875rem;
 }
 
 .questoes-disciplinas-page .questoes-disciplinas-header {
   position: relative;
 
-  padding-top: 11px;
-  padding-bottom: 26px;
+  padding-top: 0.6875rem;
+  padding-bottom: 1.625rem;
 
   min-height: 0;
 
@@ -6599,24 +6620,24 @@ footer p {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 .questoes-disciplinas-page .questoes-disciplinas-header-acoes {
   position: absolute;
-  right: 24px;
-  top: 44px;
+  right: 1.5rem;
+  top: 2.75rem;
 
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 1.625rem;
 }
 
 .questoes-assuntos-page .questoes-assuntos-header {
   position: relative;
 
-  padding-top: 11px;
-  padding-bottom: 23px;
+  padding-top: 0.6875rem;
+  padding-bottom: 1.4375rem;
 
   min-height: 0;
 
@@ -6628,19 +6649,19 @@ footer p {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 .questoes-assuntos-page .questoes-assuntos-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 50px;
+  right: 1.5rem;
+  top: 3.125rem;
 
   display: flex;
   align-items: center;
 
-  gap: 26px;
+  gap: 1.625rem;
 }
 
 .questoes-assuntos-page .questoes-assuntos-header-acoes .btn {
@@ -6689,7 +6710,7 @@ footer p {
 }
 
 .questoes-assuntos-page .questoes-assuntos-modulo {
-  margin: 7px 0 0 0;
+  margin: 0.4375rem 0 0 0;
 
   font-size: 1.22rem;
   font-weight: 500;
@@ -6741,8 +6762,8 @@ footer p {
 .questoes-pratica-page .questoes-pratica-header {
   position: relative;
 
-  padding-top: 10px;
-  padding-bottom: 23px;
+  padding-top: 0.625rem;
+  padding-bottom: 1.4375rem;
 
   min-height: 0;
 
@@ -6754,11 +6775,11 @@ footer p {
     );
 
   border-bottom:
-    1px solid rgba(31, 78, 121, 0.06);
+    0.0625rem solid rgba(31, 78, 121, 0.06);
 }
 
 .questoes-pratica-page .questoes-pratica-header-identificacao {
-  margin-top: 6px;
+  margin-top: 0.375rem;
 
   display: flex;
   flex-direction: column;
@@ -6778,7 +6799,7 @@ footer p {
 }
 
 .questoes-pratica-page .questoes-pratica-modulo {
-  margin: 3px 0 0 0;
+  margin: 0.1875rem 0 0 0;
 
   font-family: inherit;
   font-size: 1.12rem;
@@ -6790,13 +6811,13 @@ footer p {
 .questoes-pratica-page .questoes-pratica-header-acoes {
   position: absolute;
 
-  right: 24px;
-  top: 44px;
+  right: 1.5rem;
+  top: 2.75rem;
 
   display: flex;
   align-items: center;
 
-  gap: 26px;
+  gap: 1.625rem;
 }
 
 .questoes-pratica-page .questoes-pratica-header-acoes .btn {
@@ -6838,7 +6859,7 @@ footer p {
 
 /* Questões prática — largura da área principal */
 .questoes-pratica-page main.container {
-  max-width: 800px;
+  max-width: 50rem;
   margin-left: auto;
   margin-right: auto;
 }
@@ -6863,41 +6884,41 @@ footer p {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  gap: 23px;
+  gap: 1.4375rem;
   flex-wrap: nowrap;
 }
 
 .questoes-criticas-page .questoes-criticas-filtro-grupo {
-  width: 200px;
-  flex: 0 0 200px;
+  width: 12.5rem;
+  flex: 0 0 12.5rem;
 
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .questoes-criticas-page .questoes-criticas-select {
-  width: 205px;
-  min-height: 25px;
-  padding: 2px 10px;
+  width: 12.8125rem;
+  min-height: 1.5625rem;
+  padding: 0.125rem 0.625rem;
 }
 
 .questoes-criticas-page
 .questoes-criticas-alternativas {
-  margin-top: 14px;
+  margin-top: 0.875rem;
 
   display: flex;
   flex-direction: column;
 
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .questoes-criticas-page
 .questoes-criticas-alternativa {
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
 
-  border: 1px solid rgba(31, 78, 121, 0.16);
-  border-radius: 7px;
+  border: 0.0625rem solid rgba(31, 78, 121, 0.16);
+  border-radius: 0.4375rem;
 
   background: #ffffff;
 
@@ -6914,7 +6935,7 @@ footer p {
 
 .questoes-criticas-page
 .questoes-criticas-marcacoes {
-  margin-top: 14px;
+  margin-top: 0.875rem;
 
   font-size: 0.86rem;
   font-weight: 400;
@@ -6924,20 +6945,20 @@ footer p {
 
 .questoes-criticas-page
 .questoes-criticas-comentario-label {
-  margin-bottom: 5px;
+  margin-bottom: 0.3125rem;
 
   font-weight: 400;
 }
 
 .questoes-criticas-page .questoes-criticas-alternativas {
-  margin-top: 14px;
+  margin-top: 0.875rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .questoes-criticas-page .questoes-criticas-alternativa {
-  padding: 2px 0;
+  padding: 0.125rem 0;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -6955,8 +6976,8 @@ footer p {
 .questoes-criticas-comentario
 .questoes-criticas-comentario-label {
   display: block !important;
-  margin-top: 14px !important;
-  margin-bottom: 8px !important;
+  margin-top: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
   font-size: 0.85rem !important;
   font-weight: 600 !important;
   color: var(--azul) !important;
@@ -6985,7 +7006,7 @@ footer p {
 }
 
 .questoes-criticas-page .questoes-criticas-marcacoes {
-  margin-top: 10px !important;
+  margin-top: 0.625rem !important;
   text-align: right !important;
   font-size: 0.72rem !important;
   font-weight: 400 !important;
@@ -7003,8 +7024,8 @@ footer p {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  margin-top: 26px;
+  gap: 1.25rem;
+  margin-top: 1.625rem;
 }
 
 /* =========================================================
@@ -7016,23 +7037,23 @@ footer p {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 19px;
-  margin-top: 26px;
+  gap: 1.1875rem;
+  margin-top: 1.625rem;
 }
 
 .mensagens-prof-page section[id^="reformulacao_"] > div > .btn,
 .mensagens-prof-page
 .mensagens-prof-btn-final {
-  min-width: 120px;
-  min-height: 36px;
+  min-width: 7.5rem;
+  min-height: 2.25rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
   color: var(--azul);
   font-family: inherit;
   font-size: 0.84rem;
@@ -7054,16 +7075,16 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-btn-enviar {
-  min-width: 120px;
-  min-height: 36px;
+  min-width: 7.5rem;
+  min-height: 2.25rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
   color: var(--azul);
   font-family: inherit;
   font-size: 0.84rem;
@@ -7083,7 +7104,7 @@ footer p {
 
 .mensagens-prof-page
 .mensagens-prof-responder-titulo {
-  margin: 0 0 10px;
+  margin: 0 0 0.625rem;
   font-size: 0.93rem;
   font-weight: 600;
   color: var(--azul);
@@ -7091,7 +7112,7 @@ footer p {
 
 .home-page
 .home-como-funciona-header-secundario {
-  margin-top: 10px;
+  margin-top: 0.625rem;
 }
 
 /* =========================================================
@@ -7123,7 +7144,7 @@ body:has(#btnSairFaleClean) header nav .btn:hover {
 }
 
 body:has(#btnSairFaleClean) header nav {
-  gap: 8px !important;
+  gap: 0.5rem !important;
 }
 
 /* =========================================================
@@ -7131,16 +7152,16 @@ body:has(#btnSairFaleClean) header nav {
    ========================================================= */
 
 .fale-clean-btn-tipo {
-  min-width: 120px;
-  min-height: 36px;
+  min-width: 7.5rem;
+  min-height: 2.25rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: #fff9d6;
-  border: 1px solid transparent;
-  border-radius: 7px;
+  border: 0.0625rem solid transparent;
+  border-radius: 0.4375rem;
   color: var(--azul);
   font-family: inherit;
   font-size: 0.84rem;
@@ -7164,22 +7185,22 @@ body:has(#btnSairFaleClean) header nav {
 }
 
 .fale-clean-form-titulo {
-  margin: 0 0 18px;
+  margin: 0 0 1.125rem;
   font-size: inherit;
   font-weight: 700;
   color: var(--azul);
 }
 
 .fale-clean-btn-acao {
-  min-height: 36px;
-  margin: 12px 0 0;
-  padding: 0 14px;
+  min-height: 2.25rem;
+  margin: 0.75rem 0 0;
+  padding: 0 0.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
   color: var(--azul);
   font-family: inherit;
   font-size: 0.84rem;
@@ -7201,16 +7222,16 @@ body:has(#btnSairFaleClean) header nav {
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
-  min-height: 75px;
-  padding: 12px 16px;
-  margin-top: 16px;
+  min-height: 4.6875rem;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
 }
 
 .fale-clean-mensagens-anteriores
 #historicoAtendimentos {
   width: auto;
   align-self: flex-end;
-  margin-top: 8px !important;
+  margin-top: 0.5rem !important;
 }
 
 .fale-clean-sem-historico {
@@ -7232,20 +7253,20 @@ body:has(#btnSairFaleClean) header nav {
 #mensagemAluno:focus {
   outline: none;
   border-color: var(--azul) !important;
-  box-shadow: 0 0 0 1px rgba(31, 78, 121, 0.10);
+  box-shadow: 0 0 0 0.0625rem rgba(31, 78, 121, 0.10);
 }
 
 .fale-clean-btn-whatsapp {
   width: 100%;
-  min-height: 42px;
+  min-height: 2.625rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
   color: var(--azul);
   font-family: inherit;
   font-size: 0.84rem;
@@ -7264,7 +7285,7 @@ body:has(#btnSairFaleClean) header nav {
 }
 
 .fale-clean-whatsapp-titulo {
-  margin: 0 0 13px;
+  margin: 0 0 0.8125rem;
 }
 
 .fale-clean-whatsapp-area {
@@ -7275,22 +7296,22 @@ body:has(#btnSairFaleClean) header nav {
 
 .home-page
 .home-cursos-disponiveis-card {
-  margin-bottom: 17px;
+  margin-bottom: 1.0625rem;
 }
 
 .home-page
 .home-localizar-card {
-  margin-bottom: 39px;
+  margin-bottom: 2.4375rem;
 }
 
 .home-page
 .home-como-funciona-card {
-  margin-bottom: 39px;
+  margin-bottom: 2.4375rem;
 }
 
 .home-page
 .home-brand {
-  padding-top: 5px;
+  padding-top: 0.3125rem;
 }
 
 .home-page
@@ -7318,7 +7339,7 @@ body:has(#btnSairFaleClean) header nav {
 
 .home-page
 .home-brand-concursos {
-  margin-top: 3px;
+  margin-top: 0.1875rem;
   font-size: 1.08rem;
   font-weight: 500;
   letter-spacing: 0.17em;
@@ -7331,7 +7352,7 @@ body:has(#btnSairFaleClean) header nav {
 
 .home-page
 .home-atendimento-btn {
-  min-height: 50px;
+  min-height: 3.125rem;
   padding-top: 0;
   padding-bottom: 0;
   display: inline-flex;
@@ -7355,7 +7376,7 @@ body:has(#formMeusDados) header nav .btn {
   font-weight: 400;
   text-decoration: none;
   box-shadow: none;
-  transform: translateY(4px);
+  transform: translateY(0.25rem);
 }
 
 body:has(#formMeusDados) header nav .btn:hover {
@@ -7365,22 +7386,22 @@ body:has(#formMeusDados) header nav .btn:hover {
 }
 
 body:has(#formMeusDados) header nav {
-  gap: 8px !important;
+  gap: 0.5rem !important;
 }
 
 .meus-dados-btn-atualizar {
   width: 100%;
-  min-height: 41px;
-  margin: 14px 0 0;
-  padding: 0 14px;
+  min-height: 2.5625rem;
+  margin: 0.875rem 0 0;
+  padding: 0 0.875rem;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
   font-family: inherit;
@@ -7433,22 +7454,22 @@ body:has(#listaReembolsos) header nav .btn:hover {
 }
 
 body:has(#listaReembolsos) header nav {
-  gap: 23px !important;
+  gap: 1.4375rem !important;
 }
 
 .reembolso-btn-solicitados {
-  min-width: 190px;
-  min-height: 40px;
+  min-width: 11.875rem;
+  min-height: 2.5rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
   font-family: inherit;
@@ -7500,20 +7521,20 @@ body[data-page="curso-info"]
 .curso-info-opcao-acesso {
   display: block;
   cursor: pointer;
-  border-radius: 28px;
-  padding-top: 9.5px;
-  padding-bottom: 9.5px;
+  border-radius: 1.75rem;
+  padding-top: 0.59375rem;
+  padding-bottom: 0.59375rem;
 }
 
 body[data-page="curso-info"]
 .curso-info-disciplina {
-  padding: 10px 14px;
-  margin-bottom: 14px;
+  padding: 0.625rem 0.875rem;
+  margin-bottom: 0.875rem;
 }
 
 body[data-page="curso-info"]
 .curso-info-assunto {
-  padding: 2px 4px 5px 12px;
+  padding: 0.125rem 0.25rem 0.3125rem 0.75rem;
   border: none;
   background: transparent;
   box-shadow: none;
@@ -7526,18 +7547,18 @@ body[data-page="curso-info"]
 
 body[data-page="curso-info"]
 .curso-info-btn-adquirir {
-  min-width: 165px;
-  min-height: 45px;
+  min-width: 10.3125rem;
+  min-height: 2.8125rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
   font-family: inherit;
@@ -7560,30 +7581,30 @@ body[data-page="curso-info"]
 
 body[data-page="curso-info"]
 .curso-info-aviso-demo-itens {
-  margin-top: 12px;
-  margin-left: 12px;
+  margin-top: 0.75rem;
+  margin-left: 0.75rem;
   line-height: 1.8;
 }
 
 body[data-page="curso-info"]
 .curso-info-aviso-demo-obrigado {
-  margin-top: 14px;
+  margin-top: 0.875rem;
 }
 
 body[data-page="curso-info"]
 .curso-info-btn-cupom {
-  width: 165px;
-  min-height: 43px;
+  width: 10.3125rem;
+  min-height: 2.6875rem;
   margin: 0;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   background: var(--amarelo);
-  border: 1px solid #e2c85b;
-  border-radius: 7px;
+  border: 0.0625rem solid #e2c85b;
+  border-radius: 0.4375rem;
 
   color: var(--azul);
   font-family: inherit;
@@ -7592,7 +7613,7 @@ body[data-page="curso-info"]
 
   box-shadow: none;
   position: relative;
-  top: 3px;
+  top: 0.1875rem;
 
   transition:
     background-color 0.15s ease,
@@ -7609,12 +7630,12 @@ body[data-page="curso-info"]
 /* Cabeçalhos compartilhados: somente apresentação e identificação. */
 header.ro-header {
   display: grid;
-  grid-template-columns: minmax(144px, 1fr) minmax(0, 3fr) minmax(144px, 1fr);
+  grid-template-columns: minmax(9rem, 1fr) minmax(0, 3fr) minmax(9rem, 1fr);
   align-items: center;
-  gap: 10px 16px;
+  gap: 0.625rem 1rem;
   height: auto !important;
   min-height: 0 !important;
-  padding: 16px 24px !important;
+  padding: 1rem 1.5rem !important;
 }
 
 .ro-header .ro-header-titles {
@@ -7649,7 +7670,7 @@ header.ro-header {
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   min-width: 0;
   max-width: 100%;
 }
@@ -7665,16 +7686,16 @@ header.ro-header {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 8px !important;
+  gap: 0.5rem !important;
 }
 
 /* Não força display: controles ocultos pelas páginas continuam ocultos. */
 .ro-header .ro-header-navigation :is(a, button) {
-  min-width: 44px !important;
-  min-height: 44px !important;
+  min-width: 2.75rem !important;
+  min-height: 2.75rem !important;
   height: auto !important;
   max-width: 100%;
-  padding: 4px 10px !important;
+  padding: 0.25rem 0.625rem !important;
   margin: 0 !important;
   transform: none !important;
   display: inline-flex;
@@ -7685,8 +7706,8 @@ header.ro-header {
 }
 
 .ro-header :is(a, button):focus-visible {
-  outline: 2px solid var(--azul);
-  outline-offset: 3px;
+  outline: 0.125rem solid var(--azul);
+  outline-offset: 0.1875rem;
 }
 
 .ro-header .ro-header-identity {
@@ -7711,10 +7732,10 @@ header.ro-header {
 
 .ro-header .ro-identity {
   display: block;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   max-width: 100%;
-  padding: 4px;
+  padding: 0.25rem;
   font-family: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -7734,7 +7755,7 @@ header.ro-header {
   .ro-header .ro-identity::after {
     content: attr(data-nome-ampliado);
     display: block;
-    margin-top: 2px;
+    margin-top: 0.125rem;
     font-size: 0.8125rem;
     font-weight: 400;
     line-height: 1.2;
@@ -7768,7 +7789,7 @@ header.ro-header {
 @media (max-width: 900px) {
   header.ro-header {
     grid-template-columns: minmax(0, 1fr);
-    padding: 12px 16px !important;
+    padding: 0.75rem 1rem !important;
   }
 
   .ro-header .ro-header-titles {
@@ -7810,8 +7831,8 @@ header.ro-header {
 }
 
 .home-header.ro-header .ro-header-access .home-icon-btn {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
 }
 
 @media (max-width: 900px) {
@@ -7832,7 +7853,7 @@ header.ro-header {
 }
 
 .teoria-page .questoes-bateria-info {
-  min-width: min(220px, 100%);
+  min-width: min(13.75rem, 100%);
 }
 
 @media (max-width: 1023px) {
@@ -7846,23 +7867,23 @@ header.ro-header {
     position: static;
     grid-row: 2;
     flex-direction: row;
-    gap: 8px;
-    margin: 0 0 24px;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
   }
 
   .teoria-page .botao-estudo-lateral {
     flex: 1;
     min-width: 0;
     width: auto;
-    min-height: 44px;
-    padding: 8px 4px;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.25rem;
     flex-direction: row;
     gap: 0;
-    border-radius: 10px;
+    border-radius: 0.625rem;
   }
 
   .teoria-page .icone-menu-lateral {
-    margin: 0 5px 0 0;
+    margin: 0 0.3125rem 0 0;
   }
 
   .teoria-page #detalhes_aula .btn,
@@ -7873,7 +7894,7 @@ header.ro-header {
   .sprint-header ~ .container .sprint-dificuldade-opcao,
   .sprint-header ~ .container .btn,
   .sprint-header ~ .container label:has(input[type="checkbox"]) {
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 
   .sprint-header ~ .container label:has(input[type="checkbox"]) {
@@ -7889,8 +7910,8 @@ header.ro-header {
   }
 
   .questoes-criticas-page .questoes-criticas-filtro-grupo {
-    flex: 0 1 205px;
-    width: 205px;
+    flex: 0 1 12.8125rem;
+    width: 12.8125rem;
     min-width: 0;
     max-width: 100%;
   }
@@ -7898,7 +7919,7 @@ header.ro-header {
   .questoes-criticas-page .questoes-criticas-select {
     width: 100%;
     min-width: 0;
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 }
 
@@ -7920,14 +7941,14 @@ header.ro-header {
   .minhas-anotacoes-page .minhas-anotacoes-select,
   .mensagens-prof-page .mensagens-prof-select {
     max-width: 100%;
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 
   .minhas-anotacoes-page .minhas-anotacoes-btn,
   .mensagens-prof-page section[id^="reformulacao_"] > div > .btn,
   .mensagens-prof-page .mensagens-prof-btn-final,
   .mensagens-prof-page .mensagens-prof-btn-enviar {
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 
   .minhas-anotacoes-page .minhas-anotacoes-navegacao-final,
@@ -7946,7 +7967,7 @@ body[data-page="curso-info"] main.container {
 @media (max-width: 767px) {
   /* O mínimo inline de 240px excede a área interna da recuperação no celular. */
   .login-page #recuperarLogin {
-    flex: 1 1 240px !important;
+    flex: 1 1 15rem !important;
     min-width: 0 !important;
     max-width: 100%;
   }
@@ -7959,20 +7980,20 @@ body[data-page="curso-info"] main.container {
   body[data-page="curso-info"] #codigo_cupom_desconto,
   body[data-page="curso-info"] #btnAplicarCupom,
   .retorno-pagamento-page main .btn {
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 
   .login-page #toggleSenha,
   .auth-page button[id^="toggle"] {
-    min-width: 44px;
+    min-width: 2.75rem;
     right: 0 !important;
   }
 }
 
 /* Home: identificação no alto à direita, sem criar uma linha extra. */
 header.home-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  column-gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  column-gap: 0.5rem;
 }
 
 .home-header.ro-header .ro-header-titles {
@@ -7997,13 +8018,13 @@ header.home-header.ro-header {
   align-self: start;
   min-width: 0;
   /* Reserva espaço para a marca central mesmo em telas de 320 px. */
-  max-width: calc(100% - 36px) !important;
+  max-width: calc(100% - 2.25rem) !important;
   text-align: right;
 }
 
 .home-header.ro-header .ro-identity {
   box-sizing: border-box;
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-align: right;
   white-space: nowrap;
@@ -8018,7 +8039,7 @@ header.home-header.ro-header {
 
 .home-header.ro-header .ro-header-navigation .home-icon-btn {
   box-sizing: border-box;
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8031,16 +8052,16 @@ body.cursos-page {
 }
 
 .cursos-page .cursos-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  column-gap: 8px;
-  row-gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  column-gap: 0.5rem;
+  row-gap: 0.375rem;
   flex-shrink: 0;
 }
 
 .cursos-page .cursos-header.ro-header .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8063,11 +8084,11 @@ body.cursos-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: calc(100% - 52px) !important;
+  max-width: calc(100% - 3.25rem) !important;
 }
 
 .cursos-page .cursos-header.ro-header .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8080,7 +8101,7 @@ body.cursos-page {
 }
 
 .cursos-page .cursos-header.ro-header .cursos-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8089,13 +8110,13 @@ body.cursos-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .cursos-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 .cursos-page #lista,
@@ -8127,22 +8148,22 @@ body.curso-page[data-page="curso"] {
 }
 
 .curso-page[data-page="curso"] .curso-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .curso-page[data-page="curso"] .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .curso-page[data-page="curso"] .curso-header.ro-header .curso-header-titulo {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .curso-page[data-page="curso"] .curso-header.ro-header h1 {
@@ -8166,11 +8187,11 @@ body.curso-page[data-page="curso"] {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .curso-page[data-page="curso"] .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8183,7 +8204,7 @@ body.curso-page[data-page="curso"] {
 }
 
 .curso-page[data-page="curso"] .curso-header.ro-header .curso-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8192,13 +8213,13 @@ body.curso-page[data-page="curso"] {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .curso-page[data-page="curso"] > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
@@ -8217,22 +8238,22 @@ body.disciplinas-page[data-page="disciplinas"] {
 }
 
 .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .disciplinas-page[data-page="disciplinas"] .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header h1 {
@@ -8253,11 +8274,11 @@ body.disciplinas-page[data-page="disciplinas"] {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .disciplinas-page[data-page="disciplinas"] .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8270,7 +8291,7 @@ body.disciplinas-page[data-page="disciplinas"] {
 }
 
 .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header .disciplinas-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8279,13 +8300,13 @@ body.disciplinas-page[data-page="disciplinas"] {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .disciplinas-page[data-page="disciplinas"] > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
@@ -8309,22 +8330,22 @@ body.assuntos-page[data-page="assuntos"] {
 }
 
 .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .assuntos-page[data-page="assuntos"] .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header h1 {
@@ -8345,11 +8366,11 @@ body.assuntos-page[data-page="assuntos"] {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .assuntos-page[data-page="assuntos"] .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8362,7 +8383,7 @@ body.assuntos-page[data-page="assuntos"] {
 }
 
 .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header .assuntos-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8371,13 +8392,13 @@ body.assuntos-page[data-page="assuntos"] {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .assuntos-page[data-page="assuntos"] > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
@@ -8397,7 +8418,7 @@ body.assuntos-page[data-page="assuntos"] {
 }
 
 .assuntos-page[data-page="assuntos"] .assunto-curso-btn {
-  min-height: 44px;
+  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -8412,15 +8433,15 @@ body.teoria-page {
 }
 
 .teoria-page .teoria-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .teoria-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8428,7 +8449,7 @@ body.teoria-page {
 
 .teoria-page .teoria-header.ro-header .teoria-header-identificacao {
   width: auto;
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .teoria-page .teoria-header-disciplina #titulo_disciplina {
@@ -8440,7 +8461,7 @@ body.teoria-page {
 .teoria-page .teoria-header-assunto #titulo_assunto_header {
   font-size: 0.95rem;
   line-height: 1.35;
-  margin-top: 3px;
+  margin-top: 0.1875rem;
 }
 
 .teoria-page .teoria-header-identificacao {
@@ -8460,11 +8481,11 @@ body.teoria-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .teoria-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8477,7 +8498,7 @@ body.teoria-page {
 }
 
 .teoria-page .teoria-header.ro-header .teoria-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8486,13 +8507,13 @@ body.teoria-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .teoria-page > footer {
   flex-shrink: 0;
   margin-top: 0 !important;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
@@ -8508,14 +8529,14 @@ body.teoria-page {
 @media (min-width: 1024px) {
   .teoria-page .area-estudo {
     /* Os três controles laterais absolutos também precisam caber antes do rodapé. */
-    min-height: 400px;
+    min-height: 25rem;
   }
 }
 
 @media (max-width: 480px) {
   .teoria-page .ro-header-titles {
     /* O nome permanece acima; disciplina e assunto podem usar a largura da tela. */
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .teoria-page .teoria-header.ro-header .teoria-header-identificacao {
@@ -8532,15 +8553,15 @@ body:has(> .sprint-header) {
 }
 
 .sprint-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .sprint-header .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8548,7 +8569,7 @@ body:has(> .sprint-header) {
 
 .sprint-header.ro-header .sprint-header-identificacao {
   width: auto;
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .sprint-header #titulo_bateria {
@@ -8560,7 +8581,7 @@ body:has(> .sprint-header) {
 .sprint-header #subtitulo_bateria {
   font-size: 0.95rem;
   line-height: 1.35;
-  margin-top: 3px;
+  margin-top: 0.1875rem;
 }
 
 .sprint-header .sprint-header-identificacao {
@@ -8580,11 +8601,11 @@ body:has(> .sprint-header) {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .sprint-header .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -8597,7 +8618,7 @@ body:has(> .sprint-header) {
 }
 
 .sprint-header.ro-header .sprint-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8606,13 +8627,13 @@ body:has(> .sprint-header) {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .sprint-header ~ footer {
   flex-shrink: 0;
   margin-top: 0 !important;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
@@ -8628,7 +8649,7 @@ body:has(> .sprint-header) {
 @media (max-width: 480px) {
   .sprint-header .ro-header-titles {
     /* O nome permanece acima; disciplina e assunto podem usar a largura da tela. */
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .sprint-header.ro-header .sprint-header-identificacao {
@@ -8648,16 +8669,16 @@ body:has(> .sprint-header) {
 }
 
 .sprint-header ~ main + .container {
-  margin-top: 24px;
+  margin-top: 1.5rem;
   margin-bottom: 0;
 }
 
 /* O rótulo inteiro e o rádio devem caber juntos em todos os níveis. */
 .sprint-header ~ main .sprint-dificuldade-opcao {
   width: max-content;
-  min-width: 104px;
+  min-width: 6.5rem;
   max-width: 100%;
-  min-height: 44px;
+  min-height: 2.75rem;
   flex: 0 0 auto;
   white-space: nowrap;
   overflow-wrap: normal;
@@ -8680,22 +8701,22 @@ body.questoes-disciplinas-page {
 }
 
 .questoes-disciplinas-page .questoes-disciplinas-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .questoes-disciplinas-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .questoes-disciplinas-page .questoes-disciplinas-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .questoes-disciplinas-page #titulo_curso_nome {
@@ -8705,7 +8726,7 @@ body.questoes-disciplinas-page {
 }
 
 .questoes-disciplinas-page .ro-header #titulo_modulo_questoes {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -8727,11 +8748,11 @@ body.questoes-disciplinas-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .questoes-disciplinas-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -8745,7 +8766,7 @@ body.questoes-disciplinas-page {
 }
 
 .questoes-disciplinas-page .ro-header .questoes-disciplinas-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8754,13 +8775,13 @@ body.questoes-disciplinas-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .questoes-disciplinas-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 .questoes-disciplinas-page .questoes-disciplina-nome {
@@ -8768,12 +8789,12 @@ body.questoes-disciplinas-page {
 }
 
 .questoes-disciplinas-page .questoes-disciplina-btn {
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 @media (max-width: 480px) {
   .questoes-disciplinas-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .questoes-disciplinas-page .questoes-disciplinas-header.ro-header .ro-header-titles > div {
@@ -8803,22 +8824,22 @@ body.questoes-assuntos-page {
 }
 
 .questoes-assuntos-page .questoes-assuntos-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .questoes-assuntos-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .questoes-assuntos-page .questoes-assuntos-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .questoes-assuntos-page #titulo_curso_nome {
@@ -8828,7 +8849,7 @@ body.questoes-assuntos-page {
 }
 
 .questoes-assuntos-page .ro-header .questoes-assuntos-modulo {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -8850,11 +8871,11 @@ body.questoes-assuntos-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .questoes-assuntos-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -8868,7 +8889,7 @@ body.questoes-assuntos-page {
 }
 
 .questoes-assuntos-page .ro-header .questoes-assuntos-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -8877,13 +8898,13 @@ body.questoes-assuntos-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .questoes-assuntos-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 .questoes-assuntos-page .questoes-assunto-nome {
@@ -8891,12 +8912,12 @@ body.questoes-assuntos-page {
 }
 
 .questoes-assuntos-page .questoes-assunto-btn {
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 @media (max-width: 480px) {
   .questoes-assuntos-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .questoes-assuntos-page .questoes-assuntos-header.ro-header .ro-header-titles > div {
@@ -8930,22 +8951,22 @@ body.questoes-pratica-page {
 }
 
 .questoes-pratica-page .questoes-pratica-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .questoes-pratica-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .questoes-pratica-page .questoes-pratica-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .questoes-pratica-page #titulo_curso_nome {
@@ -8955,7 +8976,7 @@ body.questoes-pratica-page {
 }
 
 .questoes-pratica-page .ro-header .questoes-pratica-modulo {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -8977,11 +8998,11 @@ body.questoes-pratica-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .questoes-pratica-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -8995,7 +9016,7 @@ body.questoes-pratica-page {
 }
 
 .questoes-pratica-page .ro-header .questoes-pratica-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9004,13 +9025,13 @@ body.questoes-pratica-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .questoes-pratica-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 .questoes-pratica-page .questoes-pratica-enunciado {
@@ -9018,12 +9039,12 @@ body.questoes-pratica-page {
 }
 
 .questoes-pratica-page .questoes-pratica-btn {
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 @media (max-width: 480px) {
   .questoes-pratica-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .questoes-pratica-page .questoes-pratica-header.ro-header .ro-header-titles > div {
@@ -9047,8 +9068,8 @@ body.questoes-pratica-page {
 
 .questoes-pratica-page .questoes-pratica-dificuldade-opcoes label {
   width: max-content;
-  min-width: 92px;
-  min-height: 44px;
+  min-width: 5.75rem;
+  min-height: 2.75rem;
   flex: 0 0 auto;
   white-space: nowrap;
   overflow-wrap: normal;
@@ -9063,7 +9084,7 @@ body.questoes-pratica-page {
 
 .questoes-pratica-page .questoes-pratica-filtro,
 .questoes-pratica-page .questoes-pratica-rever label {
-  min-height: 44px;
+  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
 }
@@ -9077,22 +9098,22 @@ body.revisoes-programadas-page {
 }
 
 .revisoes-programadas-page .revisoes-programadas-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .revisoes-programadas-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .revisoes-programadas-page .revisoes-programadas-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .revisoes-programadas-page .ro-header h2 {
@@ -9118,11 +9139,11 @@ body.revisoes-programadas-page {
   justify-self: end;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .revisoes-programadas-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9136,7 +9157,7 @@ body.revisoes-programadas-page {
 }
 
 .revisoes-programadas-page .ro-header .revisoes-programadas-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9145,18 +9166,18 @@ body.revisoes-programadas-page {
   width: 100%;
   min-width: 0;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .revisoes-programadas-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
   .revisoes-programadas-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .revisoes-programadas-page .revisoes-programadas-header.ro-header .ro-header-titles > div {
@@ -9176,13 +9197,13 @@ body.revisoes-programadas-page {
 
 .revisoes-programadas-page .revisoes-programadas-btn,
 .revisoes-programadas-page .revisoes-programadas-lista .btn {
-  min-height: 44px;
+  min-height: 2.75rem;
 }
 
 .revisoes-programadas-page .ro-header-identity {
   color: #4b5563;
   opacity: 0.78;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.025rem;
 }
 
 /* Questões diferenciadas: cabeçalho compacto e rodapé, sem alterar os cards. */
@@ -9194,22 +9215,22 @@ body.questoes-criticas-page {
 }
 
 .questoes-criticas-page .questoes-criticas-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .questoes-criticas-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .questoes-criticas-page .questoes-criticas-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .questoes-criticas-page .questoes-criticas-header-identificacao h1 {
@@ -9218,7 +9239,7 @@ body.questoes-criticas-page {
 }
 
 .questoes-criticas-page .questoes-criticas-header-identificacao h2 {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -9234,11 +9255,11 @@ body.questoes-criticas-page {
   grid-row: 1;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .questoes-criticas-page .ro-identity {
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9252,7 +9273,7 @@ body.questoes-criticas-page {
 }
 
 .questoes-criticas-page .ro-header .questoes-criticas-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9260,18 +9281,18 @@ body.questoes-criticas-page {
   flex: 1 0 auto;
   width: 100%;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .questoes-criticas-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
   .questoes-criticas-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .questoes-criticas-page .questoes-criticas-header.ro-header .ro-header-titles > div {
@@ -9293,22 +9314,22 @@ body.minhas-anotacoes-page {
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .minhas-anotacoes-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-header-identificacao h1 {
@@ -9317,7 +9338,7 @@ body.minhas-anotacoes-page {
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-header-identificacao h2 {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -9333,12 +9354,12 @@ body.minhas-anotacoes-page {
   grid-row: 1;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .minhas-anotacoes-page .ro-identity {
   font-weight: 400;
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9352,7 +9373,7 @@ body.minhas-anotacoes-page {
 }
 
 .minhas-anotacoes-page .ro-header .minhas-anotacoes-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9360,18 +9381,18 @@ body.minhas-anotacoes-page {
   flex: 1 0 auto;
   width: 100%;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .minhas-anotacoes-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
   .minhas-anotacoes-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .minhas-anotacoes-page .minhas-anotacoes-header.ro-header .ro-header-titles > div {
@@ -9387,7 +9408,7 @@ body.minhas-anotacoes-page {
 .minhas-anotacoes-page .ro-header-identity {
   color: #4b5563;
   opacity: 0.78;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.025rem;
 }
 
 /* Mensagens ao prof: cabeçalho compacto e rodapé, sem alterar os cards. */
@@ -9399,22 +9420,22 @@ body.mensagens-prof-page {
 }
 
 .mensagens-prof-page .mensagens-prof-header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 .mensagens-prof-page .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .mensagens-prof-page .mensagens-prof-header.ro-header .ro-header-titles > div {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 .mensagens-prof-page .mensagens-prof-header-identificacao h1 {
@@ -9423,7 +9444,7 @@ body.mensagens-prof-page {
 }
 
 .mensagens-prof-page .mensagens-prof-header-identificacao h2 {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -9439,12 +9460,12 @@ body.mensagens-prof-page {
   grid-row: 1;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 .mensagens-prof-page .ro-identity {
   font-weight: 400;
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9458,7 +9479,7 @@ body.mensagens-prof-page {
 }
 
 .mensagens-prof-page .ro-header .mensagens-prof-header-acoes .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9466,18 +9487,18 @@ body.mensagens-prof-page {
   flex: 1 0 auto;
   width: 100%;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 .mensagens-prof-page > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
   .mensagens-prof-page .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   .mensagens-prof-page .mensagens-prof-header.ro-header .ro-header-titles > div {
@@ -9493,13 +9514,13 @@ body.mensagens-prof-page {
 .mensagens-prof-page .ro-header-identity {
   color: #4b5563;
   opacity: 0.78;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.025rem;
 }
 
 /* Reformulação: mesmo alinhamento e intervalo da navegação inferior. */
 .mensagens-prof-page section[id^="reformulacao_"] > div {
   align-items: center;
-  gap: 19px !important;
+  gap: 1.1875rem !important;
 }
 
 
@@ -9512,22 +9533,22 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) header.ro-header {
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+  gap: 0.375rem 0.5rem;
   flex-shrink: 0;
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-titles {
   grid-column: 1 / -1;
   grid-row: 1 !important;
-  min-height: 44px;
+  min-height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) header.ro-header .ro-header-titles > * {
-  max-width: calc(100% - 2 * clamp(80px, 20vw, 240px));
+  max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-titles h1 {
@@ -9536,7 +9557,7 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-titles h2 {
-  margin-top: 3px !important;
+  margin-top: 0.1875rem !important;
   font-size: 0.95rem;
   line-height: 1.35;
 }
@@ -9552,12 +9573,12 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
   grid-row: 1;
   align-self: start;
   min-width: 0;
-  max-width: min(calc(100% - 52px), calc(clamp(80px, 20vw, 240px) - 16px)) !important;
+  max-width: min(calc(100% - 3.25rem), calc(clamp(5rem, 20vw, 15rem) - 1rem)) !important;
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-identity {
   font-weight: 400;
-  height: 44px;
+  height: 2.75rem;
   min-width: 0;
   text-transform: uppercase;
   white-space: nowrap;
@@ -9571,7 +9592,7 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header .ro-header-navigation .btn {
-  height: 44px !important;
+  height: 2.75rem !important;
   line-height: 1;
 }
 
@@ -9579,18 +9600,18 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
   flex: 1 0 auto;
   width: 100%;
   margin-bottom: 0;
-  padding-bottom: 24px;
+  padding-bottom: 1.5rem;
 }
 
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) > footer {
   flex-shrink: 0;
   margin-top: 0;
-  padding: 24px 15px;
+  padding: 1.5rem 0.9375rem;
 }
 
 @media (max-width: 480px) {
   :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-titles {
-    padding-top: 44px;
+    padding-top: 2.75rem;
   }
 
   :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) header.ro-header .ro-header-titles > * {
@@ -9606,7 +9627,7 @@ body:is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-pag
 :is(.dashboard-aluno-page, .desempenho-expirado-page, .consulta-expirada-page, .atendimento-page, .curso-info-page, .minha-area-page) .ro-header-identity {
   color: #4b5563;
   opacity: 0.78;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.025rem;
 }
 
 /* Atendimento: mantém controles anônimos ocultos e o título sem recuos legados. */
@@ -9631,7 +9652,7 @@ body.atendimento-page:has(#listaReembolsos) header nav .btn {
   font-size: 0.82rem;
 }
 body.atendimento-page:has(#listaReembolsos) header nav {
-  gap: 8px !important;
+  gap: 0.5rem !important;
 }
 
 /* Apresentação pública do curso: Sair apenas para usuário identificado. */

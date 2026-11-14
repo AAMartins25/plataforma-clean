@@ -9,25 +9,25 @@ main {
   main textarea {
     min-width: 0;
     max-width: 100%;
-    min-height: 44px;
+    min-height: 2.75rem;
   }
 
   main button,
   main .btn {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
     max-width: 100%;
   }
 
   /* Estes dois mínimos também são definidos inline no formulário de concessão. */
   #concessaoCurso,
   #concessaoDataFim {
-    min-height: 44px !important;
+    min-height: 2.75rem !important;
   }
 
   main a[href^="http"] {
     display: inline-block;
-    min-height: 44px;
+    min-height: 2.75rem;
     max-width: 100%;
   }
 

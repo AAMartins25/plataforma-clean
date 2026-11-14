@@ -14,7 +14,7 @@
 <body>
   <header>
     <h1>🧠 Admin • Assuntos</h1>
-    <nav style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <nav style="display:flex; gap:0.625rem; justify-content:center; flex-wrap:wrap;">
       <a class="btn" href="index.html">Painel</a>
       <a class="btn" href="cursos.html">Cursos</a>
       <a class="btn" href="curso-disciplinas.html">Curso × Disciplinas</a>
@@ -29,13 +29,13 @@
       <h2>1) Selecionar disciplina</h2>
       <div class="assunto">
         <label><b>Disciplina</b></label><br/>
-        <select id="disciplinaSelect" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></select>
+        <select id="disciplinaSelect" style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"></select>
 
-        <div style="margin-top:10px;">
+        <div style="margin-top:0.625rem;">
           <button class="btn" id="btnCarregarAssuntos">Carregar assuntos</button>
         </div>
 
-        <div id="msgDisciplina" style="margin-top:10px;"></div>
+        <div id="msgDisciplina" style="margin-top:0.625rem;"></div>
       </div>
     </div>
 
@@ -45,24 +45,24 @@
       <form id="formCriarAssunto" class="list">
         <div class="assunto">
           <label><b>Nome do assunto</b></label><br/>
-          <input id="assuntoNome" type="text" placeholder="Ex.: Atos Administrativos" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;" required />
+          <input id="assuntoNome" type="text" placeholder="Ex.: Atos Administrativos" style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;" required />
         </div>
 
         <div class="assunto">
           <label><b>Descrição (opcional)</b></label><br/>
-          <textarea id="assuntoDescricao" rows="4" placeholder="Resumo curto do que cai em prova..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;"></textarea>
+          <textarea id="assuntoDescricao" rows="4" placeholder="Resumo curto do que cai em prova..." style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;"></textarea>
         </div>
 
         <div class="assunto">
           <label><b>Ativo</b></label><br/>
-          <select id="assuntoAtivo" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px;">
+          <select id="assuntoAtivo" style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;">
             <option value="true" selected>Sim</option>
             <option value="false">Não</option>
           </select>
         </div>
 
         <button class="btn" type="submit">Salvar assunto</button>
-        <div id="msgCriarAssunto" style="margin-top:10px;"></div>
+        <div id="msgCriarAssunto" style="margin-top:0.625rem;"></div>
       </form>
     </div>
 

@@ -14,7 +14,7 @@
     <h1>🃏 Cartões IA</h1>
     <a class="btn" href="javascript:history.back()">Voltar</a>
     <a href="#" class="btn" onclick="logout()">Sair</a> 
-    <div id="subtitulo" style="margin-top:10px;"></div>
+    <div id="subtitulo" style="margin-top:0.625rem;"></div>
     <p>Clique no cartão para ver o verso.</p>
   </header>
 
@@ -59,7 +59,7 @@
     const lista = document.getElementById("lista");
 
     function renderError(msg){
-      return `<div class="assunto" style="border-left:4px solid #6B4F3F;padding-left:10px"><b>Erro</b><pre style="white-space:pre-wrap">${esc(msg)}</pre></div>`;
+      return `<div class="assunto" style="border-left:0.25rem solid #6B4F3F;padding-left:0.625rem"><b>Erro</b><pre style="white-space:pre-wrap">${esc(msg)}</pre></div>`;
     }
 
     if(!pastaId){
@@ -84,10 +84,10 @@
           return `
             <div class="assunto" style="cursor:pointer" onclick="virar(${i})" id="card_${i}">
               <b>Frente:</b> ${esc(frente)}
-              <div style="margin-top:10px;display:none" id="back_${i}">
+              <div style="margin-top:0.625rem;display:none" id="back_${i}">
                 <b>Verso:</b> ${esc(verso)}
               </div>
-              <div style="margin-top:12px;">
+              <div style="margin-top:0.75rem;">
                 <span class="btn" id="hint_${i}">Clique para ver o verso</span>
               </div>
 

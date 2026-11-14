@@ -262,10 +262,10 @@ async function exibirNomeUsuarioLogadoMensagens() {
       "fixed";
 
     identificacao.style.top =
-      "9px";
+      "0.5625rem";
 
     identificacao.style.right =
-      "47px";
+      "2.9375rem";
 
     identificacao.style.zIndex =
       "9999";
@@ -277,7 +277,7 @@ async function exibirNomeUsuarioLogadoMensagens() {
       "600";
 
     identificacao.style.letterSpacing =
-      "0.4px";
+      "0.025rem";
 
     identificacao.style.color =
       "#4b5563";
@@ -301,7 +301,7 @@ async function exibirNomeUsuarioLogadoMensagens() {
       "absolute";
 
     tooltip.style.right =
-      "calc(100% + 8px)";
+      "calc(100% + 0.5rem)";
 
     tooltip.style.top =
       "50%";
@@ -316,7 +316,7 @@ async function exibirNomeUsuarioLogadoMensagens() {
       "600";
 
     tooltip.style.letterSpacing =
-      "0.2px";
+      "0.0125rem";
 
     tooltip.style.color =
       "#4b5563";
@@ -630,7 +630,7 @@ function montarCardConversa(c) {
 
       </div>
 
-      <div style="margin-top:18px;">
+      <div style="margin-top:1.125rem;">
         ${montarMensagens(c)}
       </div>
 
@@ -640,7 +640,7 @@ function montarCardConversa(c) {
           : aguardandoProfessor
             ? `
               <div style="
-                margin-top:16px;
+                margin-top:1rem;
                 font-size:.9rem;
                 opacity:.8;
               ">
@@ -650,7 +650,7 @@ function montarCardConversa(c) {
             : conversaEncerrada
               ? `
                 <div style="
-                  margin-top:16px;
+                  margin-top:1rem;
                   font-size:.9rem;
                   opacity:.8;
                 ">
@@ -668,15 +668,15 @@ function montarCardConversa(c) {
 
 function montarAreaReformulacao(c) {
   const p = reformulacoesPendentes.get(Number(c.conversa_id));
-  if (!p) return `<div style="margin-top:16px"><button class="btn mensagens-prof-btn-enviar" onclick="abrirReformulacao(${Number(c.conversa_id)})">Reformular mensagem ao prof</button></div>`;
+  if (!p) return `<div style="margin-top:1rem"><button class="btn mensagens-prof-btn-enviar" onclick="abrirReformulacao(${Number(c.conversa_id)})">Reformular mensagem ao prof</button></div>`;
   const bloqueada = p.fase === "incerta";
-  return `<section class="card" style="margin-top:16px" id="reformulacao_${Number(c.conversa_id)}">
+  return `<section class="card" style="margin-top:1rem" id="reformulacao_${Number(c.conversa_id)}">
     <p role="note">${AVISO_REFORMULACAO}</p>
     <label for="reformulacao_texto_${Number(c.conversa_id)}">Nova mensagem ao professor</label>
     <textarea id="reformulacao_texto_${Number(c.conversa_id)}" placeholder="Escreva sua nova mensagem..."
-      style="width:100%;min-height:120px;padding:12px;border:1px solid #ddd;border-radius:6px" ${bloqueada ? "readonly" : ""}>${esc(p.texto)}</textarea>
+      style="width:100%;min-height:7.5rem;padding:0.75rem;border:0.0625rem solid #ddd;border-radius:0.375rem" ${bloqueada ? "readonly" : ""}>${esc(p.texto)}</textarea>
     ${p.mensagem ? `<p role="status">${esc(p.mensagem)}</p>` : ""}
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+    <div style="display:flex;gap:0.625rem;flex-wrap:wrap;margin-top:0.75rem">
       <button class="btn mensagens-prof-btn-enviar" ${p.fase === "enviando" ? "disabled" : ""} onclick="confirmarReformulacao(${Number(c.conversa_id)})">${bloqueada ? "Tentar novamente com segurança" : "Confirmar e enviar"}</button>
       ${p.fase === "editar" ? `<button class="btn" onclick="cancelarReformulacao(${Number(c.conversa_id)})">Cancelar</button>` : ""}
     </div>
@@ -790,10 +790,10 @@ function numeroMensagem(autor, mensagens, idxAtual) {
 function montarAreaNovaMensagem(conversaId) {
   return `
     <div style="
-      margin-top:18px;
-      padding:12px;
+      margin-top:1.125rem;
+      padding:0.75rem;
       background:#f8f8f8;
-      border-radius:6px;
+      border-radius:0.375rem;
     ">
       <h3 class="mensagens-prof-responder-titulo">
         Responder ao professor
@@ -804,14 +804,14 @@ function montarAreaNovaMensagem(conversaId) {
         placeholder="Escreva sua nova mensagem ao professor..."
         style="
           width:100%;
-          min-height:100px;
-          padding:12px;
-          border:1px solid #ddd;
-          border-radius:6px;
+          min-height:6.25rem;
+          padding:0.75rem;
+          border:0.0625rem solid #ddd;
+          border-radius:0.375rem;
         "
       ></textarea>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:0.75rem;">
         <button
           class="btn mensagens-prof-btn-enviar"
           onclick="enviarNovaMensagem(${conversaId})"

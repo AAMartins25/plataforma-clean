@@ -2,13 +2,13 @@
 .registro-conteudo, .registro-editor-host, .registro-editor-host .ck-editor { min-width:0; max-width:100%; }
 .registro-conteudo { white-space:normal; overflow-wrap:anywhere; }
 .registro-conteudo table { border-collapse:collapse; }
-.registro-conteudo td, .registro-conteudo th { border:1px solid #ccc; padding:6px; }
+.registro-conteudo td, .registro-conteudo th { border:0.0625rem solid #ccc; padding:0.375rem; }
 .registro-conteudo figure.table { max-width:100%; overflow-x:auto; }
 .registro-conteudo .ro-math-display { overflow-x:auto; max-width:100%; }
-.registro-editor-host .ck-editor__editable_inline { min-height:120px; max-height:360px; overflow-y:auto; overflow-x:auto; }
+.registro-editor-host .ck-editor__editable_inline { min-height:7.5rem; max-height:22.5rem; overflow-y:auto; overflow-x:auto; }
 .registro-editor-host .ck-content { white-space:normal; overflow-wrap:anywhere; }
 .registro-editor-host .ck.ck-toolbar { flex-wrap:wrap; }
-.registro-editor-host .ck.ck-button { min-width:28px; min-height:30px; }
+.registro-editor-host .ck.ck-button { min-width:1.75rem; min-height:1.875rem; }
 .sprint-conclusao-btn:disabled { opacity:.45; cursor:not-allowed; }
 
 .registro-editor-host .ck.ck-toolbar .ck-toolbar__items { flex-wrap:wrap; min-width:0; max-width:100%; }
@@ -19,10 +19,10 @@
   justify-content:center;
   width:auto;
   max-width:100%;
-  min-height:32px;
-  padding:6px 14px;
-  border:1px solid #e1d6be;
-  border-radius:999px;
+  min-height:2rem;
+  padding:0.375rem 0.875rem;
+  border:0.0625rem solid #e1d6be;
+  border-radius:62.4375rem;
   background:#f8f2e6;
   color:var(--azul);
   font-size:.9rem;
@@ -31,5 +31,5 @@
 }
 
 .sprint-header ~ .container section.card:has(> .sprint-registro-abrir) {
-  padding-block:3px 11px;
+  padding-block:0.1875rem 0.6875rem;
 }

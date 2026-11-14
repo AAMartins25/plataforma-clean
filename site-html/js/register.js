@@ -114,9 +114,9 @@
 
   function show(text, ok = false) {
     msg.textContent = text;
-    msg.style.padding = "10px";
-    msg.style.borderRadius = "6px";
-    msg.style.border = "1px solid #ddd";
+    msg.style.padding = "0.625rem";
+    msg.style.borderRadius = "0.375rem";
+    msg.style.border = "0.0625rem solid #ddd";
     msg.style.background = ok ? "#e7f7ee" : "#fde8e8";
     msg.style.whiteSpace = "pre-line";
   }
@@ -373,14 +373,14 @@
       msg.innerHTML = `
         <div
           style="
-            padding:12px;
-            border:1px solid #cfe8d8;
+            padding:0.75rem;
+            border:0.0625rem solid #cfe8d8;
             background:#e7f7ee;
-            border-radius:8px;
+            border-radius:0.5rem;
             display:flex;
             align-items:center;
             justify-content:space-between;
-            gap:14px;
+            gap:0.875rem;
             flex-wrap:wrap;
           "
         >
@@ -400,10 +400,10 @@
               display:flex;
               align-items:center;
               justify-content:flex-end;
-              gap:8px;
+              gap:0.5rem;
               flex-wrap:wrap;
               position:relative;
-              top:5px;
+              top:0.3125rem;
             "
           >
             <a
@@ -414,12 +414,12 @@
                   : "login.html"
               }"
               style="
-                min-width:120px;
-                height:34px;
+                min-width:7.5rem;
+                height:2.125rem;
                 display:inline-flex;
                 align-items:center;
                 justify-content:center;
-                padding:0 14px;
+                padding:0 0.875rem;
                 margin:0;
                 font-size:.92rem;
                 line-height:1;
@@ -430,7 +430,7 @@
               <span
                 style="
                   display:inline-block;
-                  transform:translateY(-6px);
+                  transform:translateY(-0.375rem);
                 "
               >
                 Fazer login
@@ -441,12 +441,12 @@
               class="btn"
               href="index.html"
               style="
-                min-width:120px;
-                height:34px;
+                min-width:7.5rem;
+                height:2.125rem;
                 display:inline-flex;
                 align-items:center;
                 justify-content:center;
-                padding:0 14px;
+                padding:0 0.875rem;
                 margin:0;
                 font-size:.92rem;
                 line-height:1;
@@ -457,7 +457,7 @@
               <span
                 style="
                   display:inline-block;
-                  transform:translateY(-6px);
+                  transform:translateY(-0.375rem);
                 "
               >
                 Voltar ao início

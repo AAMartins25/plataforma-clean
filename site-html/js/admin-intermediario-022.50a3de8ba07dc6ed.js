@@ -213,10 +213,10 @@ const AdminCursos = {
 
     } catch (err) {
       el.innerHTML = `
-        <div class="assunto" style="border-left:4px solid #6B4F3F; padding-left:10px;">
+        <div class="assunto" style="border-left:0.25rem solid #6B4F3F; padding-left:0.625rem;">
           <b>Erro</b>
           <pre style="white-space:pre-wrap">${esc(err.message)}</pre>
-          <p style="opacity:.85; margin-top:8px;">
+          <p style="opacity:.85; margin-top:0.5rem;">
             Verifique se o backend está rodando e se CORS está liberado.
           </p>
         </div>
@@ -289,7 +289,7 @@ const AdminCursoDisciplinas = {
             <div class="disciplina">
               <b>${esc(d.nome)}</b><br/>
               <span style="opacity:.8">id=${esc(d.id)} • ativo=${esc(d.ativo)}</span><br/>
-              <button class="btn" style="margin-top:10px" onclick="AdminCursoDisciplinas.vincular(${d.id})">
+              <button class="btn" style="margin-top:0.625rem" onclick="AdminCursoDisciplinas.vincular(${d.id})">
                 Vincular ao curso selecionado
               </button>
             </div>
@@ -409,11 +409,11 @@ const AdminAssuntos = {
         <div class="list">
           ${assuntos.map(a => `
             <div class="disciplina">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;flex-wrap:wrap;">
                 <div>
                   <b>${esc(a.nome)}</b><br/>
                   <span style="opacity:.8">id=${esc(a.id)} • ativo=${esc(a.ativo)}</span>
-                  ${a.descricao ? `<div style="margin-top:8px; opacity:.85">${esc(a.descricao)}</div>` : ""}
+                  ${a.descricao ? `<div style="margin-top:0.5rem; opacity:.85">${esc(a.descricao)}</div>` : ""}
                 </div>
 
                 <a class="btn"
@@ -669,7 +669,7 @@ const AdminAulaConteudo = {
           <div class="disciplina">
             <b>${esc(v.titulo || "Vídeo")}</b><br/>
             <span style="opacity:.8">video_id=${esc(v.id)} • ordem=${esc(v.ordem)} • ativo=${esc(v.ativo)}</span>
-            <div style="margin-top:8px;"><a href="${esc(v.url)}" target="_blank">${esc(v.url)}</a></div>
+            <div style="margin-top:0.5rem;"><a href="${esc(v.url)}" target="_blank">${esc(v.url)}</a></div>
           </div>
         `;
       }
@@ -722,7 +722,7 @@ const AdminAulaConteudo = {
           <div class="disciplina">
             <b>${esc(m.titulo || "Material")} • ${esc(m.tipo)}</b><br/>
             <span style="opacity:.8">material_id=${esc(m.id)} • ativo=${esc(m.ativo)}</span>
-            ${m.url ? `<div style="margin-top:8px;"><a href="${esc(m.url)}" target="_blank">${esc(m.url)}</a></div>` : ""}
+            ${m.url ? `<div style="margin-top:0.5rem;"><a href="${esc(m.url)}" target="_blank">${esc(m.url)}</a></div>` : ""}
           </div>
         `;
       }
@@ -903,7 +903,7 @@ const AdminPagamentos = {
                 status=${esc(p.status)} • curso=${esc(p.curso_nome)}<br/>
                 mp_payment_id=${esc(p.mp_payment_id || "-")}
               </span>
-              <div style="margin-top:8px;">
+              <div style="margin-top:0.5rem;">
                 <button class="btn"
                   onclick="document.getElementById('mp_payment_id').value='${esc(p.mp_payment_id || "")}'">
                   Revalidar
@@ -1381,7 +1381,7 @@ const AdminAlunos = {
                     type="button"
                     class="btn"
                     data-conceder-acesso="${Number(u.id)}"
-                    style="margin-top:12px;"
+                    style="margin-top:0.75rem;"
                   >
                     Conceder acesso
                   </button>
@@ -1766,7 +1766,7 @@ const AdminAulas = {
                 <span style="opacity:.85">
                   id=${esc(a.id)} • ordem=${esc(a.ordem)} • ativo=${esc(a.ativo)}
                 </span>
-                ${a.descricao ? `<div style="margin-top:8px; opacity:.85">${esc(a.descricao)}</div>` : ""}
+                ${a.descricao ? `<div style="margin-top:0.5rem; opacity:.85">${esc(a.descricao)}</div>` : ""}
               </div>
             `).join("")}
           </div>

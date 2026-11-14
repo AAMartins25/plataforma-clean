@@ -4,15 +4,16 @@
   object-fit: contain;
 }
 :is(.teoria-conteudo-rico, .ck-content) figure.image {
-  display: block;
   max-width: 100%;
   margin: 1em auto;
 }
+/* A leitura usa blocos; o CKEditor mantém seu layout de tabela para a legenda. */
+.teoria-conteudo-rico figure.image { display: block; }
 .teoria-conteudo-rico figure.image img { display: block; margin-inline: auto; }
 .teoria-conteudo-rico figcaption { font-size: .9em; text-align: center; overflow-wrap: anywhere; }
 .teoria-imagens-aviso { overflow-wrap: anywhere; }
-.teoria-imagens-aviso button { margin: 8px; }
-.teoria-imagens-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-block: 8px; }
+.teoria-imagens-aviso button { margin: 0.5rem; }
+.teoria-imagens-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block: 0.5rem; }
 .teoria-imagens-controles [role="status"] { min-width: 0; overflow-wrap: anywhere; }
 .teoria-markdown-dialogo input[type="file"] { max-width: 100%; }
 .teoria-conteudo-rico .image-inline { display: inline-block; max-width: 100%; vertical-align: middle; }

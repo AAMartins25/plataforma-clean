@@ -479,8 +479,8 @@ function escapeHtml(str) {
  */
 function renderList(containerId, items) {
   const html = items.map(it => `
-    <div class="disciplina" style="padding:6px 14px;">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <div class="disciplina" style="padding:0.375rem 0.875rem;">
+      <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;flex-wrap:wrap">
         <div>
           <div style="font-weight:bold">${escapeHtml(it.title)}</div>
           ${it.subtitle ? `<div style="opacity:.85">${escapeHtml(it.subtitle)}</div>` : ""}
@@ -580,10 +580,10 @@ async function exibirNomeUsuarioLogado() {
         "fixed";
 
       identificacao.style.top =
-        "9px";
+        "0.5625rem";
 
       identificacao.style.right =
-        "47px";
+        "2.9375rem";
 
       identificacao.style.zIndex =
         "9999";
@@ -595,7 +595,7 @@ async function exibirNomeUsuarioLogado() {
         "600";
 
       identificacao.style.letterSpacing =
-        "0.4px";
+        "0.025rem";
 
       identificacao.style.color =
         "#4b5563";
@@ -630,7 +630,7 @@ async function exibirNomeUsuarioLogado() {
       "absolute";
 
     tooltip.style.right =
-      "calc(100% + 8px)";
+      "calc(100% + 0.5rem)";
 
     tooltip.style.top =
       "50%";
@@ -654,7 +654,7 @@ async function exibirNomeUsuarioLogado() {
       "500";
 
     tooltip.style.borderRadius =
-      "4px";
+      "0.25rem";
 
     tooltip.style.whiteSpace =
       "nowrap";
@@ -951,25 +951,25 @@ async function calcularProgressoCurso(cursoId) {
 function renderProgressoLinha(percentual, aulasConcluidas) {
   return `
     <div style="
-      margin-top:14px;
+      margin-top:0.875rem;
       display:flex;
       align-items:center;
-      gap:6px;
+      gap:0.375rem;
     ">
       <div style="
         font-size:0.95rem;
         color:${aulasConcluidas > 0 ? '#16a34a' : '#c2cad9'};
         font-weight:bold;
-        min-width:34px;
+        min-width:2.125rem;
       ">
         ${percentual}%
       </div>
 
       <div style="
         flex:1;
-        height:6px;
+        height:0.375rem;
         background:#d1d5db;
-        border-radius:999px;
+        border-radius:62.4375rem;
         overflow:hidden;
       ">
         <div style="
@@ -1016,12 +1016,12 @@ async function pageCursos() {
         cardExpirados.style.display = "block";
 
         listaExpirados.innerHTML = expirados.map(c => `
-          <div class="disciplina" style="padding:7px 14px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+          <div class="disciplina" style="padding:0.4375rem 0.875rem;">
+            <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
               <div style="
                 font-size:1.05rem;
                 font-weight:bold;
-                padding-left:9px;
+                padding-left:0.5625rem;
               ">
                 ${escapeHtml(c.nome_curso)}
               </div>
@@ -1125,7 +1125,7 @@ async function pageCursos() {
       for (const modalidade of modalidades) {
         const div = document.createElement("div");
         div.className = "disciplina";
-        div.style.padding = "15px 14px";
+        div.style.padding = "0.9375rem 0.875rem";
 
         const vencimento = formatarVencimento(modalidade.data_fim);
 
@@ -1136,8 +1136,8 @@ async function pageCursos() {
                 href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
                 style="
                   display:inline-block;
-                  padding:5px 13px;
-                  border-radius:5px;
+                  padding:0.3125rem 0.8125rem;
+                  border-radius:0.3125rem;
                   background:#fff2b3;
                   color:#354522;
                   font-size:0.95rem;
@@ -1154,8 +1154,8 @@ async function pageCursos() {
                 href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
                 style="
                   display:inline-block;
-                  padding:5px 13px;
-                  border-radius:5px;
+                  padding:0.3125rem 0.8125rem;
+                  border-radius:0.3125rem;
                   background:#fff2b3;
                   color:#354522;
                   font-size:0.95rem;
@@ -1173,12 +1173,12 @@ async function pageCursos() {
               : "";
 
         div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+          <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div style="flex:1;min-width:0;">
               <div style="
                 font-size:1.05rem;
                 font-weight:bold;
-                padding-left:9px;
+                padding-left:0.5625rem;
               ">
                 ${escapeHtml(a.nome_curso)}
               </div>
@@ -1187,9 +1187,9 @@ async function pageCursos() {
                 display:flex;
                 align-items:center;
                 flex-wrap:wrap;
-                gap:12px;
-                margin-top:8px;
-                padding-left:9px;
+                gap:0.75rem;
+                margin-top:0.5rem;
+                padding-left:0.5625rem;
               ">
                 ${vencimento
                   ? `<span style="font-size:0.72rem;color:#737373;">
@@ -1201,7 +1201,7 @@ async function pageCursos() {
               </div>
             </div>
 
-            <div style="margin-left:12px;">
+            <div style="margin-left:0.75rem;">
               <a
                 class="btn"
                 href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
@@ -1748,8 +1748,8 @@ async function pagePastas() {
 
     if (teoria) {
       html += `
-        <div class="disciplina" style="padding-top:12px;padding-bottom:26px;">  
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div class="disciplina" style="padding-top:0.75rem;padding-bottom:1.625rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;flex-wrap:wrap;">
 
             <div style="font-weight:bold">
               📘 ${escapeHtml(teoria.nome || "Teoria e Questões")}
@@ -1834,7 +1834,7 @@ async function pageQuiz() {
               </div>
             `).join("")}
           </div>
-          <p style="margin-top:10px"><b>Resposta (para o quiz):</b> ${escapeHtml(it.resposta_correta)}</p>
+          <p style="margin-top:0.625rem"><b>Resposta (para o quiz):</b> ${escapeHtml(it.resposta_correta)}</p>
           <p><b>Comentário:</b> ${escapeHtml(it.comentario_curto)}</p>
         </div>
       `;
@@ -1866,7 +1866,7 @@ async function pageCartoes() {
         <div class="assunto">
           <p><b>Frente:</b> ${escapeHtml(c.frente)}</p>
           <button class="btn" onclick="document.getElementById('verso_${c.id}').style.display='block'">Ver verso</button>
-          <div id="verso_${c.id}" style="display:none;margin-top:12px;padding:12px;border:1px dashed #ddd;border-radius:6px">
+          <div id="verso_${c.id}" style="display:none;margin-top:0.75rem;padding:0.75rem;border:0.0625rem dashed #ddd;border-radius:0.375rem">
             <b>Verso:</b> ${escapeHtml(c.verso)}
           </div>
         </div>
@@ -1986,13 +1986,13 @@ async function pageInteratividadeAssuntos() {
 
       const div = document.createElement("div");
       div.className = "disciplina";
-      div.style.padding = "10px 14px";
+      div.style.padding = "0.625rem 0.875rem";
 
       div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">
           <div>
             <div style="font-weight:bold;">${escapeHtml(a.nome)}</div>
-            <div style="margin-top:4px;">
+            <div style="margin-top:0.25rem;">
               Desempenho: ${desempenhoHtml}
             </div>
           </div>
@@ -2391,7 +2391,7 @@ function renderizarEstruturaCursoInfo() {
       ${
         disciplinaAbertaCursoInfo === d.id
           ? `
-            <div class="list" style="margin-top:10px;">
+            <div class="list" style="margin-top:0.625rem;">
               ${
                 (d.assuntos || []).length === 0
                   ? `<p style="opacity:.75;">Nenhum assunto cadastrado.</p>`
@@ -2426,7 +2426,7 @@ function renderizarOpcoesAcessoCursoInfo() {
         data-tempo-id="${t.id}"
         data-valor-cents="${t.valor_cents}"
         onclick="alternarOpcaoAcessoCursoInfo(this)"
-        style="margin-right:10px;"
+        style="margin-right:0.625rem;"
       />
       ${t.meses} meses (${formatarValorCursoInfo(t.valor_cents)})
     </label>
@@ -2443,7 +2443,7 @@ function renderizarOpcoesAcessoCursoInfo() {
         name="tipo_acesso"
         value="demo"
         onclick="alternarOpcaoAcessoCursoInfo(this)"
-        style="margin-right:10px;"
+        style="margin-right:0.625rem;"
       />
       Teste (acesso gratuito)
     </label>
@@ -2912,10 +2912,10 @@ async function pageInteratividadeDisciplinas() {
       const div = document.createElement("div");
 
       div.className = "disciplina";
-      div.style.padding = "10px 14px";
+      div.style.padding = "0.625rem 0.875rem";
 
       div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">
 
           <div style="font-weight:bold;">
             ${escapeHtml(d.nome)}
@@ -3287,7 +3287,7 @@ async function carregarProximaQuestaoPratica() {
 
         <label
           class="questoes-pratica-alternativa questoes-pratica-nao-sei"
-          style="margin-top:10px;"
+          style="margin-top:0.625rem;"
         >
           <input
             type="radio"
@@ -3517,13 +3517,13 @@ async function responderQuestaoPratica() {
   mensagem.innerHTML = `
     ${resultadoHtml}
 
-    <div style="margin-top:12px;">
+    <div style="margin-top:0.75rem;">
       Gabarito: ${escapeHtml(gabaritoExibido)}
     </div>
 
     ${
       resultado.comentario
-        ? `<div style="margin-top:10px;">Comentário:<br>${escapeHtml(resultado.comentario)}</div>`
+        ? `<div style="margin-top:0.625rem;">Comentário:<br>${escapeHtml(resultado.comentario)}</div>`
         : ""
     }
 
@@ -3531,7 +3531,7 @@ async function responderQuestaoPratica() {
       <button
         id="btn_proxima_questao"
         class="btn questoes-pratica-btn"
-        style="min-width:123px;"
+        style="min-width:7.6875rem;"
         onclick="carregarProximaQuestaoPratica()"
       >
         Próxima
@@ -3872,9 +3872,9 @@ function renderizarListaQuestoesPraticaAdmin() {
 
     const alternativasHtml = tipo === "MULTIPLA"
       ? `
-        <div style="margin-top:10px;margin-bottom:14px;">
+        <div style="margin-top:0.625rem;margin-bottom:0.875rem;">
           ${(q.alternativas || []).map(alt => `
-            <div style="margin-bottom:6px;">
+            <div style="margin-bottom:0.375rem;">
               <strong>${escapeHtml(alt.letra)})</strong>
               ${escapeHtml(alt.texto)}
             </div>
@@ -3885,9 +3885,9 @@ function renderizarListaQuestoesPraticaAdmin() {
 
     const comentarioHtml = q.comentario
       ? `
-        <div style="margin-top:12px;margin-bottom:14px;">
+        <div style="margin-top:0.75rem;margin-bottom:0.875rem;">
           <strong>Comentário:</strong>
-          <div style="margin-top:6px; white-space:pre-wrap; text-indent:0; margin-left:0; padding-left:0;">${escapeHtml(q.comentario || "")}</div>
+          <div style="margin-top:0.375rem; white-space:pre-wrap; text-indent:0; margin-left:0; padding-left:0;">${escapeHtml(q.comentario || "")}</div>
         </div>
       `
       : "";
@@ -3896,12 +3896,12 @@ function renderizarListaQuestoesPraticaAdmin() {
       <div class="card">
         <h2 style="
             font-size:1.05rem;
-            margin-bottom:12px;
+            margin-bottom:0.75rem;
         ">
             Questão ${index + 1}
         </h2>
 
-        <div style="margin-bottom:12px; white-space:pre-wrap; text-indent:0; margin-left:0; padding-left:0;">${escapeHtml(q.enunciado || "")}</div>
+        <div style="margin-bottom:0.75rem; white-space:pre-wrap; text-indent:0; margin-left:0; padding-left:0;">${escapeHtml(q.enunciado || "")}</div>
 
         ${alternativasHtml}
 
@@ -3909,7 +3909,7 @@ function renderizarListaQuestoesPraticaAdmin() {
 
         <div style="
           display:flex;
-          gap:18px;
+          gap:1.125rem;
           flex-wrap:wrap;
         ">
           <button class="btn" onclick="editarQuestaoPraticaAdmin(${q.id})">
@@ -3950,11 +3950,11 @@ function novaQuestaoPraticaAdmin() {
   box.innerHTML = `
     <div class="card">
 
-      <div style="margin-bottom:16px;">
+      <div style="margin-bottom:1rem;">
         <strong>Escolha o tipo</strong>
       </div>
 
-      <label style="display:block;margin-bottom:8px;">
+      <label style="display:block;margin-bottom:0.5rem;">
         <input
           type="radio"
           name="tipo_questao_admin"
@@ -3964,7 +3964,7 @@ function novaQuestaoPraticaAdmin() {
         Múltipla escolha 5
       </label>
 
-      <label style="display:block;margin-bottom:8px;">
+      <label style="display:block;margin-bottom:0.5rem;">
         <input
           type="radio"
           name="tipo_questao_admin"
@@ -3974,7 +3974,7 @@ function novaQuestaoPraticaAdmin() {
         Múltipla escolha 4
       </label>
 
-      <label style="display:block;margin-bottom:8px;">
+      <label style="display:block;margin-bottom:0.5rem;">
         <input
           type="radio"
           name="tipo_questao_admin"
@@ -3986,7 +3986,7 @@ function novaQuestaoPraticaAdmin() {
 
       <div
         id="campos_questao_admin"
-        style="margin-top:18px;"
+        style="margin-top:1.125rem;"
       ></div>
 
     </div>
@@ -4019,17 +4019,17 @@ function montarFormularioBaseAdmin(conteudoCampos, tipo) {
   box.innerHTML = `
     <div class="assunto">
       <label><b>Enunciado</b></label><br>
-      <textarea id="questao_admin_enunciado" rows="5" style="width:100%;padding:12px;"></textarea>
+      <textarea id="questao_admin_enunciado" rows="5" style="width:100%;padding:0.75rem;"></textarea>
     </div>
 
     ${conteudoCampos}
 
     <div class="assunto">
       <label><b>Comentário</b></label><br>
-      <textarea id="questao_admin_comentario" rows="4" style="width:100%;padding:12px;"></textarea>
+      <textarea id="questao_admin_comentario" rows="4" style="width:100%;padding:0.75rem;"></textarea>
     </div>
 
-    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+    <div style="display:flex;gap:2.25rem;flex-wrap:wrap;">
       <button class="btn" onclick="salvarQuestaoPraticaAdmin('${tipo}')">
         Salvar questão
       </button>
@@ -4051,7 +4051,7 @@ function montarFormularioCertoErradoAdmin() {
         CERTO
       </label>
 
-      <label style="margin-left:24px;">
+      <label style="margin-left:1.5rem;">
         <input type="radio" name="questao_admin_gabarito" value="E">
         ERRADO
       </label>
@@ -4072,10 +4072,10 @@ function montarFormularioMultiplaAdmin(tipo, qtd) {
         <div
           class="linha_alternativa_admin"
           style="
-            margin-top:10px;
-            padding:8px;
-            border-radius:6px;
-            border:1px solid transparent;
+            margin-top:0.625rem;
+            padding:0.5rem;
+            border-radius:0.375rem;
+            border:0.0625rem solid transparent;
           "
         >
           <label>
@@ -4091,7 +4091,7 @@ function montarFormularioMultiplaAdmin(tipo, qtd) {
           <input
             id="alternativa_${letra}"
             type="text"
-            style="width:85%;padding:10px;margin-left:8px;"
+            style="width:85%;padding:0.625rem;margin-left:0.5rem;"
             placeholder="Texto da alternativa ${letra}"
           >
         </div>
@@ -4110,10 +4110,10 @@ function destacarAlternativaCorretaAdmin() {
 
     if (radio && radio.checked) {
       linha.style.background = "#dcfce7";
-      linha.style.border = "1px solid #16a34a";
+      linha.style.border = "0.0625rem solid #16a34a";
     } else {
       linha.style.background = "transparent";
-      linha.style.border = "1px solid transparent";
+      linha.style.border = "0.0625rem solid transparent";
     }
   });
 }

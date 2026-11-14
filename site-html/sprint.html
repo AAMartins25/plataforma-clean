@@ -73,10 +73,10 @@
     </main>
 
     <div class="container">
-      <div class="card" style="padding:0;height:0px;"></div>
+      <div class="card" style="padding:0;height:0rem;"></div>
     </div>
 
-    <footer style="margin-top:4px;">
+    <footer style="margin-top:0.25rem;">
       <p>© <span id="ano_atual">2026</span> Quality</p>
     </footer>
 
@@ -293,7 +293,7 @@
 
           html += `
             <div class="card sprint-questao-card" id="questao_${q.id}">
-              <div style="margin-bottom:6px;">
+              <div style="margin-bottom:0.375rem;">
                 <h3 class="sprint-questao-titulo">
                   Questão ${idx + 1} de ${total}
                 </h3>
@@ -306,42 +306,42 @@
               ${
                 ehCertoErrado
                   ? `
-                    <div class="list" style="margin-top:10px;">
-                      <label class="assunto alternativa-opcao" id="alt_${q.id}_C" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:6px;">
+                    <div class="list" style="margin-top:0.625rem;">
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_C" style="display:block; cursor:pointer; border:0.0625rem solid #ddd; border-radius:0.625rem; padding:0.75rem 1rem; margin-top:0.375rem;">
                         <input type="radio" name="resposta_${q.id}" value="C"
                           ${respostasAluno[q.id] === "C" ? "checked" : ""}
                           onchange="marcarAlternativaVisual(${q.id}, 'C'); resetarBotaoResponder(${q.id});"
-                          style="margin-right:16px;"
+                          style="margin-right:1rem;"
                         />
                         <b>CERTO</b>
                       </label>
 
-                      <label class="assunto alternativa-opcao" id="alt_${q.id}_E" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:6px;">
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_E" style="display:block; cursor:pointer; border:0.0625rem solid #ddd; border-radius:0.625rem; padding:0.75rem 1rem; margin-top:0.375rem;">
                         <input type="radio" name="resposta_${q.id}" value="E"
                           ${respostasAluno[q.id] === "E" ? "checked" : ""}
                           onchange="marcarAlternativaVisual(${q.id}, 'E'); resetarBotaoResponder(${q.id});"
-                          style="margin-right:16px;"
+                          style="margin-right:1rem;"
                         />
                         <b>ERRADO</b>
                       </label>
 
-                      <label class="assunto alternativa-opcao" id="alt_${q.id}_NAO_SEI" style="display:block; cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:12px 16px; margin-top:22px;">
+                      <label class="assunto alternativa-opcao" id="alt_${q.id}_NAO_SEI" style="display:block; cursor:pointer; border:0.0625rem solid #ddd; border-radius:0.625rem; padding:0.75rem 1rem; margin-top:1.375rem;">
                         <input type="radio" name="resposta_${q.id}" value="NAO_SEI"
                           ${respostasAluno[q.id] === "NAO_SEI" ? "checked" : ""}
                           onchange="marcarAlternativaVisual(${q.id}, 'NAO_SEI'); resetarBotaoResponder(${q.id});"
-                          style="margin-right:16px;"
+                          style="margin-right:1rem;"
                         />
                         <b>Não tenho certeza ou não sei</b>
                       </label>
 
-                      <div style="margin-top:14px; text-align:right;">
+                      <div style="margin-top:0.875rem; text-align:right;">
                         <label style="cursor:pointer;">
                           <input
                             type="checkbox"
                             name="rever_${q.id}"
                             ${reverQuestoesAluno[q.id] === true ? "checked" : ""}
                             onchange="resetarBotaoResponder(${q.id});"
-                            style="margin-right:8px;"
+                            style="margin-right:0.5rem;"
                           />
                           <b>Rever esta questão</b>
                         </label>
@@ -349,12 +349,12 @@
                     </div>
                   `
                   : `
-                    <div class="list" style="margin-top:18px;">
+                    <div class="list" style="margin-top:1.125rem;">
                       ${alternativas.map(a => `
                         <label
                           class="assunto alternativa-opcao questao-alternativa questao-alternativa-selecionavel"
                           id="alt_${q.id}_${a.letra}"
-                          style="cursor:pointer; border:1px solid #ddd; border-radius:10px; padding:14px 14px; margin-top:8px; line-height:1.45; transition:.15s;"
+                          style="cursor:pointer; border:0.0625rem solid #ddd; border-radius:0.625rem; padding:0.875rem 0.875rem; margin-top:0.5rem; line-height:1.45; transition:.15s;"
                         >
                           <input
                             type="radio"
@@ -430,7 +430,7 @@
                   `
               }
 
-              <div style="margin-top:18px;">
+              <div style="margin-top:1.125rem;">
                 <button
                   id="btnResponder_${q.id}"
                   class="btn sprint-btn-responder"
@@ -578,11 +578,11 @@
           <div class="card" id="cardQuestaoAtual">
             <h2>Questão ${indiceAtual + 1} de ${total}</h2>
 
-            <div style="white-space:pre-wrap; margin-top:12px;">
+            <div style="white-space:pre-wrap; margin-top:0.75rem;">
               ${QuestaoConteudo.renderizar(q.enunciado, q.enunciado_formato, bateriaId)}
             </div>
 
-            <div class="list" style="margin-top:18px;">
+            <div class="list" style="margin-top:1.125rem;">
               ${
                 alternativas.map(a => `
                   <label class="assunto questao-alternativa questao-alternativa-selecionavel" style="cursor:pointer;">
@@ -601,20 +601,20 @@
             ${
               ehCertoErrado
                 ? `
-                  <div class="card" style="margin-top:22px; padding:18px;">
+                  <div class="card" style="margin-top:1.375rem; padding:1.125rem;">
                     <label style="cursor:pointer;">
                       <input
                         type="checkbox"
                         name="rever_${q.id}"
                         onchange="resetarBotaoResponder(${q.id});"
-                        style="margin-right:10px;"
+                        style="margin-right:0.625rem;"
                       />
                       <b>Rever esta questão</b>
                     </label>
                   </div>
                 `
                 : `
-                  <div class="card" style="margin-top:22px; padding:18px;">
+                  <div class="card" style="margin-top:1.375rem; padding:1.125rem;">
                     <p><b>Essa questão para você, neste momento, foi:</b></p>
 
                     <!-- mantenha aqui os seus três labels atuais: FÁCIL, MÉDIA e DIFÍCIL -->
@@ -622,7 +622,7 @@
                 `
             }
 
-            <div style="margin-top:18px;">
+            <div style="margin-top:1.125rem;">
               <button class="btn" onclick="responderQuestao()">
                 Responder
               </button>
@@ -865,14 +865,14 @@
                 reverQuestoesAluno[q.id] === true
                   ? `
                     <div style="
-                      margin-top:10px;
+                      margin-top:0.625rem;
                       text-align:right;
                     ">
                       <span style="
                         display:inline-block;
-                        padding:3px 8px;
-                        border:1px solid #b37a1f;
-                        border-radius:999px;
+                        padding:0.1875rem 0.5rem;
+                        border:0.0625rem solid #b37a1f;
+                        border-radius:62.4375rem;
                         color:#b37a1f;
                         font-size:.78rem;
                       ">
@@ -914,7 +914,7 @@
                       id="btnFinalizarRevisao"
                       class="btn sprint-revisao-btn-finalizar"
                       onclick="finalizarRevisao()"
-                      style="display:block; margin-left:auto; margin-right:25px;"
+                      style="display:block; margin-left:auto; margin-right:1.5625rem;"
                   >
                       Finalizar revisão e voltar
                   </button>
@@ -960,9 +960,9 @@
           const buttonId = nota ? `btn_salvar_anotacao_${qid}` : `btn_salvar_mensagem_${qid}`;
           const action = nota ? "salvarAnotacaoParaMim" : "salvarEnviarProf";
           const labelBotao = nota ? "Salvar" : "Enviar";
-          corpo = `<textarea id="${id}" aria-label="${titulo}" placeholder="${placeholder}" style="width:100%;min-height:100px;margin-top:11px;padding:12px;border:1px solid #ddd;border-radius:6px;"></textarea><button id="${buttonId}" class="btn sprint-revisao-btn-acao" onclick="${action}(${qid})">${labelBotao}</button> <button type="button" class="btn sprint-revisao-btn-acao" onclick="cancelarRegistroQuestao('${tipo}',${qid})">Cancelar</button>`;
+          corpo = `<textarea id="${id}" aria-label="${titulo}" placeholder="${placeholder}" style="width:100%;min-height:6.25rem;margin-top:0.6875rem;padding:0.75rem;border:0.0625rem solid #ddd;border-radius:0.375rem;"></textarea><button id="${buttonId}" class="btn sprint-revisao-btn-acao" onclick="${action}(${qid})">${labelBotao}</button> <button type="button" class="btn sprint-revisao-btn-acao" onclick="cancelarRegistroQuestao('${tipo}',${qid})">Cancelar</button>`;
         }
-        return `<section id="${hostId}" class="card" style="margin-top:16px">${registro ? `<h3>${nota ? "Anotação" : "Mensagem ao professor"}</h3>` : ""}${corpo}</section>`;
+        return `<section id="${hostId}" class="card" style="margin-top:1rem">${registro ? `<h3>${nota ? "Anotação" : "Mensagem ao professor"}</h3>` : ""}${corpo}</section>`;
       }
 
       function atualizarSecaoRegistro(tipo, qid, aberto = false) {

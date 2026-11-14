@@ -187,8 +187,8 @@
       return `
         <div
           style="
-            margin-top:6px;
-            margin-left:18px;
+            margin-top:0.375rem;
+            margin-left:1.125rem;
             font-size:.86rem;
             opacity:.75;
           "
@@ -203,9 +203,9 @@
         curso => `
           <div
             style="
-              margin-top:6px;
-              margin-left:18px;
-              padding-left:4px;
+              margin-top:0.375rem;
+              margin-left:1.125rem;
+              padding-left:0.25rem;
               font-size:.86rem;
               line-height:1.3;
             "
