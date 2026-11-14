@@ -94,6 +94,7 @@ body.home-page {
 .home-page .home-brand { padding: 0; }
 .home-page header .home-brand-title {
   display: flex;
+  transform: translateY(3px);
   align-items: center;
   justify-content: center;
   gap: var(--home-brand-gap);
