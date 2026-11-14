@@ -67,6 +67,7 @@ body.home-page {
 /* O nome se posiciona no espaço disponível sem acrescentar altura à faixa. */
 .home-page .home-header.ro-header--identified .ro-header-identity { height: 0; padding-bottom: 0; }
 .home-page .home-header.ro-header--identified .ro-identity {
+  transform: translateY(-3px); /* Mantém o nome no lugar após o movimento adicional da marca. */
   max-width: none;
   white-space: normal;
   overflow: visible;
@@ -94,7 +95,7 @@ body.home-page {
 .home-page .home-brand { padding: 0; }
 .home-page header .home-brand-title {
   display: flex;
-  transform: translateY(3px);
+  transform: translateY(6px);
   align-items: center;
   justify-content: center;
   gap: var(--home-brand-gap);
