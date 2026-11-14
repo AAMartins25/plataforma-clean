@@ -66,20 +66,66 @@
     for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
       identificar(cabecalho, origem);
     }
+    alinharNomeNaMarca(cabecalho);
+  }
+
+  function alinharNomeNaMarca(cabecalho) {
+    if (!cabecalho.matches(".home-header.ro-header--identified")) return;
+    const marca = cabecalho.querySelector(".home-brand-name");
+    const livro = cabecalho.querySelector(".home-brand-symbol");
+    const origem = cabecalho.querySelector(".ro-header-identity");
+    const nome = origem?.querySelector(".ro-identity");
+    if (!marca || !livro || !nome) return;
+
+    nome.style.whiteSpace = "nowrap";
+    const texto = document.createRange();
+    texto.selectNodeContents(nome);
+    const largura = Math.ceil(texto.getBoundingClientRect().width * 64) / 64;
+    nome.style.whiteSpace = "";
+    const logo = marca.getBoundingClientRect();
+    const direita = origem.getBoundingClientRect().right;
+    const aoLado = largura <= direita - logo.right - 4;
+    const limite = direita - livro.getBoundingClientRect().right - 4;
+    nome.style.left = "";
+    nome.style.width = `${Math.min(largura, Math.max(1, limite))}px`;
+    const altura = nome.getBoundingClientRect().height;
+    const topo = aoLado ? logo.top + (logo.height - altura) / 2 : logo.bottom + 4;
+    nome.style.top = `${topo - origem.getBoundingClientRect().top}px`;
+    const acesso = cabecalho.querySelector(".ro-header-access a");
+    const navegacao = cabecalho.querySelector(".ro-header-navigation");
+    const sobrepoe = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    // Se um nome precisar de várias linhas, usa o espaço abaixo do livro e ao lado do acesso.
+    if (!aoLado && acesso && [livro, acesso, navegacao].filter(Boolean)
+      .some(elemento => sobrepoe(nome.getBoundingClientRect(), elemento.getBoundingClientRect()))) {
+      const botao = acesso.getBoundingClientRect();
+      const esquerda = cabecalho.getBoundingClientRect().left + parseFloat(getComputedStyle(cabecalho).paddingLeft);
+      nome.style.width = `${Math.min(largura, Math.max(1, botao.left - esquerda - 4))}px`;
+      const caixa = origem.getBoundingClientRect();
+      nome.style.left = `${botao.left - 4 - nome.getBoundingClientRect().width - caixa.left}px`;
+      nome.style.top = `${Math.max(logo.bottom, livro.getBoundingClientRect().bottom) + 4 - caixa.top}px`;
+    }
+    cabecalho.dataset.nomePosicao = aoLado ? "direita" : "abaixo";
+    // O nome completo continua disponível sem uma cópia sobrepor a marca no hover.
+    if (nome.title !== nome.dataset.nomeAmpliado) nome.title = nome.dataset.nomeAmpliado;
   }
 
   function iniciar() {
     atualizar();
     // As páginas atuais inserem o nome depois de suas consultas já existentes.
     let agendado = false;
-    new MutationObserver(() => {
+    const agendar = () => {
       if (agendado) return;
       agendado = true;
       requestAnimationFrame(() => {
         agendado = false;
         atualizar();
       });
-    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["title"] });
+    };
+    new MutationObserver(agendar).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["title"] });
+    window.addEventListener("resize", agendar);
+    const cabecalho = document.querySelector("body > header.home-header");
+    if (cabecalho) new ResizeObserver(agendar).observe(cabecalho);
+    document.fonts.ready.then(agendar);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });

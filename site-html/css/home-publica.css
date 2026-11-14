@@ -64,8 +64,18 @@ body.home-page {
   white-space: nowrap;
   color: var(--home-navy);
 }
+/* A identificação autenticada se desloca sem alterar a linha reservada na grade. */
+.home-page .home-header.ro-header--identified .ro-header-identity { height: 17px; }
+.home-page .home-header.ro-header--identified .ro-identity {
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+.home-page .home-header.ro-header--identified .ro-identity::after { display: none; }
 @media (hover: hover) and (pointer: fine) {
   .home-page .home-header.ro-header .ro-identity:hover { color: transparent; }
+  .home-page .home-header.ro-header--identified .ro-identity:hover { color: var(--home-navy); }
 }
 .home-page .home-header.ro-header .ro-header-access {
   grid-column: 2;
