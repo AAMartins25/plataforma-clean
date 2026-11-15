@@ -14,4 +14,52 @@ for(const file of ['dashboard.html','desempenho-expirado.html']){
  else{sandbox.voltarCursoExpirado();assert.match(sandbox.window.location.href,/demonstracao_id=2/);}
 }
 console.log('Desempenho: notas, ausência de conclusão, critérios e retorno com contexto OK');
+
+// O título deve estar disponível mesmo com /me e as notas ainda pendentes.
+for (const contexto of ['contratacao_id=10', 'demonstracao_id=20']) {
+ for (const [id, nome] of [[1, 'Direito Constitucional'], [2, 'Outro curso']]) {
+  const elements = {}, pedidos = [], pendentes = [];
+  const elemento = id => elements[id] ??= {
+   textContent: '', innerHTML: '',
+   get innerText() { return this.textContent; },
+   set innerText(value) { this.textContent = value; }
+  };
+  const sandbox = {
+   URLSearchParams, Date, console,
+   localStorage: {getItem() { return 'token'; }},
+   window: {location: {search: `?curso_id=${id}&curso_nome=${encodeURIComponent(nome)}&${contexto}`}},
+   document: {
+    getElementById: elemento,
+    querySelector() { return elemento('main'); },
+    createElement() { return {appendChild() {}}; },
+    body: {appendChild() {}}
+   },
+   Sessao: {
+    snapshot() { return 'sessao'; }, mesma() { return true; },
+    fetch(url) {
+     pedidos.push(url);
+     return new Promise(resolve => pendentes.push(dados => resolve({ok: true, json: async () => dados})));
+    }
+   }
+  };
+  vm.createContext(sandbox);
+  const source = fs.readFileSync(__dirname + '/dashboard.html', 'utf8')
+   .match(/<script>([\s\S]*?)<\/script>/)[1]
+   .replace('    carregarDashboard();', '    window.carga = carregarDashboard();');
+  vm.runInContext(source, sandbox);
+  assert.equal(elemento('titulo_curso_dashboard').textContent, nome);
+  assert.equal(pedidos.length, 1);
+  pendentes.shift()({nome: 'Aluno correto'});
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(elemento('titulo_curso_dashboard').textContent, nome);
+  assert.equal(pedidos.length, 2);
+  assert.ok(pedidos[1].endsWith(`/me/cursos/${id}/desempenho?${contexto}`));
+  pendentes.shift()({curso_id: id, nome_curso: nome + ' atualizado', disciplinas: []});
+  await sandbox.window.carga;
+  assert.equal(elemento('titulo_curso_dashboard').textContent, nome + ' atualizado');
+  assert.equal(pedidos.length, 2);
+  assert.match(elemento('lista_disciplinas').innerHTML, /Nenhuma disciplina encontrada/);
+ }
+}
+console.log('Desempenho: nome imediato, confirmação pelo servidor, cursos e contextos isolados, sem consultas extras OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
