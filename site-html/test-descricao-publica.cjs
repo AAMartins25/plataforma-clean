@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const {spawnSync}=require('node:child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const root=__dirname, marker='<!--resumao:descricao-publica:html:v1-->';
 const server=http.createServer((req,res)=>{
@@ -34,7 +35,7 @@ const server=http.createServer((req,res)=>{
    else if(p==='/cursos')json=req.method()==='POST'?{id:1,nome:'Curso novo',ativo:true,publicado:false}:[{id:1,nome:'Curso teste',ativo:true,publicado:true}];
    else if(p==='/admin/ckeditor-chave')json={licenseKey:'GPL'};
    else if(p==='/admin/cursos/1/config-publica'){
-    if(req.method()==='PUT'){const body=req.postDataJSON();saves.push(body);raw=body.descricao_publica_formato==='html_v1'?marker+body.descricao_publica:body.descricao_publica;json={ok:true};}
+    if(req.method()==='PUT'){const body=req.postDataJSON();saves.push(body);const clean=spawnSync(process.env.DESCRICAO_TEST_PYTHON||'python',['-c','import json,sys;sys.path.insert(0,"backend");from app.descricao_publica import preparar_descricao;print(json.dumps(preparar_descricao(json.load(sys.stdin),None)))'],{cwd:path.join(root,'..'),input:JSON.stringify(body),encoding:'utf8'});assert.equal(clean.status,0,clean.stderr);raw=JSON.parse(clean.stdout);json={ok:true};}
     else json={curso_id:1,publicado:true,descricao_publica:raw,tempos_acesso:[4,8,12].map((meses,i)=>({id:i+1,meses,valor_cents:4990*(i+1)}))};
    }
    else if(p==='/cursos/1/disciplinas-proprias')json=[];
@@ -64,16 +65,42 @@ const server=http.createServer((req,res)=>{
   await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
   assert.equal(saves.at(-1).descricao_publica_formato,'html_v1');
   assert.deepEqual(saves.at(-1).tempos_acesso,[4,8,12].map((meses,i)=>({meses,valor_cents:4990*(i+1)})));
-  const saved=raw;await abrir();assert.ok((await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML()).includes('<strong>Negrito</strong>'));
+  // Insert through the real toolbar, then exercise row/column commands and cell formatting.
+  await page.click('#btnEditarConfigPublicaCurso');
+  let insert=page.getByRole('button',{name:'Insert table',exact:true});
+  if(!await insert.isVisible())await page.getByRole('button',{name:'Show more items',exact:true}).click();
+  await insert.click();
+  await page.locator('.ck-insert-table-dropdown-grid-box').first().click();
+  await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content table'));
+  const dimensions=await page.evaluate(()=>{
+   const e=document.querySelector('#boxConfigPublicaCurso .ck-editor__editable').ckeditorInstance;
+   const size=()=>{const t=new DOMParser().parseFromString(e.getData(),'text/html').querySelector('table');return [t.rows.length,t.rows[0].cells.length];};
+   const sizes=[size()];
+   for(const command of ['insertTableRowBelow','insertTableColumnRight','removeTableRow','removeTableColumn']) {
+    if(!e.commands.get(command).isEnabled)throw Error(command+' disabled');
+    e.execute(command);sizes.push(size());
+   }
+   e.setData('<h2>Curso completo</h2><p><strong>Negrito</strong> e <i>itálico</i></p><ul><li>Um</li><li>Dois</li></ul><ol><li>Primeiro</li></ol><figure class="table"><table><thead><tr><th>Modalidade</th><th>Condições</th><th>Valor</th></tr></thead><tbody><tr><td rowspan="2"><strong>Resumo</strong></td><td>4 meses</td><td>R$ 49,90</td></tr><tr><td colspan="2"><i>'+('ConteúdoLongo'.repeat(30))+'</i></td></tr></tbody></table></figure>');
+   return sizes;
+  });
+  assert.deepEqual(dimensions,[[1,1],[2,1],[2,2],[1,2],[1,1]]);
+  await page.locator('#boxConfigPublicaCurso .ck-content td').first().click();
+  await page.keyboard.press('End');await page.keyboard.type(' editado');
+  await page.click('#btnSalvarConfigPublicaCurso');
+  await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  assert.ok(raw.includes('<table>') && raw.includes('rowspan="2"') && raw.includes('colspan="2"') && raw.includes('editado'));
+  const saved=raw;await abrir();assert.ok((await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML()).includes('<strong>Negrito</strong>'));assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content td[rowspan="2"]').count(),1);assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content td[colspan="2"]').count(),1);
   await page.click('#btnEditarConfigPublicaCurso');await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));assert.equal(raw,saved);
   assert.ok(await page.evaluate(()=>{const el=document.querySelector('#boxConfigPublicaCurso .ck-editor');return el.getBoundingClientRect().right<=innerWidth}),`overflow editor ${width}`);
   await page.screenshot({path:path.join(root,'../evidencias',`adm-${width}.png`),fullPage:true});
+  raw=raw.replace('<table>','<table onclick="window.xss=1" style="width:99999px">');
   raw+='<img src=x onerror="window.xss=1"><script>window.xss=1</script><svg onload="window.xss=1"></svg>';
   await page.goto(origin+'/curso-info.html?curso_id=1');await page.locator('#informacoes_curso h2').waitFor({state:'attached'});
   await page.evaluate(()=>document.querySelector('#informacoes_curso').style.display='block');
-  assert.equal(await page.locator('#informacoes_curso strong').textContent(),'Negrito');
+  assert.equal(await page.locator('#informacoes_curso strong').first().textContent(),'Negrito');assert.equal(await page.locator('#informacoes_curso table').count(),1);assert.equal(await page.locator('#informacoes_curso th').count(),3);assert.equal(await page.locator('#informacoes_curso td[rowspan="2"]').count(),1);assert.equal(await page.locator('#informacoes_curso td[colspan="2"]').count(),1);
   assert.equal(await page.locator('#informacoes_curso ul li').count(),2);
   assert.equal(await page.locator('#informacoes_curso img, #informacoes_curso script, #informacoes_curso svg').count(),0);
+  assert.equal(await page.locator('#informacoes_curso table[style], #informacoes_curso [onclick], #informacoes_curso [onerror]').count(),0);
   assert.equal(await page.evaluate(()=>window.xss),undefined);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow público ${width}`);
   await page.screenshot({path:path.join(root,'../evidencias',`publico-${width}.png`),fullPage:true});

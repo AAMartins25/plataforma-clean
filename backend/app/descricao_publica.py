@@ -3,7 +3,8 @@ import nh3
 from fastapi import HTTPException
 
 MARCADOR = '<!--resumao:descricao-publica:html:v1-->'
-TAGS = {'p', 'br', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li'}
+TAGS = {'p', 'br', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'}
+ATRIBUTOS = {'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan'}}
 
 
 def preparar_descricao(payload, anterior):
@@ -27,7 +28,7 @@ def preparar_descricao(payload, anterior):
         raise HTTPException(422, 'A descrição formatada excede 1.000.000 de caracteres.')
     try:
         html.encode('utf-8', errors='strict')
-        limpo = nh3.clean(html, tags=TAGS, attributes={}, link_rel=None, strip_comments=True)
+        limpo = nh3.clean(html, tags=TAGS, attributes=ATRIBUTOS, link_rel=None, strip_comments=True)
     except (ValueError, UnicodeError) as erro:
         raise HTTPException(422, 'HTML da descrição inválido.') from erro
     return MARCADOR + limpo
@@ -48,7 +49,11 @@ def descricao_para_visitante(valor):
             if tag == 'br':
                 self.partes.append('\n')
         def handle_endtag(self, tag):
-            if tag in {'p', 'h2', 'h3', 'h4', 'li'}:
+            if tag in {'td', 'th'}:
+                self.partes.append('\t')
+            if tag == 'tr' and self.partes and self.partes[-1] == '\t':
+                self.partes.pop()
+            if tag in {'p', 'h2', 'h3', 'h4', 'li', 'tr'}:
                 self.partes.append('\n')
     html = preparar_descricao({'descricao_publica': valor}, None)[len(MARCADOR):]
     texto = Texto()

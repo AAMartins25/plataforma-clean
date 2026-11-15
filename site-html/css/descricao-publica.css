@@ -11,3 +11,19 @@
 .descricao-publica ul, .descricao-publica ol { padding-left: 1.75em; }
 #boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; }
 #boxConfigPublicaCurso .ck-toolbar { flex-wrap: wrap; }
+
+/* Tabelas públicas: quebra conteúdo extenso e limita a rolagem ao bloco de informações. */
+.descricao-publica:has(table) { overflow-x: auto; }
+.descricao-publica table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+.descricao-publica :is(th, td) {
+  border: 0.0625rem solid #cbd5e1;
+  padding: 0.5em;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.descricao-publica th { font-weight: 700; background: #f8fbff; }

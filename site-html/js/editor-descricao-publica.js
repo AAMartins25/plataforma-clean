@@ -33,8 +33,9 @@
       textarea.readOnly = false;
       const novo = await C.ClassicEditor.create(textarea, {
         licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
-        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List],
-        toolbar: ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|', 'bulletedList', 'numberedList'],
+        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List, C.Table, C.TableToolbar],
+        toolbar: ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|', 'bulletedList', 'numberedList', '|', 'insertTable'],
+        table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'] },
         heading: { options: [
           {model: 'paragraph', title: 'Parágrafo', class: 'ck-heading_paragraph'},
           {model: 'heading2', view: 'h2', title: 'Título 1', class: 'ck-heading_heading2'},
