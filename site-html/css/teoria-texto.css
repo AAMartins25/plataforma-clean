@@ -9,6 +9,8 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    /* Compacta somente as margens verticais; mantém a área dos títulos e ações. */
+    padding-block: 0.375rem !important;
   }
 
   /* Preserva o tamanho de leitura, inclusive em tabelas e fórmulas em em.
@@ -28,7 +30,14 @@
   .teoria-secoes-root #paginacao_teoria { font-size: 0.866667rem !important; }
 }
 
+@media screen and (max-width: 900px) {
+  .teoria-secoes-root .teoria-header.ro-header {
+    padding-block: 0.125rem !important;
+  }
+}
+
 @media screen and (max-width: 480px) {
+  .teoria-secoes-root .teoria-header.ro-header { padding-block: 0 !important; }
   .teoria-secoes-root .teoria-contexto-curso,
   .teoria-secoes-root .teoria-contexto-disciplina { font-size: 1.111111rem; }
   .teoria-secoes-root .teoria-contexto-assunto { font-size: 0.972222rem; }
