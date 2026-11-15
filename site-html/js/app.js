@@ -505,9 +505,26 @@ function showError(containerId, err) {
 // ✅ NOVO: “Quem sou eu?” + redirect inteligente (admin vs aluno)
 // ===============================
 
+// Meus Cursos usa o mesmo perfil para a identificação e o botão de áreas.
+// O resultado fica apenas nesta página e nunca é reutilizado entre sessões.
+let perfilMeusCursos;
+async function obterPerfilMeusCursos() {
+  if (!window.Sessao) await carregarSessao();
+  const origem = Sessao.snapshot();
+  if (!perfilMeusCursos || !Sessao.mesma(perfilMeusCursos.origem)) {
+    perfilMeusCursos = { origem, promessa: apiGetAuth("/me") };
+  }
+  const perfil = await perfilMeusCursos.promessa;
+  if (!Sessao.mesma(origem)) {
+    throw Object.assign(new Error("Resposta de uma sessão anterior ignorada."), { name: "SessaoAlteradaError" });
+  }
+  return perfil;
+}
+
 async function getMeSafe() {
   try {
     if (!window.Sessao) await carregarSessao();
+    if (document.body?.dataset.page === "cursos") return await obterPerfilMeusCursos();
     return await Sessao.obterMe(`${API_BASE}/me`);
   }
   catch (err) {
@@ -991,6 +1008,36 @@ async function pageCursos() {
 
   if (!el) throw new Error("Não achei o elemento #lista no cursos.html");
 
+  if (!window.Sessao) await carregarSessao();
+  const origem = Sessao.snapshot();
+  function mostrarFalha(lista, mensagem) {
+    lista.innerHTML = `<p role="alert">${mensagem}</p>`;
+    lista.setAttribute("aria-busy", "false");
+  }
+  function sessaoAtual() {
+    if (Sessao.mesma(origem)) return true;
+    // Descarta os dados da página anterior quando a sessão muda.
+    mostrarFalha(el, "Sua sessão mudou. Atualize a página para carregar seus cursos.");
+    if (listaExpirados) {
+      listaExpirados.innerHTML = "";
+      listaExpirados.setAttribute("aria-busy", "false");
+    }
+    if (cardExpirados) cardExpirados.style.display = "none";
+    return false;
+  }
+  window.addEventListener("storage", event => {
+    if (["access_token", "auth_generation", null].includes(event.key)) sessaoAtual();
+  });
+  window.addEventListener("pageshow", sessaoAtual);
+  el.innerHTML = '<p role="status">Carregando...</p>';
+  el.setAttribute("aria-busy", "true");
+  if (cardExpirados && listaExpirados) {
+    cardExpirados.style.display = "block";
+    listaExpirados.style.display = "block";
+    listaExpirados.innerHTML = '<p role="status">Carregando...</p>';
+    listaExpirados.setAttribute("aria-busy", "true");
+  }
+
   try {
     const token = getToken();
 
@@ -1004,220 +1051,252 @@ async function pageCursos() {
       await tentarConfirmarPagamentoAoVoltar();
     }
 
-    const acessos = await apiGetAuth("/me/cursos");
+    if (!sessaoAtual()) return;
+    // Consultas independentes: a listagem ativa não aguarda o histórico.
+    await Promise.all([carregarAtivos(), carregarExpirados()]);
+  } catch (err) {
+    if (sessaoAtual()) {
+      mostrarFalha(el, "Não foi possível carregar seus cursos. Atualize a página para tentar novamente.");
+      if (cardExpirados) cardExpirados.style.display = "none";
+    }
+  }
 
-    console.log("DEBUG /me/cursos:", JSON.stringify(acessos, null, 2));
-    const historico = await apiGetAuth("/me/desempenho/contextos-expirados");
+  async function carregarExpirados() {
+    try {
+      const historico = await apiGetAuth("/me/desempenho/contextos-expirados");
+      if (!sessaoAtual()) return;
 
-    if (cardExpirados && listaExpirados) {
-      const expirados = (historico || []).filter(c => c.ativo === false);
+      if (cardExpirados && listaExpirados) {
+        const expirados = (historico || []).filter(c => c.ativo === false);
 
-      if (expirados.length > 0) {
-        cardExpirados.style.display = "block";
+        if (expirados.length > 0) {
+          cardExpirados.style.display = "block";
 
-        listaExpirados.innerHTML = expirados.map(c => `
-          <div class="disciplina" style="padding:0.4375rem 0.875rem;">
-            <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-              <div style="
-                font-size:1.05rem;
-                font-weight:bold;
-                padding-left:0.5625rem;
-              ">
-                ${escapeHtml(c.nome_curso)}
+          listaExpirados.style.display = "none";
+          listaExpirados.innerHTML = expirados.map(c => `
+            <div class="disciplina" style="padding:0.4375rem 0.875rem;">
+              <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
+                <div style="
+                  font-size:1.05rem;
+                  font-weight:bold;
+                  padding-left:0.5625rem;
+                ">
+                  ${escapeHtml(c.nome_curso)}
+                </div>
+
+                <a
+                  class="btn"
+                  href="javascript:void(0)"
+                  onclick="
+                    localStorage.setItem('curso_expirado_${c.curso_id}_data_inicio', '${escapeHtml(c.data_inicio || '')}');
+                    localStorage.setItem('curso_expirado_${c.curso_id}_data_fim', '${escapeHtml(c.data_fim || '')}');
+                    window.location.href='curso-expirado.html?curso_id=${encodeURIComponent(c.curso_id)}&curso_nome=${encodeURIComponent(c.nome_curso)}&data_inicio=${encodeURIComponent(c.data_inicio || '')}&data_fim=${encodeURIComponent(c.data_fim || '')}&bloqueio_manual=${c.bloqueio_manual ? '1' : '0'}&${c.contratacao_id ? 'contratacao_id=' + encodeURIComponent(c.contratacao_id) : 'demonstracao_id=' + encodeURIComponent(c.demonstracao_id)}';
+                  "
+                >
+                  Abrir
+                </a>
               </div>
-
-              <a
-                class="btn"
-                href="javascript:void(0)"
-                onclick="
-                  localStorage.setItem('curso_expirado_${c.curso_id}_data_inicio', '${escapeHtml(c.data_inicio || '')}');
-                  localStorage.setItem('curso_expirado_${c.curso_id}_data_fim', '${escapeHtml(c.data_fim || '')}');
-                  window.location.href='curso-expirado.html?curso_id=${encodeURIComponent(c.curso_id)}&curso_nome=${encodeURIComponent(c.nome_curso)}&data_inicio=${encodeURIComponent(c.data_inicio || '')}&data_fim=${encodeURIComponent(c.data_fim || '')}&bloqueio_manual=${c.bloqueio_manual ? '1' : '0'}&${c.contratacao_id ? 'contratacao_id=' + encodeURIComponent(c.contratacao_id) : 'demonstracao_id=' + encodeURIComponent(c.demonstracao_id)}';
-                "
-              >
-                Abrir
-              </a>
             </div>
-          </div>
-        `).join("");
+          `).join("");
 
-        if (localStorage.getItem("abrir_cursos_expirados") === "1") {
-          localStorage.removeItem("abrir_cursos_expirados");
+          if (localStorage.getItem("abrir_cursos_expirados") === "1") {
+            localStorage.removeItem("abrir_cursos_expirados");
 
-          listaExpirados.style.display = "block";
+            listaExpirados.style.display = "block";
+
+            if (linhaFinalExpirados) {
+              linhaFinalExpirados.style.display = "block";
+            }
+
+            setTimeout(() => {
+              if (!sessaoAtual()) return;
+              cardExpirados.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
+            }, 100);
+          }
+        } else {
+          cardExpirados.style.display = "none";
+          listaExpirados.innerHTML = "";
 
           if (linhaFinalExpirados) {
-            linhaFinalExpirados.style.display = "block";
+            linhaFinalExpirados.style.display = "none";
           }
-
-          setTimeout(() => {
-            cardExpirados.scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-          }, 100);
-        }
-      } else {
-        cardExpirados.style.display = "none";
-        listaExpirados.innerHTML = "";
-
-        if (linhaFinalExpirados) {
-          linhaFinalExpirados.style.display = "none";
         }
       }
+
+    } catch (err) {
+      if (sessaoAtual() && listaExpirados) {
+        listaExpirados.style.display = "block";
+        mostrarFalha(listaExpirados, "Não foi possível carregar os cursos expirados. Atualize a página para tentar novamente.");
+      }
+    } finally {
+      if (sessaoAtual() && listaExpirados) listaExpirados.setAttribute("aria-busy", "false");
     }
+  }
 
-    const tituloCursos = document.getElementById("titulo_cursos");
+  async function carregarAtivos() {
+    try {
+      const acessos = await apiGetAuth("/me/cursos");
+      if (!sessaoAtual()) return;
 
-    if (tituloCursos) {
-      tituloCursos.style.display = acessos && acessos.length > 0 ? "block" : "none";
-    }
+      const tituloCursos = document.getElementById("titulo_cursos");
 
-    el.innerHTML = "";
-
-    if (!acessos || acessos.length === 0) {
-      el.innerHTML = `
-        <div class="disciplina">
-          <div><strong>Você não possui curso ativo no momento.</strong></div>
-        </div>
-      `;
-      return;
-    }
-
-    const formatarVencimento = (data) => {
-      if (!data) return "";
-      const texto = String(data).replace(" ", "T");
-      const comFuso = /[zZ]$|[+-]\d{2}:\d{2}$/.test(texto)
-        ? texto
-        : texto + "Z";
-      return new Date(comFuso).toLocaleDateString("pt-BR", {
-        timeZone: "UTC"
-      });
-    };
-
-    for (const a of acessos) {
-      const contratos = (a.contratacoes || []).map(c => ({
-        tipo: "CONTRATO",
-        id: c.id,
-        data_fim: c.data_fim,
-        renovacao_disponivel: c.renovacao_disponivel
-      }));
-
-      // /me/cursos retorna apenas contratações vigentes e efetivamente liberadas.
-      const possuiContratacaoPaga = (a.contratacoes || []).some(c => c.origem === "PAGAMENTO");
-      const demonstracoes = (possuiContratacaoPaga ? [] : (a.demonstracoes || [])).map(d => ({
-        tipo: "DEMONSTRACAO",
-        id: d.id,
-        data_fim: d.data_fim,
-        aquisicao_disponivel: d.aquisicao_disponivel
-      }));
-
-      const modalidades = [...contratos, ...demonstracoes];
-
-      // Compatibilidade com acessos anteriores sem detalhamento.
-      if (modalidades.length === 0) {
-        modalidades.push({
-          tipo: "ACESSO",
-          data_fim: a.data_fim
-        });
+      if (tituloCursos) {
+        tituloCursos.style.display = acessos && acessos.length > 0 ? "block" : "none";
       }
 
-      for (const modalidade of modalidades) {
-        const div = document.createElement("div");
-        div.className = "disciplina";
-        div.style.padding = "0.9375rem 0.875rem";
+      el.innerHTML = "";
 
-        const vencimento = formatarVencimento(modalidade.data_fim);
-
-        const botaoRenovar =
-          modalidade.tipo === "CONTRATO" &&
-          modalidade.renovacao_disponivel
-            ? `<a
-                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
-                style="
-                  display:inline-block;
-                  padding:0.3125rem 0.8125rem;
-                  border-radius:0.3125rem;
-                  background:#fff2b3;
-                  color:#354522;
-                  font-size:0.95rem;
-                  font-weight:400;
-                  text-decoration:none;
-                "
-              >RENOVAR</a>`
-            : "";
-
-        const botaoAdquirir =
-          modalidade.tipo === "DEMONSTRACAO" &&
-          modalidade.aquisicao_disponivel
-            ? `<a
-                href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
-                style="
-                  display:inline-block;
-                  padding:0.3125rem 0.8125rem;
-                  border-radius:0.3125rem;
-                  background:#fff2b3;
-                  color:#354522;
-                  font-size:0.95rem;
-                  font-weight:400;
-                  text-decoration:none;
-                "
-              >ADQUIRIR O CURSO COMPLETO</a>`
-            : "";
-
-        const contextoAcesso =
-          modalidade.tipo === "CONTRATO"
-            ? `&contratacao_id=${encodeURIComponent(modalidade.id)}`
-            : modalidade.tipo === "DEMONSTRACAO"
-              ? `&demonstracao_id=${encodeURIComponent(modalidade.id)}`
-              : "";
-
-        div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-            <div style="flex:1;min-width:0;">
-              <div style="
-                font-size:1.05rem;
-                font-weight:bold;
-                padding-left:0.5625rem;
-              ">
-                ${escapeHtml(a.nome_curso)}
-              </div>
-
-              <div style="
-                display:flex;
-                align-items:center;
-                flex-wrap:wrap;
-                gap:0.75rem;
-                margin-top:0.5rem;
-                padding-left:0.5625rem;
-              ">
-                ${vencimento
-                  ? `<span style="font-size:0.72rem;color:#737373;">
-                       (ACESSO ATÉ ${vencimento})
-                     </span>`
-                  : ""}
-                ${botaoRenovar}
-                ${botaoAdquirir}
-              </div>
-            </div>
-
-            <div style="margin-left:0.75rem;">
-              <a
-                class="btn"
-                href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
-              >
-                Abrir
-              </a>
-            </div>
+      if (!acessos || acessos.length === 0) {
+        el.innerHTML = `
+          <div class="disciplina">
+            <div><strong>Você não possui curso ativo no momento.</strong></div>
           </div>
         `;
-
-        el.appendChild(div);
+        return;
       }
-    }
 
-  } catch (err) {
-    showError("conteudo", err);
+      const formatarVencimento = (data) => {
+        if (!data) return "";
+        const texto = String(data).replace(" ", "T");
+        const comFuso = /[zZ]$|[+-]\d{2}:\d{2}$/.test(texto)
+          ? texto
+          : texto + "Z";
+        return new Date(comFuso).toLocaleDateString("pt-BR", {
+          timeZone: "UTC"
+        });
+      };
+
+      for (const a of acessos) {
+        const contratos = (a.contratacoes || []).map(c => ({
+          tipo: "CONTRATO",
+          id: c.id,
+          data_fim: c.data_fim,
+          renovacao_disponivel: c.renovacao_disponivel
+        }));
+
+        // /me/cursos retorna apenas contratações vigentes e efetivamente liberadas.
+        const possuiContratacaoPaga = (a.contratacoes || []).some(c => c.origem === "PAGAMENTO");
+        const demonstracoes = (possuiContratacaoPaga ? [] : (a.demonstracoes || [])).map(d => ({
+          tipo: "DEMONSTRACAO",
+          id: d.id,
+          data_fim: d.data_fim,
+          aquisicao_disponivel: d.aquisicao_disponivel
+        }));
+
+        const modalidades = [...contratos, ...demonstracoes];
+
+        // Compatibilidade com acessos anteriores sem detalhamento.
+        if (modalidades.length === 0) {
+          modalidades.push({
+            tipo: "ACESSO",
+            data_fim: a.data_fim
+          });
+        }
+
+        for (const modalidade of modalidades) {
+          const div = document.createElement("div");
+          div.className = "disciplina";
+          div.style.padding = "0.9375rem 0.875rem";
+
+          const vencimento = formatarVencimento(modalidade.data_fim);
+
+          const botaoRenovar =
+            modalidade.tipo === "CONTRATO" &&
+            modalidade.renovacao_disponivel
+              ? `<a
+                  href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
+                  style="
+                    display:inline-block;
+                    padding:0.3125rem 0.8125rem;
+                    border-radius:0.3125rem;
+                    background:#fff2b3;
+                    color:#354522;
+                    font-size:0.95rem;
+                    font-weight:400;
+                    text-decoration:none;
+                  "
+                >RENOVAR</a>`
+              : "";
+
+          const botaoAdquirir =
+            modalidade.tipo === "DEMONSTRACAO" &&
+            modalidade.aquisicao_disponivel
+              ? `<a
+                  href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
+                  style="
+                    display:inline-block;
+                    padding:0.3125rem 0.8125rem;
+                    border-radius:0.3125rem;
+                    background:#fff2b3;
+                    color:#354522;
+                    font-size:0.95rem;
+                    font-weight:400;
+                    text-decoration:none;
+                  "
+                >ADQUIRIR O CURSO COMPLETO</a>`
+              : "";
+
+          const contextoAcesso =
+            modalidade.tipo === "CONTRATO"
+              ? `&contratacao_id=${encodeURIComponent(modalidade.id)}`
+              : modalidade.tipo === "DEMONSTRACAO"
+                ? `&demonstracao_id=${encodeURIComponent(modalidade.id)}`
+                : "";
+
+          div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
+              <div style="flex:1;min-width:0;">
+                <div style="
+                  font-size:1.05rem;
+                  font-weight:bold;
+                  padding-left:0.5625rem;
+                ">
+                  ${escapeHtml(a.nome_curso)}
+                </div>
+
+                <div style="
+                  display:flex;
+                  align-items:center;
+                  flex-wrap:wrap;
+                  gap:0.75rem;
+                  margin-top:0.5rem;
+                  padding-left:0.5625rem;
+                ">
+                  ${vencimento
+                    ? `<span style="font-size:0.72rem;color:#737373;">
+                         (ACESSO ATÉ ${vencimento})
+                       </span>`
+                    : ""}
+                  ${botaoRenovar}
+                  ${botaoAdquirir}
+                </div>
+              </div>
+
+              <div style="margin-left:0.75rem;">
+                <a
+                  class="btn"
+                  href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
+                >
+                  Abrir
+                </a>
+              </div>
+            </div>
+          `;
+
+          el.appendChild(div);
+        }
+      }
+
+    } catch (err) {
+      if (sessaoAtual()) {
+        mostrarFalha(el, "Não foi possível carregar seus cursos. Atualize a página para tentar novamente.");
+      }
+    } finally {
+      if (sessaoAtual()) el.setAttribute("aria-busy", "false");
+    }
   }
 }
 
@@ -2750,7 +2829,7 @@ if (anoAtualCursoInfo) {
 window.onload = async () => {
   if (window.AdminAcesso && !(await AdminAcesso.exigir())) return;
   const page = document.body.getAttribute("data-page");
-  if (page === "cursos") pageCursos();
+  // Meus Cursos inicia no DOMContentLoaded, sem aguardar recursos da janela.
   if (page === "disciplinas") pageDisciplinas();
   if (page === "assuntos") pageAssuntos();
   if (page === "pastas") pagePastas();
@@ -4539,6 +4618,7 @@ async function restaurarEstadoCompraCursoInfo() {
 document.addEventListener(
   "DOMContentLoaded",
   () => {
+    if (document.body.getAttribute("data-page") === "cursos") pageCursos();
     exibirNomeUsuarioLogado();
   }
 );

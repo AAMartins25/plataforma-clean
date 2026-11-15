@@ -49,7 +49,7 @@
 
     <main class="container" id="conteudo">
       <div class="card" id="card_cursos_ativos">
-        <div id="lista" class="list"></div>
+        <div id="lista" class="list" aria-live="polite" aria-busy="true"><p role="status">Carregando...</p></div>
       </div>
 
       <div class="card" id="card_cursos_expirados" style="display:none;">
@@ -71,7 +71,7 @@
       <p>© <span id="ano_atual">2026</span> Quality</p>
     </footer>
 
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=cursos-carregamento-1"></script>
 
     <script>
       document.getElementById("ano_atual").innerText = new Date().getFullYear();
@@ -88,9 +88,7 @@
 
         try {
           const me =
-            await apiGetAuth(
-              "/me"
-            );
+            await obterPerfilMeusCursos();
 
           const quantidadeAreas =
             Number(!!me?.is_admin) +
