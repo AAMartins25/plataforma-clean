@@ -6155,6 +6155,13 @@ footer p {
   margin-bottom: 0;
 }
 
+@media screen and (min-width: 1024px) {
+  .dashboard-aluno-page .dashboard-aluno-disciplina-card {
+    width: 87%;
+    margin-inline: auto;
+  }
+}
+
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-linha {
   display: flex;
