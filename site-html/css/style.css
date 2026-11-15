@@ -6157,10 +6157,10 @@ footer p {
 
 @media screen and (min-width: 1024px) {
   .dashboard-aluno-page .dashboard-aluno-disciplinas-card {
-    width: 85%;
+    width: 91.8%;
     margin-inline: auto;
     /* Mantém a antiga largura interna: 87% de (largura original - 3rem). */
-    padding-inline: calc(1.305rem - 1%);
+    padding-inline: calc(1.305rem + 2.4%);
   }
 
   .dashboard-aluno-page .dashboard-aluno-disciplina-card {
@@ -6244,7 +6244,7 @@ footer p {
 .dashboard-aluno-assunto-nota {
   min-width: 2rem;
   text-align: right;
-  font-size: 0.90rem;
+  font-size: 0.9408rem;
   font-weight: 600;
   color: #2e7d32;
 }
@@ -6260,7 +6260,7 @@ footer p {
 .dashboard-aluno-disciplina-nota {
   min-width: 2.625rem;
   text-align: right;
-  font-size: 0.90rem;
+  font-size: 1.0528rem;
   font-weight: 600;
   color: #2e7d32;
 }
