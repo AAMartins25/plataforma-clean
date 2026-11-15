@@ -987,6 +987,7 @@ async function pageCursos() {
   const el = document.getElementById("lista");
   const listaExpirados = document.getElementById("lista_expirados");
   const cardExpirados = document.getElementById("card_cursos_expirados");
+  const botaoExpirados = document.getElementById("btnCursosExpirados");
   const linhaFinalExpirados = document.getElementById("linha_final_expirados");
 
   if (!el) throw new Error("Não achei o elemento #lista no cursos.html");
@@ -1014,20 +1015,18 @@ async function pageCursos() {
 
       if (expirados.length > 0) {
         cardExpirados.style.display = "block";
+        if (botaoExpirados) {
+          botaoExpirados.disabled = false;
+          botaoExpirados.setAttribute("aria-expanded", String(listaExpirados.style.display !== "none"));
+        }
 
         listaExpirados.innerHTML = expirados.map(c => `
-          <div class="disciplina" style="padding:0.4375rem 0.875rem;">
-            <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-              <div style="
-                font-size:1.05rem;
-                font-weight:bold;
-                padding-left:0.5625rem;
-              ">
-                ${escapeHtml(c.nome_curso)}
-              </div>
+          <div class="disciplina meus-curso-card meus-curso-expirado">
+            <div class="meus-curso-linha">
+              <h3 class="meus-curso-nome">${escapeHtml(c.nome_curso)}</h3>
 
               <a
-                class="btn"
+                class="btn meus-curso-abrir"
                 href="javascript:void(0)"
                 onclick="
                   localStorage.setItem('curso_expirado_${c.curso_id}_data_inicio', '${escapeHtml(c.data_inicio || '')}');
@@ -1045,6 +1044,7 @@ async function pageCursos() {
           localStorage.removeItem("abrir_cursos_expirados");
 
           listaExpirados.style.display = "block";
+          botaoExpirados?.setAttribute("aria-expanded", "true");
 
           if (linhaFinalExpirados) {
             linhaFinalExpirados.style.display = "block";
@@ -1058,8 +1058,13 @@ async function pageCursos() {
           }, 100);
         }
       } else {
-        cardExpirados.style.display = "none";
-        listaExpirados.innerHTML = "";
+        cardExpirados.style.display = "block";
+        listaExpirados.innerHTML = '<p class="meus-cursos-vazio">Nenhum curso com acesso expirado no momento</p>';
+        listaExpirados.style.display = "block";
+        if (botaoExpirados) {
+          botaoExpirados.disabled = true;
+          botaoExpirados.setAttribute("aria-expanded", "true");
+        }
 
         if (linhaFinalExpirados) {
           linhaFinalExpirados.style.display = "none";
@@ -1077,8 +1082,8 @@ async function pageCursos() {
 
     if (!acessos || acessos.length === 0) {
       el.innerHTML = `
-        <div class="disciplina">
-          <div><strong>Você não possui curso ativo no momento.</strong></div>
+        <div class="disciplina meus-curso-card meus-cursos-vazio">
+          <strong>Você não possui curso ativo no momento.</strong>
         </div>
       `;
       return;
@@ -1124,8 +1129,7 @@ async function pageCursos() {
 
       for (const modalidade of modalidades) {
         const div = document.createElement("div");
-        div.className = "disciplina";
-        div.style.padding = "0.9375rem 0.875rem";
+        div.className = "disciplina meus-curso-card";
 
         const vencimento = formatarVencimento(modalidade.data_fim);
 
@@ -1134,16 +1138,7 @@ async function pageCursos() {
           modalidade.renovacao_disponivel
             ? `<a
                 href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&renovacao=1&contratacao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
-                style="
-                  display:inline-block;
-                  padding:0.3125rem 0.8125rem;
-                  border-radius:0.3125rem;
-                  background:#fff2b3;
-                  color:#354522;
-                  font-size:0.95rem;
-                  font-weight:400;
-                  text-decoration:none;
-                "
+                class="meus-curso-acao-secundaria"
               >RENOVAR</a>`
             : "";
 
@@ -1152,16 +1147,7 @@ async function pageCursos() {
           modalidade.aquisicao_disponivel
             ? `<a
                 href="checkout.html?curso_id=${encodeURIComponent(a.curso_id)}&demonstracao_id=${encodeURIComponent(modalidade.id)}&origem=cursos"
-                style="
-                  display:inline-block;
-                  padding:0.3125rem 0.8125rem;
-                  border-radius:0.3125rem;
-                  background:#fff2b3;
-                  color:#354522;
-                  font-size:0.95rem;
-                  font-weight:400;
-                  text-decoration:none;
-                "
+                class="meus-curso-acao-secundaria"
               >ADQUIRIR O CURSO COMPLETO</a>`
             : "";
 
@@ -1173,42 +1159,21 @@ async function pageCursos() {
               : "";
 
         div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-            <div style="flex:1;min-width:0;">
-              <div style="
-                font-size:1.05rem;
-                font-weight:bold;
-                padding-left:0.5625rem;
-              ">
-                ${escapeHtml(a.nome_curso)}
-              </div>
-
-              <div style="
-                display:flex;
-                align-items:center;
-                flex-wrap:wrap;
-                gap:0.75rem;
-                margin-top:0.5rem;
-                padding-left:0.5625rem;
-              ">
+          <div class="meus-curso-linha">
+            <div class="meus-curso-conteudo">
+              <h2 class="meus-curso-nome">${escapeHtml(a.nome_curso)}</h2>
+              <div class="meus-curso-detalhes">
                 ${vencimento
-                  ? `<span style="font-size:0.72rem;color:#737373;">
-                       (ACESSO ATÉ ${vencimento})
-                     </span>`
+                  ? `<span class="meus-curso-vencimento">Acesso até <strong>${vencimento}</strong></span>`
                   : ""}
                 ${botaoRenovar}
                 ${botaoAdquirir}
               </div>
             </div>
-
-            <div style="margin-left:0.75rem;">
-              <a
-                class="btn"
-                href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
-              >
-                Abrir
-              </a>
-            </div>
+            <a
+              class="btn meus-curso-abrir"
+              href="curso.html?curso_id=${encodeURIComponent(a.curso_id)}&curso_nome=${encodeURIComponent(a.nome_curso)}${contextoAcesso}"
+            >Abrir</a>
           </div>
         `;
 
@@ -1230,6 +1195,7 @@ function alternarCursosExpirados() {
   const estavaFechada = lista.style.display === "none";
 
   lista.style.display = estavaFechada ? "block" : "none";
+  document.getElementById("btnCursosExpirados")?.setAttribute("aria-expanded", String(estavaFechada));
 
   if (linhaFinal) {
     linhaFinal.style.display = "block";

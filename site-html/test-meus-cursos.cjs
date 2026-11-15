@@ -8,7 +8,7 @@ const demo={id:2,data_fim:'2026-10-20T00:00:00',aquisicao_disponivel:true};
 const curso=(contratacoes=[],demonstracoes=[demo],id=1)=>({curso_id:id,nome_curso:'Curso '+id,contratacoes,demonstracoes});
 async function renderizar(acessos){
  const elementos={};const erros=[];
- const criar=()=>({style:{},innerHTML:'',children:[],appendChild(c){this.children.push(c)}});
+ const criar=()=>({style:{},innerHTML:'',children:[],appendChild(c){this.children.push(c)},setAttribute(k,v){this[k]=v}});
  const s={console:{log(){},error(){}},Date,URLSearchParams,localStorage:{getItem:()=> 'token'},window:{location:{}},document:{body:{dataset:{}},addEventListener(){},getElementById:id=>elementos[id]??=criar(),createElement:criar}};
  vm.createContext(s);vm.runInContext(source,s);
  s.apiGetAuth=async url=>url==='/me/cursos'?acessos:[];s.tentarConfirmarPagamentoAoVoltar=async()=>{};s.showError=(_,err)=>erros.push(err);
