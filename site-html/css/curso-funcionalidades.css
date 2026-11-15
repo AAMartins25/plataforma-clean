@@ -9,6 +9,8 @@
      O seletor também supera as regras compartilhadas de curso.html. */
   .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
     font-size: 1.666667rem;
+    position: relative;
+    top: 3px;
     /* Nomes longos precisam continuar legíveis com a fonte equivalente. */
     display: block;
     overflow: visible;
