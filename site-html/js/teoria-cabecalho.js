@@ -20,45 +20,17 @@
     referencia.setAttribute("aria-hidden", "true");
     faixa.classList.add("teoria-header--contexto");
 
-    function medirAssuntos() {
-      // Mesma geometria efetiva de Assuntos, sem carregar ou alterar aquela página.
-      const copia = faixa.cloneNode(true);
-      copia.classList.remove("teoria-header--compacto");
-      copia.querySelector(".teoria-contexto")?.remove();
-      copia.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-      copia.setAttribute("aria-hidden", "true");
-      copia.inert = true;
-      Object.assign(copia.style, {position: "absolute", left: "-100000px", top: "0",
-        width: `${faixa.getBoundingClientRect().width}px`, visibility: "hidden"});
-      const area = copia.querySelector(".ro-header-titles");
-      area.style.paddingTop = "0";
-      const bloco = document.createElement("div");
-      bloco.style.maxWidth = "calc(100% - 2 * clamp(5rem, 20vw, 15rem))";
-      const titulo = document.createElement("h1");
-      titulo.textContent = cursoNome;
-      const celular = matchMedia("(max-width: 480px)").matches;
-      titulo.style.fontSize = celular ? "1.2rem" : "1.5rem";
-      titulo.style.lineHeight = celular ? "1.35" : "1.3";
-      bloco.append(titulo);
-      area.replaceChildren(bloco);
-      faixa.after(copia);
-      const altura = copia.getBoundingClientRect().height;
-      const padding = parseFloat(getComputedStyle(copia).paddingTop);
-      const reducao = Math.min(padding, altura * 0.065);
-      copia.remove();
-      return {altura: altura - 2 * reducao, padding: padding - reducao};
-    }
-
     function compactar() {
-      const referenciaAssuntos = medirAssuntos();
+      const referenciaFuncionalidades = window.CabecalhosAltura.medir(cursoNome);
+      if (!referenciaFuncionalidades) return;
       // Conserva inclusive os tamanhos efetivos escolhidos pelo ajuste anterior.
-      // Somente o assunto cresce; nomes extensos passam a ampliar a faixa.
+      // Preserva a ampliação vigente do assunto ao recompor esses tamanhos.
       const assunto = titulos[2];
       assunto.style.fontSize = `${parseFloat(getComputedStyle(assunto).fontSize) * 1.13}px`;
       contexto.classList.add("teoria-contexto--interno");
       if (contexto.parentElement !== faixa) faixa.append(contexto);
-      faixa.style.setProperty("--teoria-header-padding", `${referenciaAssuntos.padding}px`);
-      faixa.style.setProperty("--teoria-header-altura", `${referenciaAssuntos.altura}px`);
+      faixa.style.setProperty("--teoria-header-padding", `${referenciaFuncionalidades.padding}px`);
+      faixa.style.setProperty("--teoria-header-altura", `${referenciaFuncionalidades.altura}px`);
       faixa.classList.add("teoria-header--compacto");
       const ajustarTopo = () => {
         const rect = faixa.getBoundingClientRect();
@@ -68,8 +40,8 @@
           range.selectNodeContents(el);
           return [...range.getClientRects()];
         });
-        let minimo = referenciaAssuntos.padding;
-        let maximo = rect.height - referenciaAssuntos.padding - box.height
+        let minimo = 1;
+        let maximo = rect.height - box.height
           - parseFloat(getComputedStyle(faixa).borderBottomWidth);
         for (const controle of faixa.querySelectorAll(".ro-header-identity, .teoria-header-acoes .btn")) {
           const r = controle.getBoundingClientRect();
@@ -196,6 +168,7 @@
     if (aluno) observador.observe(aluno);
     window.addEventListener("resize", agendar);
     document.fonts.ready.then(agendar);
+    window.CabecalhosAltura.pronto.then(agendar);
     atualizar();
 
     // Links antigos que têm contexto, mas não carregam o nome na URL.

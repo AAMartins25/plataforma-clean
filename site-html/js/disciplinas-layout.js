@@ -1,5 +1,4 @@
-/* A altura original varia com a quebra do nome do curso. Reduz apenas padding,
-   conservando fontes e controles; nomes extremos têm prioridade sobre o corte. */
+/* Conserva fontes e controles, usando a altura efetiva de Funcionalidades. */
 (() => {
   const iniciar = () => {
     const header = document.querySelector('.disciplinas-page[data-page="disciplinas"] .disciplinas-header');
@@ -7,11 +6,7 @@
     let agendado = false;
     const ajustar = () => {
       agendado = false;
-      header.style.removeProperty('--disciplinas-header-reducao');
-      if (!matchMedia('screen').matches) return;
-      const altura = header.getBoundingClientRect().height;
-      const padding = parseFloat(getComputedStyle(header).paddingTop);
-      header.style.setProperty('--disciplinas-header-reducao', `${Math.min(padding, altura * 0.065)}px`);
+      window.CabecalhosAltura.ajustar(header, header.querySelector('h1'));
     };
     const agendar = () => {
       if (agendado) return;
@@ -22,6 +17,7 @@
     header.querySelectorAll('.ro-header-titles, .ro-header-navigation').forEach(el => observer.observe(el));
     window.addEventListener('resize', agendar);
     document.fonts.ready.then(agendar);
+    window.CabecalhosAltura.pronto.then(agendar);
     ajustar();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar, { once: true });
