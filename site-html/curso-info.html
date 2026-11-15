@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/cabecalho.js" defer></script>
   <link rel="stylesheet" href="css/descricao-publica.css?v=1">
+  <link rel="stylesheet" href="css/curso-info.css?v=1">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -27,36 +28,34 @@
 
   <main class="container">
 
-    <div class="card">
-      <h2
-        onclick="alternarEstruturaCursoInfo()"
-        style="cursor:pointer;margin-top:0;font-size:1.2rem;"
-      >
-        Estrutura do curso
+    <section class="card curso-info-card" aria-labelledby="titulo_informacoes">
+      <h2 id="titulo_informacoes">
+        <button class="curso-info-section-toggle" type="button" onclick="alternarInformacoesCursoInfo()" aria-expanded="true" aria-controls="informacoes_curso">
+          <svg class="curso-info-section-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg>
+          Informações
+          <span class="curso-info-chevron" aria-hidden="true"></span>
+        </button>
       </h2>
+      <div id="informacoes_curso" class="descricao-publica curso-info-section-content"></div>
+    </section>
 
-      <div id="estrutura_curso" class="list" style="display:none;"></div>
-    </div>
-
-    <div class="card">
-      <h2
-        onclick="alternarInformacoesCursoInfo()"
-        style="cursor:pointer;margin-top:0;font-size:1.2rem;"
-      >
-        Informações
+    <section class="card curso-info-card" aria-labelledby="titulo_estrutura">
+      <h2 id="titulo_estrutura">
+        <button class="curso-info-section-toggle" type="button" onclick="alternarEstruturaCursoInfo()" aria-expanded="false" aria-controls="estrutura_curso">
+          <svg class="curso-info-section-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h16v5H4zM4 15h6v5H4zM14 15h6v5h-6zM12 9v3M7 15v-3h10v3"/></svg>
+          Estrutura do curso
+          <span class="curso-info-chevron" aria-hidden="true"></span>
+        </button>
       </h2>
+      <div id="estrutura_curso" class="list curso-info-section-content" style="display:none;"></div>
+    </section>
 
-      <div
-        id="informacoes_curso"
-        class="descricao-publica"
-        style="display:none;line-height:1.6;margin-top:0.75rem;"
-      ></div>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;font-size:1.2rem;">Acesso</h2>
-
-      <div id="opcoes_acesso" class="list"></div>
+    <section class="card curso-info-card" aria-labelledby="titulo_acesso">
+      <h2 id="titulo_acesso" class="curso-info-section-heading">
+        <svg class="curso-info-section-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="8" cy="9" r="5"/><path d="m12 12 8 8m-5-5 3-3m0 6 3-3"/></svg>
+        Acesso
+      </h2>
+      <fieldset id="opcoes_acesso" class="list" aria-label="Modalidades de acesso"></fieldset>
       <div id="boxAceiteJuridico" hidden style="margin-top:1rem;line-height:1.6;overflow-wrap:anywhere;">
         <input type="checkbox" id="aceiteJuridico" aria-labelledby="textoAceiteJuridico" />
         <span id="textoAceiteJuridico">Ciente dos <a id="linkTermos" target="_blank" rel="noopener noreferrer">Termos de Contratação</a> e da <a id="linkPrivacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade e Proteção de Dados</a>.</span>
@@ -73,6 +72,7 @@
         </label>
 
         <div
+          class="curso-info-cupom-controls"
           style="
             display:flex;
             gap:0.625rem;
@@ -163,15 +163,14 @@
           id="btnAdquirirAgora"
           class="btn curso-info-btn-adquirir"
           type="button"
+          disabled
         >
           Adquirir agora
         </button>
       </div>
 
-      <div id="msgCursoInfo" style="margin-top:0.75rem;"></div>
-    </div>
-
-    <div class="card" style="padding:0;height:0rem;"></div>
+      <div id="msgCursoInfo" role="status" aria-live="polite" style="margin-top:0.75rem;"></div>
+    </section>
 
   </main>
 
@@ -181,7 +180,7 @@
 
   <script src="js/vendor/dompurify-3.4.17.min.js"></script>
   <script src="js/descricao-publica.js?v=1"></script>
-  <script src="js/app.js?v=descricao1-venda1"></script>
+  <script src="js/app.js?v=curso-apresentacao-2"></script>
   <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>

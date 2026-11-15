@@ -1,0 +1,116 @@
+/* Apresentação do curso: mesma identidade da home, respeitando a escala global em rem. */
+body.curso-info-page {
+  --curso-blue: #0866d8;
+  --curso-navy: #102d75;
+  --curso-gold: #f5b900;
+  background: #f5f8fc;
+  color: var(--curso-navy);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body.curso-info-page header.ro-header {
+  background: linear-gradient(115deg, #fff6be, #fff1a0 55%, #fff5bc);
+  border-bottom: 0.0625rem solid #f5df85;
+}
+body.curso-info-page header.ro-header .ro-header-titles h1 {
+  font-size: 1.5rem;
+  font-weight: 750;
+  line-height: 1.35;
+  color: var(--curso-navy);
+  text-align: center;
+}
+body.curso-info-page main.container {
+  max-width: 57.5rem;
+  margin: 1.625rem auto 0;
+  padding: 0 1.25rem 1.5rem;
+}
+body.curso-info-page main > .curso-info-card {
+  min-width: 0;
+  padding: 1.375rem 1.625rem;
+  margin-bottom: 1.375rem;
+  background: #fff;
+  border: 0.0625rem solid #e3eaf3;
+  border-top: 0.1875rem solid var(--curso-gold);
+  border-radius: 0.9375rem;
+  box-shadow: 0 0.25rem 1rem #102d7509;
+}
+.curso-info-card h2 { margin: 0; color: var(--curso-navy); font-size: 1.375rem; line-height: 1.35; font-weight: 700; }
+.curso-info-section-toggle, .curso-info-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.curso-info-section-toggle {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.curso-info-section-icon { width: 1.6875rem; height: 1.6875rem; flex: 0 0 auto; color: var(--curso-blue); stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.curso-info-chevron { width: 0.5rem; height: 0.5rem; flex: 0 0 auto; margin-left: auto; margin-right: 0.25rem; border-right: 0.125rem solid var(--curso-blue); border-bottom: 0.125rem solid var(--curso-blue); transform: rotate(45deg); }
+.curso-info-section-toggle[aria-expanded="true"] .curso-info-chevron { transform: rotate(225deg); }
+.curso-info-section-content { margin-top: 1rem; line-height: 1.65; }
+body.curso-info-page #opcoes_acesso { min-width: 0; margin: 1.125rem 0 0; padding: 0; border: 0; gap: 0.625rem; }
+body.curso-info-page .curso-info-opcao-acesso {
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border: 0.0625rem solid #d5dfed;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: var(--curso-navy);
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.curso-info-opcao-acesso input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--curso-blue); }
+.curso-info-opcao-nome { min-width: 0; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+.curso-info-opcao-preco { justify-self: end; white-space: nowrap; font-size: 1.0625rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+body.curso-info-page .curso-info-opcao-acesso:hover { background: #f8fbff; border-color: #a8c9f3; }
+body.curso-info-page .curso-info-opcao-acesso:has(input:checked) { background: #eef5ff; border-color: var(--curso-blue); box-shadow: 0 0 0 0.0625rem var(--curso-blue); }
+body.curso-info-page .curso-info-opcao-acesso:has(input:focus-visible), .curso-info-section-toggle:focus-visible { outline: 0.1875rem solid var(--curso-blue); outline-offset: 0.25rem; border-radius: 0.5rem; }
+body.curso-info-page .curso-info-disciplina { margin-bottom: 0.625rem; border-color: #e3eaf3; border-radius: 0.625rem; background: #f8fbff; }
+body.curso-info-page .curso-info-btn-adquirir {
+  min-width: 11.5rem;
+  min-height: 2.875rem;
+  padding: 0.625rem 1.125rem;
+  border: 0.0625rem solid var(--curso-blue);
+  border-radius: 0.625rem;
+  background: var(--curso-blue);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 650;
+  font-family: inherit;
+}
+body.curso-info-page .curso-info-btn-adquirir:hover:not(:disabled) { border-color: #0756b5; background: #0756b5; color: #fff; }
+body.curso-info-page .curso-info-btn-adquirir:disabled { opacity: .45; cursor: not-allowed; background: var(--curso-blue); border-color: var(--curso-blue); color: #fff; }
+body.curso-info-page .curso-info-btn-adquirir:focus-visible { outline: 0.1875rem solid var(--curso-blue); outline-offset: 0.25rem; }
+body.curso-info-page #box_cupom_desconto, body.curso-info-page #aviso_demo { border: 0.0625rem solid #e3eaf3; border-radius: 0.625rem; background: #f8fbff; }
+body.curso-info-page #codigo_cupom_desconto { max-width: 100%; min-width: 0 !important; }
+body.curso-info-page footer { color: #526581; }
+@media (max-width: 600px) {
+  body.curso-info-page header.ro-header .ro-header-titles { padding-top: 0; }
+  body.curso-info-page header.ro-header .ro-header-titles > * { max-width: 100%; }
+  body.curso-info-page header.ro-header .ro-header-titles h1 { font-size: 1.25rem; }
+  body.curso-info-page .ro-header--identified .ro-header-identity { grid-column: 1 / -1; grid-row: 1; max-width: 100% !important; }
+  body.curso-info-page .ro-header--identified .ro-header-titles { grid-row: 2 !important; }
+  body.curso-info-page .ro-header--identified .ro-header-navigation { grid-row: 3 !important; }
+  body.curso-info-page main.container { margin-top: 1.25rem; padding: 0 0.75rem 1.25rem; }
+  body.curso-info-page main > .curso-info-card { padding: 1.125rem 1rem; margin-bottom: 1.125rem; }
+  .curso-info-card h2 { font-size: 1.25rem; }
+  .curso-info-section-heading, .curso-info-section-toggle { gap: 0.5625rem; }
+  body.curso-info-page .curso-info-opcao-acesso { padding: 0.75rem; gap: 0.5rem; }
+  .curso-info-opcao-nome, .curso-info-opcao-preco { font-size: 0.9375rem; }
+  body.curso-info-page .curso-info-btn-adquirir { width: 100%; }
+  .curso-info-cupom-controls { flex-direction: column; align-items: stretch; }
+  body.curso-info-page #codigo_cupom_desconto { flex: 0 0 auto !important; width: 100%; min-height: 2.75rem; top: 0 !important; }
+  body.curso-info-page #btnAplicarCupom { width: 100%; top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.curso-info-page .curso-info-opcao-acesso { transition: none; }
+}

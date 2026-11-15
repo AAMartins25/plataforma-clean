@@ -2240,12 +2240,18 @@ function formatarValorCursoInfo(cents) {
 
 function alternarEstruturaCursoInfo() {
   const box = document.getElementById("estrutura_curso");
-  if (box) box.style.display = box.style.display === "none" ? "block" : "none";
+  if (box) {
+    box.style.display = box.style.display === "none" ? "block" : "none";
+    document.querySelector('[aria-controls="estrutura_curso"]')?.setAttribute("aria-expanded", String(box.style.display !== "none"));
+  }
 }
 
 function alternarInformacoesCursoInfo() {
   const box = document.getElementById("informacoes_curso");
-  if (box) box.style.display = box.style.display === "none" ? "block" : "none";
+  if (box) {
+    box.style.display = box.style.display === "none" ? "block" : "none";
+    document.querySelector('[aria-controls="informacoes_curso"]')?.setAttribute("aria-expanded", String(box.style.display !== "none"));
+  }
 }
 
 function alternarDisciplinaCursoInfo(id) {
@@ -2280,6 +2286,15 @@ function alternarOpcaoAcessoCursoInfo(input) {
   controlarAvisoDemoCursoInfo();
 }
 
+function atualizarBotaoAcessoCursoInfo() {
+  const btn = document.getElementById("btnAdquirirAgora");
+  const selecionado = document.querySelector("input[name='tipo_acesso']:checked");
+  if (!btn) return;
+  btn.disabled = !selecionado || aquisicaoCursoInfoEmAndamento;
+  btn.textContent = selecionado?.value === "demo" ? "Iniciar teste"
+    : !selecionado && dadosCursoInfo?.publicado === false ? "Retomar pagamento" : "Adquirir agora";
+}
+
 function controlarAvisoDemoCursoInfo() {
   const selecionado =
     document.querySelector(
@@ -2289,11 +2304,6 @@ function controlarAvisoDemoCursoInfo() {
   const aviso =
     document.getElementById(
       "aviso_demo"
-    );
-
-  const btn =
-    document.getElementById(
-      "btnAdquirirAgora"
     );
 
   const boxCupom =
@@ -2314,12 +2324,7 @@ function controlarAvisoDemoCursoInfo() {
   }
 
 
-  if (btn) {
-    btn.textContent =
-      ehDemo
-        ? "Acessar agora"
-        : "Adquirir agora";
-  }
+  atualizarBotaoAcessoCursoInfo();
 
 
   if (boxCupom) {
@@ -2426,15 +2431,13 @@ function renderizarOpcoesAcessoCursoInfo() {
         data-tempo-id="${t.id}"
         data-valor-cents="${t.valor_cents}"
         onclick="alternarOpcaoAcessoCursoInfo(this)"
-        style="margin-right:0.625rem;"
       />
-      ${t.meses} meses (${formatarValorCursoInfo(t.valor_cents)})
+      <span class="curso-info-opcao-nome">${t.meses} meses</span>
+      <strong class="curso-info-opcao-preco">${formatarValorCursoInfo(t.valor_cents)}</strong>
     </label>
   `).join("");
 
   const vendaDesativada = dadosCursoInfo.publicado === false;
-  const botao = document.getElementById("btnAdquirirAgora");
-  if (botao) botao.textContent = vendaDesativada ? "Retomar pagamento" : "Adquirir agora";
   box.innerHTML = `
     ${vendaDesativada ? '<p role="status">Venda desativada. Você pode retomar um pagamento já iniciado selecionando o mesmo período e cupom. Seus acessos existentes permanecem disponíveis.</p>' : `
     <label class="assunto curso-info-opcao-acesso">
@@ -2443,14 +2446,15 @@ function renderizarOpcoesAcessoCursoInfo() {
         name="tipo_acesso"
         value="demo"
         onclick="alternarOpcaoAcessoCursoInfo(this)"
-        style="margin-right:0.625rem;"
       />
-      Teste (acesso gratuito)
+      <span class="curso-info-opcao-nome">Teste gratuito</span>
+      <strong class="curso-info-opcao-preco">Grátis</strong>
     </label>
     `}
 
     ${pagas}
   `;
+  atualizarBotaoAcessoCursoInfo();
 }
 
 let aquisicaoCursoInfoEmAndamento = false;
@@ -2577,7 +2581,7 @@ async function adquirirAgoraCursoInfo() {
     msg.style.color = "#8a1f1f";
   } finally {
     aquisicaoCursoInfoEmAndamento = false;
-    document.getElementById("btnAdquirirAgora").disabled = false;
+    atualizarBotaoAcessoCursoInfo();
   }
 }
 
@@ -2674,7 +2678,9 @@ async function pageCursoInfo() {
         aplicarCupomCursoInfo;
     }
 
-    await restaurarEstadoCompraCursoInfo();
+    // Restaura somente a escolha explícita de uma compra interrompida pelo login.
+    // Uma visita comum, inclusive com estado antigo salvo, começa sem seleção.
+    if (continuarCompraPendente) await restaurarEstadoCompraCursoInfo();
 
     const continuarCompra =
       localStorage.getItem(
@@ -2689,9 +2695,10 @@ async function pageCursoInfo() {
         "continuar_compra_apos_login"
       );
 
-      await adquirirAgoraCursoInfo();
-
-      return;
+      if (document.querySelector("input[name='tipo_acesso']:checked")) {
+        await adquirirAgoraCursoInfo();
+        return;
+      }
     }
 
     document.body.style.visibility =
