@@ -12,6 +12,15 @@
 .login-page button,
 .login-page .btn { font-size: 1.333333rem; }
 
+/* Aumenta só a tipografia do formulário; as caixas de linha mantêm a geometria. */
+.login-page main.container { font-size: 1.44rem; line-height: 1.481481; }
+.login-page main label { font-size: 1.3536rem; line-height: 1.25; }
+.login-page main .assunto h3 { font-size: 1.44rem; line-height: 1.25; }
+.login-page main input,
+.login-page main button,
+.login-page main .btn { font-size: 1.44rem; }
+.login-page .ro-header-titles h1 { position: relative; top: 1.5rem; }
+
 /* Remove o espaço reservado ao nome quando não há usuário identificado. */
 .login-page header.ro-header { padding: 0.375rem 1.5rem !important; }
 .login-page:not(:has(.ro-header-identity)) .ro-header-titles { padding-top: 0; }
@@ -36,7 +45,7 @@
 }
 .login-page main input { min-width: 0; max-width: 100%; }
 .login-page #senha { padding-right: calc(44px + 0.5rem) !important; }
-.login-page #toggleSenha { min-width: 44px; right: 0 !important; padding: 0; font-size: 1.333333rem !important; }
+.login-page #toggleSenha { min-width: 44px; right: 0 !important; padding: 0; font-size: 1.44rem !important; }
 .login-page #recuperarLogin { flex: 1 1 15rem !important; min-width: 0 !important; }
 .login-page .ro-header .ro-header-navigation .btn {
   font-size: 1.666667rem;
@@ -49,11 +58,12 @@
   outline-offset: 2px;
 }
 @media (max-width: 1023px) {
-  .login-page input { font-size: max(1.333333rem, 16px); }
+  .login-page main input { font-size: max(1.44rem, 17.28px); }
 }
 @media (max-width: 600px) {
   /* A largura disponível tem prioridade sobre o fator de compactação. */
   .login-page .card { padding: 1.25rem; }
   .login-page .assunto { padding: 1rem; }
   .login-page .assunto .btn { width: 100%; margin-top: 0; }
+  .login-page #recuperarLogin { padding-inline: 0.25rem !important; }
 }
