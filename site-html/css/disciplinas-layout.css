@@ -1,0 +1,21 @@
+/* Exclusivo de disciplinas.html; Assuntos mantém os estilos compartilhados. */
+@media screen {
+  .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header {
+    padding-block: max(0px, calc(1rem - var(--disciplinas-header-reducao, 0px))) !important;
+  }
+  .disciplinas-page[data-page="disciplinas"] #titulo_pagina {
+    position: relative;
+    top: 3px;
+  }
+}
+@media screen and (max-width: 900px) {
+  .disciplinas-page[data-page="disciplinas"] .disciplinas-header.ro-header {
+    padding-block: max(0px, calc(0.75rem - var(--disciplinas-header-reducao, 0px))) !important;
+  }
+}
+@media screen and (min-width: 1024px) {
+  .disciplinas-page[data-page="disciplinas"] main > .card {
+    width: 82%;
+    margin-inline: auto;
+  }
+}
