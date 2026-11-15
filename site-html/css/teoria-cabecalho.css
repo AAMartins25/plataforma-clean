@@ -9,6 +9,10 @@
 
 /* Altura de Assuntos como referência; o conteúdo pode exigir uma faixa maior. */
 @media screen {
+  .teoria-page .teoria-header--compacto .teoria-contexto {
+    translate: 0 1.5px;
+  }
+
   .teoria-page .teoria-header.ro-header.teoria-header--compacto {
     height: var(--teoria-header-altura) !important;
     padding-block: var(--teoria-header-padding) !important;
