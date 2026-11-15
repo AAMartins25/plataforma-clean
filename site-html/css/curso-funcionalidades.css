@@ -43,6 +43,15 @@
   }
 }
 
+/* Compacta apenas a largura em desktop; cartões internos seguem o espaço útil.
+   Celulares e tablets mantêm a largura disponível e as quebras já aprovadas. */
+@media screen and (min-width: 1024px) {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] main > .card {
+    width: 87%;
+    margin-inline: auto;
+  }
+}
+
 @media screen and (max-width: 480px) {
   .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
     font-size: 1.333333rem;
