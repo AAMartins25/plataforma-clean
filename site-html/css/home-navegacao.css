@@ -1,0 +1,89 @@
+/* Somente navegação e identificação da Home. Compensa sua raiz de 95% para
+   reproduzir as dimensões efetivas de Meus Cursos sem alterar a marca. */
+.home-page {
+  --home-navegacao-rem: calc(1rem / 0.95);
+  --home-navegacao-recuo: calc(1.5 * var(--home-navegacao-rem));
+}
+.home-page header.home-header.ro-header .ro-header-navigation {
+  left: auto;
+  right: var(--home-navegacao-recuo);
+  width: max-content;
+  justify-content: flex-end;
+  gap: calc(0.5 * var(--home-navegacao-rem));
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--home-navegacao-rem);
+}
+.home-page header.home-header.ro-header .ro-header-navigation :is(.home-nav, .home-nav-actions) {
+  width: auto;
+  justify-content: flex-end;
+  gap: calc(0.5 * var(--home-navegacao-rem)) !important;
+}
+.home-page header.home-header.ro-header .ro-header-navigation .home-icon-btn {
+  width: calc(2.25 * var(--home-navegacao-rem));
+  min-width: calc(2.75 * var(--home-navegacao-rem)) !important;
+  min-height: calc(2.75 * var(--home-navegacao-rem)) !important;
+  height: calc(2.75 * var(--home-navegacao-rem)) !important;
+  padding: calc(0.25 * var(--home-navegacao-rem)) calc(0.625 * var(--home-navegacao-rem)) !important;
+  margin: 0 !important;
+  border: none;
+  border-radius: calc(0.5625 * var(--home-navegacao-rem));
+  background: transparent;
+  color: #1f4e79;
+  font: inherit;
+  font-weight: 400;
+  line-height: 1;
+  align-items: center;
+  align-content: center;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.home-page header.home-header.ro-header .ro-header-navigation .home-icon-btn:focus-visible {
+  outline: calc(0.125 * var(--home-navegacao-rem)) solid #1f4e79;
+  outline-offset: calc(0.1875 * var(--home-navegacao-rem));
+}
+.home-page header.home-header.ro-header > .ro-header-identity {
+  position: absolute !important;
+  grid-area: auto;
+  inset: 0 var(--home-navegacao-recuo) auto auto !important;
+  height: calc(2.75 * var(--home-navegacao-rem));
+  max-width: calc((100% - 2 * var(--home-navegacao-recuo) - 3.75 * var(--home-navegacao-rem)) / 2 - 3.25 * var(--home-navegacao-rem)) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(0.68 * var(--home-navegacao-rem)) !important;
+  letter-spacing: calc(0.025 * var(--home-navegacao-rem)) !important;
+}
+.home-page header.home-header.ro-header .ro-identity {
+  position: static;
+  width: auto !important;
+  min-width: 0;
+  max-width: 100%;
+  height: calc(2.75 * var(--home-navegacao-rem));
+  min-height: calc(2.75 * var(--home-navegacao-rem));
+  padding: calc(0.25 * var(--home-navegacao-rem));
+  font-size: calc(0.8125 * var(--home-navegacao-rem));
+  font-weight: 600;
+  line-height: 1.25;
+  color: #4b5563;
+  text-align: right;
+}
+.home-page header.home-header.ro-header .ro-identity:hover { color: #4b5563; }
+@media (hover: hover) and (pointer: fine) {
+  .home-page header.home-header.ro-header .ro-identity::after {
+    display: block;
+    position: static;
+    margin-top: calc(0.125 * var(--home-navegacao-rem));
+    font-size: calc(0.8125 * var(--home-navegacao-rem));
+    font-weight: 400;
+    line-height: 1.2;
+    color: inherit;
+  }
+}
+@media (max-width: 900px) {
+  .home-page { --home-navegacao-recuo: var(--home-navegacao-rem); }
+}
+@media (max-width: 600px) {
+  /* Usa a lateral direita da palavra e mantém livres os 44px dos controles,
+     sem disputar o alvo circular de acesso ou mudar a marca central. */
+  .home-page header.home-header.ro-header .ro-header-navigation {
+    right: calc(50% - 6 * var(--home-navegacao-rem));
+  }
+}
