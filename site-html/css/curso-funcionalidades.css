@@ -10,7 +10,7 @@
   .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
     font-size: 1.666667rem;
     position: relative;
-    top: 3px;
+    top: 5px;
     /* Nomes longos precisam continuar legíveis com a fonte equivalente. */
     display: block;
     overflow: visible;
@@ -42,6 +42,40 @@
 
   .curso-funcionalidades-root .curso-acao-linha + .curso-acao-linha {
     margin-top: 0.625rem;
+  }
+}
+
+/* Compacta a estrutura vertical do cabeçalho em 11%, sem reduzir fontes ou
+   ícones. O padding compensa a altura fixa da navegação e a borda de 1px. */
+@media screen {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header {
+    padding-block: calc(0.73875rem - 0.055px) !important;
+    row-gap: 0.33375rem;
+  }
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .ro-header-titles {
+    min-height: 2.4475rem;
+  }
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .ro-identity {
+    min-height: 2.4475rem;
+    height: 2.4475rem;
+  }
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
+    line-height: 1.157;
+  }
+}
+@media screen and (max-width: 1023px) {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header {
+    padding-block: calc(0.89rem - 2.475px) !important;
+  }
+}
+@media screen and (max-width: 900px) {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header {
+    padding-block: calc(0.6675rem - 2.475px) !important;
+  }
+}
+@media screen and (max-width: 480px) {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
+    line-height: 1.2015;
   }
 }
 

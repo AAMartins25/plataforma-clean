@@ -5,7 +5,7 @@
   }
   .disciplinas-page[data-page="disciplinas"] #titulo_pagina {
     position: relative;
-    top: 3px;
+    top: 8px;
   }
 }
 @media screen and (max-width: 900px) {
