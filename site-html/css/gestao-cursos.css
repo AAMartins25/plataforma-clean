@@ -17,3 +17,31 @@ body.gestao-cursos-page main .admin-titulo-secao {
   font-size: 1.3125rem;
   font-weight: 550;
 }
+
+/* Redução adicional exclusiva da tela completa de Cursos, incluindo os tokens
+   em rem do CKEditor. A densidade global e as demais páginas ficam intactas. */
+@media screen {
+  html.admin-cursos-root { font-size: calc(90% * var(--ro-ui-scale, 1)); }
+}
+/* Mantém alvos de toque adequados sem ampliar ícones ou o conteúdo do editor. */
+@media screen and (max-width: 1023px) {
+  html.admin-cursos-root main :is(button, .btn, select, textarea),
+  html.admin-cursos-root main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  html.admin-cursos-root .ck.ck-button {
+    min-height: 44px;
+  }
+  html.admin-cursos-root .ck.ck-button { min-width: 44px; }
+  html.admin-cursos-root .ro-header .ro-header-navigation :is(a, button) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+@media screen and (max-width: 767px) {
+  html.admin-cursos-root main :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
+    font-size: max(1rem, 16px);
+  }
+  html.admin-cursos-root main :is(button, .btn) { font-size: max(0.833333rem, 14px); }
+  html.admin-cursos-root .curso-config-acoes { flex-wrap: wrap; }
+  html.admin-cursos-root .curso-config-acoes > * { flex: 1 1 100%; min-width: 0; max-width: 100%; }
+  html.admin-cursos-root .curso-config-acoes .btn { width: 100%; }
+}
