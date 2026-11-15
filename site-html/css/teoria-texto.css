@@ -1,0 +1,49 @@
+/* A classe é removida ao abrir Vídeo ou Questões, restaurando a escala global. */
+@media screen {
+  html.teoria-texto-root {
+    font-size: calc(90% * var(--ro-ui-scale, 1));
+    scroll-padding-top: calc(var(--texto-altura-cabecalho, 0px) + 0.75rem);
+  }
+
+  .teoria-texto-root .teoria-header.ro-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Preserva o tamanho de leitura, inclusive em tabelas e fórmulas em em.
+     Não reescreve estilos do HTML cadastrado nem as dimensões das imagens. */
+  .teoria-texto-root .teoria-texto-conteudo {
+    font-size: 1.111111rem;
+    padding-inline: 0.75rem;
+  }
+
+  .teoria-texto-root .teoria-contexto-curso { font-size: 1.444444rem; }
+  .teoria-texto-root .teoria-contexto-disciplina { font-size: 1.388889rem; }
+  .teoria-texto-root .teoria-contexto-assunto { font-size: 1.055556rem; }
+  .teoria-texto-root .teoria-assunto-faixa h2 { font-size: 1.111111rem; }
+
+  .teoria-texto-root .botao-estudo-lateral { font-size: 0.866667rem; }
+  .teoria-texto-root .icone-menu-lateral { font-size: 1.166667rem; }
+  .teoria-texto-root #paginacao_teoria { font-size: 0.866667rem !important; }
+}
+
+@media screen and (max-width: 480px) {
+  .teoria-texto-root .teoria-contexto-curso,
+  .teoria-texto-root .teoria-contexto-disciplina { font-size: 1.111111rem; }
+  .teoria-texto-root .teoria-contexto-assunto { font-size: 0.972222rem; }
+}
+
+@media screen and (max-width: 1023px) {
+  .teoria-texto-root .teoria-header .ro-header-navigation :is(a, button) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+  }
+
+  .teoria-texto-root .botao-estudo-lateral,
+  .teoria-texto-root #detalhes_aula .btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

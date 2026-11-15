@@ -111,6 +111,7 @@
   <script src="js/cabecalho.js" defer></script>
   <script src="js/teoria-cabecalho.js?v=2" defer></script>
   <link rel="stylesheet" href="css/questao-conteudo.css">
+  <link rel="stylesheet" href="css/teoria-texto.css">
 
   <script src="js/rodape.js" defer></script>
 </head>
@@ -243,6 +244,7 @@
   <script src="js/teoria-tabelas.js?v=tabelas1"></script>
   <script src="js/vendor/dompurify-3.4.17.min.js"></script>
   <script src="js/questao-conteudo.js"></script>
+  <script src="js/teoria-texto.js"></script>
   <script>
     const API_BASE = "https://plataforma-quality-backend.onrender.com";
     
@@ -464,6 +466,7 @@
     }
 
     function destacarBotaoSecao(secao) {
+      window.TeoriaTexto.ativar(secao);
       const botoes = {
         teoria: document.getElementById("btn_teoria"),
         video: document.getElementById("btn_video"),
