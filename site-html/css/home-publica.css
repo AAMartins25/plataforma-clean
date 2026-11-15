@@ -236,11 +236,6 @@ body.home-page {
   .home-page .curso-publico-nome { font-size: 1rem; font-weight: 700; }
 }
 
-/* Visitantes não precisam da linha reservada à identificação de usuário. */
-.home-page header.home-header.ro-header:not(.ro-header--identified) { grid-template-rows: auto auto; }
-.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-titles { grid-row: 1 !important; }
-.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-access { grid-row: 2; }
-.home-page .home-header.ro-header:not(.ro-header--identified) .ro-header-navigation { grid-row: 2 !important; }
 /* O placeholder nativo permanece no input; a cópia visual permite duas linhas no mobile. */
 .home-page .home-search-field { position: relative; flex: 1; min-width: 0; }
 .home-page .home-search-placeholder { display: none; }
@@ -268,4 +263,60 @@ body.home-page {
   .home-page :is(.curso-publico-card, #mais-cursos-box .btn, .home-atendimento-btn) { min-height: 44px; }
   .home-page .home-header.ro-header .ro-header-navigation .home-icon-btn { min-width: 44px !important; height: 44px !important; }
   .home-page #buscaCurso { font-size: max(1rem, 16px); }
+}
+
+/* Marca e acesso na mesma linha; conserva as alturas das antigas linhas da faixa. */
+.home-page header.home-header.ro-header {
+  --home-header-top: 0.25rem;
+  --home-header-bottom: 1.15625rem;
+  grid-template-rows: 0 4.15625rem var(--home-row-gap) 3.25rem;
+}
+.home-page header.home-header.ro-header .ro-header-titles {
+  grid-row: 1 / -1 !important;
+  width: max-content;
+  max-width: none;
+  justify-self: center;
+  margin-bottom: 0;
+  transform: translateY(calc((var(--home-header-bottom) - var(--home-header-top) + 1px) / 2));
+}
+.home-page .home-header.ro-header .home-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--home-brand-gap);
+  max-width: none;
+}
+.home-page header .home-brand-title { transform: none; }
+.home-page .home-brand-symbol,
+.home-page .home-brand-wordmark { top: 0; align-self: center; }
+.home-page .home-header.ro-header .home-brand-access {
+  position: static;
+  height: auto;
+}
+.home-page .home-header.ro-header .home-brand-access .home-icon-btn { top: 0; }
+.home-page header.home-header.ro-header .ro-header-navigation { grid-row: 4 !important; }
+/* A identificação permanece no alto, sem disputar espaço com o botão de acesso. */
+.home-page .home-header.ro-header--identified .ro-identity {
+  top: 0 !important;
+  left: auto !important;
+  transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 600px) {
+  .home-page header.home-header.ro-header {
+    --home-header-top: 0.125rem;
+    --home-header-bottom: 0.984375rem;
+    grid-template-rows: 0 2.953125rem var(--home-row-gap) 3.125rem;
+  }
+  /* Na faixa estreita, as ações ficam abaixo da palavra, fora do acesso circular. */
+  .home-page header.home-header.ro-header .ro-header-navigation {
+    grid-column: 1 / -1;
+    align-self: end;
+    justify-content: center;
+    transform: translateY(calc(var(--home-header-bottom) + 1px));
+    margin-top: 0;
+  }
+  .home-page .home-header.ro-header .ro-header-navigation :is(.home-nav, .home-nav-actions) { width: auto; }
+  .home-page .home-header.ro-header .ro-header-navigation .home-nav-actions { justify-content: center; }
 }
