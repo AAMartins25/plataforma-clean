@@ -17,7 +17,15 @@
     padding-block: 0 !important;
   }
 
-  .home-page header.home-header.ro-header { grid-template-rows: minmax(0, 1fr); }
+  /* Os 7% adicionais ficam no padding inferior: a área ocupada pelos elementos
+     conserva exatamente sua altura e suas coordenadas anteriores. */
+  .home-page header.home-header.ro-header {
+    --home-altura-anterior: round(down, calc((var(--referencia-titulo) + var(--referencia-intervalo) + var(--referencia-navegacao) + 2 * var(--referencia-padding) + 1px) * var(--cabecalho-altura-fator)), 0.015625px);
+    --home-acrescimo-inferior: round(down, calc(var(--home-altura-anterior) * 0.07), 0.015625px);
+    height: calc(var(--home-altura-anterior) + var(--home-acrescimo-inferior)) !important;
+    padding-bottom: var(--home-acrescimo-inferior) !important;
+    grid-template-rows: minmax(0, 1fr);
+  }
   .home-page header.home-header.ro-header .ro-header-titles {
     grid-row: 1 !important;
     /* Inclui a borda inferior de 1px na centralização da faixa inteira. */
@@ -26,7 +34,7 @@
   .home-page header.home-header.ro-header .ro-header-navigation {
     position: absolute;
     right: 1.5rem;
-    bottom: 0;
+    bottom: var(--home-acrescimo-inferior);
     transform: none;
     margin-top: 0;
   }
