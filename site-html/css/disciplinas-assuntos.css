@@ -1,0 +1,76 @@
+/* Redução exclusiva destas duas páginas, sobre a escala responsiva global. */
+@media screen {
+  html.disciplinas-assuntos-root {
+    font-size: calc(90% * var(--ro-ui-scale, 1));
+  }
+
+  /* Destaque dos conteúdos sem ampliar a estrutura dos cartões. */
+  .disciplinas-assuntos-root body[data-page] :is(.disciplinas-header, .assuntos-header).ro-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplinas-intro-card, .assuntos-intro-card, .assuntos-disciplina-card) h2 {
+    font-size: 1.35rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplina-curso-nome, .assunto-curso-nome) {
+    font-size: 1.2rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplinas-subtitulo, .assuntos-subtitulo) {
+    font-size: 1rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplina-curso-btn, .assunto-curso-btn) {
+    font-size: 1.111111rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplina-progresso-percentual, .assunto-progresso-percentual) {
+    font-size: 0.933333rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplina-curso-topo, .assunto-curso-topo) {
+    gap: 0.5rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] #lista {
+    gap: 0.5rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] main > .card {
+    padding: 1rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] main > :is(.disciplinas-intro-card, .assuntos-intro-card, .assuntos-disciplina-card) {
+    padding: 0.625rem 1rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .disciplinas-assuntos-root body[data-page] .disciplina-curso-card {
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .disciplinas-assuntos-root body[data-page] :is(.disciplinas-header, .assuntos-header).ro-header h1 {
+    font-size: 1.2rem;
+  }
+}
+
+/* Mantém alvos de toque adequados em celulares e tablets. */
+@media screen and (max-width: 1023px) {
+  .disciplinas-assuntos-root body[data-page] .ro-header-navigation :is(a, button) {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+  }
+
+  .disciplinas-assuntos-root body[data-page] :is(.disciplina-curso-btn, .assunto-curso-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
