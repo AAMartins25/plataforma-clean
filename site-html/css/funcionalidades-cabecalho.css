@@ -1,0 +1,21 @@
+/* Carregado somente pelos cinco destinos do menu que precisam de ajuste. */
+@media screen {
+  header.ro-header[data-altura-disciplinas] {
+    position: relative;
+    height: var(--funcionalidade-header-altura) !important;
+    padding-block: 0 !important;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  header[data-altura-disciplinas] .ro-header-titles {
+    min-height: 0;
+    padding-block: 0;
+  }
+
+  header[data-altura-disciplinas] .ro-header-titles > div {
+    position: absolute !important;
+    top: var(--funcionalidade-titulo-top);
+    left: var(--funcionalidade-titulo-left);
+    width: var(--funcionalidade-titulo-width);
+  }
+}
