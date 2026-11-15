@@ -1,5 +1,12 @@
 /* Carregado somente pelos cinco destinos do menu que precisam de ajuste. */
 @media screen {
+  :is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page) > header.ro-header:not([data-medir-cabecalho]) h2 {
+    font-size: 1.159rem; /* 0,95rem atuais × 1,22. */
+    line-height: 1.2825rem;
+    white-space: nowrap;
+    max-width: none;
+  }
+
   header.ro-header[data-altura-disciplinas] {
     position: relative;
     height: var(--funcionalidade-header-altura) !important;

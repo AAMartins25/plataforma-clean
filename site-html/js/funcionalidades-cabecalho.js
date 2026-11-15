@@ -34,7 +34,7 @@
         <div class="ro-header-identity"><span class="ro-identity"></span></div>
       </header></body></html>`;
 
-    function ajustar() {
+    function medirLayout() {
       if (!pronta || !matchMedia("screen").matches) return;
       header.removeAttribute("data-altura-disciplinas");
       const original = bloco.getBoundingClientRect();
@@ -79,6 +79,13 @@
         if (minimo <= maximo + 0.02) break;
         header.style.setProperty("--funcionalidade-header-altura", `${atual.height + minimo - maximo + 0.0625}px`);
       }
+    }
+    function ajustar() {
+      if (!document.body.matches(".dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page")) return medirLayout();
+      // Conserva a geometria aprovada; a fonte maior usa a mesma altura de linha.
+      header.setAttribute("data-medir-cabecalho", "");
+      try { medirLayout(); }
+      finally { header.removeAttribute("data-medir-cabecalho"); }
     }
     let agendado = false;
     function agendar() {
