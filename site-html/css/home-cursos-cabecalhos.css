@@ -2,7 +2,10 @@
    com título de uma linha, convertendo sua raiz de 81% para as raízes locais.
    Cada componente mantém o arredondamento de layout de 1/64 px do Chromium. */
 @media screen {
-  .home-page { --cabecalho-referencia-rem: calc(1rem * 81 / 95); }
+  .home-page {
+    --cabecalho-referencia-rem: calc(1rem * 81 / 95);
+    --cabecalho-altura-fator: 1.1;
+  }
   .cursos-page { --cabecalho-referencia-rem: calc(1rem * 0.81); }
 
   :is(.home-page, .cursos-page) > header.ro-header:is(.home-header, .cursos-header) {
@@ -10,7 +13,7 @@
     --referencia-intervalo: round(down, calc(0.33375 * var(--cabecalho-referencia-rem)), 0.015625px);
     --referencia-navegacao: round(down, calc(2.75 * var(--cabecalho-referencia-rem)), 0.015625px);
     --referencia-padding: round(down, calc(0.73875 * var(--cabecalho-referencia-rem) - 0.055px), 0.015625px);
-    height: calc(var(--referencia-titulo) + var(--referencia-intervalo) + var(--referencia-navegacao) + 2 * var(--referencia-padding) + 1px) !important;
+    height: calc((var(--referencia-titulo) + var(--referencia-intervalo) + var(--referencia-navegacao) + 2 * var(--referencia-padding) + 1px) * var(--cabecalho-altura-fator, 1)) !important;
     padding-block: 0 !important;
   }
 
