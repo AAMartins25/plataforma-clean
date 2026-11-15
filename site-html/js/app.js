@@ -2163,10 +2163,10 @@ function pageCurso() {
 
       <div class="curso-acao-linha">
         <div
-          class="curso-acao-titulo curso-tooltip"
+          class="curso-acao-titulo curso-tooltip curso-acao-titulo-desempenho"
           data-tooltip="Como estou na foto"
         >
-          <span class="curso-acao-icone">📊</span> Meu desempenho
+          <span class="curso-acao-icone">📊</span> Meu desempenho-guia
         </div>
 
         <a

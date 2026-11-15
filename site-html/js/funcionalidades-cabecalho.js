@@ -59,17 +59,32 @@
         const linhas = [...bloco.querySelectorAll("h1, h2")].flatMap(nome => {
           const range = document.createRange();
           range.selectNodeContents(nome);
-          return [...range.getClientRects()].filter(r => r.width && r.height);
+          return [...range.getClientRects()].filter(r => r.width && r.height)
+            .map(retangulo => ({nome, retangulo}));
         });
         let minimo = 1;
         let maximo = atual.height - caixa.height - parseFloat(getComputedStyle(header).borderBottomWidth);
         for (const controle of header.querySelectorAll(".ro-header-identity, .ro-header-navigation a")) {
           const r = controle.getBoundingClientRect();
           if (!r.width || !r.height) continue;
-          for (const linha of linhas) {
-            if (linha.right <= r.left - 4 || linha.left >= r.right + 4) continue;
+          for (const {nome, retangulo: linha} of linhas) {
+            let limite = r;
+            if (document.body.matches(".dashboard-aluno-page") && nome.matches("h2")
+                && controle.matches(".ro-header-identity")) {
+              // O título pode usar o espaço abaixo do nome visível, sem reservar
+              // a área vazia da identificação e de seu complemento oculto.
+              const identificacao = controle.querySelector(".ro-identity");
+              if (identificacao) {
+                const texto = document.createRange();
+                texto.selectNodeContents(identificacao);
+                const visivel = texto.getBoundingClientRect();
+                limite = {left: Math.max(r.left, visivel.left),
+                  right: Math.min(r.right, visivel.right), bottom: visivel.bottom};
+              }
+            }
+            if (linha.right <= limite.left - 4 || linha.left >= limite.right + 4) continue;
             if (controle.matches(".ro-header-identity")) {
-              minimo = Math.max(minimo, r.bottom - atual.top + 4 - (linha.top - caixa.top));
+              minimo = Math.max(minimo, limite.bottom - atual.top + 4 - (linha.top - caixa.top));
             } else {
               maximo = Math.min(maximo, r.top - atual.top - 4 - (linha.bottom - caixa.top));
             }

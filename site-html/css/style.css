@@ -1499,6 +1499,13 @@ footer {
   color: var(--azul);
 }
 
+@media screen and (max-width: 360px) {
+  .curso-page .curso-acao-titulo.curso-acao-titulo-desempenho {
+    /* Aproveita as duas linhas existentes sem estreitar o botão. */
+    word-break: break-all;
+  }
+}
+
 
 .curso-page .curso-acao-btn {
   flex: 0 0 auto;
