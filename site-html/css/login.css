@@ -7,8 +7,8 @@
 .login-page { font-size: 1.333333rem; }
 .login-page label { font-size: 1.253333rem; line-height: 1.35; }
 .login-page .assunto h3 { font-size: 1.333333rem; line-height: 1.35; }
-/* Preserva a caixa de linha e o centro do título ao ampliar somente a fonte. */
-.login-page .ro-header-titles h1 { font-size: 2.083334rem; line-height: 2.166667rem; }
+/* Preserva a caixa de linha e o centro do título ao ajustar somente a fonte. */
+.login-page .ro-header-titles h1 { font-size: 1.875rem; line-height: 2.166667rem; }
 .login-page input,
 .login-page button,
 .login-page .btn { font-size: 1.333333rem; }
