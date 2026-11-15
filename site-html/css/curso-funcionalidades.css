@@ -1,8 +1,40 @@
-/* Redução adicional apenas nas funcionalidades do curso, sobre a escala global.
+/* Duas reduções de 10% apenas nas funcionalidades, sobre a escala global.
    As dimensões compartilhadas em rem acompanham a raiz, com reflow normal. */
 @media screen {
   html.curso-funcionalidades-root {
-    font-size: calc(90% * var(--ro-ui-scale, 1));
+    font-size: calc(81% * var(--ro-ui-scale, 1));
+  }
+
+  /* Compensa a redução da estrutura destacando os textos e seus ícones inline. */
+  .curso-funcionalidades-root .curso-header.ro-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .curso-funcionalidades-root .curso-acao-titulo {
+    font-size: 1.2rem;
+  }
+
+  .curso-funcionalidades-root .curso-acao-btn {
+    font-size: 1.111111rem;
+  }
+
+  /* A lista já fornece o intervalo: evita somá-lo à margem entre os grupos. */
+  .curso-funcionalidades-root #acoes_curso {
+    gap: 1rem;
+  }
+
+  .curso-funcionalidades-root .curso-acao-card {
+    margin-bottom: 0;
+  }
+
+  .curso-funcionalidades-root .curso-acao-linha + .curso-acao-linha {
+    margin-top: 0.625rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .curso-funcionalidades-root .curso-header.ro-header h1 {
+    font-size: 1.2rem;
   }
 }
 
