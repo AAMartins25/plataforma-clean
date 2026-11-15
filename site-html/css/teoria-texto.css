@@ -1,11 +1,11 @@
-/* A classe é removida ao abrir Vídeo ou Questões, restaurando a escala global. */
+/* Escala única compartilhada por Texto, Vídeo e Questões dentro do assunto. */
 @media screen {
-  html.teoria-texto-root {
+  html.teoria-secoes-root {
     font-size: calc(90% * var(--ro-ui-scale, 1));
     scroll-padding-top: calc(var(--texto-altura-cabecalho, 0px) + 0.75rem);
   }
 
-  .teoria-texto-root .teoria-header.ro-header {
+  .teoria-secoes-root .teoria-header.ro-header {
     position: sticky;
     top: 0;
     z-index: 100;
@@ -18,32 +18,60 @@
     padding-inline: 0.75rem;
   }
 
-  .teoria-texto-root .teoria-contexto-curso { font-size: 1.444444rem; }
-  .teoria-texto-root .teoria-contexto-disciplina { font-size: 1.388889rem; }
-  .teoria-texto-root .teoria-contexto-assunto { font-size: 1.055556rem; }
-  .teoria-texto-root .teoria-assunto-faixa h2 { font-size: 1.111111rem; }
+  .teoria-secoes-root .teoria-contexto-curso { font-size: 1.444444rem; }
+  .teoria-secoes-root .teoria-contexto-disciplina { font-size: 1.388889rem; }
+  .teoria-secoes-root .teoria-contexto-assunto { font-size: 1.055556rem; }
+  .teoria-secoes-root .teoria-assunto-faixa h2 { font-size: 1.111111rem; }
 
-  .teoria-texto-root .botao-estudo-lateral { font-size: 0.866667rem; }
-  .teoria-texto-root .icone-menu-lateral { font-size: 1.166667rem; }
-  .teoria-texto-root #paginacao_teoria { font-size: 0.866667rem !important; }
+  .teoria-secoes-root .botao-estudo-lateral { font-size: 0.866667rem; }
+  .teoria-secoes-root .icone-menu-lateral { font-size: 1.166667rem; }
+  .teoria-secoes-root #paginacao_teoria { font-size: 0.866667rem !important; }
 }
 
 @media screen and (max-width: 480px) {
-  .teoria-texto-root .teoria-contexto-curso,
-  .teoria-texto-root .teoria-contexto-disciplina { font-size: 1.111111rem; }
-  .teoria-texto-root .teoria-contexto-assunto { font-size: 0.972222rem; }
+  .teoria-secoes-root .teoria-contexto-curso,
+  .teoria-secoes-root .teoria-contexto-disciplina { font-size: 1.111111rem; }
+  .teoria-secoes-root .teoria-contexto-assunto { font-size: 0.972222rem; }
 }
 
 @media screen and (max-width: 1023px) {
-  .teoria-texto-root .teoria-header .ro-header-navigation :is(a, button) {
+  .teoria-secoes-root .teoria-header .ro-header-navigation :is(a, button) {
     min-width: 44px !important;
     min-height: 44px !important;
     height: 44px !important;
   }
 
-  .teoria-texto-root .botao-estudo-lateral,
-  .teoria-texto-root #detalhes_aula .btn {
+  .teoria-secoes-root .botao-estudo-lateral,
+  .teoria-secoes-root #detalhes_aula .btn {
     min-width: 44px;
     min-height: 44px;
+  }
+}
+
+/* Compensações exclusivas de Vídeo e Questões; Texto mantém as regras aprovadas. */
+@media screen {
+  .teoria-secoes-root:is([data-secao-estudo="video"], [data-secao-estudo="questoes"]) #detalhes_aula {
+    font-size: 1.111111rem;
+  }
+
+  .teoria-secoes-root[data-secao-estudo="video"] .video-vazio-texto { font-size: 1rem; }
+  .teoria-secoes-root[data-secao-estudo="video"] .video-vazio-icone { font-size: 1.388889rem; }
+
+  .teoria-secoes-root[data-secao-estudo="video"] #detalhes_aula iframe {
+    /* 90% dos 315px anteriores, sem reaplicar a escala global ao player. */
+    height: calc(19.6875rem / var(--ro-ui-scale, 1));
+    max-width: 100%;
+  }
+
+  .teoria-secoes-root[data-secao-estudo="questoes"] .questoes-bateria-desempenho {
+    font-size: 0.933333rem;
+  }
+
+  .teoria-secoes-root[data-secao-estudo="questoes"] :is(.questoes-status-feita, .questoes-status-andamento) {
+    font-size: 0.844444rem;
+  }
+
+  .teoria-secoes-root[data-secao-estudo="questoes"] :is(.questoes-btn-fazer, .questoes-btn-continuar, .questoes-btn-visualizar, .questoes-btn-refazer) {
+    font-size: 0.911111rem;
   }
 }
