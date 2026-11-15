@@ -6156,8 +6156,15 @@ footer p {
 }
 
 @media screen and (min-width: 1024px) {
+  .dashboard-aluno-page .dashboard-aluno-disciplinas-card {
+    width: 85%;
+    margin-inline: auto;
+    /* Mantém a antiga largura interna: 87% de (largura original - 3rem). */
+    padding-inline: calc(1.305rem - 1%);
+  }
+
   .dashboard-aluno-page .dashboard-aluno-disciplina-card {
-    width: 87%;
+    width: 100%;
     margin-inline: auto;
   }
 }
@@ -6176,8 +6183,10 @@ footer p {
 .dashboard-aluno-page
 .dashboard-aluno-disciplina-nome {
   padding-left: 0.5rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 
-  font-size: 0.94rem;
+  font-size: 1.0528rem; /* 0,94rem × 1,12. */
   font-weight: 600;
 
   color: var(--azul);
@@ -6219,8 +6228,10 @@ footer p {
 .dashboard-aluno-page
 .dashboard-aluno-assunto-nome {
   padding-left: 0.625rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 
-  font-size: 0.84rem;
+  font-size: 0.9408rem; /* 0,84rem × 1,12. */
   font-weight: 400;
 
   color: var(--azul);
