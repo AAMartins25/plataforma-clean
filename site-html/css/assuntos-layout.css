@@ -17,7 +17,7 @@
 /* Preserva a largura disponível em celulares e tablets. */
 @media screen and (min-width: 1024px) {
   .assuntos-page[data-page="assuntos"] main > .card {
-    width: 85%;
+    width: 91.8%; /* 85% atuais × 1,08. */
     margin-inline: auto;
   }
 }

@@ -1611,7 +1611,7 @@ async function pageAssuntos() {
 
   if (cardDisciplina) {
     cardDisciplina.innerText = disciplinaNome
-      ? `Disciplina: ${disciplinaNome}`
+      ? disciplinaNome
       : "Disciplina";
   }
 
