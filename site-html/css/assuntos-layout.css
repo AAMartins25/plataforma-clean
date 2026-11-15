@@ -1,0 +1,23 @@
+/* Exclusivo de Assuntos. Replica a geometria aprovada do cabeçalho de Disciplinas. */
+@media screen {
+  .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header {
+    padding-block: max(0px, calc(1rem - var(--assuntos-header-reducao, 0px))) !important;
+  }
+  .assuntos-page[data-page="assuntos"] #titulo_curso {
+    position: relative;
+    top: 8px;
+  }
+}
+.assuntos-page[data-page="assuntos"] #card_disciplina_titulo { font-weight: 400; }
+@media screen and (max-width: 900px) {
+  .assuntos-page[data-page="assuntos"] .assuntos-header.ro-header {
+    padding-block: max(0px, calc(0.75rem - var(--assuntos-header-reducao, 0px))) !important;
+  }
+}
+/* Preserva a largura disponível em celulares e tablets. */
+@media screen and (min-width: 1024px) {
+  .assuntos-page[data-page="assuntos"] main > .card {
+    width: 85%;
+    margin-inline: auto;
+  }
+}
