@@ -1,4 +1,15 @@
 /* Ajustes exclusivos de cursos.html; mantém a caixa de linha do cabeçalho. */
+/* Reduz 12% da altura anterior retirando apenas espaço vertical externo.
+   Altura anterior: 7.875rem + borda de 1px; até 900px: 7.375rem + 1px. */
+.cursos-page .cursos-header.ro-header {
+  padding-block: calc(0.5275rem - 0.06px) !important;
+}
+@media (max-width: 900px) {
+  .cursos-page .cursos-header.ro-header {
+    padding-block: calc(0.3075rem - 0.06px) !important;
+  }
+}
+
 .cursos-page .cursos-header.ro-header h1 {
   font-size: 1.534rem;
   line-height: 1.69rem;
