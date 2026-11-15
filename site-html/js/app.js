@@ -2248,6 +2248,18 @@ function alternarSecaoCursoInfo(id) {
     if (box) box.style.display = expandido ? "block" : "none";
     document.querySelector(`[aria-controls="${secao}"]`)?.setAttribute("aria-expanded", String(expandido));
   }
+  if (abrir) {
+    // Mede após a troca de alturas, incluindo o ajuste de scroll anchoring do navegador.
+    const titulo = document.querySelector(`[aria-controls="${id}"]`)?.getBoundingClientRect();
+    if (!titulo) return;
+    const margem = 12;
+    const linha = parseFloat(getComputedStyle(alvo).lineHeight) || 32;
+    const inicio = alvo.getBoundingClientRect().top + Math.min(alvo.clientHeight, linha * 2);
+    const deslocamento = titulo.top < 0
+      ? titulo.top - margem
+      : Math.min(Math.max(0, inicio - window.innerHeight + margem), Math.max(0, titulo.top - margem));
+    if (deslocamento) window.scrollBy({ top: deslocamento, behavior: "instant" });
+  }
 }
 
 function alternarEstruturaCursoInfo() {
