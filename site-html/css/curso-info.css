@@ -1,3 +1,8 @@
+/* Fator adicional exclusivo desta página, composto com a densidade global existente.
+   A base em rem mantém o reflow e as preferências de fonte do navegador. */
+@media screen {
+  html.curso-info-root { font-size: calc(90% * var(--ro-ui-scale, 1)); }
+}
 /* Apresentação do curso: mesma identidade da home, respeitando a escala global em rem. */
 body.curso-info-page {
   --curso-blue: #0866d8;
@@ -113,4 +118,19 @@ body.curso-info-page footer { color: #526581; }
 }
 @media (prefers-reduced-motion: reduce) {
   body.curso-info-page .curso-info-opcao-acesso { transition: none; }
+}
+
+/* Exceções de toque no celular: o conteúdo encolhe, os alvos continuam acessíveis. */
+@media screen and (max-width: 767px) {
+  body.curso-info-page .curso-info-section-toggle,
+  body.curso-info-page .curso-info-btn-adquirir,
+  body.curso-info-page #btnAplicarCupom,
+  body.curso-info-page #codigo_cupom_desconto {
+    min-height: 44px;
+  }
+  body.curso-info-page #codigo_cupom_desconto { font-size: max(1rem, 16px); }
+  body.curso-info-page .ro-header .ro-header-navigation .btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
 }
