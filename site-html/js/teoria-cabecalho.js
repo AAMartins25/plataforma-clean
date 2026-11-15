@@ -20,7 +20,83 @@
     referencia.setAttribute("aria-hidden", "true");
     faixa.classList.add("teoria-header--contexto");
 
+    function medirAssuntos() {
+      // Mesma geometria efetiva de Assuntos, sem carregar ou alterar aquela página.
+      const copia = faixa.cloneNode(true);
+      copia.classList.remove("teoria-header--compacto");
+      copia.querySelector(".teoria-contexto")?.remove();
+      copia.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+      copia.setAttribute("aria-hidden", "true");
+      copia.inert = true;
+      Object.assign(copia.style, {position: "absolute", left: "-100000px", top: "0",
+        width: `${faixa.getBoundingClientRect().width}px`, visibility: "hidden"});
+      const area = copia.querySelector(".ro-header-titles");
+      area.style.paddingTop = "0";
+      const bloco = document.createElement("div");
+      bloco.style.maxWidth = "calc(100% - 2 * clamp(5rem, 20vw, 15rem))";
+      const titulo = document.createElement("h1");
+      titulo.textContent = cursoNome;
+      const celular = matchMedia("(max-width: 480px)").matches;
+      titulo.style.fontSize = celular ? "1.2rem" : "1.5rem";
+      titulo.style.lineHeight = celular ? "1.35" : "1.3";
+      bloco.append(titulo);
+      area.replaceChildren(bloco);
+      faixa.after(copia);
+      const altura = copia.getBoundingClientRect().height;
+      const padding = parseFloat(getComputedStyle(copia).paddingTop);
+      const reducao = Math.min(padding, altura * 0.065);
+      copia.remove();
+      return {altura: altura - 2 * reducao, padding: padding - reducao};
+    }
+
+    function compactar() {
+      const referenciaAssuntos = medirAssuntos();
+      // Conserva inclusive os tamanhos efetivos escolhidos pelo ajuste anterior.
+      // Somente o assunto cresce; nomes extensos passam a ampliar a faixa.
+      const assunto = titulos[2];
+      assunto.style.fontSize = `${parseFloat(getComputedStyle(assunto).fontSize) * 1.13}px`;
+      contexto.classList.add("teoria-contexto--interno");
+      if (contexto.parentElement !== faixa) faixa.append(contexto);
+      faixa.style.setProperty("--teoria-header-padding", `${referenciaAssuntos.padding}px`);
+      faixa.style.setProperty("--teoria-header-altura", `${referenciaAssuntos.altura}px`);
+      faixa.classList.add("teoria-header--compacto");
+      const ajustarTopo = () => {
+        const rect = faixa.getBoundingClientRect();
+        const box = contexto.getBoundingClientRect();
+        const linhas = titulos.filter(el => !el.hidden).flatMap(el => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          return [...range.getClientRects()];
+        });
+        let minimo = referenciaAssuntos.padding;
+        let maximo = rect.height - referenciaAssuntos.padding - box.height
+          - parseFloat(getComputedStyle(faixa).borderBottomWidth);
+        for (const controle of faixa.querySelectorAll(".ro-header-identity, .teoria-header-acoes .btn")) {
+          const r = controle.getBoundingClientRect();
+          if (!r.width || !r.height) continue;
+          for (const linha of linhas) {
+            if (linha.right <= r.left - 4 || linha.left >= r.right + 4) continue;
+            if (controle.matches(".ro-header-identity")) {
+              minimo = Math.max(minimo, r.bottom - rect.top + 4 - (linha.top - box.top));
+            } else {
+              maximo = Math.min(maximo, r.top - rect.top - 6 - (linha.bottom - box.top));
+            }
+          }
+        }
+        contexto.style.top = `${Math.max(minimo, Math.min((rect.height - box.height) / 2 - 4, maximo))}px`;
+        return Math.max(0, minimo - maximo);
+      };
+      // As ações ficam na última linha do grid; ampliar a faixa abre espaço entre elas e o aluno.
+      for (let i = 0; i < 4; i++) {
+        const falta = ajustarTopo();
+        if (falta < 0.02) break;
+        faixa.style.setProperty("--teoria-header-altura", `${faixa.getBoundingClientRect().height + falta + 0.0625}px`);
+      }
+      ajustarTopo();
+    }
+
     function atualizar() {
+      faixa.classList.remove("teoria-header--compacto");
       [cursoNome, referencia.querySelector("#titulo_disciplina")?.textContent || "",
         referencia.querySelector("#titulo_assunto_header")?.textContent || ""]
         .forEach((texto, i) => {
@@ -82,14 +158,15 @@
       if (!cabe()) {
         reduzir(0);
         if (!cabe()) {
-          // Nomes excepcionais ficam completos, em tamanho original e no fluxo.
+          // A apresentação anterior usava o tamanho original nestes casos.
+          // Conserva essas fontes, agora acomodadas dentro da faixa compacta.
           contexto.classList.remove("teoria-contexto--interno");
           contexto.removeAttribute("style");
           titulos.forEach(el => el.removeAttribute("style"));
           faixa.after(contexto);
           contexto.style.width = `${folha.width}px`;
-          contexto.style.marginLeft = `${folha.left - document.body.getBoundingClientRect().left}px`;
-          contexto.style.alignSelf = "flex-start";
+          contexto.style.left = `${folha.left - rect.left}px`;
+          compactar();
           return;
         }
         let minimo = 0;
@@ -103,6 +180,7 @@
         reduzir(minimo);
       }
       cabe();
+      compactar();
     }
 
     let agendado = false;

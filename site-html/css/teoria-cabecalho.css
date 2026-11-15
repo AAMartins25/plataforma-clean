@@ -1,10 +1,29 @@
-/* A identificação original continua dimensionando a faixa e os controles. */
+/* A identificação original serve de referência para conservar as fontes efetivas. */
 .teoria-page .teoria-header--contexto .teoria-header-identificacao {
   visibility: hidden;
 }
 
 .teoria-page .teoria-header--contexto {
   position: relative;
+}
+
+/* Altura de Assuntos como referência; o conteúdo pode exigir uma faixa maior. */
+@media screen {
+  .teoria-page .teoria-header.ro-header.teoria-header--compacto {
+    height: var(--teoria-header-altura) !important;
+    padding-block: var(--teoria-header-padding) !important;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .teoria-page .teoria-header--compacto .ro-header-titles {
+    min-height: 0;
+    padding-top: 0;
+    position: relative;
+  }
+
+  .teoria-page .teoria-header--compacto .teoria-header-identificacao {
+    position: absolute !important;
+  }
 }
 
 .teoria-page .teoria-contexto {
