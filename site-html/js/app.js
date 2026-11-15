@@ -2238,20 +2238,24 @@ function formatarValorCursoInfo(cents) {
   });
 }
 
-function alternarEstruturaCursoInfo() {
-  const box = document.getElementById("estrutura_curso");
-  if (box) {
-    box.style.display = box.style.display === "none" ? "block" : "none";
-    document.querySelector('[aria-controls="estrutura_curso"]')?.setAttribute("aria-expanded", String(box.style.display !== "none"));
+function alternarSecaoCursoInfo(id) {
+  const alvo = document.getElementById(id);
+  if (!alvo) return;
+  const abrir = alvo.style.display === "none";
+  for (const secao of ["informacoes_curso", "estrutura_curso"]) {
+    const box = document.getElementById(secao);
+    const expandido = abrir && secao === id;
+    if (box) box.style.display = expandido ? "block" : "none";
+    document.querySelector(`[aria-controls="${secao}"]`)?.setAttribute("aria-expanded", String(expandido));
   }
 }
 
+function alternarEstruturaCursoInfo() {
+  alternarSecaoCursoInfo("estrutura_curso");
+}
+
 function alternarInformacoesCursoInfo() {
-  const box = document.getElementById("informacoes_curso");
-  if (box) {
-    box.style.display = box.style.display === "none" ? "block" : "none";
-    document.querySelector('[aria-controls="informacoes_curso"]')?.setAttribute("aria-expanded", String(box.style.display !== "none"));
-  }
+  alternarSecaoCursoInfo("informacoes_curso");
 }
 
 function alternarDisciplinaCursoInfo(id) {
