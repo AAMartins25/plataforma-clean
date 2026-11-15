@@ -30,13 +30,13 @@
 
     <section class="card curso-info-card" aria-labelledby="titulo_informacoes">
       <h2 id="titulo_informacoes">
-        <button class="curso-info-section-toggle" type="button" onclick="alternarInformacoesCursoInfo()" aria-expanded="true" aria-controls="informacoes_curso">
+        <button class="curso-info-section-toggle" type="button" onclick="alternarInformacoesCursoInfo()" aria-expanded="false" aria-controls="informacoes_curso">
           <svg class="curso-info-section-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg>
           Informações
           <span class="curso-info-chevron" aria-hidden="true"></span>
         </button>
       </h2>
-      <div id="informacoes_curso" class="descricao-publica curso-info-section-content"></div>
+      <div id="informacoes_curso" class="descricao-publica curso-info-section-content" style="display:none;"></div>
     </section>
 
     <section class="card curso-info-card" aria-labelledby="titulo_estrutura">
@@ -209,7 +209,7 @@
           }
         }
       }
-      titulo.style.setProperty("--curso-title-offset", `${deslocamento}px`);
+      titulo.style.setProperty("--curso-title-offset", `${deslocamento - 3}px`);
     };
     new ResizeObserver(atualizarTitulo).observe(header);
     new MutationObserver(atualizarTitulo).observe(header, { childList: true, subtree: true, characterData: true });
