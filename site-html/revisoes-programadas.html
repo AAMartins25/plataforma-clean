@@ -7,8 +7,8 @@
   <title>Assuntos que precisa rever</title>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/cabecalho.js" defer></script>
-  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=1">
-  <script src="js/funcionalidades-cabecalho.js?v=1" defer></script>
+  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=3">
+  <script src="js/funcionalidades-cabecalho.js?v=3" defer></script>
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -149,6 +149,10 @@
 <script>
 const API_BASE = "https://plataforma-quality-backend.onrender.com";
 const params = new URLSearchParams(location.search);
+// O nome acompanha o curso selecionado no menu, sem consultar dados de outro contexto.
+if (Number(params.get('curso_id')) > 0) {
+  document.getElementById('titulo_curso').textContent = params.get('curso_nome') || 'Curso';
+}
 function contexto() {
   const q = new URLSearchParams();
   for (const key of ['contratacao_id','demonstracao_id']) if (params.get(key)) q.set(key, params.get(key));

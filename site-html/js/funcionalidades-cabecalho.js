@@ -81,7 +81,7 @@
       }
     }
     function ajustar() {
-      if (!document.body.matches(".dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page")) return medirLayout();
+      if (!document.body.matches(".dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page")) return medirLayout();
       // Conserva a geometria aprovada; a fonte maior usa a mesma altura de linha.
       header.setAttribute("data-medir-cabecalho", "");
       try { medirLayout(); }

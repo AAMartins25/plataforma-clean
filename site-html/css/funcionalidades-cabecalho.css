@@ -1,10 +1,28 @@
 /* Carregado somente pelos cinco destinos do menu que precisam de ajuste. */
 @media screen {
-  :is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page) > header.ro-header:not([data-medir-cabecalho]) h2 {
+  :is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page) > header.ro-header:not([data-medir-cabecalho]) h2 {
     font-size: 1.159rem; /* 0,95rem atuais × 1,22. */
     line-height: 1.2825rem;
     white-space: nowrap;
     max-width: none;
+  }
+
+  .revisoes-programadas-page > header.ro-header h1 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  .revisoes-programadas-page > header.ro-header h2 {
+    margin-top: 0.1875rem !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #405c75;
+    transform: none;
+  }
+
+  .revisoes-programadas-page .ro-identity {
+    font-weight: 400;
   }
 
   header.ro-header[data-altura-disciplinas] {
