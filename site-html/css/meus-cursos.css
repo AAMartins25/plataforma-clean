@@ -1,0 +1,18 @@
+/* Ajustes exclusivos de cursos.html; mantém a caixa de linha do cabeçalho. */
+.cursos-page .cursos-header.ro-header h1 {
+  font-size: 1.534rem;
+  line-height: 1.69rem;
+  position: relative;
+  top: 2px;
+}
+
+/* Nomes extensos quebram linha sem comprimir o botão de acesso expirado. */
+.cursos-page #lista_expirados .btn { flex-shrink: 0; }
+
+/* Celulares e tablets conservam a largura disponível para o conteúdo. */
+@media (min-width: 1024px) {
+  .cursos-page main > :is(#card_cursos_ativos, #card_cursos_expirados) {
+    width: 82%;
+    margin-inline: auto;
+  }
+}
