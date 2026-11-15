@@ -5,14 +5,25 @@
     font-size: calc(81% * var(--ro-ui-scale, 1));
   }
 
-  /* Compensa a redução da estrutura destacando os textos e seus ícones inline. */
-  .curso-funcionalidades-root .curso-header.ro-header h1 {
-    font-size: 1.5rem;
+  /* Equivale às fontes de disciplinas (raiz de 90%) com a raiz atual de 81%.
+     O seletor também supera as regras compartilhadas de curso.html. */
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
+    font-size: 1.666667rem;
+    /* Nomes longos precisam continuar legíveis com a fonte equivalente. */
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
   }
 
   .curso-funcionalidades-root .curso-acao-titulo {
-    font-size: 1.2rem;
+    font-size: 1.333333rem;
+    line-height: 1.62rem;
+    /* Mantém emoji e texto no mesmo fluxo, incluindo o espaço entre eles. */
+    display: block;
   }
+
+  /* Emojis conservam o tamanho anterior independentemente do texto. */
+  .curso-funcionalidades-root .curso-acao-icone { font-size: 1.2rem; }
 
   .curso-funcionalidades-root .curso-acao-btn {
     font-size: 1.111111rem;
@@ -33,8 +44,8 @@
 }
 
 @media screen and (max-width: 480px) {
-  .curso-funcionalidades-root .curso-header.ro-header h1 {
-    font-size: 1.2rem;
+  .curso-funcionalidades-root .curso-page[data-page="curso"] .curso-header.ro-header h1 {
+    font-size: 1.333333rem;
   }
 }
 

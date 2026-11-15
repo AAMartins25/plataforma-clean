@@ -2051,7 +2051,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Disciplinas a serem estudadas para o cargo"
         >
-          📚 Disciplinas
+          <span class="curso-acao-icone">📚</span> Disciplinas
         </div>
 
         <a
@@ -2068,7 +2068,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Questões. Treinar, treinar"
         >
-          📝 Questões
+          <span class="curso-acao-icone">📝</span> Questões
         </div>
 
         <a
@@ -2090,7 +2090,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Questões que errei ou que marquei como difícil ou que assinalei para rever"
         >
-          🚨 Questões diferenciadas
+          <span class="curso-acao-icone">🚨</span> Questões diferenciadas
         </div>
 
         <a
@@ -2106,7 +2106,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
         >
-          🔁 Revisões
+          <span class="curso-acao-icone">🔁</span> Revisões
         </div>
 
         <a
@@ -2128,7 +2128,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Anotações que fiz para mim enquanto revisava questões."
         >
-          📝 Anotações
+          <span class="curso-acao-icone">📝</span> Anotações
         </div>
 
         <a
@@ -2144,7 +2144,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Mensagens que enviei ao professor enquanto revisava as questões"
         >
-          💬 Mensagens ao prof
+          <span class="curso-acao-icone">💬</span> Mensagens ao prof
         </div>
 
         <a
@@ -2166,7 +2166,7 @@ function pageCurso() {
           class="curso-acao-titulo curso-tooltip"
           data-tooltip="Como estou na foto"
         >
-          📊 Meu desempenho
+          <span class="curso-acao-icone">📊</span> Meu desempenho
         </div>
 
         <a
