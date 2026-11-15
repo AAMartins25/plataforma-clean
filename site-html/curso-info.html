@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/cabecalho.js" defer></script>
   <link rel="stylesheet" href="css/descricao-publica.css?v=1">
-  <link rel="stylesheet" href="css/curso-info.css?v=2">
+  <link rel="stylesheet" href="css/curso-info.css?v=3">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -184,6 +184,39 @@
   <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>
+  // Apenas apresentação: centraliza o título sem redimensionar o cabeçalho.
+  document.addEventListener("DOMContentLoaded", () => {
+    const header = document.querySelector("header");
+    const titulo = document.getElementById("titulo_curso");
+    const atualizarTitulo = () => {
+      titulo.style.setProperty("--curso-title-offset", "0px");
+      const faixa = header.getBoundingClientRect();
+      const caixa = titulo.getBoundingClientRect();
+      let deslocamento = faixa.top + faixa.height / 2 - caixa.top - caixa.height / 2;
+      const texto = document.createRange();
+      texto.selectNodeContents(titulo);
+      const linhas = Array.from(texto.getClientRects());
+      // Títulos extensos podem se aproximar dos ícones: preserva a separação visual.
+      for (const controle of header.querySelectorAll(".ro-header-navigation a, .ro-identity")) {
+        if (!controle.getClientRects().length) continue;
+        const conteudo = document.createRange();
+        conteudo.selectNodeContents(controle);
+        for (const icone of conteudo.getClientRects()) {
+          for (const linha of linhas) {
+            if (linha.left < icone.right && icone.left < linha.right && icone.top >= linha.bottom) {
+              deslocamento = Math.min(deslocamento, Math.max(0, icone.top - linha.bottom - 2));
+            }
+          }
+        }
+      }
+      titulo.style.setProperty("--curso-title-offset", `${deslocamento}px`);
+    };
+    new ResizeObserver(atualizarTitulo).observe(header);
+    new MutationObserver(atualizarTitulo).observe(header, { childList: true, subtree: true, characterData: true });
+    document.fonts.ready.then(atualizarTitulo);
+    atualizarTitulo();
+  }, { once: true });
+
   function confirmarSair() {
     const ok = confirm("Deseja realmente sair da plataforma?");
     if (!ok) return;

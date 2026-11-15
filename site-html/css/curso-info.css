@@ -134,3 +134,9 @@ body.curso-info-page footer { color: #526581; }
     min-height: 44px !important;
   }
 }
+
+/* Deslocamento visual: preserva o espaço do título e a altura original do grid. */
+body.curso-info-page header.ro-header .ro-header-titles h1 {
+  transform: translateY(var(--curso-title-offset, 0px));
+  pointer-events: none; /* O texto não intercepta as áreas de toque da navegação. */
+}
