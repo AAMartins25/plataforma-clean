@@ -28,10 +28,11 @@ body.curso-info-page main.container {
   margin: 1.625rem auto 0;
   padding: 0 1.25rem 1.5rem;
 }
+/* Compactação vertical: respiros a 86%; opções de acesso a 92% da altura mínima. */
 body.curso-info-page main > .curso-info-card {
   min-width: 0;
-  padding: 1.375rem 1.625rem;
-  margin-bottom: 1.375rem;
+  padding: 1.1825rem 1.625rem;
+  margin-bottom: 1.1825rem;
   background: #fff;
   border: 0.0625rem solid #e3eaf3;
   border-top: 0.1875rem solid var(--curso-gold);
@@ -58,15 +59,15 @@ body.curso-info-page main > .curso-info-card {
 .curso-info-section-icon { width: 1.6875rem; height: 1.6875rem; flex: 0 0 auto; color: var(--curso-blue); stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .curso-info-chevron { width: 0.5rem; height: 0.5rem; flex: 0 0 auto; margin-left: auto; margin-right: 0.25rem; border-right: 0.125rem solid var(--curso-blue); border-bottom: 0.125rem solid var(--curso-blue); transform: rotate(45deg); }
 .curso-info-section-toggle[aria-expanded="true"] .curso-info-chevron { transform: rotate(225deg); }
-.curso-info-section-content { margin-top: 1rem; line-height: 1.65; }
-body.curso-info-page #opcoes_acesso { min-width: 0; margin: 1.125rem 0 0; padding: 0; border: 0; gap: 0.625rem; }
+.curso-info-section-content { margin-top: 0.86rem; line-height: 1.65; }
+body.curso-info-page #opcoes_acesso { min-width: 0; margin: 0.9675rem 0 0; padding: 0; border: 0; row-gap: 0.5375rem; column-gap: 0.625rem; }
 body.curso-info-page .curso-info-opcao-acesso {
   display: grid;
   grid-template-columns: 1.125rem minmax(0, 1fr) max-content;
   align-items: center;
   gap: 0.75rem;
-  min-height: 3.25rem;
-  padding: 0.75rem 1rem;
+  min-height: 2.99rem;
+  padding: 0.645rem 1rem;
   border: 0.0625rem solid #d5dfed;
   border-radius: 0.75rem;
   background: #fff;
@@ -79,7 +80,8 @@ body.curso-info-page .curso-info-opcao-acesso {
 body.curso-info-page .curso-info-opcao-acesso:hover { background: #f8fbff; border-color: #a8c9f3; }
 body.curso-info-page .curso-info-opcao-acesso:has(input:checked) { background: #eef5ff; border-color: var(--curso-blue); box-shadow: 0 0 0 0.0625rem var(--curso-blue); }
 body.curso-info-page .curso-info-opcao-acesso:has(input:focus-visible), .curso-info-section-toggle:focus-visible { outline: 0.1875rem solid var(--curso-blue); outline-offset: 0.25rem; border-radius: 0.5rem; }
-body.curso-info-page .curso-info-disciplina { margin-bottom: 0.625rem; border-color: #e3eaf3; border-radius: 0.625rem; background: #f8fbff; }
+body.curso-info-page #informacoes_curso p { margin-bottom: 0.86em; }
+body.curso-info-page .curso-info-disciplina { margin-bottom: 0.5375rem; border-color: #e3eaf3; border-radius: 0.625rem; background: #f8fbff; }
 body.curso-info-page .curso-info-btn-adquirir {
   min-width: 11.5rem;
   min-height: 2.875rem;
@@ -106,10 +108,10 @@ body.curso-info-page footer { color: #526581; }
   body.curso-info-page .ro-header--identified .ro-header-titles { grid-row: 2 !important; }
   body.curso-info-page .ro-header--identified .ro-header-navigation { grid-row: 3 !important; }
   body.curso-info-page main.container { margin-top: 1.25rem; padding: 0 0.75rem 1.25rem; }
-  body.curso-info-page main > .curso-info-card { padding: 1.125rem 1rem; margin-bottom: 1.125rem; }
+  body.curso-info-page main > .curso-info-card { padding: 0.9675rem 1rem; margin-bottom: 0.9675rem; }
   .curso-info-card h2 { font-size: 1.25rem; }
   .curso-info-section-heading, .curso-info-section-toggle { gap: 0.5625rem; }
-  body.curso-info-page .curso-info-opcao-acesso { padding: 0.75rem; gap: 0.5rem; }
+  body.curso-info-page .curso-info-opcao-acesso { padding: 0.645rem 0.75rem; gap: 0.5rem; }
   .curso-info-opcao-nome, .curso-info-opcao-preco { font-size: 0.9375rem; }
   body.curso-info-page .curso-info-btn-adquirir { width: 100%; }
   .curso-info-cupom-controls { flex-direction: column; align-items: stretch; }
@@ -140,3 +142,9 @@ body.curso-info-page header.ro-header .ro-header-titles h1 {
   transform: translateY(var(--curso-title-offset, 0px));
   pointer-events: none; /* O texto não intercepta as áreas de toque da navegação. */
 }
+
+/* Espaços internos das seções abertas e do aviso de teste, sem alterar entrelinhas. */
+body.curso-info-page .curso-info-disciplina { padding-block: 0.5375rem; }
+body.curso-info-page .curso-info-assunto { padding-top: 0.1075rem; padding-bottom: 0.26875rem; }
+body.curso-info-page .curso-info-aviso-demo-itens { margin-top: 0.645rem; }
+body.curso-info-page .curso-info-aviso-demo-obrigado { margin-top: 0.7525rem; }
