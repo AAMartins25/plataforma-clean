@@ -16,7 +16,7 @@ const configs=[
  try {
   for(const width of [1366,768,390,320]) for(const config of configs) {
    // O indicador já pertence ao HTML inicial, antes de qualquer script executar.
-   assert.ok(fs.readFileSync(path.join(__dirname,config.page),'utf8').includes(`id="${config.loader}" role="status" style="text-align:left;">Carregando...</p>`));
+   assert.ok(fs.readFileSync(path.join(__dirname,config.page),'utf8').includes(`id="${config.loader}" role="status" style="text-align:center;">Carregando...</p>`));
    for(const scenario of ['rapida','lenta','vazia','erro','erro_processamento']) {
     const context=await b.newContext({viewport:{width,height:900}}),pending=[],errors=[];
     let queries=0;
@@ -51,14 +51,23 @@ const configs=[
     const overflow=async()=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     const loading=async()=>{
      assert.equal(await status.innerText(),'Carregando...');assert.equal(await area.getAttribute('aria-busy'),'true');
-     assert.equal(await status.evaluate(e=>getComputedStyle(e).textAlign),'left');
+     assert.equal(await status.evaluate(e=>getComputedStyle(e).textAlign),'center');
      const position=await status.evaluate((e,{area,nav})=>{
       const rect=e.getBoundingClientRect(),navigation=document.querySelector(nav).getBoundingClientRect();
-      const main=document.querySelector('main'),mainRect=main.getBoundingClientRect();
-      return {below:rect.top>=navigation.bottom,left:rect.left,contentLeft:mainRect.left+parseFloat(getComputedStyle(main).paddingLeft),empty:document.getElementById(area).getBoundingClientRect().height};
+      const range=document.createRange();range.selectNodeContents(e);
+      const centered=range.getBoundingClientRect();
+      // Compara com o alinhamento anterior no mesmo frame, sem pintar a mudança.
+      e.style.textAlign='left';
+      const original=range.getBoundingClientRect(),originalNav=document.querySelector(nav).getBoundingClientRect();
+      e.style.textAlign='center';
+      return {below:rect.top>=navigation.bottom,center:centered.left+centered.width/2,expectedCenter:rect.left+rect.width/2,
+        sameVertical:centered.top===original.top&&centered.height===original.height,
+        sameNav:JSON.stringify(navigation)===JSON.stringify(originalNav),empty:document.getElementById(area).getBoundingClientRect().height};
      },{area:config.area,nav:config.nav});
      assert.equal(position.below,true,'indicador somente abaixo do card de navegação');
-     assert.ok(Math.abs(position.left-position.contentLeft)<.02,'alinhado à margem esquerda do conteúdo');
+     assert.ok(Math.abs(position.center-position.expectedCenter)<.02,'texto centralizado no conteúdo');
+     assert.equal(position.sameVertical,true,'posição vertical preservada');
+     assert.equal(position.sameNav,true,'posição do card de navegação preservada');
      assert.equal(position.empty,0,'nenhum card ou espaço de carregamento acima da navegação');
      assert.equal(await page.locator(config.card).count(),0);
      assert.equal(await area.getByText(config.empty,{exact:true}).count(),0);
