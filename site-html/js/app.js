@@ -2167,44 +2167,6 @@ function pageCurso() {
       <div class="curso-acao-linha">
         <div
           class="curso-acao-titulo curso-tooltip"
-          data-tooltip="Questões que errei ou que marquei como difícil ou que assinalei para rever"
-        >
-          <span class="curso-acao-icone">🚨</span> Questões diferenciadas
-        </div>
-
-        <a
-          class="btn curso-acao-btn"
-          href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
-        >
-          Abrir
-        </a>
-      </div>
-
-      <div class="curso-acao-linha">
-        <div
-          class="curso-acao-titulo curso-tooltip"
-          data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
-        >
-          <span class="curso-acao-icone">🔁</span> Revisões
-        </div>
-
-        <a
-          class="btn curso-acao-btn"
-          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
-        >
-          Abrir
-        </a>
-      </div>
-
-    </div>
-
-
-    <!-- CARD 3 -->
-    <div class="disciplina curso-acao-card">
-
-      <div class="curso-acao-linha">
-        <div
-          class="curso-acao-titulo curso-tooltip"
           data-tooltip="Anotações que fiz para mim enquanto revisava questões."
         >
           <span class="curso-acao-icone">📝</span> Anotações
@@ -2237,7 +2199,7 @@ function pageCurso() {
     </div>
 
 
-    <!-- CARD 4 -->
+    <!-- CARD 3 -->
     <div class="disciplina curso-acao-card curso-acao-card-unico">
 
       <div class="curso-acao-linha">
@@ -2251,6 +2213,44 @@ function pageCurso() {
         <a
           class="btn curso-acao-btn"
           href="dashboard.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
+        >
+          Abrir
+        </a>
+      </div>
+
+    </div>
+
+
+    <!-- CARD 4 -->
+    <div class="disciplina curso-acao-card">
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Questões que errei ou que marquei como difícil ou que assinalei para rever"
+        >
+          <span class="curso-acao-icone">🚨</span> Questões diferenciadas
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="questoes-criticas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
+        >
+          Abrir
+        </a>
+      </div>
+
+      <div class="curso-acao-linha">
+        <div
+          class="curso-acao-titulo curso-tooltip"
+          data-tooltip="Revisões automaticamente programadas de aulas que já concluí."
+        >
+          <span class="curso-acao-icone">🔁</span> Revisões
+        </div>
+
+        <a
+          class="btn curso-acao-btn"
+          href="revisoes-programadas.html?curso_id=${encodeURIComponent(cursoId)}&curso_nome=${encodeURIComponent(cursoNome)}${contextoAcesso}"
         >
           Abrir
         </a>

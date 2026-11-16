@@ -116,3 +116,16 @@
     min-height: 44px;
   }
 }
+
+/* Amplia o espaço útil em 6%, mantendo o centro e os recuos proporcionais.
+   Nas telas menores, conserva a largura disponível e as margens aprovadas. */
+@media screen and (min-width: 768px) {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] main.container {
+    max-width: calc((57.5rem - 1.875rem) * 1.06 + 1.875rem);
+  }
+
+  .curso-funcionalidades-root .curso-page[data-page="curso"] main > .card {
+    /* Inclui a borda preservada no cálculo para os cards internos crescerem 6%. */
+    padding-inline: calc(1.625rem * 1.06 + 0.06px);
+  }
+}
