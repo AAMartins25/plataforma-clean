@@ -108,9 +108,7 @@
 
   </div>
 
-  <div id="area_anotacoes" aria-busy="true">
-    <div class="card" role="status" style="text-align:center;">Carregando...</div>
-  </div>
+  <div id="area_anotacoes" aria-busy="true"></div>
 
   <div class="card minhas-anotacoes-navegacao-final">
 
@@ -131,6 +129,8 @@
     </button>
 
   </div>
+
+  <p id="carregamento_anotacoes" role="status" style="text-align:left;">Carregando...</p>
 
 </main>
 
@@ -322,10 +322,12 @@ async function exibirNomeUsuarioLogadoAnotacoes() {
 
 async function carregarAnotacoes() {
   const area = document.getElementById("area_anotacoes");
+  const indicador = document.getElementById("carregamento_anotacoes");
+  indicador.hidden = false;
   carregandoAnotacoes = true;
   area.setAttribute("aria-busy", "true");
   area.style.minHeight = "";
-  area.innerHTML = '<div class="card" role="status" style="text-align:center;">Carregando...</div>';
+  area.innerHTML = "";
 
   try {
 
@@ -351,6 +353,7 @@ async function carregarAnotacoes() {
   } finally {
     carregandoAnotacoes = false;
     area.setAttribute("aria-busy", "false");
+    indicador.hidden = true;
   }
 }
 
