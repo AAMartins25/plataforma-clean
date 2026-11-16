@@ -44,7 +44,8 @@ async function geometry(page) {
   });
 }
 function check({original,expanded},label) {
-  assert.ok(Math.abs(expanded.header.h-original.header.h*1.06)<.04,label+' altura +6%');
+  const fator = label.startsWith('curso-info.html/') ? 1.06 * .92 : 1.06;
+  assert.ok(Math.abs(expanded.header.h-original.header.h*fator)<.04,label+' fator de altura');
   assert.equal(expanded.header.w,original.header.w,label+' largura do cabeçalho');
   assert.equal(expanded.overflow,false,label+' sem overflow');
   assert.equal(expanded.elements.length,original.elements.length);
@@ -126,7 +127,7 @@ async function noOverlap(page,label) {
         }
       }
       assert.deepEqual(errors,[],file+' sem erros JavaScript');
-      console.log(file+': 1366/768/390/320, +6%, fontes/alinhamentos/cards/controles preservados: OK');
+      console.log(file+': 1366/768/390/320, altura proporcional, fontes/alinhamentos/cards/controles preservados: OK');
       await context.close();
     }
   } finally {await browser.close();}

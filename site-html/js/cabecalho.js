@@ -53,7 +53,7 @@
   }
 
   // A ampliação é aplicada somente depois de medir a geometria própria da página.
-  // Os cálculos existentes sempre recebem a versão sem os 6%, evitando acúmulo.
+  // Os cálculos existentes sempre recebem a versão sem o fator, evitando acúmulo.
   const ampliacoes = new WeakMap();
   const medicoes = new WeakSet();
   const guardar = (el, propriedade) => [el.style.getPropertyValue(propriedade), el.style.getPropertyPriority(propriedade)];
@@ -74,6 +74,7 @@
     if (!cabecalho.isConnected || !matchMedia("screen").matches) return;
     const faixa = cabecalho.getBoundingClientRect();
     if (!faixa.height) return;
+    const fator = parseFloat(getComputedStyle(cabecalho).getPropertyValue("--ro-header-altura-fator")) || 1.06;
     const alvos = "h1, h2, p, img, svg, .ro-identity, .ro-nav-control, .ro-header-access a";
     const elementos = Array.from(cabecalho.querySelectorAll(alvos)).flatMap(elemento => {
       // Move o conteúdo, sem transformar os contêineres que servem de referência
@@ -85,11 +86,11 @@
         centro: caixa.top - faixa.top + caixa.height / 2, translacao: guardar(elemento, "translate")}];
     });
     ampliacoes.set(cabecalho, {altura: guardar(cabecalho, "height"), elementos});
-    cabecalho.style.setProperty("height", `${faixa.height * 1.06}px`, "important");
+    cabecalho.style.setProperty("height", `${faixa.height * fator}px`, "important");
     // Move os centros dos elementos na mesma proporção, sem escalar fontes, ícones,
     // botões ou os deslocamentos internos de títulos/subtítulos já aprovados.
     for (const {elemento, referencia, topo, centro} of elementos) {
-      const deslocamento = faixa.top + topo + centro * 0.06 - referencia.getBoundingClientRect().top;
+      const deslocamento = faixa.top + topo + centro * (fator - 1) - referencia.getBoundingClientRect().top;
       elemento.style.setProperty("translate", `0 ${deslocamento}px`);
     }
   }
@@ -103,8 +104,8 @@
     finally {
       medicoes.delete(cabecalho);
       ampliarAltura(cabecalho);
-      // A medição temporária reduz a altura do documento. No fim da página,
-      // o navegador pode limitar a rolagem antes de devolvermos os 6%.
+      // A medição temporária pode reduzir a altura do documento. No fim da página,
+      // o navegador pode limitar a rolagem antes de reaplicarmos o fator.
       if (window.scrollX !== rolagem.left || window.scrollY !== rolagem.top) {
         window.scrollTo({...rolagem, behavior: "instant"});
       }
