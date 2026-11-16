@@ -1,10 +1,16 @@
+/* A alternância preserva explicitamente o botão acionado como referência.
+   Evita uma segunda compensação automática do navegador no mesmo layout. */
+body.minhas-anotacoes-page {
+  overflow-anchor: none;
+}
+
 /* Apenas os cards vinculados a questões aderem à nova organização. */
 .minhas-anotacoes-page .minhas-anotacoes-com-questao > .minhas-anotacoes-acoes {
   justify-content: flex-end;
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-alternar-questao {
-  background: #fef2a6;
+  background: #fff7c7;
   margin-top: 1rem;
   max-width: 100%;
   white-space: normal;
@@ -16,5 +22,5 @@
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-alternar-questao:hover {
-  background: #fbed98;
+  background: #fef2b3;
 }

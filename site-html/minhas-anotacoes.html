@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
-  <link rel="stylesheet" href="css/minhas-anotacoes.css?v=2">
+  <link rel="stylesheet" href="css/minhas-anotacoes.css?v=3">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -447,6 +447,7 @@ function preencherFiltroAssuntos() {
 }
 
 function renderizarAnotacoes() {
+  document.getElementById("area_anotacoes").style.minHeight = "";
   const disciplinaId =
     document.getElementById(
       "filtro_disciplina"
@@ -615,7 +616,7 @@ function montarCardAnotacao(a) {
         aria-expanded="false"
         aria-controls="questao_relacionada_${a.anotacao_id}"
         onclick="alternarQuestaoRelacionada(this)"
-      >Ver a questão relacionada</button>
+      >Ver questão relacionada</button>
       <div id="questao_relacionada_${a.anotacao_id}" class="minhas-anotacoes-questao-relacionada" hidden>
         ${questaoHtml}
       </div>
@@ -627,6 +628,11 @@ function alternarQuestaoRelacionada(botao) {
   const questao = document.getElementById(botao.getAttribute("aria-controls"));
   if (!questao) return;
 
+  // O fechamento de uma questão anterior muda a posição documental deste botão.
+  // Conserva sua coordenada na tela, inclusive quando a ancoragem nativa atua.
+  const topoAntes = botao.getBoundingClientRect().top;
+  const area = document.getElementById("area_anotacoes");
+  area.style.minHeight = "";
   const abrir = questao.hidden;
   document.querySelectorAll("#area_anotacoes .minhas-anotacoes-alternar-questao").forEach(controle => {
     const conteudo = document.getElementById(controle.getAttribute("aria-controls"));
@@ -636,9 +642,20 @@ function alternarQuestaoRelacionada(botao) {
     conteudo.hidden = !expandida;
     controle.setAttribute("aria-expanded", String(expandida));
     controle.textContent = expandida
-      ? "Ocultar a questão relacionada"
-      : "Ver a questão relacionada";
+      ? "Ocultar questão relacionada"
+      : "Ver questão relacionada";
   });
+  const destino = window.scrollY + botao.getBoundingClientRect().top - topoAntes;
+  let limite = document.documentElement.scrollHeight - window.innerHeight;
+  // Perto do fim da página, evita que a redução do documento force a rolagem
+  // para cima. Reserva apenas o espaço necessário; o próximo render o remove.
+  // A primeira reserva pode ocupar o espaço livre do main flexível antes de
+  // aumentar a rolagem; mede novamente para contemplar listas curtas filtradas.
+  for (let ajuste = 0; destino > limite && ajuste < 3; ajuste++) {
+    area.style.minHeight = `${area.getBoundingClientRect().height + destino - limite}px`;
+    limite = document.documentElement.scrollHeight - window.innerHeight;
+  }
+  window.scrollTo({top: destino, left: window.scrollX, behavior: "instant"});
 }
 
 async function editarAnotacao(id) {

@@ -12,11 +12,11 @@ const richNote = '<p><strong>Anotação do aluno</strong> <em>com formatação</
 const fixtures = [
   {anotacao_id: 11, questao_id: 101, disciplina_id: 1, disciplina_nome: 'Matemática', disciplina_ordem: 1,
     assunto_id: 1, assunto_nome: 'Geometria', assunto_ordem: 1, bateria_id: 7, tipo: 'MULTIPLA',
-    enunciado: richQuestion, enunciado_formato: 'html_v1', texto_resposta: '<p>B) Alternativa dois</p>', texto_resposta_formato: 'html_v1',
+    enunciado: richQuestion + '<p>Detalhes adicionais para leitura da questão.</p>'.repeat(20), enunciado_formato: 'html_v1', texto_resposta: '<p>B) Alternativa dois</p>', texto_resposta_formato: 'html_v1',
     gabarito: 'B', comentario: '<p>Comentário <u>formatado</u>.</p>', comentario_formato: 'html_v1', anotacao: richNote, texto_formato: 'html_v1'},
   {anotacao_id: 12, questao_id: 102, disciplina_id: 1, disciplina_nome: 'Matemática', disciplina_ordem: 1,
     assunto_id: 2, assunto_nome: 'Álgebra', assunto_ordem: 2, bateria_id: 7, tipo: 'CERTO_ERRADO',
-    enunciado: 'Enunciado legado\nSegunda linha', gabarito: 'E', comentario: 'Comentário legado', anotacao: 'Anotação simples', texto_formato: 'texto_puro'},
+    enunciado: 'Enunciado legado\nSegunda linha', gabarito: 'E', comentario: 'Comentário legado\n'.repeat(30), anotacao: 'Anotação simples', texto_formato: 'texto_puro'},
   {anotacao_id: 14, questao_id: 103, disciplina_id: 1, disciplina_nome: 'Matemática', disciplina_ordem: 1,
     assunto_id: 1, assunto_nome: 'Geometria', assunto_ordem: 1, bateria_id: 7, tipo: 'CERTO_ERRADO',
     enunciado: 'Outra questão do mesmo assunto', gabarito: 'C', comentario: 'Outro comentário', anotacao: 'Segunda anotação de Geometria', texto_formato: 'texto_puro'},
@@ -69,7 +69,7 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       for (const id of [11,12,14]) {
         assert.equal(await question(id).isVisible(),false);
         assert.equal(await toggle(id).getAttribute('aria-expanded'),'false');
-        assert.equal(await toggle(id).textContent(),'Ver a questão relacionada');
+        assert.equal(await toggle(id).textContent(),'Ver questão relacionada');
       }
       const checkIdentification = async () => {
         assert.equal(await page.locator('.minhas-anotacoes-identificacao-card').count(),0,'sem cards separados ou identificação duplicada');
@@ -90,13 +90,13 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       await checkIdentification();
       assert.equal(await card(11).locator('.minhas-anotacoes-btn-editar').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(253, 238, 138)');
       assert.equal(await card(11).locator('.minhas-anotacoes-btn-excluir').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(253, 238, 138)');
-      assert.equal(await toggle(11).evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(254, 242, 166)');
+      assert.equal(await toggle(11).evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 247, 199)');
       const checkOpen = async id => {
         assert.equal(await page.locator('.minhas-anotacoes-questao-relacionada:not([hidden])').count(), id ? 1 : 0);
         for (const current of [11,12,14]) {
           assert.equal(await question(current).isVisible(), current===id);
           assert.equal(await toggle(current).getAttribute('aria-expanded'), String(current===id));
-          assert.equal(await toggle(current).textContent(), current===id ? 'Ocultar a questão relacionada' : 'Ver a questão relacionada');
+          assert.equal(await toggle(current).textContent(), current===id ? 'Ocultar questão relacionada' : 'Ver questão relacionada');
         }
       };
       assert.equal(await card(13).locator('.minhas-anotacoes-alternar-questao').count(),0,'outra origem mantém apresentação');
@@ -114,7 +114,7 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       await toggle(11).click();
       assert.equal(await question(11).isVisible(),true);
       assert.equal(await toggle(11).getAttribute('aria-expanded'),'true');
-      assert.equal(await toggle(11).textContent(),'Ocultar a questão relacionada');
+      assert.equal(await toggle(11).textContent(),'Ocultar questão relacionada');
       await question(11).locator('.katex').waitFor();
       await page.waitForFunction(()=>document.querySelector('#questao_relacionada_11 img')?.naturalWidth > 0);
       assert.match(await question(11).innerText(),/Referência: Prova 2026/);
@@ -149,11 +149,42 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       await page.keyboard.press('Space'); await checkOpen(null);
       await toggle(14).focus(); await page.keyboard.press('Enter'); await checkOpen(14);
       await checkOverflow();
+      // Mede a coordenada visual do botão antes/depois, sem o autoscroll do locator.click().
+      const stableToggle = async (id, top, key) => {
+        await toggle(id).evaluate((e, top)=>{
+          e.focus({preventScroll:true});
+          window.scrollBy({top:e.getBoundingClientRect().top-top,behavior:'instant'});
+        }, top);
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+        const before = await toggle(id).boundingBox();
+        const scrollBefore = await page.evaluate(()=>({y:scrollY,max:document.documentElement.scrollHeight-innerHeight,areaHeight:document.getElementById('area_anotacoes').getBoundingClientRect().height,minHeight:document.getElementById('area_anotacoes').style.minHeight}));
+        assert.ok(before.y>=0 && before.y+before.height<=900,'botão visível antes da ativação');
+        if (key) await page.keyboard.press(key);
+        else await page.mouse.click(before.x+before.width/2,before.y+before.height/2);
+        await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+        await page.waitForTimeout(150);
+        const after = await toggle(id).boundingBox();
+        if (Math.abs(after.y-before.y)>1) console.log({id,top,before,after,scrollBefore,scrollAfter:await page.evaluate(()=>({y:scrollY,max:document.documentElement.scrollHeight-innerHeight,areaHeight:document.getElementById('area_anotacoes').getBoundingClientRect().height,minHeight:document.getElementById('area_anotacoes').style.minHeight}))});
+        assert.ok(Math.abs(after.y-before.y)<=1, `${width}px / botão ${id}: salto de ${after.y-before.y}px`);
+        assert.ok(after.y>=0 && after.y+after.height<=900,'botão permanece visível');
+        assert.equal(await toggle(id).evaluate(e=>e===document.activeElement),true,'foco preservado');
+      };
+      for (const [id, top, key] of [[11,120],[12,160],[14,180],[11,440],[12,420],[11,180,'Enter'],[11,200,'Space'],[14,180,'Enter'],[14,180,'Space']]) {
+        const opening = !(await question(id).isVisible());
+        await stableToggle(id,top,key);
+        await checkOpen(opening ? id : null);
+        await checkOverflow();
+      }
       assert.equal(mutations.length,0,'expandir e recolher não gravam dados');
       await page.locator('#filtro_assunto').selectOption('2'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),1);
       assert.equal(await question(12).isVisible(),false,'filtrar reinicia a questão recolhida');
+      await stableToggle(12,120);
+      assert.equal(await question(12).isVisible(),true,'abre a única anotação filtrada');
+      await stableToggle(12,120,'Space');
+      assert.equal(await question(12).isVisible(),false,'fecha a única anotação sem salto no fim da página');
       await page.locator('#filtro_assunto').selectOption('');
       await checkOpen(null);
+      assert.equal(await page.locator('#area_anotacoes').evaluate(e=>e.style.minHeight),'','filtro limpa a reserva de rolagem');
       await page.locator('#filtro_disciplina').selectOption('2'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),1);
       await page.locator('#filtro_disciplina').selectOption('1'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),3);
       // Conteúdo rico: abrir o editor e cancelar conserva a anotação original.
@@ -184,7 +215,7 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
         fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});
         await page.screenshot({path:path.join(process.env.SCREENSHOT_DIR,`anotacoes-${width}.png`),fullPage:true});
       }
-      console.log(`${width}px: expansão exclusiva, identificação por anotação, cores, teclado, conteúdo rico, filtros, editar/cancelar/salvar/excluir e ausência de overflow: OK`);
+      console.log(`${width}px: expansão exclusiva, identificação por anotação, cores, teclado, rolagem estável, conteúdo rico, filtros, editar/cancelar/salvar/excluir e ausência de overflow: OK`);
       await context.close();
     }
   } finally {await browser.close();}
