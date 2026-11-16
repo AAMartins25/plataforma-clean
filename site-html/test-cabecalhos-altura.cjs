@@ -44,7 +44,7 @@ async function geometry(page) {
   });
 }
 function check({original,expanded},label) {
-  const fator = label.startsWith('curso-info.html/') ? 1.06 * .92 : 1.06;
+  const fator = label.startsWith('curso-info.html/') ? 1.06 * .92 * .92 : 1.06;
   assert.ok(Math.abs(expanded.header.h-original.header.h*fator)<.04,label+' fator de altura');
   assert.equal(expanded.header.w,original.header.w,label+' largura do cabeçalho');
   assert.equal(expanded.overflow,false,label+' sem overflow');

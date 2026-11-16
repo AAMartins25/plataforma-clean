@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/cabecalho.js?v=altura-curso-1" defer></script>
   <link rel="stylesheet" href="css/descricao-publica.css?v=2">
-  <link rel="stylesheet" href="css/curso-info.css?v=cabecalho-1">
+  <link rel="stylesheet" href="css/curso-info.css?v=cabecalho-2">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -188,6 +188,8 @@
   document.addEventListener("DOMContentLoaded", () => {
     const header = document.querySelector("header");
     const titulo = document.getElementById("titulo_curso");
+    let translacaoTitulo = titulo.style.translate;
+    let atualizacaoAgendada = false;
     const atualizarTitulo = () => {
       titulo.style.setProperty("--curso-title-offset", "0px");
       const faixa = header.getBoundingClientRect();
@@ -219,9 +221,22 @@
         }
       }
       titulo.style.setProperty("--curso-title-offset", `${deslocamento}px`);
+      translacaoTitulo = titulo.style.translate;
     };
     new ResizeObserver(atualizarTitulo).observe(header);
-    new MutationObserver(atualizarTitulo).observe(header, { childList: true, subtree: true, characterData: true });
+    new MutationObserver(registros => {
+      // Recentraliza após os cálculos compartilhados, inclusive ao abrir os cards.
+      // Ignora a alteração do próprio offset para não criar um ciclo de medições.
+      const mudou = registros.some(registro => registro.type !== "attributes"
+        || registro.target !== titulo || titulo.style.translate !== translacaoTitulo);
+      if (!mudou || atualizacaoAgendada) return;
+      atualizacaoAgendada = true;
+      requestAnimationFrame(() => {
+        atualizacaoAgendada = false;
+        atualizarTitulo();
+      });
+    }).observe(header, { childList: true, subtree: true, characterData: true,
+      attributes: true, attributeFilter: ["style"] });
     document.fonts.ready.then(atualizarTitulo);
     atualizarTitulo();
   }, { once: true });
