@@ -9696,3 +9696,97 @@ body.atendimento-page:has(#listaReembolsos) header nav {
 .curso-info-page:not(:has(.ro-header-identity)) .curso-info-auth-exit {
   display: none !important;
 }
+
+/* Navegação e identificação: dimensões de Meus Cursos, inclusive nas páginas
+   com escala local. O restante do cabeçalho conserva sua própria estrutura. */
+:root { --ro-navegacao-rem: 1rem; }
+@media screen {
+  :root:is(.disciplinas-assuntos-root, .teoria-secoes-root, .curso-info-root, .admin-cursos-root) {
+    --ro-navegacao-rem: calc(1rem / 0.9);
+  }
+  :root.curso-funcionalidades-root { --ro-navegacao-rem: calc(1rem / 0.81); }
+  :root.login-root { --ro-navegacao-rem: calc(1rem / 0.75); }
+  :root.home-root { --ro-navegacao-rem: calc(1rem / 0.95); }
+}
+
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation .ro-nav-control {
+  box-sizing: border-box;
+  width: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-width: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  padding: calc(0.25 * var(--ro-navegacao-rem)) calc(0.625 * var(--ro-navegacao-rem)) !important;
+  margin: 0 !important;
+  flex: 0 0 auto;
+  border: none !important;
+  border-radius: calc(0.5625 * var(--ro-navegacao-rem)) !important;
+  background: transparent !important;
+  color: #1f4e79 !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: var(--ro-navegacao-rem) !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: normal;
+  text-align: center;
+  text-decoration: none !important;
+  align-items: center !important;
+  align-content: center !important;
+  justify-content: center;
+  transform: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+}
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation .ro-nav-control:is(:hover, :focus) {
+  opacity: 1;
+}
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation .ro-nav-control:focus-visible {
+  outline: calc(0.125 * var(--ro-navegacao-rem)) solid #1f4e79;
+  outline-offset: calc(0.1875 * var(--ro-navegacao-rem));
+}
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation,
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation :is(div, nav) {
+  gap: calc(0.5 * var(--ro-navegacao-rem)) !important;
+}
+body > header.ro-header[data-navegacao-padrao] > .ro-header-identity {
+  width: var(--ro-identidade-largura) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: calc(0.68 * var(--ro-navegacao-rem)) !important;
+  letter-spacing: calc(0.025 * var(--ro-navegacao-rem)) !important;
+  color: #4b5563 !important;
+  opacity: 0.78;
+}
+body > header.ro-header[data-navegacao-padrao] .ro-identity {
+  box-sizing: border-box;
+  height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-width: 0;
+  padding: calc(0.25 * var(--ro-navegacao-rem));
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: calc(0.8125 * var(--ro-navegacao-rem)) !important;
+  font-weight: 600 !important;
+  line-height: 1.25;
+  color: #4b5563 !important;
+  text-align: right;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body > header.ro-header[data-navegacao-padrao] .ro-identity::after {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (hover: hover) and (pointer: fine) {
+  body > header.ro-header[data-navegacao-padrao] .ro-identity::after {
+    margin-top: calc(0.125 * var(--ro-navegacao-rem));
+    font-size: calc(0.8125 * var(--ro-navegacao-rem));
+    font-weight: 400;
+    line-height: 1.2;
+  }
+}
+
+
+body > header.ro-header[data-navegacao-padrao] .ro-nav-label { display: none; }
+body > header.ro-header[data-navegacao-padrao] .ro-nav-control::before {
+  content: attr(data-ro-simbolo);
+}

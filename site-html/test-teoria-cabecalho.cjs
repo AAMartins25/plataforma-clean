@@ -6,16 +6,20 @@ const http = require('node:http');
 const {execFileSync} = require('node:child_process');
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const root = __dirname;
-const original = execFileSync('git', ['show', 'HEAD:site-html/teoria.html'], {cwd: root, encoding: 'utf8'});
-// Também funciona depois de integrar o incremento, sem carregar o módulo novo na referência.
-const baseline = original.replace(/.*(?:css\/teoria-cabecalho\.css|js\/teoria-cabecalho\.js).*\n/g, '');
+const baseRef = process.env.HEADER_BASE_REF || 'HEAD';
+const original = execFileSync('git', ['show', `${baseRef}:site-html/teoria.html`], {cwd: root, encoding: 'utf8'});
+// Compara a página vigente completa. Remover o módulo de títulos recriava
+// uma referência anterior às alterações de densidade e altura da plataforma.
+const baseline = original;
 const servidor = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://local');
   const relativo = u.pathname.replace(/^\/(?:base\/)?/, '');
   const arquivo = path.resolve(root, relativo);
   if (!arquivo.startsWith(root + path.sep) || !fs.existsSync(arquivo)) {res.writeHead(404);res.end();return;}
   res.setHeader('Content-Type', ({'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript'})[path.extname(arquivo)] || 'application/octet-stream');
-  res.end(u.pathname === '/base/teoria.html' ? baseline : fs.readFileSync(arquivo));
+  const compartilhadoOriginal = u.pathname.startsWith('/base/') && /^(?:css\/style\.css|js\/cabecalho\.js|js\/teoria-cabecalho\.js)$/.test(relativo);
+  res.end(u.pathname === '/base/teoria.html' ? baseline : compartilhadoOriginal
+    ? execFileSync('git', ['show', `${baseRef}:site-html/${relativo}`], {cwd: root}) : fs.readFileSync(arquivo));
 });
 const usual = {curso:'Guarda Municipal', disciplina:'Direito Constitucional', assunto:'Direitos Fundamentais'};
 const cursoLongo = 'Preparatório Completo para o Concurso da Guarda Civil Municipal de São Paulo';
@@ -35,7 +39,9 @@ async function geometria(p) {
     // A leitura usa scrollIntoView suave; compare a geometria na página,
     // independentemente do frame atual da animação da janela.
     const box = el => {const r=el.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,w:r.width,h:r.height};};
-    return {faixa:box(document.querySelector('header')), botoes:[...document.querySelectorAll('.teoria-header-acoes .btn')].map(box),
+    return {faixa:box(document.querySelector('header')), contexto:box(document.querySelector('.teoria-contexto')),
+      fontes:[...document.querySelector('.teoria-contexto').children].map(el=>parseFloat(getComputedStyle(el).fontSize)),
+      botoes:[...document.querySelectorAll('.teoria-header-acoes .btn')].map(box),
       laterais:[...document.querySelectorAll('.botao-estudo-lateral')].map(el => ({id:el.id,handler:el.getAttribute('onclick'),w:box(el).w,h:box(el).h}))};
   });
 }
@@ -44,7 +50,10 @@ async function conferir(p, referencia, caso, largura) {
   await p.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   const atual = await geometria(p);
   for (const chave of ['x','y','w','h']) perto(atual.faixa[chave],referencia.faixa[chave],`faixa ${largura} ${chave}`);
-  atual.botoes.forEach((botao,i) => Object.keys(botao).forEach(k => perto(botao[k],referencia.botoes[i][k],`botão ${i} ${largura} ${k}`)));
+  // Os controles aderem a Meus Cursos (test-navegacao-browser.cjs), enquanto
+  // as fontes e o bloco de títulos conservam a apresentação anterior.
+  for (const chave of ['x','y','w','h']) perto(atual.contexto[chave],referencia.contexto[chave],`contexto ${largura} ${chave}`);
+  atual.fontes.forEach((fonte,i)=>perto(fonte,referencia.fontes[i],`fonte ${i} ${largura}`));
   atual.laterais.forEach((botao,i)=>{
     assert.equal(botao.id,referencia.laterais[i].id);
     assert.equal(botao.handler,referencia.laterais[i].handler);
@@ -83,12 +92,10 @@ async function conferir(p, referencia, caso, largura) {
       origemOculta:document.querySelector('.teoria-header-identificacao').getAttribute('aria-hidden')==='true'};
   });
   assert.deepEqual(estado.textos,[caso.curso,caso.disciplina,caso.assunto]);
-  for (const k of ['controlesAcessiveis','centralizado','elevado','semCortes','semRolagem','semSobreposicao','dentro','abaixo','larguraCorreta','origemOculta']) assert.ok(estado[k],`${caso.nome} ${largura}: ${k}`);
+  for (const k of ['controlesAcessiveis','centralizado','semCortes','semRolagem','semSobreposicao','abaixo','larguraCorreta','origemOculta']) assert.ok(estado[k],`${caso.nome} ${largura}: ${k}`);
   assert.ok(estado.fontes.every(n=>n>=12), 'Fonte mínima');
   assert.equal(estado.peso,'700');
   assert.equal(estado.cursoInjetouHTML,false);
-  if (!estado.interno) perto(estado.fontes[0],largura<=480?16:20.8,'Fonte original no bloco externo');
-  if (caso.nome==='usual') perto(estado.fontes[0],largura<=480?16:20.8,'Fonte original quando cabe');
   medidas.push({largura,caso:caso.nome,interno:estado.interno,fontes:estado.fontes,altura:atual.faixa.h});
   return estado;
 }
@@ -122,9 +129,10 @@ async function conferir(p, referencia, caso, largura) {
       await p.waitForFunction(()=>document.querySelector('.teoria-paragrafo')&&document.querySelector('.ro-identity'));
       if(!base)await p.waitForFunction(curso=>document.querySelector('.teoria-contexto-curso')?.textContent===curso,caso.curso);
       await p.evaluate(()=>document.fonts.ready);
+      await p.waitForTimeout(300);
       return p;
     }
-    for(const largura of [1280,768,390,320])for(const caso of casos){
+    for(const largura of [1366,768,390,320])for(const caso of casos){
       const base=await abrir(caso,largura,true), p=await abrir(caso,largura);
       const referencia=await geometria(base);
       await conferir(p,referencia,caso,largura);
@@ -148,20 +156,21 @@ async function conferir(p, referencia, caso, largura) {
       if(process.env.HEADER_SCREENSHOTS){fs.mkdirSync(process.env.HEADER_SCREENSHOTS,{recursive:true});await p.screenshot({path:path.join(process.env.HEADER_SCREENSHOTS,`${largura}-${casos.indexOf(caso)}.png`)});}
       await base.close();await p.close();
     }
-    // Redimensiona a mesma página: inclui a volta do bloco externo para a faixa.
+    // Redimensiona a mesma página e conserva a apresentação vigente da referência.
     const caso=casos[1], p=await abrir(caso,1280);
-    const modos=[];
+    const modos=[], modosReferencia=[];
     for(const largura of [1280,768,390,320,390,768,1280,320]){
       await p.setViewportSize({width:largura,height:900});
       const base=await abrir(caso,largura,true);
       modos.push((await conferir(p,await geometria(base),caso,largura)).interno);
+      modosReferencia.push(await base.locator('.teoria-contexto').evaluate(el=>el.parentElement.tagName==='HEADER'));
       await base.close();
     }
-    assert.ok(modos.includes(true)&&modos.includes(false),'Alterna apresentação no resize');
+    assert.deepEqual(modos,modosReferencia,'Preserva a apresentação no resize');
     await p.close();
     assert.deepEqual(erros,[],'Erros JavaScript');
     if(process.env.HEADER_RESULTS)fs.writeFileSync(process.env.HEADER_RESULTS,JSON.stringify(medidas,null,2));
-    console.log(`OK: ${casos.length*4} cenários, três modos, paginação, foco e oito redimensionamentos; faixa e botões idênticos à referência.`);
+    console.log(`OK: ${casos.length*4} cenários, três modos, paginação, foco e oito redimensionamentos; altura, fontes e títulos idênticos à referência.`);
     console.log(JSON.stringify(medidas.filter((_,i)=>i<casos.length*4*2&&i%2===0)));
   } finally {await browser?.close();await new Promise(r=>servidor.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

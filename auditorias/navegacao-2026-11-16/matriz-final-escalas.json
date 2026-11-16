@@ -1,0 +1,20 @@
+{
+  "widths": [
+    1366,
+    768,
+    390,
+    320
+  ],
+  "pages": [
+    "assuntos.html",
+    "curso-info.html",
+    "curso.html",
+    "disciplinas.html",
+    "index.html",
+    "login.html",
+    "teoria.html",
+    "admin/criar-curso-completo.html"
+  ],
+  "combinations": 96,
+  "assertions": 340
+}

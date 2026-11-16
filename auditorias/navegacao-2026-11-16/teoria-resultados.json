@@ -1,0 +1,618 @@
+[
+  {
+    "largura": 1366,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16.6634,
+      16.0225,
+      13.7601
+    ],
+    "altura": 84.734375
+  },
+  {
+    "largura": 1366,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16.6634,
+      16.0225,
+      13.7601
+    ],
+    "altura": 84.734375
+  },
+  {
+    "largura": 1366,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16.0784,
+      15.46,
+      13.56
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16.0784,
+      15.46,
+      13.56
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 216.609375
+  },
+  {
+    "largura": 1366,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 216.609375
+  },
+  {
+    "largura": 1366,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 1366,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      18.72,
+      18,
+      15.4584
+    ],
+    "altura": 82.59375
+  },
+  {
+    "largura": 768,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 90.6875
+  },
+  {
+    "largura": 768,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 90.6875
+  },
+  {
+    "largura": 768,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 131.765625
+  },
+  {
+    "largura": 768,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 131.765625
+  },
+  {
+    "largura": 768,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16.8896,
+      16.24,
+      13.9469
+    ],
+    "altura": 134.0625
+  },
+  {
+    "largura": 768,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16.8896,
+      16.24,
+      13.9469
+    ],
+    "altura": 134.0625
+  },
+  {
+    "largura": 768,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 345.375
+  },
+  {
+    "largura": 768,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 345.375
+  },
+  {
+    "largura": 768,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 108.03125
+  },
+  {
+    "largura": 768,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 108.03125
+  },
+  {
+    "largura": 768,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 90.6875
+  },
+  {
+    "largura": 768,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      19.76,
+      19,
+      16.3172
+    ],
+    "altura": 90.6875
+  },
+  {
+    "largura": 390,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      15.7461,
+      15.7461,
+      15.5689
+    ],
+    "altura": 112.78125
+  },
+  {
+    "largura": 390,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      15.7461,
+      15.7461,
+      15.5689
+    ],
+    "altura": 112.78125
+  },
+  {
+    "largura": 390,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 177.640625
+  },
+  {
+    "largura": 390,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 177.640625
+  },
+  {
+    "largura": 390,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 240.578125
+  },
+  {
+    "largura": 390,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 240.578125
+  },
+  {
+    "largura": 390,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 497.40625
+  },
+  {
+    "largura": 390,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 497.40625
+  },
+  {
+    "largura": 390,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      12.0352,
+      12.0352,
+      13.56
+    ],
+    "altura": 144.65625
+  },
+  {
+    "largura": 390,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      12.0352,
+      12.0352,
+      13.56
+    ],
+    "altura": 144.65625
+  },
+  {
+    "largura": 390,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 156.046875
+  },
+  {
+    "largura": 390,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 156.046875
+  },
+  {
+    "largura": 320,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      14.4727,
+      14.4727,
+      14.3099
+    ],
+    "altura": 129.453125
+  },
+  {
+    "largura": 320,
+    "caso": "usual",
+    "interno": true,
+    "fontes": [
+      14.4727,
+      14.4727,
+      14.3099
+    ],
+    "altura": 129.453125
+  },
+  {
+    "largura": 320,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  },
+  {
+    "largura": 320,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  },
+  {
+    "largura": 320,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 304.3125
+  },
+  {
+    "largura": 320,
+    "caso": "três nomes longos",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 304.3125
+  },
+  {
+    "largura": 320,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 621.90625
+  },
+  {
+    "largura": 320,
+    "caso": "sem espaços",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 621.90625
+  },
+  {
+    "largura": 320,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  },
+  {
+    "largura": 320,
+    "caso": "caracteres especiais",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  },
+  {
+    "largura": 320,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 156.046875
+  },
+  {
+    "largura": 320,
+    "caso": "nome recuperado por contexto",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 156.046875
+  },
+  {
+    "largura": 1280,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16.6634,
+      16.0225,
+      13.7601
+    ],
+    "altura": 84.734375
+  },
+  {
+    "largura": 768,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 131.765625
+  },
+  {
+    "largura": 390,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 177.640625
+  },
+  {
+    "largura": 320,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  },
+  {
+    "largura": 390,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 177.640625
+  },
+  {
+    "largura": 768,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      18.9109,
+      18.1836,
+      15.616
+    ],
+    "altura": 131.765625
+  },
+  {
+    "largura": 1280,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16.6634,
+      16.0225,
+      13.7601
+    ],
+    "altura": 84.734375
+  },
+  {
+    "largura": 320,
+    "caso": "curso longo",
+    "interno": true,
+    "fontes": [
+      16,
+      16,
+      15.82
+    ],
+    "altura": 199.234375
+  }
+]

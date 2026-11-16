@@ -67,7 +67,7 @@
       ajustarTopo();
     }
 
-    function atualizar() {
+    function atualizarTitulos() {
       faixa.classList.remove("teoria-header--compacto");
       [cursoNome, referencia.querySelector("#titulo_disciplina")?.textContent || "",
         referencia.querySelector("#titulo_assunto_header")?.textContent || ""]
@@ -153,6 +153,11 @@
       }
       cabe();
       compactar();
+    }
+
+    function atualizar() {
+      if (window.Cabecalho) window.Cabecalho.comAparenciaOriginal(faixa, atualizarTitulos);
+      else atualizarTitulos();
     }
 
     let agendado = false;

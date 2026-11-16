@@ -1,0 +1,15 @@
+✔ site-html/test-auth-tardio.cjs (931.07394ms)
+✔ site-html/test-carregamento-sessao.cjs (541.706133ms)
+✔ site-html/test-meus-cursos-carregamento.cjs (192.57146ms)
+✔ site-html/test-meus-cursos.cjs (393.964374ms)
+✔ site-html/test-perfis-acesso.cjs (662.53141ms)
+✔ site-html/test-revisoes-cabecalho.cjs (183.221983ms)
+✔ site-html/test-sessao.cjs (368.430092ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3363.734386

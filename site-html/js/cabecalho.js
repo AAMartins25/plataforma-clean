@@ -35,8 +35,68 @@
       if (!controle.hasAttribute("aria-label") && controle.title) {
         controle.setAttribute("aria-label", controle.title);
       }
+      // Só os três controles existentes aderem ao padrão; links de seção e
+      // o acesso circular da Home conservam sua apresentação e seus eventos.
+      const rotulo = (controle.getAttribute("aria-label") || controle.title || controle.textContent).trim();
+      const simbolos = { "Voltar": "⇦", "Voltar para cursos": "⇦", "Início": "⌂", "Página inicial": "⌂", "Sair": "⎋" };
+      if (Object.hasOwn(simbolos, rotulo)) {
+        controle.classList.add("ro-nav-control");
+        if (!controle.hasAttribute("aria-label")) controle.setAttribute("aria-label", rotulo);
+        if (!controle.title) controle.title = rotulo;
+        controle.dataset.roSimbolo = simbolos[rotulo];
+        const texto = document.createElement("span");
+        texto.className = "ro-nav-label";
+        texto.append(...controle.childNodes);
+        controle.append(texto);
+      }
     }
   }
+
+  const espacosOriginais = new WeakMap();
+  function restaurarEspacos(cabecalho) {
+    // Mede o layout próprio da página antes de aplicar a aparência comum.
+    // Conserva o texto original para que a referência inclua links por extenso.
+    // Tudo ocorre no mesmo frame, inclusive ao redimensionar ou receber o nome.
+    const propriedades = ["padding-top", "padding-bottom", "row-gap"];
+    if (!espacosOriginais.has(cabecalho)) {
+      espacosOriginais.set(cabecalho, propriedades.map(p => [p,
+        cabecalho.style.getPropertyValue(p), cabecalho.style.getPropertyPriority(p)]));
+    }
+    cabecalho.removeAttribute("data-navegacao-padrao");
+    for (const [p, valor, prioridade] of espacosOriginais.get(cabecalho)) {
+      if (valor) cabecalho.style.setProperty(p, valor, prioridade);
+      else cabecalho.style.removeProperty(p);
+    }
+  }
+
+  function padronizar(cabecalho) {
+    restaurarEspacos(cabecalho);
+    const propriedades = ["padding-top", "padding-bottom", "row-gap"];
+    const altura = cabecalho.getBoundingClientRect().height;
+    const identidade = cabecalho.querySelector(":scope > .ro-header-identity");
+    if (identidade) cabecalho.style.setProperty("--ro-identidade-largura", `${identidade.getBoundingClientRect().width}px`);
+    const estilo = getComputedStyle(cabecalho);
+    const espacos = propriedades.map(p => parseFloat(estilo.getPropertyValue(p)) || 0);
+    cabecalho.setAttribute("data-navegacao-padrao", "");
+    let diferenca = cabecalho.getBoundingClientRect().height - altura;
+    // Usa primeiro o respiro inferior, preservando a posição do título sempre
+    // que possível. Não fixa a altura: títulos longos continuam com reflow.
+    for (const indice of [1, 0, 2]) {
+      if (Math.abs(diferenca) < 0.02) break;
+      const ajuste = Math.min(espacos[indice], diferenca);
+      cabecalho.style.setProperty(propriedades[indice], `${espacos[indice] - ajuste}px`, "important");
+      diferenca = cabecalho.getBoundingClientRect().height - altura;
+    }
+  }
+  // Os títulos calculados por script usam a área original de conteúdo,
+  // independentemente do respiro consumido pelos controles padronizados.
+  window.Cabecalho = {
+    comAparenciaOriginal(cabecalho, calcular) {
+      restaurarEspacos(cabecalho);
+      try { return calcular(); }
+      finally { padronizar(cabecalho); }
+    }
+  };
 
   function identificar(cabecalho, origem) {
     if (origem.querySelector(":scope > .ro-identity")) return;
@@ -66,6 +126,7 @@
     for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
       identificar(cabecalho, origem);
     }
+    padronizar(cabecalho);
     alinharNomeNaMarca(cabecalho);
   }
 
