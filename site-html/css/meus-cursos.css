@@ -15,6 +15,8 @@
   line-height: 1.69rem;
   position: relative;
   top: 11px;
+  /* Compensa o fator compartilhado de 1.06 para deslocar exatamente 3px na tela. */
+  transform: translateY(calc(3px / 1.06));
 }
 
 /* Nomes extensos quebram linha sem comprimir o botão de acesso expirado. */
