@@ -1,0 +1,15 @@
+/* Apenas os cards vinculados a questões aderem à nova organização. */
+.minhas-anotacoes-page .minhas-anotacoes-com-questao > .minhas-anotacoes-acoes {
+  justify-content: flex-end;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-alternar-questao {
+  margin-top: 1rem;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-questao-relacionada:not([hidden]) {
+  margin-top: 1rem;
+}

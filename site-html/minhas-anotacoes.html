@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
+  <link rel="stylesheet" href="css/minhas-anotacoes.css?v=1">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -562,9 +563,7 @@ function montarCardAnotacao(a) {
     ? `${QuestaoConteudo.renderizar(a.enunciado, a.enunciado_formato, a.bateria_id)} (Gab. ${esc(respostaCorretaCE)})`
     : QuestaoConteudo.renderizar(a.enunciado, a.enunciado_formato, a.bateria_id);
 
-  return `
-    <div class="card minhas-anotacoes-anotacao-card">
-
+  const questaoHtml = `
       <div class="minhas-anotacoes-enunciado">
         ${enunciadoHtml}
       </div>
@@ -595,6 +594,9 @@ function montarCardAnotacao(a) {
 
       </div>
 
+  `;
+
+  const anotacaoHtml = `
       <div
         id="box_anotacao_${a.anotacao_id}"
         class="minhas-anotacoes-bloco-aluno"
@@ -626,8 +628,39 @@ function montarCardAnotacao(a) {
 
       </div>
 
+  `;
+
+  // A apresentação recolhível se aplica apenas aos registros vinculados a questões.
+  if (!a.questao_id) {
+    return `<div class="card minhas-anotacoes-anotacao-card">${questaoHtml}${anotacaoHtml}</div>`;
+  }
+
+  return `
+    <div class="card minhas-anotacoes-anotacao-card minhas-anotacoes-com-questao">
+      ${anotacaoHtml}
+      <button
+        type="button"
+        class="btn minhas-anotacoes-btn minhas-anotacoes-alternar-questao"
+        aria-expanded="false"
+        aria-controls="questao_relacionada_${a.anotacao_id}"
+        onclick="alternarQuestaoRelacionada(this)"
+      >Ver questão relacionada</button>
+      <div id="questao_relacionada_${a.anotacao_id}" class="minhas-anotacoes-questao-relacionada" hidden>
+        ${questaoHtml}
+      </div>
     </div>
   `;
+}
+
+function alternarQuestaoRelacionada(botao) {
+  const questao = document.getElementById(botao.getAttribute("aria-controls"));
+  if (!questao) return;
+
+  questao.hidden = !questao.hidden;
+  botao.setAttribute("aria-expanded", String(!questao.hidden));
+  botao.textContent = questao.hidden
+    ? "Ver questão relacionada"
+    : "Ocultar questão relacionada";
 }
 
 async function editarAnotacao(id) {
