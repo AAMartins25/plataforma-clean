@@ -117,7 +117,9 @@
 
   </div>
 
-  <div id="area_mensagens"></div>
+  <div id="area_mensagens" aria-busy="true">
+    <div class="card" role="status" style="text-align:center;">Carregando...</div>
+  </div>
 
   <div class="card mensagens-prof-navegacao-final">
 
@@ -160,6 +162,7 @@ const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let conversas = [];
+let carregandoMensagens = false;
 const reformulacoesPendentes = new Map();
 const rascunhosMensagem = new Map();
 const AVISO_REFORMULACAO = "Ao enviar esta nova mensagem, a conversa anterior será apagada. Copie trechos que considerar importantes da conversa atual e cole na nova mensagem a ser enviada ao professor.";
@@ -399,20 +402,29 @@ async function apiPost(path, body) {
 }
 
 async function carregarMensagens() {
+  const area = document.getElementById("area_mensagens");
+  carregandoMensagens = true;
+  area.setAttribute("aria-busy", "true");
+  area.style.minHeight = "";
+  area.innerHTML = '<div class="card" role="status" style="text-align:center;">Carregando...</div>';
   try {
     conversas = await apiGet("/me/mensagens-prof");
 
     preencherFiltroDisciplinas();
+    carregandoMensagens = false;
     renderizarConversas();
 
   } catch (err) {
     console.error(err);
 
     document.getElementById("area_mensagens").innerHTML = `
-      <div class="card">
+      <div class="card" role="alert">
         Erro ao carregar mensagens.
       </div>
     `;
+  } finally {
+    carregandoMensagens = false;
+    area.setAttribute("aria-busy", "false");
   }
 }
 
@@ -495,6 +507,7 @@ function preencherFiltroAssuntos() {
 }
 
 function renderizarConversas() {
+  if (carregandoMensagens) return;
   document.getElementById("area_mensagens").style.minHeight = "";
   const disciplinaId =
     document.getElementById("filtro_disciplina").value;

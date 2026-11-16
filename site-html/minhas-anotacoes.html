@@ -108,8 +108,8 @@
 
   </div>
 
-    <div id="area_anotacoes">
-
+  <div id="area_anotacoes" aria-busy="true">
+    <div class="card" role="status" style="text-align:center;">Carregando...</div>
   </div>
 
   <div class="card minhas-anotacoes-navegacao-final">
@@ -156,6 +156,7 @@ const API_BASE =
 "https://plataforma-quality-backend.onrender.com";
 
 let anotacoes = [];
+let carregandoAnotacoes = false;
 
 const tituloCursoMinhasAnotacoes =
   document.getElementById(
@@ -320,6 +321,11 @@ async function exibirNomeUsuarioLogadoAnotacoes() {
 }
 
 async function carregarAnotacoes() {
+  const area = document.getElementById("area_anotacoes");
+  carregandoAnotacoes = true;
+  area.setAttribute("aria-busy", "true");
+  area.style.minHeight = "";
+  area.innerHTML = '<div class="card" role="status" style="text-align:center;">Carregando...</div>';
 
   try {
 
@@ -328,6 +334,7 @@ async function carregarAnotacoes() {
 
     preencherFiltroDisciplinas();
 
+    carregandoAnotacoes = false;
     renderizarAnotacoes();
 
   } catch (err) {
@@ -337,10 +344,13 @@ async function carregarAnotacoes() {
     document.getElementById(
       "area_anotacoes"
     ).innerHTML = `
-      <div class="card">
+      <div class="card" role="alert">
         Erro ao carregar anotações.
       </div>
     `;
+  } finally {
+    carregandoAnotacoes = false;
+    area.setAttribute("aria-busy", "false");
   }
 }
 
@@ -447,6 +457,7 @@ function preencherFiltroAssuntos() {
 }
 
 function renderizarAnotacoes() {
+  if (carregandoAnotacoes) return;
   document.getElementById("area_anotacoes").style.minHeight = "";
   const disciplinaId =
     document.getElementById(
