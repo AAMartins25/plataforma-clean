@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
-  <link rel="stylesheet" href="css/mensagens-prof.css?v=1">
+  <link rel="stylesheet" href="css/mensagens-prof.css?v=2">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -619,7 +619,7 @@ function montarCardConversa(c) {
           ? montarAreaNovaMensagem(c.conversa_id)
           : aguardandoProfessor
             ? `
-              <div style="
+              <div class="mensagens-prof-status" style="
                 margin-top:1rem;
                 font-size:.9rem;
                 opacity:.8;
@@ -629,7 +629,7 @@ function montarCardConversa(c) {
             `
             : conversaEncerrada
               ? `
-                <div style="
+                <div class="mensagens-prof-status" style="
                   margin-top:1rem;
                   font-size:.9rem;
                   opacity:.8;

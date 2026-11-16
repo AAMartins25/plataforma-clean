@@ -24,3 +24,15 @@ body.mensagens-prof-page {
 .mensagens-prof-page .mensagens-prof-questao-relacionada:not([hidden]) {
   margin-top: 1rem;
 }
+
+.mensagens-prof-page .mensagens-prof-status {
+  text-align: right;
+}
+
+/* Preserva a caixa de linha e a geometria usada na medição do cabeçalho. */
+@media screen {
+  .mensagens-prof-page > header.ro-header:not([data-medir-cabecalho]) .mensagens-prof-header-identificacao h2 {
+    font-size: 1.2749rem; /* 1.159rem × 1.10. */
+    transform: translateY(3px);
+  }
+}
