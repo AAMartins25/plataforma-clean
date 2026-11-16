@@ -23,6 +23,7 @@ const ctx = {
   window: { location: { search: '?curso_id=1&demonstracao_id=8' }, crypto: { randomUUID: () => '123e4567-e89b-42d3-a456-426614174000' } },
   location: { search: '?curso_id=1&demonstracao_id=8' },
   document: { getElementById: id => ids.get(id) || null },
+  RegistroEditor: { ler: campo => ({texto:campo.value, texto_formato:'texto_puro'}) },
   alert: () => {}, confirm: () => true,
 };
 vm.createContext(ctx);

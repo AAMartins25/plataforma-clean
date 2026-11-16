@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
+  <link rel="stylesheet" href="css/mensagens-prof.css?v=1">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -494,6 +495,7 @@ function preencherFiltroAssuntos() {
 }
 
 function renderizarConversas() {
+  document.getElementById("area_mensagens").style.minHeight = "";
   const disciplinaId =
     document.getElementById("filtro_disciplina").value;
 
@@ -528,36 +530,7 @@ function renderizarConversas() {
     return;
   }
 
-  let html = "";
-  let disciplinaAtual = null;
-  let assuntoAtual = null;
-
-  dados.forEach(c => {
-    const mudouGrupo =
-    disciplinaAtual !== c.disciplina_id ||
-    assuntoAtual !== c.assunto_id;
-
-  if (mudouGrupo) {
-    disciplinaAtual = c.disciplina_id;
-    assuntoAtual = c.assunto_id;
-
-    html += `
-      <div class="card mensagens-prof-identificacao-card">
-
-        <h2 class="mensagens-prof-disciplina-titulo">
-          ${esc(c.disciplina_nome)}
-        </h2>
-
-        <div class="mensagens-prof-assunto-titulo">
-          ${esc(c.assunto_nome)}
-        </div>
-
-      </div>
-    `;
-  }
-
-    html += montarCardConversa(c);
-  });
+  const html = dados.map(montarCardConversa).join("");
 
   document.getElementById("area_mensagens").innerHTML = html;
   for (const campo of document.querySelectorAll('textarea[id^="nova_msg_"]')) {
@@ -611,9 +584,7 @@ function montarCardConversa(c) {
       ultimaMensagem.autor === "PROFESSOR"
     );
 
-  return `
-    <div class="card">
-
+  const questaoHtml = `
       <div class="mensagens-prof-enunciado">
         ${
           ehCertoErrado
@@ -631,6 +602,13 @@ function montarCardConversa(c) {
         </div>
 
       </div>
+
+  `;
+
+  return `
+    <div class="card mensagens-prof-conversa-card" id="conversa_${Number(c.conversa_id)}">
+      <h2 class="mensagens-prof-disciplina-titulo">${esc(c.disciplina_nome)}</h2>
+      <div class="mensagens-prof-assunto-titulo">${esc(c.assunto_nome)}</div>
 
       <div style="margin-top:1.125rem;">
         ${montarMensagens(c)}
@@ -664,13 +642,60 @@ function montarCardConversa(c) {
 
       ${montarAreaReformulacao(c)}
 
+      ${c.questao_id ? `
+        <button
+          type="button"
+          class="btn mensagens-prof-btn-final mensagens-prof-alternar-questao"
+          aria-expanded="false"
+          aria-controls="questao_relacionada_${Number(c.conversa_id)}"
+          onclick="alternarQuestaoRelacionada(this)"
+        >Ver questão relacionada</button>
+        <div id="questao_relacionada_${Number(c.conversa_id)}" class="mensagens-prof-questao-relacionada" hidden>
+          ${questaoHtml}
+        </div>
+      ` : ""}
+
     </div>
   `;
 }
 
+function alternarQuestaoRelacionada(botao) {
+  const questao = document.getElementById(botao.getAttribute("aria-controls"));
+  if (!questao) return;
+
+  // O fechamento de uma questão anterior muda a posição documental deste botão.
+  // Conserva sua coordenada na tela, inclusive quando a ancoragem nativa atua.
+  const topoAntes = botao.getBoundingClientRect().top;
+  const area = document.getElementById("area_mensagens");
+  area.style.minHeight = "";
+  const abrir = questao.hidden;
+  document.querySelectorAll("#area_mensagens .mensagens-prof-alternar-questao").forEach(controle => {
+    const conteudo = document.getElementById(controle.getAttribute("aria-controls"));
+    if (!conteudo) return;
+
+    const expandida = controle === botao && abrir;
+    conteudo.hidden = !expandida;
+    controle.setAttribute("aria-expanded", String(expandida));
+    controle.textContent = expandida
+      ? "Ocultar questão relacionada"
+      : "Ver questão relacionada";
+  });
+  const destino = window.scrollY + botao.getBoundingClientRect().top - topoAntes;
+  let limite = document.documentElement.scrollHeight - window.innerHeight;
+  // Perto do fim da página, evita que a redução do documento force a rolagem
+  // para cima. Reserva apenas o espaço necessário; o próximo render o remove.
+  // A primeira reserva pode ocupar o espaço livre do main flexível antes de
+  // aumentar a rolagem; mede novamente para contemplar listas curtas filtradas.
+  for (let ajuste = 0; destino > limite && ajuste < 3; ajuste++) {
+    area.style.minHeight = `${area.getBoundingClientRect().height + destino - limite}px`;
+    limite = document.documentElement.scrollHeight - window.innerHeight;
+  }
+  window.scrollTo({top: destino, left: window.scrollX, behavior: "instant"});
+}
+
 function montarAreaReformulacao(c) {
   const p = reformulacoesPendentes.get(Number(c.conversa_id));
-  if (!p) return `<div style="margin-top:1rem"><button class="btn mensagens-prof-btn-enviar" onclick="abrirReformulacao(${Number(c.conversa_id)})">Reformular mensagem ao prof</button></div>`;
+  if (!p) return `<div class="mensagens-prof-reformular-acoes" style="margin-top:1rem"><button class="btn mensagens-prof-btn-enviar" onclick="abrirReformulacao(${Number(c.conversa_id)})">Reformular mensagem ao prof</button></div>`;
   const bloqueada = p.fase === "incerta";
   return `<section class="card" style="margin-top:1rem" id="reformulacao_${Number(c.conversa_id)}">
     <p role="note">${AVISO_REFORMULACAO}</p>

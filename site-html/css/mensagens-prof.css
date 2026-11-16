@@ -1,0 +1,26 @@
+/* A alternância usa o botão acionado como referência de rolagem,
+   sem uma segunda compensação automática do navegador. */
+body.mensagens-prof-page {
+  overflow-anchor: none;
+}
+
+.mensagens-prof-page .mensagens-prof-reformular-acoes {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mensagens-prof-page .mensagens-prof-alternar-questao {
+  background: #fff7c7;
+  margin-top: 1rem;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mensagens-prof-page .mensagens-prof-alternar-questao:hover {
+  background: #fef2b3;
+}
+
+.mensagens-prof-page .mensagens-prof-questao-relacionada:not([hidden]) {
+  margin-top: 1rem;
+}
