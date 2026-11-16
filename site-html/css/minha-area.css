@@ -22,7 +22,7 @@
   .minha-area-page .ro-header .ro-header-titles h1 {
     line-height: 1.69rem;
     position: relative;
-    top: 11px;
+    top: 14px;
   }
 }
 
@@ -39,7 +39,15 @@
   }
 }
 
-.minha-area-page #opcoesMinhaArea > .btn {
+/* Reduz a caixa e seus recuos laterais em 12%. Os botões passam a ocupar
+   a área interna resultante, conservando a largura anteriormente aprovada. */
+.minha-area-page main.container > .card {
   width: 88%;
+  margin-inline: auto;
+  padding-inline: 1.375rem;
+}
+
+.minha-area-page #opcoesMinhaArea > .btn {
+  width: 100%;
   margin-inline: auto;
 }
