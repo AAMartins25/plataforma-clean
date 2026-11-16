@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/teoria-imagens.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/registro-conteudo.css">
-  <link rel="stylesheet" href="css/minhas-anotacoes.css?v=1">
+  <link rel="stylesheet" href="css/minhas-anotacoes.css?v=2">
   <script src="js/rodape.js" defer></script>
 </head>
 
@@ -487,42 +487,7 @@ function renderizarAnotacoes() {
     return;
   }
 
-  let html = "";
-
-  let disciplinaAtual = null;
-  let assuntoAtual = null;
-
-  dados.forEach(a => {
-    const mudouGrupo =
-      disciplinaAtual !==
-        a.disciplina_id ||
-      assuntoAtual !==
-        a.assunto_id;
-
-    if (mudouGrupo) {
-      disciplinaAtual =
-        a.disciplina_id;
-
-      assuntoAtual =
-        a.assunto_id;
-
-      html += `
-        <div class="card minhas-anotacoes-identificacao-card">
-
-          <h2 class="minhas-anotacoes-disciplina-titulo">
-            ${esc(a.disciplina_nome)}
-          </h2>
-
-          <div class="minhas-anotacoes-assunto-titulo">
-            ${esc(a.assunto_nome)}
-          </div>
-
-        </div>
-      `;
-    }
-
-    html += montarCardAnotacao(a);
-  });
+  const html = dados.map(montarCardAnotacao).join("");
 
   document.getElementById(
     "area_anotacoes"
@@ -542,6 +507,11 @@ function textoJustificado(extra = "") {
 }
 
 function montarCardAnotacao(a) {
+  const identificacaoHtml = `
+    <h2 class="minhas-anotacoes-disciplina-titulo">${esc(a.disciplina_nome)}</h2>
+    <div class="minhas-anotacoes-assunto-titulo">${esc(a.assunto_nome)}</div>
+  `;
+
   const ehCertoErrado =
     a.tipo === "CERTO_ERRADO" ||
     a.tipo_questao === "CERTO_ERRADO";
@@ -632,11 +602,12 @@ function montarCardAnotacao(a) {
 
   // A apresentação recolhível se aplica apenas aos registros vinculados a questões.
   if (!a.questao_id) {
-    return `<div class="card minhas-anotacoes-anotacao-card">${questaoHtml}${anotacaoHtml}</div>`;
+    return `<div class="card minhas-anotacoes-anotacao-card">${identificacaoHtml}${questaoHtml}${anotacaoHtml}</div>`;
   }
 
   return `
     <div class="card minhas-anotacoes-anotacao-card minhas-anotacoes-com-questao">
+      ${identificacaoHtml}
       ${anotacaoHtml}
       <button
         type="button"
@@ -644,7 +615,7 @@ function montarCardAnotacao(a) {
         aria-expanded="false"
         aria-controls="questao_relacionada_${a.anotacao_id}"
         onclick="alternarQuestaoRelacionada(this)"
-      >Ver questão relacionada</button>
+      >Ver a questão relacionada</button>
       <div id="questao_relacionada_${a.anotacao_id}" class="minhas-anotacoes-questao-relacionada" hidden>
         ${questaoHtml}
       </div>
@@ -656,11 +627,18 @@ function alternarQuestaoRelacionada(botao) {
   const questao = document.getElementById(botao.getAttribute("aria-controls"));
   if (!questao) return;
 
-  questao.hidden = !questao.hidden;
-  botao.setAttribute("aria-expanded", String(!questao.hidden));
-  botao.textContent = questao.hidden
-    ? "Ver questão relacionada"
-    : "Ocultar questão relacionada";
+  const abrir = questao.hidden;
+  document.querySelectorAll("#area_anotacoes .minhas-anotacoes-alternar-questao").forEach(controle => {
+    const conteudo = document.getElementById(controle.getAttribute("aria-controls"));
+    if (!conteudo) return;
+
+    const expandida = controle === botao && abrir;
+    conteudo.hidden = !expandida;
+    controle.setAttribute("aria-expanded", String(expandida));
+    controle.textContent = expandida
+      ? "Ocultar a questão relacionada"
+      : "Ver a questão relacionada";
+  });
 }
 
 async function editarAnotacao(id) {

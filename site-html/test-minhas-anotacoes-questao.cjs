@@ -17,6 +17,9 @@ const fixtures = [
   {anotacao_id: 12, questao_id: 102, disciplina_id: 1, disciplina_nome: 'Matemática', disciplina_ordem: 1,
     assunto_id: 2, assunto_nome: 'Álgebra', assunto_ordem: 2, bateria_id: 7, tipo: 'CERTO_ERRADO',
     enunciado: 'Enunciado legado\nSegunda linha', gabarito: 'E', comentario: 'Comentário legado', anotacao: 'Anotação simples', texto_formato: 'texto_puro'},
+  {anotacao_id: 14, questao_id: 103, disciplina_id: 1, disciplina_nome: 'Matemática', disciplina_ordem: 1,
+    assunto_id: 1, assunto_nome: 'Geometria', assunto_ordem: 1, bateria_id: 7, tipo: 'CERTO_ERRADO',
+    enunciado: 'Outra questão do mesmo assunto', gabarito: 'C', comentario: 'Outro comentário', anotacao: 'Segunda anotação de Geometria', texto_formato: 'texto_puro'},
   {anotacao_id: 13, disciplina_id: 2, disciplina_nome: 'Outra origem', disciplina_ordem: 2,
     assunto_id: 3, assunto_nome: 'Geral', assunto_ordem: 1, enunciado: 'Conteúdo sem vínculo', anotacao: 'Registro sem questão', texto_formato: 'texto_puro'}
 ];
@@ -63,11 +66,39 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       const question = id => page.locator('#questao_relacionada_'+id);
       const checkOverflow = async () => assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth > innerWidth), false, 'sem overflow horizontal');
       await card(11).waitFor();
-      for (const id of [11,12]) {
+      for (const id of [11,12,14]) {
         assert.equal(await question(id).isVisible(),false);
         assert.equal(await toggle(id).getAttribute('aria-expanded'),'false');
-        assert.equal(await toggle(id).textContent(),'Ver questão relacionada');
+        assert.equal(await toggle(id).textContent(),'Ver a questão relacionada');
       }
+      const checkIdentification = async () => {
+        assert.equal(await page.locator('.minhas-anotacoes-identificacao-card').count(),0,'sem cards separados ou identificação duplicada');
+        for (const record of records) {
+          const c = card(record.anotacao_id);
+          assert.equal(await c.locator(':scope > .minhas-anotacoes-disciplina-titulo').count(),1);
+          assert.equal(await c.locator(':scope > .minhas-anotacoes-disciplina-titulo').textContent(),record.disciplina_nome);
+          assert.equal(await c.locator(':scope > .minhas-anotacoes-assunto-titulo').textContent(),record.assunto_nome);
+          assert.equal(await c.locator('.minhas-anotacoes-bloco-aluno .minhas-anotacoes-disciplina-titulo, .minhas-anotacoes-bloco-aluno .minhas-anotacoes-assunto-titulo').count(),0);
+          assert.equal(await c.evaluate(el=>{
+            const title=el.querySelector('.minhas-anotacoes-disciplina-titulo');
+            const subject=el.querySelector('.minhas-anotacoes-assunto-titulo');
+            const note=el.querySelector('.minhas-anotacoes-bloco-aluno');
+            return el.firstElementChild===title && title.nextElementSibling===subject && subject.getBoundingClientRect().bottom<=note.getBoundingClientRect().top;
+          }),true,'identificação no início de cada card, acima da anotação');
+        }
+      };
+      await checkIdentification();
+      assert.equal(await card(11).locator('.minhas-anotacoes-btn-editar').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(253, 238, 138)');
+      assert.equal(await card(11).locator('.minhas-anotacoes-btn-excluir').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(253, 238, 138)');
+      assert.equal(await toggle(11).evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(254, 242, 166)');
+      const checkOpen = async id => {
+        assert.equal(await page.locator('.minhas-anotacoes-questao-relacionada:not([hidden])').count(), id ? 1 : 0);
+        for (const current of [11,12,14]) {
+          assert.equal(await question(current).isVisible(), current===id);
+          assert.equal(await toggle(current).getAttribute('aria-expanded'), String(current===id));
+          assert.equal(await toggle(current).textContent(), current===id ? 'Ocultar a questão relacionada' : 'Ver a questão relacionada');
+        }
+      };
       assert.equal(await card(13).locator('.minhas-anotacoes-alternar-questao').count(),0,'outra origem mantém apresentação');
       assert.equal(await card(13).locator('.minhas-anotacoes-enunciado').isVisible(),true);
       const order = await card(11).evaluate(c => {
@@ -83,7 +114,7 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       await toggle(11).click();
       assert.equal(await question(11).isVisible(),true);
       assert.equal(await toggle(11).getAttribute('aria-expanded'),'true');
-      assert.equal(await toggle(11).textContent(),'Ocultar questão relacionada');
+      assert.equal(await toggle(11).textContent(),'Ocultar a questão relacionada');
       await question(11).locator('.katex').waitFor();
       await page.waitForFunction(()=>document.querySelector('#questao_relacionada_11 img')?.naturalWidth > 0);
       assert.match(await question(11).innerText(),/Referência: Prova 2026/);
@@ -106,12 +137,25 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       assert.equal(await card(11).locator('.minhas-anotacoes-bloco-aluno').innerHTML(),noteBefore);
       assert.equal(await question(12).isVisible(),false,'cards independentes');
       await toggle(12).click(); assert.match(await question(12).innerText(),/Gab\. ERRADO/);
+      await checkOpen(12);
+      await toggle(14).click(); await checkOpen(14);
+      await toggle(14).click(); await checkOpen(null);
+      await toggle(11).click(); await checkOpen(11);
+      // Tab percorre Editar, Excluir e o botão da questão; Enter abre e Espaço fecha.
+      await card(12).getByRole('button',{name:'Editar',exact:true}).focus();
+      await page.keyboard.press('Tab'); assert.equal(await card(12).getByRole('button',{name:'Excluir',exact:true}).evaluate(e=>e===document.activeElement),true);
+      await page.keyboard.press('Tab'); assert.equal(await toggle(12).evaluate(e=>e===document.activeElement),true);
+      await page.keyboard.press('Enter'); await checkOpen(12);
+      await page.keyboard.press('Space'); await checkOpen(null);
+      await toggle(14).focus(); await page.keyboard.press('Enter'); await checkOpen(14);
       await checkOverflow();
       assert.equal(mutations.length,0,'expandir e recolher não gravam dados');
       await page.locator('#filtro_assunto').selectOption('2'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),1);
+      assert.equal(await question(12).isVisible(),false,'filtrar reinicia a questão recolhida');
       await page.locator('#filtro_assunto').selectOption('');
+      await checkOpen(null);
       await page.locator('#filtro_disciplina').selectOption('2'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),1);
-      await page.locator('#filtro_disciplina').selectOption('1'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),2);
+      await page.locator('#filtro_disciplina').selectOption('1'); assert.equal(await page.locator('.minhas-anotacoes-anotacao-card').count(),3);
       // Conteúdo rico: abrir o editor e cancelar conserva a anotação original.
       await card(11).getByRole('button',{name:'Editar',exact:true}).click();
       await card(11).getByRole('button',{name:'Cancelar',exact:true}).click();
@@ -129,12 +173,18 @@ const mime = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '
       page.once('dialog',d=>d.accept()); await card(12).getByRole('button',{name:'Excluir',exact:true}).click();
       await card(12).waitFor({state:'detached'}); assert.equal(mutations[1].method,'DELETE');
       for (const r of requests.filter(r=>r.path.startsWith('/me') || r.path.includes('/assinaturas'))) assert.ok(r.query.includes('contratacao_id=9'),'contexto preservado');
+      await page.locator('#filtro_disciplina').selectOption('');
+      await checkIdentification();
+      assert.equal(await card(13).locator('.minhas-anotacoes-alternar-questao').count(),0);
+      await toggle(14).click(); assert.equal(await question(14).isVisible(),true,'expansão funciona após salvar, excluir e filtrar');
+      await toggle(11).click(); assert.equal(await question(14).isVisible(),false);
+      assert.equal(await question(11).isVisible(),true);
       await checkOverflow(); assert.deepEqual(errors,[]);
       if (process.env.SCREENSHOT_DIR) {
         fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});
         await page.screenshot({path:path.join(process.env.SCREENSHOT_DIR,`anotacoes-${width}.png`),fullPage:true});
       }
-      console.log(`${width}px: recolher/expandir, teclado, formatação, imagem, tabela, fórmula, filtros, editar/cancelar/salvar/excluir e ausência de overflow: OK`);
+      console.log(`${width}px: expansão exclusiva, identificação por anotação, cores, teclado, conteúdo rico, filtros, editar/cancelar/salvar/excluir e ausência de overflow: OK`);
       await context.close();
     }
   } finally {await browser.close();}

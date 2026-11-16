@@ -4,6 +4,7 @@
 }
 
 .minhas-anotacoes-page .minhas-anotacoes-alternar-questao {
+  background: #fef2a6;
   margin-top: 1rem;
   max-width: 100%;
   white-space: normal;
@@ -12,4 +13,8 @@
 
 .minhas-anotacoes-page .minhas-anotacoes-questao-relacionada:not([hidden]) {
   margin-top: 1rem;
+}
+
+.minhas-anotacoes-page .minhas-anotacoes-alternar-questao:hover {
+  background: #fbed98;
 }
