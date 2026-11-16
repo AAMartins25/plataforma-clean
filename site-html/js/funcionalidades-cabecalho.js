@@ -24,7 +24,7 @@
       referencia.contentWindow.CabecalhosAltura.pronto.then(() => { pronta = true; agendar(); });
     }, {once: true});
     referencia.srcdoc = `<!DOCTYPE html><html lang="pt-BR" class="disciplinas-assuntos-root" style="overflow:hidden">
-      <head><meta charset="UTF-8">${estilos}<script src="${url("js/cabecalhos-altura.js?v=1")}" defer></script></head>
+      <head><meta charset="UTF-8">${estilos}<script src="${url("js/cabecalhos-altura.js?v=altura6-1")}" defer></script></head>
       <body class="disciplinas-page" data-page="disciplinas">
       <header class="disciplinas-header ro-header ro-header--identified">
         <div class="ro-header-titles"><div><h1 id="titulo_pagina"></h1></div></div>
@@ -95,12 +95,16 @@
         header.style.setProperty("--funcionalidade-header-altura", `${atual.height + minimo - maximo + 0.0625}px`);
       }
     }
-    function ajustar() {
+    function ajustarOriginal() {
       if (!document.body.matches(".dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page")) return medirLayout();
       // Conserva a geometria aprovada; a fonte maior usa a mesma altura de linha.
       header.setAttribute("data-medir-cabecalho", "");
       try { medirLayout(); }
       finally { header.removeAttribute("data-medir-cabecalho"); }
+    }
+    function ajustar() {
+      if (window.Cabecalho?.comAlturaOriginal) return window.Cabecalho.comAlturaOriginal(header, ajustarOriginal);
+      return ajustarOriginal();
     }
     let agendado = false;
     function agendar() {

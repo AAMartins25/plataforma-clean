@@ -71,5 +71,10 @@
       header.style.setProperty("height", `${faixa.height + minimo - maximo + 0.0625}px`, "important");
     }
   }
-  window.CabecalhosAltura = {pronto, medir, ajustar};
+  window.CabecalhosAltura = {pronto, medir,
+    ajustar(header, titulo) {
+      if (window.Cabecalho?.comAlturaOriginal) return window.Cabecalho.comAlturaOriginal(header, () => ajustar(header, titulo));
+      return ajustar(header, titulo);
+    }
+  };
 })();

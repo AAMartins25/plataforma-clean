@@ -52,6 +52,65 @@
     }
   }
 
+  // A ampliação é aplicada somente depois de medir a geometria própria da página.
+  // Os cálculos existentes sempre recebem a versão sem os 6%, evitando acúmulo.
+  const ampliacoes = new WeakMap();
+  const medicoes = new WeakSet();
+  const guardar = (el, propriedade) => [el.style.getPropertyValue(propriedade), el.style.getPropertyPriority(propriedade)];
+  const devolver = (el, propriedade, [valor, prioridade]) => {
+    if (valor) el.style.setProperty(propriedade, valor, prioridade);
+    else el.style.removeProperty(propriedade);
+  };
+
+  function restaurarAltura(cabecalho) {
+    const estado = ampliacoes.get(cabecalho);
+    if (!estado) return;
+    devolver(cabecalho, "height", estado.altura);
+    for (const {elemento, translacao} of estado.elementos) devolver(elemento, "translate", translacao);
+    ampliacoes.delete(cabecalho);
+  }
+
+  function ampliarAltura(cabecalho) {
+    if (!cabecalho.isConnected || !matchMedia("screen").matches) return;
+    const faixa = cabecalho.getBoundingClientRect();
+    if (!faixa.height) return;
+    const alvos = "h1, h2, p, img, svg, .ro-identity, .ro-nav-control, .ro-header-access a";
+    const elementos = Array.from(cabecalho.querySelectorAll(alvos)).flatMap(elemento => {
+      // Move o conteúdo, sem transformar os contêineres que servem de referência
+      // aos títulos absolutos das páginas com medição própria.
+      if (elemento.parentElement.closest(alvos) || elemento.closest('[aria-hidden="true"]') || !elemento.getClientRects().length) return [];
+      const caixa = elemento.getBoundingClientRect();
+      if (!caixa.height) return [];
+      return [{elemento, referencia: elemento, topo: caixa.top - faixa.top,
+        centro: caixa.top - faixa.top + caixa.height / 2, translacao: guardar(elemento, "translate")}];
+    });
+    ampliacoes.set(cabecalho, {altura: guardar(cabecalho, "height"), elementos});
+    cabecalho.style.setProperty("height", `${faixa.height * 1.06}px`, "important");
+    // Move os centros dos elementos na mesma proporção, sem escalar fontes, ícones,
+    // botões ou os deslocamentos internos de títulos/subtítulos já aprovados.
+    for (const {elemento, referencia, topo, centro} of elementos) {
+      const deslocamento = faixa.top + topo + centro * 0.06 - referencia.getBoundingClientRect().top;
+      elemento.style.setProperty("translate", `0 ${deslocamento}px`);
+    }
+  }
+
+  function comAlturaOriginal(cabecalho, calcular) {
+    if (medicoes.has(cabecalho)) return calcular();
+    const rolagem = {left: window.scrollX, top: window.scrollY};
+    restaurarAltura(cabecalho);
+    medicoes.add(cabecalho);
+    try { return calcular(); }
+    finally {
+      medicoes.delete(cabecalho);
+      ampliarAltura(cabecalho);
+      // A medição temporária reduz a altura do documento. No fim da página,
+      // o navegador pode limitar a rolagem antes de devolvermos os 6%.
+      if (window.scrollX !== rolagem.left || window.scrollY !== rolagem.top) {
+        window.scrollTo({...rolagem, behavior: "instant"});
+      }
+    }
+  }
+
   const espacosOriginais = new WeakMap();
   function restaurarEspacos(cabecalho) {
     // Mede o layout próprio da página antes de aplicar a aparência comum.
@@ -91,10 +150,13 @@
   // Os títulos calculados por script usam a área original de conteúdo,
   // independentemente do respiro consumido pelos controles padronizados.
   window.Cabecalho = {
+    comAlturaOriginal,
     comAparenciaOriginal(cabecalho, calcular) {
-      restaurarEspacos(cabecalho);
-      try { return calcular(); }
-      finally { padronizar(cabecalho); }
+      return comAlturaOriginal(cabecalho, () => {
+        restaurarEspacos(cabecalho);
+        try { return calcular(); }
+        finally { padronizar(cabecalho); }
+      });
     }
   };
 
@@ -122,12 +184,14 @@
   function atualizar() {
     const cabecalho = document.querySelector("body > header");
     if (!cabecalho) return;
-    organizar(cabecalho);
-    for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
-      identificar(cabecalho, origem);
-    }
-    padronizar(cabecalho);
-    alinharNomeNaMarca(cabecalho);
+    comAlturaOriginal(cabecalho, () => {
+      organizar(cabecalho);
+      for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
+        identificar(cabecalho, origem);
+      }
+      padronizar(cabecalho);
+      alinharNomeNaMarca(cabecalho);
+    });
   }
 
   function alinharNomeNaMarca(cabecalho) {
@@ -192,6 +256,8 @@
     };
     new MutationObserver(agendar).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["title"] });
     window.addEventListener("resize", agendar);
+    window.addEventListener("beforeprint", () => restaurarAltura(document.querySelector("body > header")));
+    window.addEventListener("afterprint", agendar);
     const cabecalho = document.querySelector("body > header.home-header");
     if (cabecalho) new ResizeObserver(agendar).observe(cabecalho);
     document.fonts.ready.then(agendar);
