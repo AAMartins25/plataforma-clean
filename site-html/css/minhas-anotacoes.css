@@ -24,3 +24,12 @@ body.minhas-anotacoes-page {
 .minhas-anotacoes-page .minhas-anotacoes-alternar-questao:hover {
   background: #fef2b3;
 }
+
+/* Mantém a caixa de linha original para não deslocar o curso nem o cabeçalho.
+   A medição compartilhada continua usando a geometria já aprovada. */
+@media screen {
+  .minhas-anotacoes-page > header.ro-header:not([data-medir-cabecalho]) .minhas-anotacoes-header-identificacao h2 {
+    font-size: 1.28649rem; /* 1.159rem × 1.11. */
+    transform: translateY(3px);
+  }
+}
