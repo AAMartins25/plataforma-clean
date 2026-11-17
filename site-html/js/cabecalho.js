@@ -90,7 +90,11 @@
     // Move os centros dos elementos na mesma proporção, sem escalar fontes, ícones,
     // botões ou os deslocamentos internos de títulos/subtítulos já aprovados.
     for (const {elemento, referencia, topo, centro} of elementos) {
-      const deslocamento = faixa.top + topo + centro * (fator - 1) - referencia.getBoundingClientRect().top;
+      // No painel compacto, a mudança de altura pode ajustar a rolagem antes
+      // desta medição; usa a posição atual da faixa como referência.
+      const origem = cabecalho.classList.contains("admin-painel-header")
+        ? cabecalho.getBoundingClientRect().top : faixa.top;
+      const deslocamento = origem + topo + centro * (fator - 1) - referencia.getBoundingClientRect().top;
       elemento.style.setProperty("translate", `0 ${deslocamento}px`);
     }
   }

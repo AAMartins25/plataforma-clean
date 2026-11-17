@@ -1,0 +1,8 @@
+/* A expansão compartilhada é 1.06; 0.901 corresponde a 85% dessa altura. */
+@media screen {
+  .admin-shell > header.ro-header { --ro-header-altura-fator: 0.901; }
+  .admin-shell > header.ro-header .admin-titulo-destaque {
+    position: relative;
+    top: var(--painel-titulo-deslocamento, 0px);
+  }
+}

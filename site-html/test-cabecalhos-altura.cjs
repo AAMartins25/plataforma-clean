@@ -7,7 +7,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const origin = 'http://cabecalhos.test';
 const root = __dirname;
 const visualScripts = new Set(['cabecalho.js','cabecalhos-altura.js','funcionalidades-cabecalho.js',
-  'teoria-cabecalho.js','disciplinas-layout.js','assuntos-layout.js']);
+  'teoria-cabecalho.js','disciplinas-layout.js','assuntos-layout.js','admin-painel-cabecalho.js']);
 const mime = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.woff2':'font/woff2'};
 function pages(dir) {
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e => {
@@ -44,7 +44,7 @@ async function geometry(page) {
   });
 }
 function check({original,expanded},label) {
-  const fator = label.startsWith('curso-info.html/') ? 1.06 * .92 * .92 : 1.06;
+  const fator = label.startsWith('curso-info.html/') ? 1.06 * .92 * .92 : label.startsWith('admin/index.html/') ? 1.06 * .85 : 1.06;
   assert.ok(Math.abs(expanded.header.h-original.header.h*fator)<.04,label+' fator de altura');
   assert.equal(expanded.header.w,original.header.w,label+' largura do cabeçalho');
   assert.equal(expanded.overflow,false,label+' sem overflow');
