@@ -52,11 +52,39 @@ const server=http.createServer((req,res)=>{
   }
   await abrir();
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content').getAttribute('contenteditable'),'false');
+  assert.equal(await page.locator('#boxConfigPublicaCurso .teoria-markdown-controles button').isDisabled(),true);
   await page.click('#btnEditarConfigPublicaCurso');
   await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').getAttribute('contenteditable')==='true');
+  const importar=async texto=>{
+   await page.locator('#boxConfigPublicaCurso').getByRole('button',{name:'Importar Markdown',exact:true}).click();
+   assert.ok(await page.evaluate(()=>{const r=document.querySelector('.teoria-markdown-dialogo[open]').getBoundingClientRect();return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight;}));
+   await page.locator('.teoria-markdown-dialogo[open] [data-md="fonte"]').fill(texto);
+   await page.locator('.teoria-markdown-dialogo[open] [data-md="aplicar"]').click();
+  };
+  assert.equal(await page.locator('#boxConfigPublicaCurso .teoria-markdown-controles button').count(),1);
+  await importar('![imagem](https://example.com/a.png)');
+  assert.match(await page.locator('.teoria-markdown-dialogo[open] [role="alert"]').textContent(),/não suporta/);
+  await page.locator('.teoria-markdown-dialogo[open] [data-md="cancelar"]').click();
   assert.ok((await page.locator('#boxConfigPublicaCurso .ck-content').textContent()).includes('<b>literal</b>'));
   await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
   assert.equal(saves.at(-1).descricao_publica,raw);assert.equal(saves.at(-1).descricao_publica_formato,undefined);
+  await page.click('#btnEditarConfigPublicaCurso');
+  await importar('# Curso completo\n\n**Negrito** e *itálico*\n\n- Um\n- Dois\n\n| Modalidade | Valor |\n| --- | --- |\n| Resumo | R$ 49,90 |');
+  assert.equal(await page.locator('.teoria-markdown-dialogo[open]').count(),0);
+  assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content strong').textContent(),'Negrito');
+  assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content table').count(),1);
+  await page.evaluate(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance.execute('undo'));
+  assert.ok((await page.locator('#boxConfigPublicaCurso .ck-content').textContent()).includes('<b>literal</b>'));
+  await page.evaluate(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance.execute('redo'));
+  await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  assert.deepEqual(saves.at(-1).tempos_acesso,[4,8,12].map((meses,i)=>({meses,valor_cents:4990*(i+1)})));
+  assert.ok(raw.includes('<strong>Negrito</strong>') && raw.includes('<table>'));
+  await page.goto(origin+'/curso-info.html?curso_id=1');
+  await page.locator('#informacoes_curso strong').waitFor({state:'attached'});
+  assert.equal(await page.locator('#informacoes_curso strong').textContent(),'Negrito');
+  assert.equal(await page.locator('#informacoes_curso table').count(),1);
+  await abrir();
+  assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content strong').textContent(),'Negrito');
   await page.click('#btnEditarConfigPublicaCurso');
   await page.evaluate(()=>{
    const editable=document.querySelector('#boxConfigPublicaCurso .ck-editor__editable');
@@ -69,8 +97,9 @@ const server=http.createServer((req,res)=>{
   await page.click('#btnEditarConfigPublicaCurso');
   let insert=page.getByRole('button',{name:'Insert table',exact:true});
   if(!await insert.isVisible())await page.getByRole('button',{name:'Show more items',exact:true}).click();
+  await insert.evaluate(el=>el.scrollIntoView({block:'center',inline:'center'}));
   await insert.click();
-  await page.locator('.ck-insert-table-dropdown-grid-box').first().click();
+  await page.locator('.ck-insert-table-dropdown-grid-box').first().evaluate(el=>el.click());
   await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content table'));
   const dimensions=await page.evaluate(()=>{
    const e=document.querySelector('#boxConfigPublicaCurso .ck-editor__editable').ckeditorInstance;
@@ -116,6 +145,14 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>document.querySelector('#avisoDescricaoPublica')?.textContent==='');
   await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content')?.getAttribute('contenteditable')==='true');
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content').textContent(),'');
+  await importar('# Curso novo\n\nDescrição **criada**');
+  assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content strong').textContent(),'criada');
+  assert.ok(await page.evaluate(()=>{const b=document.querySelector('#boxConfigPublicaCurso .teoria-markdown-controles button').getBoundingClientRect();return b.left>=0 && b.right<=innerWidth;}));
+  await page.fill('#valor4Meses','49,90');await page.fill('#valor8Meses','99,80');await page.fill('#valor12Meses','149,70');
+  await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  assert.deepEqual(saves.at(-1).tempos_acesso,[4,8,12].map((meses,i)=>({meses,valor_cents:4990*(i+1)})));
+  assert.ok(raw.includes('<strong>criada</strong>'));
+  await abrir();assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content strong').textContent(),'criada');
   cdnFailure=true;
   for(const valor of [raw,saved]) {
    raw=valor;

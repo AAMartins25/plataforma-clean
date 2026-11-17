@@ -271,7 +271,7 @@
     return template.innerHTML;
   }
 
-  function instalar(textarea, editor) {
+  function instalar(textarea, editor, opcoes = {}) {
     if (montagens.has(textarea)) return;
     const id = "markdown-teoria-" + (++sequencia);
     const controles = document.createElement("div");
@@ -304,6 +304,16 @@
     const buscar = nome => dialogo.querySelector(`[data-md="${nome}"]`);
     const fonte = buscar("fonte"), erro = buscar("erro"), aplicar = buscar("aplicar");
     const pacote = buscar("zip"), arquivos = buscar("arquivos");
+    if (opcoes.descricaoPublica) {
+      const paragrafos = dialogo.querySelectorAll(":scope > p");
+      paragrafos[0].textContent = "Cole o texto em Markdown para importar títulos, negritos, itálicos, listas e tabelas.";
+      paragrafos[1].hidden = true;
+      paragrafos[2].textContent = "A importação substitui o conteúdo do editor. Revise e salve a descrição. Ctrl+Z desfaz a importação.";
+      for (const campo of [pacote, arquivos]) {
+        campo.previousElementSibling.hidden = true;
+        campo.hidden = true;
+      }
+    }
     let original = null, descartado = false;
     function sincronizar() {
       abrir.disabled = editor.isReadOnly || descartado;
@@ -323,6 +333,23 @@
       if (editor.getData() !== original) { erro.textContent = "O conteúdo do editor mudou. Cancele a importação, revise o texto e abra o importador novamente."; return; }
       const texto = fonte.value, zipSelecionado = pacote.files[0], lista = [...arquivos.files];
       try {
+        if (opcoes.descricaoPublica) {
+          const resultado = converter(texto, { coletar: true });
+          const modelo = document.createElement("template");
+          modelo.innerHTML = resultado.html;
+          const permitidos = new Set(["P", "BR", "H2", "H3", "H4", "STRONG", "B", "EM", "I", "UL", "OL", "LI", "FIGURE", "TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TH", "TD"]);
+          if (resultado.referencias.length || [...modelo.content.querySelectorAll("*")].some(no => !permitidos.has(no.tagName) || (no.tagName === "FIGURE" && no.className !== "table"))) {
+            throw new Error("A descrição pública não suporta imagens, links, fórmulas ou outros formatos além dos indicados. O conteúdo anterior foi preservado.");
+          }
+          const fragmento = editor.data.parse(resultado.html);
+          editor.model.change(writer => {
+            writer.setSelection(editor.model.document.getRoot(), "in");
+            editor.model.insertContent(fragmento);
+          });
+          mensagem.textContent = ["Conteúdo importado. Revise e salve. Desfazer restaura o conteúdo anterior.", ...(resultado.avisos || [])].join(" ");
+          dialogo.close();
+          return;
+        }
         if (zipSelecionado && (texto.trim() || lista.length)) throw new Error("Escolha o ZIP ou Markdown com arquivos, sem misturar os dois modos.");
         await window.TeoriaImagensEditor.transacao(editor, async signal => {
           if (zipSelecionado) {

@@ -11,7 +11,7 @@
   async function carregar(textarea, valor) {
     const atual = ++geracao;
     campo = textarea;
-    if (editor) { const anterior = editor; editor = null; await anterior.destroy(); }
+    if (editor) { const anterior = editor; editor = null; window.TeoriaMarkdown?.destruir(textarea); await anterior.destroy(); }
     if (atual !== geracao) return;
     original = valor;
     const dados = DescricaoPublica.separar(valor);
@@ -46,6 +46,7 @@
       });
       if (atual !== geracao) { await novo.destroy(); return; }
       editor = novo;
+      window.TeoriaMarkdown?.instalar(textarea, editor, { descricaoPublica: true });
       inicial = editor.getData();
       editor.ui.view.editable.element.setAttribute('aria-label', 'Descrição pública e valores de acesso');
       bloquear(bloqueado);
