@@ -56,7 +56,7 @@ def test_rotas_gravacao_releitura_precos_permissoes(comercial):
     ator(a, ADMIN)
     assert client.put('/admin/cursos/1/config-publica', json=payload).status_code == 200
     assert client.get('/admin/cursos/1/config-publica').json()['descricao_publica'] == original
-    html = '<h2>Curso</h2><p><strong>Professor</strong> e <em>prova</em></p><ul><li>Uma aula</li></ul>'
+    html = '<h2>Curso</h2><p style="text-align:center"><strong>Professor</strong> e <em>prova</em> <span style="font-size:14px">Texto</span></p><ul><li>Uma aula</li></ul>'
     payload = {'descricao_publica': html, 'descricao_publica_formato': 'html_v1'}
     assert client.put('/admin/cursos/1/config-publica', json=payload).status_code == 200
     with factory() as db:
@@ -67,5 +67,24 @@ def test_rotas_gravacao_releitura_precos_permissoes(comercial):
     publico = client.get('/public/cursos/1/checkout')
     assert publico.status_code == 200, publico.text
     assert publico.json()['descricao_publica_html'] == html
-    assert publico.json()['descricao_publica'] == 'Curso\nProfessor e prova\nUma aula'
+    assert publico.json()['descricao_publica'] == 'Curso\nProfessor e prova Texto\nUma aula'
     assert not post.called and not get.called
+
+@pytest.mark.parametrize('tamanho', [14, 16, 20])
+def test_tamanho_personalizado_sobrevive_ao_salvar_e_exibir(tamanho):
+    html = f'<p><span style="font-size:{tamanho}px;">Texto</span></p>'
+    salvo = preparar_descricao({'descricao_publica': html, 'descricao_publica_formato': 'html_v1'}, None)
+    assert f'font-size:{tamanho}px' in salvo
+    assert f'font-size:{tamanho}px' in descricao_para_visitante(salvo)['descricao_publica_html']
+
+@pytest.mark.parametrize('alinhamento', ['left', 'center', 'right', 'justify'])
+def test_alinhamento_sobrevive_ao_salvar_e_exibir(alinhamento):
+    html = f'<p style="text-align:{alinhamento};">Texto</p>'
+    salvo = preparar_descricao({'descricao_publica': html, 'descricao_publica_formato': 'html_v1'}, None)
+    assert f'text-align:{alinhamento}' in salvo
+    assert f'text-align:{alinhamento}' in descricao_para_visitante(salvo)['descricao_publica_html']
+
+def test_alinhamento_rejeita_estilos_e_elementos_nao_permitidos():
+    html = '<p style="text-align:center;color:red">x</p><span style="text-align:right">y</span><p style="text-align:expression(alert(1))">z</p>'
+    salvo = preparar_descricao({'descricao_publica': html, 'descricao_publica_formato': 'html_v1'}, None)
+    assert 'style=' not in salvo

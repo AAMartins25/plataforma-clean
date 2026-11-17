@@ -12,7 +12,11 @@
     for (const no of template.content.querySelectorAll('[style]')) {
       const tamanho = no.getAttribute('style').match(/^\s*font-size\s*:\s*(\d{1,2})px\s*;?\s*$/i);
       if (no.tagName === 'SPAN' && tamanho && +tamanho[1] >= 10 && +tamanho[1] <= 48) no.setAttribute('style', `font-size:${+tamanho[1]}px`);
-      else no.removeAttribute('style');
+      else {
+        const alinhamento = no.getAttribute('style').match(/^\s*text-align\s*:\s*(left|center|right|justify)\s*;?\s*$/i);
+        if (['P', 'H2', 'H3', 'H4', 'LI'].includes(no.tagName) && alinhamento) no.setAttribute('style', `text-align:${alinhamento[1].toLowerCase()}`);
+        else no.removeAttribute('style');
+      }
     }
     return template.innerHTML;
   }

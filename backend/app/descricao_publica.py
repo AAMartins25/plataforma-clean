@@ -5,7 +5,8 @@ from fastapi import HTTPException
 
 MARCADOR = '<!--resumao:descricao-publica:html:v1-->'
 TAGS = {'p', 'br', 'hr', 'span', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'}
-ATRIBUTOS = {'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan'}, 'span': {'style'}}
+ALINHAVEIS = {'p', 'h2', 'h3', 'h4', 'li'}
+ATRIBUTOS = {'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan'}, 'span': {'style'}, **{tag: {'style'} for tag in ALINHAVEIS}}
 
 def filtrar_atributo(tag, atributo, valor):
     if atributo != 'style':
@@ -13,6 +14,9 @@ def filtrar_atributo(tag, atributo, valor):
     tamanho = re.fullmatch(r'\s*font-size\s*:\s*(\d{1,2})px\s*;?\s*', valor, re.I)
     if tag == 'span' and tamanho and 10 <= int(tamanho[1]) <= 48:
         return f'font-size:{int(tamanho[1])}px'
+    alinhamento = re.fullmatch(r'\s*text-align\s*:\s*(left|center|right|justify)\s*;?\s*', valor, re.I)
+    if tag in ALINHAVEIS and alinhamento:
+        return f'text-align:{alinhamento[1].lower()}'
     return None
 
 

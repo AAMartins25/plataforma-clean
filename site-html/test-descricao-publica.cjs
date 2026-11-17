@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin=`http://127.0.0.1:${server.address().port}`;
  browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE||'/home/codespace/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell',args:['--no-sandbox']});
- for (const width of [1366,768,390,320]) {
+ for (const width of (process.env.TEST_WIDTHS ? process.env.TEST_WIDTHS.split(',').map(Number) : [1366,768,390,320])) {
   const page=await browser.newPage({viewport:{width,height:1000}});
   let raw='  Legado <b>literal</b> & prova\n\nSegunda linha  ', saves=[], cdnFailure=false;
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -54,6 +54,12 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content').getAttribute('contenteditable'),'false');
   const botaoMarkdown=page.locator('#boxConfigPublicaCurso .teoria-markdown-controles button');
   async function verificarBloqueio(bloqueado) {
+   const alignment=page.getByRole('button',{name:'Text alignment',exact:true});
+   const overflow=page.getByRole('button',{name:'Show more items',exact:true});
+   const abrirOverflow=!(await alignment.isVisible());
+   if(abrirOverflow) await overflow.click();
+   assert.equal(await alignment.isDisabled(),bloqueado);
+   if(abrirOverflow) await overflow.click();
    assert.equal(await botaoMarkdown.isDisabled(),bloqueado);
    assert.equal(await botaoMarkdown.evaluate(el=>getComputedStyle(el).opacity),bloqueado?'0.45':'1');
    if (bloqueado) {
@@ -97,12 +103,12 @@ const server=http.createServer((req,res)=>{
   if (!await aumentar.isVisible()) await page.getByRole('button',{name:'Show more items',exact:true}).click();
   assert.equal(await aumentar.isEnabled(),true);
   await aumentar.click();
-  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*19px/);
+  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*14px/);
   let diminuir=page.getByRole('button',{name:'−',exact:true});
   if (!await diminuir.isVisible()) await page.getByRole('button',{name:'Show more items',exact:true}).click();
-  assert.equal(await page.getByRole('button',{name:'19 px',exact:true}).count(),1);
+  assert.equal(await page.getByRole('button',{name:'14 px',exact:true}).count(),1);
   await diminuir.click();
-  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*18px/);
+  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*13px/);
   if (!await aumentar.isVisible()) await page.getByRole('button',{name:'Show more items',exact:true}).click();
   await aumentar.click();
   await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
@@ -111,18 +117,68 @@ const server=http.createServer((req,res)=>{
   assert.equal(await aumentar.isDisabled(),true);
   assert.equal(await diminuir.isDisabled(),true);
   assert.ok(raw.includes('<strong>Negrito</strong>') && raw.includes('<table>'));
-  assert.ok(raw.includes('<hr>') && raw.includes('font-size:19px'));
+  assert.ok(raw.includes('<hr>') && raw.includes('font-size:14px'));
   await page.goto(origin+'/curso-info.html?curso_id=1');
   await page.locator('#informacoes_curso strong').waitFor({state:'attached'});
   assert.equal(await page.locator('#informacoes_curso strong').textContent(),'Negrito');
   assert.equal(await page.locator('#informacoes_curso table').count(),1);
   assert.equal(await page.locator('#informacoes_curso hr').count(),1);
-  assert.equal(await page.locator('#informacoes_curso').evaluate(el=>getComputedStyle(el).fontSize),'18px');
-  assert.equal(await page.locator('#informacoes_curso span').first().evaluate(el=>getComputedStyle(el).fontSize),'19px');
+  assert.equal(await page.locator('#informacoes_curso').evaluate(el=>getComputedStyle(el).fontSize),'13px');
+  assert.equal(await page.locator('#informacoes_curso span').first().evaluate(el=>getComputedStyle(el).fontSize),'14px');
   await abrir();
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content strong').textContent(),'Negrito');
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content hr').count(),1);
-  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*19px/);
+  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(),/font-size:\s*14px/);
+  await page.click('#btnEditarConfigPublicaCurso');
+  // Select all imported Markdown and reduce the explicit size using the actual controls.
+  await page.evaluate(()=>{
+   const e=document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance;
+   e.model.change(w=>w.setSelection(e.model.createRangeIn(e.model.document.getRoot())));
+   e.execute('fontSize',{value:'18px'});
+  });
+  for(let i=0;i<4;i++) {
+   const minus=page.getByRole('button',{name:'−',exact:true});
+   if(!await minus.isVisible()) await page.getByRole('button',{name:'Show more items',exact:true}).click();
+   await minus.click();
+  }
+  const selecionado=await page.evaluate(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance.getData());
+  assert.ok(selecionado.includes('font-size:14px'), selecionado);
+  await page.click('#btnSalvarConfigPublicaCurso');
+  await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  assert.ok(raw.includes('font-size:14px'), raw);
+  await abrir();
+  assert.match(await page.locator('#boxConfigPublicaCurso .ck-content').innerHTML(), /font-size:\s*14px/);
+  await page.goto(origin+'/curso-info.html?curso_id=1');
+  await page.locator('#informacoes_curso span').first().waitFor({state:'attached'});
+  assert.equal(await page.locator('#informacoes_curso span').first().evaluate(el=>getComputedStyle(el).fontSize),'14px');
+  await abrir();
+  await page.click('#btnEditarConfigPublicaCurso');
+  await page.evaluate(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance.setData('<p>Comum</p><p>Quatorze</p><p>Dezesseis</p><p>Vinte</p>'));
+  for(const [i,size,label] of [[0,null,'Align left'],[1,14,'Align center'],[2,16,'Align right'],[3,20,'Justify']]) {
+   await page.evaluate(([i,size])=>{
+    const e=document.querySelector('#boxConfigPublicaCurso .ck-content').ckeditorInstance;
+    e.model.change(w=>w.setSelection(e.model.createRangeIn(e.model.document.getRoot().getChild(i))));
+    if(size) e.execute('fontSize',{value:size+'px'});
+   },[i,size]);
+   const alignment=page.getByRole('button',{name:'Text alignment',exact:true});
+   if(!await alignment.isVisible()) await page.getByRole('button',{name:'Show more items',exact:true}).click();
+   await alignment.click();
+   await page.getByRole('button',{name:label,exact:true}).click();
+  }
+  await page.click('#btnSalvarConfigPublicaCurso');
+  await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  await abrir();
+  const editSizes=await page.locator('#boxConfigPublicaCurso .ck-content p').evaluateAll(ps=>ps.map(p=>getComputedStyle(p.querySelector('span')||p).fontSize));
+  assert.deepEqual(editSizes,['13px','14px','16px','20px']);
+  const editAlign=await page.locator('#boxConfigPublicaCurso .ck-content p').evaluateAll(ps=>ps.map(p=>getComputedStyle(p).textAlign));
+  assert.deepEqual(editAlign,['left','center','right','justify']);
+  await page.goto(origin+'/curso-info.html?curso_id=1');
+  await page.locator('#informacoes_curso p').first().waitFor({state:'attached'});
+  assert.deepEqual(await page.locator('#informacoes_curso p').evaluateAll(ps=>ps.map(p=>getComputedStyle(p.querySelector('span')||p).fontSize)),editSizes);
+  assert.deepEqual(await page.locator('#informacoes_curso p').evaluateAll(ps=>ps.map(p=>getComputedStyle(p).textAlign.replace('start','left'))),editAlign);
+  assert.ok(await page.locator('#informacoes_curso').evaluate(el=>{const h=document.createElement('h2');el.append(h);const size=parseFloat(getComputedStyle(h).fontSize);h.remove();return size>13;}));
+  await abrir();
+
   await page.click('#btnEditarConfigPublicaCurso');
   await page.evaluate(()=>{
    const editable=document.querySelector('#boxConfigPublicaCurso .ck-editor__editable');
