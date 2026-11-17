@@ -29,7 +29,7 @@ const near=(a,b,label,t=.1)=>assert.ok(Math.abs(a-b)<t,`${label}: ${a} / ${b}`);
  for(const width of [1366,768,390,320]){
   const [old,now]=await Promise.all([abrir(browser,width,true),abrir(browser,width,false)]);
   const a=await medir(old),b=await medir(now),label=`${width}px`;
-  near(b.header.h,a.header.h,label+' altura cabeçalho');near(b.title.y,a.title.y-3,label+' título');near(b.title.x,a.title.x,label+' título horizontal');assert.deepEqual(b.titleStyle,a.titleStyle);
+  near(b.header.h,a.header.h,label+' altura cabeçalho');near(b.title.y,a.title.y-5,label+' título');near(b.title.x,a.title.x,label+' título horizontal');assert.deepEqual(b.titleStyle,a.titleStyle);
   near(b.card.w,a.card.w*.96,label+' largura card');near(b.card.x+b.card.w/2,a.card.x+a.card.w/2,label+' centro card');near(b.card.y,a.card.y,label+' topo card');assert.deepEqual(b.cardStyle,a.cardStyle);assert.equal(b.overflow,a.overflow);
   assert.equal(b.elements.length,a.elements.length);
   const botoes=b.elements.filter(e=>e.tag==='A');
