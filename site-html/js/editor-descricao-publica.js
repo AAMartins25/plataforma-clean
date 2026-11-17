@@ -39,9 +39,9 @@
           for (const [nome, rotulo, delta] of [['diminuirFonteDescricao', 'Diminuir fonte', -1], ['tamanhoFonteDescricao', 'Tamanho da fonte', 0], ['aumentarFonteDescricao', 'Aumentar fonte', 1]]) {
             instancia.ui.componentFactory.add(nome, locale => {
               const botao = new C.ButtonView(locale);
-              botao.set({ label: delta ? rotulo : '14 px', tooltip: delta ? rotulo : false, withText: true });
+              botao.set({ label: delta ? rotulo : '16 px', tooltip: delta ? rotulo : false, withText: true });
               const atualizar = () => {
-                const tamanho = Number.parseInt(comando.value, 10) || 14;
+                const tamanho = Number.parseInt(comando.value, 10) || 16;
                 botao.isEnabled = Boolean(delta && comando.isEnabled && !selecao.isCollapsed && tamanho + delta >= 10 && tamanho + delta <= 48);
                 if (!delta) botao.label = `${tamanho} px`;
               };
@@ -50,7 +50,7 @@
               this.listenTo(selecao, 'change:range', atualizar);
               this.listenTo(botao, 'execute', () => {
                 if (!delta || selecao.isCollapsed) return;
-                const tamanho = Number.parseInt(comando.value, 10) || 14;
+                const tamanho = Number.parseInt(comando.value, 10) || 16;
                 instancia.execute('fontSize', { value: `${tamanho + delta}px` });
                 instancia.editing.view.focus();
               });
