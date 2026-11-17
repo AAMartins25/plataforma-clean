@@ -1,0 +1,14 @@
+/* Aplicado apenas às páginas internas que aderem explicitamente ao padrão. */
+@media screen {
+  body.admin-cabecalho-padrao > header.ro-header .ro-header-titles h1 {
+    transform: translate(var(--admin-titulo-x, 0px), var(--admin-titulo-y, 0px));
+  }
+  body.admin-cabecalho-padrao > header.ro-header .ro-header-navigation {
+    position: relative;
+    top: var(--admin-navegacao-y, 0px);
+  }
+  body.admin-cabecalho-padrao > header.ro-header .ro-header-titles > p {
+    position: relative !important;
+    top: var(--admin-texto-y, 0px);
+  }
+}
