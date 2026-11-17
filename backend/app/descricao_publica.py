@@ -1,10 +1,19 @@
 """HTML público identificado na coluna Text existente; legado permanece literal."""
 import nh3
+import re
 from fastapi import HTTPException
 
 MARCADOR = '<!--resumao:descricao-publica:html:v1-->'
-TAGS = {'p', 'br', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'}
-ATRIBUTOS = {'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan'}}
+TAGS = {'p', 'br', 'hr', 'span', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'}
+ATRIBUTOS = {'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan'}, 'span': {'style'}}
+
+def filtrar_atributo(tag, atributo, valor):
+    if atributo != 'style':
+        return valor
+    tamanho = re.fullmatch(r'\s*font-size\s*:\s*(\d{1,2})px\s*;?\s*', valor, re.I)
+    if tag == 'span' and tamanho and 10 <= int(tamanho[1]) <= 48:
+        return f'font-size:{int(tamanho[1])}px'
+    return None
 
 
 def preparar_descricao(payload, anterior):
@@ -28,7 +37,7 @@ def preparar_descricao(payload, anterior):
         raise HTTPException(422, 'A descrição formatada excede 1.000.000 de caracteres.')
     try:
         html.encode('utf-8', errors='strict')
-        limpo = nh3.clean(html, tags=TAGS, attributes=ATRIBUTOS, link_rel=None, strip_comments=True)
+        limpo = nh3.clean(html, tags=TAGS, attributes=ATRIBUTOS, attribute_filter=filtrar_atributo, link_rel=None, strip_comments=True)
     except (ValueError, UnicodeError) as erro:
         raise HTTPException(422, 'HTML da descrição inválido.') from erro
     return MARCADOR + limpo
@@ -46,7 +55,7 @@ def descricao_para_visitante(valor):
         def handle_data(self, data):
             self.partes.append(data)
         def handle_starttag(self, tag, attrs):
-            if tag == 'br':
+            if tag in {'br', 'hr'}:
                 self.partes.append('\n')
         def handle_endtag(self, tag):
             if tag in {'td', 'th'}:

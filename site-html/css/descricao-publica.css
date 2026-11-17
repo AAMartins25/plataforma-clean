@@ -4,12 +4,14 @@
   max-width: 100%;
   overflow-wrap: anywhere;
 }
+.descricao-publica { font-size: 18px; }
+.descricao-publica hr { width: 100%; border: 0; border-top: 1px solid currentColor; margin: 1em 0; }
 .descricao-publica p { margin: 0 0 1em; }
 .descricao-publica h2 { font-size: 1.4em; }
 .descricao-publica h3 { font-size: 1.2em; }
 .descricao-publica h4 { font-size: 1.05em; }
 .descricao-publica ul, .descricao-publica ol { padding-left: 1.75em; }
-#boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; }
+#boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; font-size: 18px; }
 #boxConfigPublicaCurso .ck-toolbar { flex-wrap: wrap; }
 #boxConfigPublicaCurso .teoria-markdown-controles button:disabled { opacity: .45; }
 

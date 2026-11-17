@@ -24,6 +24,15 @@ def test_allowlist():
         assert mal not in publico['descricao_publica_html']
     assert publico['descricao_publica'].startswith('Curso\nA B\nC\nUm\n')
 
+def test_separador_e_tamanho_com_sanitizacao():
+    html = '<p>Antes <span style="font-size:19px">maior</span></p><hr><p><span style="font-size:19px;color:red">inseguro</span><span style="font-size:99px">grande</span><span style="font-size:expression(alert(1))">ataque</span></p>'
+    salvo = preparar_descricao({'descricao_publica': html, 'descricao_publica_formato': 'html_v1'}, None)
+    publico = descricao_para_visitante(salvo)['descricao_publica_html']
+    assert '<hr>' in publico
+    assert '<span style="font-size:19px">maior</span>' in publico
+    assert publico.count('style=') == 1
+    assert 'expression' not in publico and 'color:red' not in publico
+
 @pytest.mark.parametrize('payload', [{'descricao_publica': []}, {'descricao_publica': 'x', 'descricao_publica_formato': 'ruim'}, {'descricao_publica': 'x'*1000001, 'descricao_publica_formato': 'html_v1'}])
 def test_rejeita_invalido(payload):
     with pytest.raises(HTTPException) as e:

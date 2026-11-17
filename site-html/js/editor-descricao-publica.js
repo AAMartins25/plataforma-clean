@@ -31,10 +31,41 @@
       // passa a ser controlado pela instância, com uma única chave de leitura.
       textarea.disabled = false;
       textarea.readOnly = false;
+      class TamanhoDescricao extends C.Plugin {
+        init() {
+          const instancia = this.editor;
+          const comando = instancia.commands.get('fontSize');
+          const selecao = instancia.model.document.selection;
+          for (const [nome, rotulo, delta] of [['diminuirFonteDescricao', 'Diminuir fonte', -1], ['tamanhoFonteDescricao', 'Tamanho da fonte', 0], ['aumentarFonteDescricao', 'Aumentar fonte', 1]]) {
+            instancia.ui.componentFactory.add(nome, locale => {
+              const botao = new C.ButtonView(locale);
+              botao.set({ label: delta ? rotulo : '18 px', tooltip: delta ? rotulo : false, withText: true });
+              const atualizar = () => {
+                const tamanho = Number.parseInt(comando.value, 10) || 18;
+                botao.isEnabled = Boolean(delta && comando.isEnabled && !selecao.isCollapsed && tamanho + delta >= 10 && tamanho + delta <= 48);
+                if (!delta) botao.label = `${tamanho} px`;
+              };
+              this.listenTo(comando, 'change:value', atualizar);
+              this.listenTo(comando, 'change:isEnabled', atualizar);
+              this.listenTo(selecao, 'change:range', atualizar);
+              this.listenTo(botao, 'execute', () => {
+                if (!delta || selecao.isCollapsed) return;
+                const tamanho = Number.parseInt(comando.value, 10) || 18;
+                instancia.execute('fontSize', { value: `${tamanho + delta}px` });
+                instancia.editing.view.focus();
+              });
+              if (delta) botao.label = delta < 0 ? '−' : '+';
+              atualizar();
+              return botao;
+            });
+          }
+        }
+      }
       const novo = await C.ClassicEditor.create(textarea, {
         licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
-        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List, C.Table, C.TableToolbar],
-        toolbar: ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|', 'bulletedList', 'numberedList', '|', 'insertTable'],
+        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List, C.Table, C.TableToolbar, C.FontSize, C.HorizontalLine, TamanhoDescricao],
+        toolbar: ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|', 'diminuirFonteDescricao', 'tamanhoFonteDescricao', 'aumentarFonteDescricao', '|', 'bulletedList', 'numberedList', '|', 'insertTable'],
+        fontSize: { options: Array.from({ length: 39 }, (_, i) => i + 10) },
         table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'] },
         heading: { options: [
           {model: 'paragraph', title: 'Parágrafo', class: 'ck-heading_paragraph'},

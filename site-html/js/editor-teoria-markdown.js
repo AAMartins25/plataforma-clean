@@ -199,6 +199,7 @@
         (imagem.largura ? ' width="' + Number(imagem.largura) + '" height="' + Number(imagem.altura) + '"' : '') + '>';
     };
     md.renderer.rules.hr = () => {
+      if (opcoes.descricaoPublica) return "<hr>\n";
       avisos.add("Separadores serão representados por um traço em um parágrafo.");
       return "<p>—</p>\n";
     };
@@ -231,15 +232,15 @@
     }
     ajustar(tokens);
     const html = md.renderer.render(tokens, md.options, ambiente);
-    const limpo = sanitizarHtml(html, avisos);
+    const limpo = sanitizarHtml(html, avisos, opcoes);
     const teste = document.createElement("template"); teste.innerHTML = limpo;
-    if (!temTexto(teste.content.textContent) && !teste.content.querySelector("img")) throw new Error("O resumo não contém conteúdo para importar.");
+    if (!temTexto(teste.content.textContent) && !teste.content.querySelector(opcoes.descricaoPublica ? "img,hr" : "img")) throw new Error("O resumo não contém conteúdo para importar.");
     return { html: limpo, avisos: [...avisos], referencias };
   }
 
-  function sanitizarHtml(html, avisos = new Set()) {
+  function sanitizarHtml(html, avisos = new Set(), opcoes = {}) {
     const limpo = window.DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: tags, ALLOWED_ATTR: ["href", "class", "style", "colspan", "rowspan", "src", "alt", "width", "height"],
+      ALLOWED_TAGS: opcoes.descricaoPublica ? [...tags, "hr"] : tags, ALLOWED_ATTR: ["href", "class", "style", "colspan", "rowspan", "src", "alt", "width", "height"],
       ALLOW_DATA_ATTR: false, ALLOW_ARIA_ATTR: false, RETURN_TRUSTED_TYPE: false
     });
     const template = document.createElement("template");
@@ -334,10 +335,10 @@
       const texto = fonte.value, zipSelecionado = pacote.files[0], lista = [...arquivos.files];
       try {
         if (opcoes.descricaoPublica) {
-          const resultado = converter(texto, { coletar: true });
+          const resultado = converter(texto, { coletar: true, descricaoPublica: true });
           const modelo = document.createElement("template");
           modelo.innerHTML = resultado.html;
-          const permitidos = new Set(["P", "BR", "H2", "H3", "H4", "STRONG", "B", "EM", "I", "UL", "OL", "LI", "FIGURE", "TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TH", "TD"]);
+          const permitidos = new Set(["P", "BR", "HR", "H2", "H3", "H4", "STRONG", "B", "EM", "I", "UL", "OL", "LI", "FIGURE", "TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TH", "TD"]);
           if (resultado.referencias.length || [...modelo.content.querySelectorAll("*")].some(no => !permitidos.has(no.tagName) || (no.tagName === "FIGURE" && no.className !== "table"))) {
             throw new Error("A descrição pública não suporta imagens, links, fórmulas ou outros formatos além dos indicados. O conteúdo anterior foi preservado.");
           }

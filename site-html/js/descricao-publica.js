@@ -1,13 +1,20 @@
 (function () {
   const marcador = '<!--resumao:descricao-publica:html:v1-->';
-  const tags = ['p', 'br', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'];
+  const tags = ['p', 'br', 'hr', 'span', 'h2', 'h3', 'h4', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td'];
   function separar(valor) {
     const texto = String(valor || '');
     return { html: texto.startsWith(marcador), texto: texto.startsWith(marcador) ? texto.slice(marcador.length) : texto };
   }
   function limpar(html) {
     if (!window.DOMPurify) throw new Error('Proteção do conteúdo indisponível. Recarregue a página.');
-    return DOMPurify.sanitize(html, { ALLOWED_TAGS: tags, ALLOWED_ATTR: ['colspan', 'rowspan'], ALLOW_DATA_ATTR: false, ALLOW_ARIA_ATTR: false });
+    const limpo = DOMPurify.sanitize(html, { ALLOWED_TAGS: tags, ALLOWED_ATTR: ['colspan', 'rowspan', 'style'], ALLOW_DATA_ATTR: false, ALLOW_ARIA_ATTR: false });
+    const template = document.createElement('template'); template.innerHTML = limpo;
+    for (const no of template.content.querySelectorAll('[style]')) {
+      const tamanho = no.getAttribute('style').match(/^\s*font-size\s*:\s*(\d{1,2})px\s*;?\s*$/i);
+      if (no.tagName === 'SPAN' && tamanho && +tamanho[1] >= 10 && +tamanho[1] <= 48) no.setAttribute('style', `font-size:${+tamanho[1]}px`);
+      else no.removeAttribute('style');
+    }
+    return template.innerHTML;
   }
   function renderizar(elemento, valor, html) {
     const dados = typeof html === "string" ? { html: true, texto: html } : { html: false, texto: String(valor || "") };
