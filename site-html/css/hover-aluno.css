@@ -1,0 +1,10 @@
+/* Somente páginas do aluno que carregam esta folha. Conserva os demais
+   efeitos dos componentes e não interfere em seleção, clique ou desativação. */
+:where(body) :is(button, input[type="button"], input[type="submit"], a.btn, a[role="button"]):not(:disabled, [disabled], [aria-disabled="true"], .disabled, .desabilitado, .btn-ativo, .fale-clean-btn-tipo-ativo, .ativo, .active, .selecionado, .selecionada, [aria-pressed="true"], [aria-selected="true"]):hover:not(:active) {
+  background-color: #96befa !important;
+}
+
+/* A navegação compartilhada fixa o fundo transparente com !important. */
+body > header.ro-header[data-navegacao-padrao] .ro-header-navigation .ro-nav-control:hover:not(:active):not(:disabled, [disabled], [aria-disabled="true"], .disabled, .desabilitado, .btn-ativo, .fale-clean-btn-tipo-ativo, .ativo, .active, .selecionado, .selecionada, [aria-pressed="true"], [aria-selected="true"]) {
+  background-color: #96befa !important;
+}

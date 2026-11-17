@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <script src="js/rodape.js" defer></script>
+  <link id="hover-aluno-css" rel="stylesheet" href="css/hover-aluno.css?v=1" media="not all">
 </head>
 
 <body class="atendimento-page">
@@ -135,6 +136,7 @@
     let atendimentoAtual = null;
 
     function destacarBotao(tipo) {
+      document.getElementById("hover-aluno-css").media = tipo === "aluno" ? "all" : "not all";
 
       const btnAluno =
         document.getElementById("btnAluno");
