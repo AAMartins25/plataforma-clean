@@ -10,17 +10,89 @@
   }
 }
 
+/* Antes da reorganização pelo script, reserva a mesma altura final do cabeçalho. */
+@media screen {
+  .cursos-page .cursos-header:not(.ro-header) {
+    --ref-titulo: round(down, calc(2.4475 * var(--cabecalho-referencia-rem)), 0.015625px);
+    --ref-intervalo: round(down, calc(0.33375 * var(--cabecalho-referencia-rem)), 0.015625px);
+    --ref-navegacao: round(down, calc(2.75 * var(--cabecalho-referencia-rem)), 0.015625px);
+    --ref-padding: round(down, calc(0.73875 * var(--cabecalho-referencia-rem) - 0.055px), 0.015625px);
+    box-sizing: border-box;
+    height: calc((var(--ref-titulo) + var(--ref-intervalo) + var(--ref-navegacao) + 2 * var(--ref-padding) + 1px) * 1.06);
+    padding-block: 0;
+    flex-shrink: 0;
+  }
+  @media (max-width: 1023px) {
+    .cursos-page .cursos-header:not(.ro-header) {
+      --ref-navegacao: 44px;
+      --ref-padding: round(down, calc(0.89 * var(--cabecalho-referencia-rem) - 2.475px), 0.015625px);
+    }
+  }
+  @media (max-width: 900px) {
+    .cursos-page .cursos-header:not(.ro-header) {
+      --ref-padding: round(down, calc(0.6675 * var(--cabecalho-referencia-rem) - 2.475px), 0.015625px);
+    }
+  }
+}
+
+/* Centraliza na faixa inteira, sem somar o deslocamento aplicado pelo script. */
+.cursos-page .cursos-header .cursos-titulo {
+  position: absolute !important;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0 !important;
+  pointer-events: none;
+}
+.cursos-page .cursos-header h1,
 .cursos-page .cursos-header.ro-header h1 {
   font-size: 1.534rem;
   line-height: 1.69rem;
-  position: relative;
-  top: 11px;
+  translate: none !important;
 }
-
-/* Move somente o texto: a caixa do h1 medida por cabecalho.js fica intacta. */
 .cursos-page .cursos-header .cursos-titulo-texto {
   position: relative;
-  top: 3px;
+  top: -1px;
+}
+
+/* A identificação permanece acima da faixa ocupada pelo título. */
+@media screen and (max-width: 600px) {
+  .cursos-page .cursos-header.ro-header[data-navegacao-padrao] .ro-identity {
+    height: 2rem !important;
+    min-height: 0 !important;
+  }
+}
+
+/* A mesma posição e dimensão dos controles existe antes e depois do script. */
+.cursos-page .cursos-header .cursos-header-acoes { position: static !important; }
+.cursos-page .cursos-header .cursos-header-acoes .btn {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  box-sizing: border-box;
+  width: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-width: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  min-height: calc(2.75 * var(--ro-navegacao-rem)) !important;
+  padding: calc(0.25 * var(--ro-navegacao-rem)) calc(0.625 * var(--ro-navegacao-rem)) !important;
+  margin: 0 !important;
+  border: 0;
+  background: transparent;
+  color: #1f4e79;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--ro-navegacao-rem);
+  font-weight: 400;
+  line-height: 1;
+  translate: none !important;
+  z-index: 1;
+}
+.cursos-page .cursos-header-acoes .btn:nth-child(1) { right: calc(1rem + 6.5 * var(--ro-navegacao-rem)); }
+.cursos-page .cursos-header-acoes .btn:nth-child(2) { right: calc(1rem + 3.25 * var(--ro-navegacao-rem)); }
+.cursos-page .cursos-header-acoes .btn:nth-child(3) { right: 1rem; }
+@media screen and (max-width: 600px) {
+  .cursos-page .cursos-header-acoes .btn:nth-child(1) { left: 0; right: auto; top: 0; bottom: auto; }
+  .cursos-page .cursos-header-acoes .btn:nth-child(2) { left: 0; right: auto; }
+  .cursos-page .cursos-header-acoes .btn:nth-child(3) { right: 0; }
 }
 
 /* Nomes extensos quebram linha sem comprimir o botão de acesso expirado. */
