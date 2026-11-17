@@ -52,7 +52,7 @@
 }
 .cursos-page .cursos-header .cursos-titulo-texto {
   position: relative;
-  top: -1px;
+  top: -4px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
