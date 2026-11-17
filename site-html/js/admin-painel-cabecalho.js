@@ -13,7 +13,7 @@
         if (!matchMedia('screen').matches) return;
         const faixa = header.getBoundingClientRect(), caixa = titulo.getBoundingClientRect();
         const atual = parseFloat(header.style.getPropertyValue('--painel-titulo-deslocamento')) || 0;
-        const deslocamento = atual + (faixa.top + faixa.height / 2) - (caixa.top + caixa.height / 2);
+        const deslocamento = atual + (faixa.top + faixa.height / 2 - 3) - (caixa.top + caixa.height / 2);
         if (Math.abs(deslocamento - atual) > 0.01) header.style.setProperty('--painel-titulo-deslocamento', `${deslocamento}px`);
       });
     }

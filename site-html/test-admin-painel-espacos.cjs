@@ -35,13 +35,19 @@ async function medir(page) {
 const perto=(a,b,label,t=.1)=>assert.ok(Math.abs(a-b)<t,`${label}: ${a} / ${b}`);
 function comparar(a,b,label) {
   assert.equal(b.items.length,a.items.length,label+' quantidade');
-  for (const k of ['x','y','w','h']) perto(b.card[k],a.card[k],label+' card '+k);
+  perto(b.card.y,a.card.y,label+' card y');
+  perto(b.card.w,a.card.w*.96,label+' card largura');
+  perto(b.card.x+b.card.w/2,a.card.x+a.card.w/2,label+' card centro');
   assert.deepEqual(b.cardStyle,a.cardStyle,label+' card estilo');
   perto(b.card.y-b.header.bottom,a.card.y-a.header.bottom,label+' distância cabeçalho/card');
   assert.equal(b.overflow,a.overflow,label+' overflow');
+  const botoes=b.items.filter(e=>e.href!==null);
+  if(botoes.length>1) perto(b.card.bottom-botoes.at(-1).box.bottom,botoes[1].box.y-botoes[0].box.bottom,label+' respiro inferior');
   for (let i=0;i<a.items.length;i++) {
     const x=a.items[i],y=b.items[i];assert.equal(y.text,x.text);assert.equal(y.href,x.href);assert.equal(y.onclick,x.onclick);assert.deepEqual(y.style,x.style,label+' estilo '+x.text);
-    for(const k of ['x','w','h']) perto(y.box[k],x.box[k],label+' '+x.text+' '+k);
+    perto(y.box.h,x.box.h,label+' '+x.text+' altura');
+    if(x.href !== null){perto(y.box.w,x.box.w*.96,label+' botão largura');perto(y.box.x+y.box.w/2,x.box.x+x.box.w/2,label+' botão centro');}
+    else perto(y.box.x,x.box.x+(b.card.x-a.card.x),label+' título x');
     if(i===0) perto(y.box.y,x.box.y,label+' primeiro título');
     if(i>0) {
       const original=x.box.y-a.items[i-1].box.bottom, reduzido=y.box.y-b.items[i-1].box.bottom;

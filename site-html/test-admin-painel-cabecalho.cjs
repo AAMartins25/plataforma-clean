@@ -40,7 +40,7 @@ const colisao = (a,b) => a.x < b.right-.1 && a.right > b.x+.1 && a.y < b.bottom-
 function verificar(antes,depois,label) {
   proximo(depois.header.h,antes.header.h*.85,label+' altura');
   proximo(depois.titulo.x+depois.titulo.w/2,depois.header.x+depois.header.w/2,label+' centro horizontal');
-  proximo(depois.titulo.y+depois.titulo.h/2,depois.header.y+depois.header.h/2,label+' centro vertical');
+  proximo(depois.titulo.y+depois.titulo.h/2,depois.header.y+depois.header.h/2-3,label+' centro vertical');
   for (const k of ['w','h']) proximo(depois.titulo[k],antes.titulo[k],label+' título '+k);
   assert.deepEqual(depois.estilo,antes.estilo,label+' fonte e estilo');
   assert.deepEqual(depois.cardStyle,antes.cardStyle,label+' estilo do card');

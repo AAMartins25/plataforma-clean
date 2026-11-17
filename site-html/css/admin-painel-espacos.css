@@ -17,9 +17,19 @@
 .admin-shell main > .card.painel-compacto > section > .list > .btn {
   margin-top: calc(0.9375rem * 0.75);
 }
-/* O respiro final conserva a altura original do card sem alterar seu padding. */
+/* A margem compensa o padding existente para repetir o intervalo entre botões. */
 .admin-shell main > .card.painel-compacto::after {
   content: "";
   display: block;
-  margin-top: var(--painel-espaco-final, 0px);
+  margin-top: calc(2 * 0.9375rem * 0.75 - 1.5625rem);
+}
+
+/* 0.125rem = 4% dos dois paddings laterais de 1.5625rem do card. */
+.admin-shell main > .card {
+  width: 96%;
+  margin-inline: auto;
+}
+.admin-shell main > .card > section > .list > .btn {
+  width: calc(100% + 0.125rem);
+  align-self: center;
 }
