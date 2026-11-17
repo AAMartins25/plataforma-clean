@@ -1,0 +1,25 @@
+/* Intervalos próprios do painel, reduzidos a 75% dos valores originais. */
+.admin-shell main > .card.painel-compacto > h2 {
+  margin-bottom: calc(0.9375rem * 0.75);
+}
+.admin-shell main > .card.painel-compacto > section:first-of-type {
+  margin-top: calc(1.25rem * 0.75) !important;
+}
+.admin-shell main > .card.painel-compacto > section:not(:first-of-type) {
+  margin-top: calc(1.75rem * 0.75) !important;
+}
+.admin-shell main > .card.painel-compacto > section > h3 {
+  margin-bottom: calc(0.75rem * 0.75) !important;
+}
+.admin-shell main > .card.painel-compacto > section > .list {
+  gap: calc(0.9375rem * 0.75);
+}
+.admin-shell main > .card.painel-compacto > section > .list > .btn {
+  margin-top: calc(0.9375rem * 0.75);
+}
+/* O respiro final conserva a altura original do card sem alterar seu padding. */
+.admin-shell main > .card.painel-compacto::after {
+  content: "";
+  display: block;
+  margin-top: var(--painel-espaco-final, 0px);
+}
