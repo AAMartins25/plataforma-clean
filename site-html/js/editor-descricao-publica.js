@@ -39,9 +39,9 @@
           for (const [nome, rotulo, delta] of [['diminuirFonteDescricao', 'Diminuir fonte', -1], ['tamanhoFonteDescricao', 'Tamanho da fonte', 0], ['aumentarFonteDescricao', 'Aumentar fonte', 1]]) {
             instancia.ui.componentFactory.add(nome, locale => {
               const botao = new C.ButtonView(locale);
-              botao.set({ label: delta ? rotulo : '13 px', tooltip: delta ? rotulo : false, withText: true });
+              botao.set({ label: delta ? rotulo : '14 px', tooltip: delta ? rotulo : false, withText: true });
               const atualizar = () => {
-                const tamanho = Number.parseInt(comando.value, 10) || 13;
+                const tamanho = Number.parseInt(comando.value, 10) || 14;
                 botao.isEnabled = Boolean(delta && comando.isEnabled && !selecao.isCollapsed && tamanho + delta >= 10 && tamanho + delta <= 48);
                 if (!delta) botao.label = `${tamanho} px`;
               };
@@ -50,7 +50,7 @@
               this.listenTo(selecao, 'change:range', atualizar);
               this.listenTo(botao, 'execute', () => {
                 if (!delta || selecao.isCollapsed) return;
-                const tamanho = Number.parseInt(comando.value, 10) || 13;
+                const tamanho = Number.parseInt(comando.value, 10) || 14;
                 instancia.execute('fontSize', { value: `${tamanho + delta}px` });
                 instancia.editing.view.focus();
               });
@@ -61,9 +61,43 @@
           }
         }
       }
+      // O plugin nativo trata "left" como ausência de formato. Como o
+      // padrão visual aqui é justificado, uma escolha explícita precisa
+      // sobreviver à conversão, ao salvamento e à próxima abertura.
+      class AlinhamentoDescricao extends C.Plugin {
+        init() {
+          const instancia = this.editor;
+          const comando = instancia.commands.get('alignment');
+          instancia.conversion.for('upcast').attributeToAttribute({
+            view: { key: 'style', value: { 'text-align': 'left' } },
+            model: { key: 'alignment', value: 'left' }
+          });
+          instancia.conversion.for('downcast').attributeToAttribute({
+            model: { key: 'alignment', values: ['left'] },
+            view: { left: { key: 'style', value: { 'text-align': 'left' } } }
+          });
+          this.listenTo(comando, 'execute', (evento, [opcoes]) => {
+            if (opcoes?.value !== 'left') return;
+            evento.stop();
+            const modelo = instancia.model;
+            modelo.change(writer => {
+              for (const bloco of modelo.document.selection.getSelectedBlocks()) {
+                if (modelo.schema.checkAttribute(bloco, 'alignment')) writer.setAttribute('alignment', 'left', bloco);
+              }
+            });
+          }, { priority: 'high' });
+          const atualizarAlinhamento = comando.refresh.bind(comando);
+          comando.refresh = () => {
+            atualizarAlinhamento();
+            const bloco = instancia.model.document.selection.getSelectedBlocks().next().value;
+            if (bloco?.is('element', 'paragraph') && !bloco.hasAttribute('alignment')) comando.value = 'justify';
+          };
+          comando.refresh();
+        }
+      }
       const novo = await C.ClassicEditor.create(textarea, {
         licenseKey: window.RESUMAO_CKEDITOR_LICENSE_KEY,
-        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List, C.Table, C.TableToolbar, C.FontSize, C.Alignment, C.HorizontalLine, TamanhoDescricao],
+        plugins: [C.Essentials, C.Paragraph, C.Bold, C.Italic, C.Heading, C.List, C.Table, C.TableToolbar, C.FontSize, C.Alignment, C.HorizontalLine, TamanhoDescricao, AlinhamentoDescricao],
         toolbar: ['undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|', 'diminuirFonteDescricao', 'tamanhoFonteDescricao', 'aumentarFonteDescricao', '|', 'alignment', '|', 'bulletedList', 'numberedList', '|', 'insertTable'],
         fontSize: { options: Array.from({ length: 39 }, (_, i) => i + 10) },
         table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'] },

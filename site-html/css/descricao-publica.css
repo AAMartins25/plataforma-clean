@@ -4,14 +4,16 @@
   max-width: 100%;
   overflow-wrap: anywhere;
 }
-.descricao-publica { font-size: 13px; }
+.descricao-publica { font-size: 14px; text-align: justify; }
 .descricao-publica hr { width: 100%; border: 0; border-top: 1px solid currentColor; margin: 1em 0; }
-.descricao-publica p { margin: 0 0 1em; }
+.descricao-publica p { margin: 0 0 1em; text-align: justify; }
+.descricao-publica :is(h2, h3, h4, ul, ol, table) { text-align: start; }
+#boxConfigPublicaCurso .ck-content p { text-align: justify; }
 #informacoes_curso.descricao-publica h2, #boxConfigPublicaCurso .ck-content h2 { font-size: 1.4em; }
 .descricao-publica h3, #boxConfigPublicaCurso .ck-content h3 { font-size: 1.2em; }
 .descricao-publica h4, #boxConfigPublicaCurso .ck-content h4 { font-size: 1.05em; }
 .descricao-publica ul, .descricao-publica ol { padding-left: 1.75em; }
-#boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; font-size: 13px; }
+#boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; font-size: 14px; }
 #boxConfigPublicaCurso .ck-toolbar { flex-wrap: wrap; }
 #boxConfigPublicaCurso .teoria-markdown-controles button:disabled { opacity: .45; }
 
