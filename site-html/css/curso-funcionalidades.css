@@ -129,3 +129,20 @@
     padding-inline: calc(1.625rem * 1.06 + 0.06px);
   }
 }
+
+/* A margem de Disciplinas é 2.125rem em uma raiz de 90%; esta usa 81%. */
+@media screen {
+  .curso-funcionalidades-root .curso-page[data-page="curso"] main.container {
+    margin-top: calc(2.125rem / 0.9);
+  }
+}
+
+/* O título original mantém a altura natural e a semântica acessível. */
+@media screen {
+  .curso-page .curso-header.curso-titulo-alinhado #titulo_curso { opacity: 0; }
+  .curso-page .curso-titulo-referencia { position: absolute; margin: 0; pointer-events: none; }
+  .curso-page .curso-header.curso-titulo-alinhado .ro-header-navigation :is(a, button) { position: relative; }
+}
+@media print {
+  .curso-page .curso-titulo-referencia { display: none; }
+}
