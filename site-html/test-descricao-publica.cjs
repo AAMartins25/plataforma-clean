@@ -52,9 +52,19 @@ const server=http.createServer((req,res)=>{
   }
   await abrir();
   assert.equal(await page.locator('#boxConfigPublicaCurso .ck-content').getAttribute('contenteditable'),'false');
-  assert.equal(await page.locator('#boxConfigPublicaCurso .teoria-markdown-controles button').isDisabled(),true);
+  const botaoMarkdown=page.locator('#boxConfigPublicaCurso .teoria-markdown-controles button');
+  async function verificarBloqueio(bloqueado) {
+   assert.equal(await botaoMarkdown.isDisabled(),bloqueado);
+   assert.equal(await botaoMarkdown.evaluate(el=>getComputedStyle(el).opacity),bloqueado?'0.45':'1');
+   if (bloqueado) {
+    await botaoMarkdown.evaluate(el=>el.click());
+    assert.equal(await page.locator('.teoria-markdown-dialogo[open]').count(),0);
+   }
+  }
+  await verificarBloqueio(true);
   await page.click('#btnEditarConfigPublicaCurso');
   await page.waitForFunction(()=>document.querySelector('#boxConfigPublicaCurso .ck-content').getAttribute('contenteditable')==='true');
+  await verificarBloqueio(false);
   const importar=async texto=>{
    await page.locator('#boxConfigPublicaCurso').getByRole('button',{name:'Importar Markdown',exact:true}).click();
    assert.ok(await page.evaluate(()=>{const r=document.querySelector('.teoria-markdown-dialogo[open]').getBoundingClientRect();return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight;}));
@@ -67,6 +77,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('.teoria-markdown-dialogo[open] [data-md="cancelar"]').click();
   assert.ok((await page.locator('#boxConfigPublicaCurso .ck-content').textContent()).includes('<b>literal</b>'));
   await page.click('#btnSalvarConfigPublicaCurso');await page.waitForFunction(()=>document.querySelector('#msgConfigPublicaCurso').textContent.includes('sucesso'));
+  await verificarBloqueio(true);
   assert.equal(saves.at(-1).descricao_publica,raw);assert.equal(saves.at(-1).descricao_publica_formato,undefined);
   await page.click('#btnEditarConfigPublicaCurso');
   await importar('# Curso completo\n\n**Negrito** e *itálico*\n\n- Um\n- Dois\n\n| Modalidade | Valor |\n| --- | --- |\n| Resumo | R$ 49,90 |');

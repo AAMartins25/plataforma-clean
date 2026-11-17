@@ -11,6 +11,7 @@
 .descricao-publica ul, .descricao-publica ol { padding-left: 1.75em; }
 #boxConfigPublicaCurso .ck-editor__editable { min-height: 10rem; overflow-wrap: anywhere; }
 #boxConfigPublicaCurso .ck-toolbar { flex-wrap: wrap; }
+#boxConfigPublicaCurso .teoria-markdown-controles button:disabled { opacity: .45; }
 
 /* Tabelas públicas: quebra conteúdo extenso e limita a rolagem ao bloco de informações. */
 .descricao-publica:has(table) { overflow-x: auto; }
