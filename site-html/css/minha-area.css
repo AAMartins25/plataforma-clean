@@ -66,3 +66,17 @@
   outline: 2px solid var(--azul);
   outline-offset: 2px;
 }
+
+.minha-area-page #opcoesMinhaArea .area-opcao-conteudo {
+  display: inline-block;
+  position: relative;
+  padding-left: 25px;
+}
+.minha-area-page #opcoesMinhaArea .area-opcao-icone {
+  position: absolute;
+  left: 0;
+  top: calc(50% - 0.5px);
+  width: 21px;
+  height: 21px;
+  transform: translateY(-50%);
+}
