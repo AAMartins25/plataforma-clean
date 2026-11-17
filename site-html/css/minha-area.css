@@ -15,18 +15,25 @@
   }
 
   .minha-area-page .ro-header .ro-header-titles {
+    position: absolute;
+    inset: 0;
     min-height: 0;
-    padding-top: 0;
+    padding: 0;
+    pointer-events: none;
   }
 
   .minha-area-page .ro-header .ro-header-titles h1 {
     line-height: 1.69rem;
     position: relative;
-    top: 14px;
+    top: -5.05px;
+    translate: none !important;
   }
 }
 
 @media screen and (max-width: 1023px) {
+  .minha-area-page .ro-header .ro-header-titles h1 {
+    top: -4.65px;
+  }
   .minha-area-page > header.ro-header {
     --referencia-navegacao: 44px;
     --referencia-padding: round(down, calc(0.89 * var(--cabecalho-referencia-rem) - 2.475px), 0.015625px);
@@ -39,12 +46,11 @@
   }
 }
 
-/* Reduz a caixa e seus recuos laterais em 12%. Os botões passam a ocupar
-   a área interna resultante, conservando a largura anteriormente aprovada. */
+/* Reduz em 6% a largura anterior da caixa e de seu conteúdo interno. */
 .minha-area-page main.container > .card {
-  width: 88%;
+  width: 82.72%;
   margin-inline: auto;
-  padding-inline: 1.375rem;
+  padding-inline: 1.2925rem;
 }
 
 .minha-area-page #opcoesMinhaArea > .btn {
