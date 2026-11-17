@@ -15,7 +15,7 @@
   font-size: 1.96875rem;
   line-height: 2.166667rem;
 }
-.login-page .login-cadeado { width: 0.85em; height: 0.85em; flex: none; }
+.login-page .login-cadeado { width: 0.935em; height: 0.935em; flex: none; }
 .login-page input,
 .login-page button,
 .login-page .btn { font-size: 1.333333rem; }
@@ -30,7 +30,10 @@
 .login-page .ro-header-titles h1 { position: relative; top: 1.5rem; }
 
 /* Remove o espaço reservado ao nome quando não há usuário identificado. */
-.login-page header.ro-header { padding: 0.375rem 1.5rem !important; }
+.login-page header.ro-header {
+  --ro-header-altura-fator: 1.007; /* 95% da ampliação compartilhada de 1.06. */
+  padding: 0.375rem 1.5rem !important;
+}
 .login-page:not(:has(.ro-header-identity)) .ro-header-titles { padding-top: 0; }
 .login-page main.container { flex: 0 0 auto; padding-bottom: 0; max-width: 49.78125rem; }
 .login-page > footer { margin-top: auto; font-size: 1.2rem; }
@@ -67,6 +70,10 @@
 }
 @media (max-width: 1023px) {
   .login-page main input { font-size: max(1.44rem, 17.28px); }
+}
+@media (max-width: 480px) {
+  /* Com os três controles ativos, preserva espaço livre para o título. */
+  .login-page:has(#btnSairLogin[style*="inline-block"]) .ro-header-titles h1 { top: 0.6rem; }
 }
 @media (max-width: 600px) {
   /* A largura disponível tem prioridade sobre o fator de compactação. */
