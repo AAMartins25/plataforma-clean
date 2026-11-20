@@ -25,7 +25,7 @@ def test_concessao_para_aluno_sem_acesso():
     # Consultas: aluno, curso e acesso existente.
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         None,
     ]
 
@@ -94,7 +94,7 @@ def test_concessao_nao_reduz_prazo_de_compra_vigente():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         acesso_existente,
     ]
 
@@ -143,7 +143,7 @@ def test_concessao_reativa_acesso_expirado():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         acesso_existente,
     ]
 
@@ -194,7 +194,7 @@ def test_concessao_reativa_acesso_inativo():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         acesso_existente,
     ]
 
@@ -243,7 +243,7 @@ def test_concessao_preserva_acesso_sem_vencimento():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         acesso_existente,
     ]
 
@@ -280,7 +280,7 @@ def test_concessao_rejeita_data_vencida():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
     ]
 
     payload = AcessoCursoCreate(
@@ -306,7 +306,7 @@ def test_concessao_converte_fuso_horario():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         None,
     ]
 
@@ -426,7 +426,7 @@ def test_concessao_trata_conflito_no_banco():
 
     db.query.return_value.filter.return_value.first.side_effect = [
         SimpleNamespace(id=87),
-        SimpleNamespace(id=1, ativo=True),
+        SimpleNamespace(id=1, ativo=True, precos_provisorios=False),
         None,
     ]
 
@@ -452,3 +452,18 @@ def test_concessao_trata_conflito_no_banco():
 
     assert erro.value.status_code == 409
     db.rollback.assert_called_once()
+
+def test_concessao_admin_bloqueada_para_preco_provisorio_sem_gravacao():
+    db = banco_simulado()
+    db.query.return_value.filter.return_value.first.side_effect = [
+        SimpleNamespace(id=87), SimpleNamespace(id=1, ativo=True, precos_provisorios=True)
+    ]
+    payload = AcessoCursoCreate(usuario_id=87, curso_id=1, ativo=True,
+                                data_fim=datetime.utcnow() + timedelta(days=30))
+    with pytest.raises(HTTPException) as erro:
+        admin_criar_acesso(payload=payload, db=db,
+                           usuario=SimpleNamespace(is_admin=True, tipo_admin="admin_geral"))
+    assert erro.value.status_code == 409
+    assert "provisórios" in erro.value.detail
+    db.add.assert_not_called()
+    db.commit.assert_not_called()

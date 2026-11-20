@@ -47,8 +47,8 @@ def consultar(db, usuario_id, curso_id, cid, did):
         raise HTTPException(404, 'Curso não encontrado')
     disciplinas = db.query(m.CursoDisciplinaPropria).filter_by(curso_id=curso_id, ativo=True).order_by(m.CursoDisciplinaPropria.ordem, m.CursoDisciplinaPropria.id).all()
     resultado = []
-    for d in disciplinas:
-        if did is not None and not d.disponivel_demonstracao:
+    for indice, d in enumerate(disciplinas):
+        if did is not None and (indice >= 2 if curso.demonstracao_por_ordem else not d.disponivel_demonstracao):
             continue
         assuntos = []
         for a in db.query(m.CursoAssuntoProprio).filter_by(curso_disciplina_propria_id=d.id, ativo=True).order_by(m.CursoAssuntoProprio.ordem, m.CursoAssuntoProprio.id):

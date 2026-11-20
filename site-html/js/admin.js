@@ -983,6 +983,57 @@ const AdminAlunos = {
       document.getElementById("formConcederAcesso");
 
     if (formConcessao) {
+      const armazenamento = 'resumao_operacao_acesso_admin';
+      function lerPendentes() {
+        const ler = store => {
+          try { const valor = JSON.parse(store.getItem(armazenamento) || '{}'); return valor && typeof valor === 'object' ? valor : {}; }
+          catch (_) { return {}; }
+        };
+        return {duraveis: ler(localStorage), antigos: ler(sessionStorage)};
+      }
+      function assinaturaAtual() {
+        const usuario_id = Number(document.getElementById('concessaoAlunoId').value);
+        const curso_id = Number(document.getElementById('concessaoCurso').value);
+        const data = document.getElementById('concessaoDataFim').value;
+        const termino = new Date(`${data}T23:59:59`);
+        if (!usuario_id || !curso_id || !data || Number.isNaN(termino.getTime())) return null;
+        return JSON.stringify({usuario_id, curso_id, ativo: true, data_fim: termino.toISOString()});
+      }
+      const consultar = document.getElementById('consultarContratacoesAdmin');
+      document.getElementById('concessaoCurso')?.addEventListener?.('change', () => {
+        const saida = document.getElementById('situacaoContratacoesAdmin');
+        if (saida) saida.textContent = '';
+      });
+      if (consultar) consultar.addEventListener('click', async () => {
+        const aluno = Number(document.getElementById('concessaoAlunoId').value);
+        const curso = Number(document.getElementById('concessaoCurso').value);
+        const saida = document.getElementById('situacaoContratacoesAdmin');
+        if (!aluno || !curso) { saida.textContent = 'Selecione aluno e curso.'; return; }
+        consultar.disabled = true; saida.textContent = 'Consultando...';
+        try {
+          const contratos = await apiGetAuth(`/admin/alunos/${aluno}/contratacoes-admin?curso_id=${curso}`);
+          if (Number(document.getElementById('concessaoAlunoId').value) !== aluno || Number(document.getElementById('concessaoCurso').value) !== curso) {
+            saida.textContent = 'Seleção alterada. Consulte novamente.'; return;
+          }
+          saida.textContent = `Aluno ${aluno}, curso ${curso}:\n` + (contratos.length ? contratos.map(c =>
+            `Contrato ${c.id}: ${c.vigente ? 'vigente' : 'não vigente'}; início ${c.data_inicio || '-'}; término ${c.data_fim || 'sem prazo'} (UTC).`).join('\n')
+            : 'Nenhuma contratação administrativa encontrada.');
+          saida.style.whiteSpace = 'pre-wrap';
+        } catch (erro) { saida.textContent = `Não foi possível consultar as contratações: ${erro.message}`; }
+        finally { consultar.disabled = false; }
+      });
+      const novaOperacao = document.getElementById('novaOperacaoAdmin');
+      if (novaOperacao) novaOperacao.addEventListener('click', () => {
+        const assinatura = assinaturaAtual();
+        const saida = document.getElementById('situacaoContratacoesAdmin');
+        if (!assinatura) { saida.textContent = 'Selecione aluno, curso e data.'; return; }
+        if (!confirm('Confira as contratações antes de continuar. Uma nova solicitação pode criar outro acesso. Deseja continuar?')) return;
+        const {duraveis, antigos} = lerPendentes();
+        delete duraveis[assinatura]; delete antigos[assinatura];
+        localStorage.setItem(armazenamento, JSON.stringify(duraveis));
+        sessionStorage.setItem(armazenamento, JSON.stringify(antigos));
+        saida.textContent = 'Nova solicitação preparada. Confira os dados e confirme a concessão.';
+      });
       formConcessao.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -1028,15 +1079,28 @@ const AdminAlunos = {
         msg.textContent = "Registrando concessão...";
 
         try {
-          await apiPostAuth("/admin/acessos", {
+          const dados = {
             usuario_id: usuarioId,
             curso_id: cursoId,
             ativo: true,
             data_fim: termino.toISOString()
-          });
+          };
+          const assinatura = JSON.stringify(dados);
+          const {duraveis, antigos} = lerPendentes();
+          if (duraveis[assinatura] && antigos[assinatura] && duraveis[assinatura] !== antigos[assinatura]) {
+            throw Error('Há solicitações pendentes diferentes. Consulte as contratações antes de iniciar outra.');
+          }
+          const chave = duraveis[assinatura] || antigos[assinatura] || crypto.randomUUID();
+          duraveis[assinatura] = chave;
+          localStorage.setItem(armazenamento, JSON.stringify(duraveis));
+          await apiPostAuth("/admin/acessos", {...dados, chave_idempotencia: chave});
+          delete antigos[assinatura];
+          sessionStorage.setItem(armazenamento, JSON.stringify(antigos));
 
-          msg.textContent = "Acesso concedido com sucesso!";
+          msg.textContent = "Acesso concedido com sucesso! Para outra solicitação com os mesmos dados, consulte as contratações e inicie uma nova solicitação.";
           msg.style.color = "#16803c";
+          const situacao = document.getElementById('situacaoContratacoesAdmin');
+          if (situacao) situacao.textContent = 'A situação pode ter mudado. Consulte novamente.';
 
           // Limpa apenas o curso e a data.
           // Mantém o aluno selecionado.
@@ -1045,7 +1109,7 @@ const AdminAlunos = {
         } catch (erro) {
           msg.style.color = "#b42318";
           msg.textContent =
-            `Erro ao conceder acesso: ${erro.message}`;
+            `Não foi possível confirmar a concessão: ${erro.message}. Consulte as contratações antes de iniciar outra solicitação.`;
         } finally {
           botao.disabled = false;
         }
@@ -1392,6 +1456,8 @@ const AdminAlunos = {
           if (!aluno) return;
 
           document.getElementById("concessaoAlunoId").value = aluno.id;
+          const situacao = document.getElementById('situacaoContratacoesAdmin');
+          if (situacao) situacao.textContent = '';
           document.getElementById("concessaoAlunoNome").textContent =
             `${aluno.nome} — CPF: ${aluno.cpf || "Não informado"} — ${aluno.email}`;
 

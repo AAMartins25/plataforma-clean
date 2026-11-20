@@ -100,3 +100,30 @@ def test_duplicacao_legado_sem_metadados(copia):
     novo=db.get(m.Curso,resultado['novo_curso_id'])
     assert novo.produtor_id==1
     assert all(getattr(novo,campo) is None for campo in ('banca','cargo','orgao','ano','uf'))
+
+
+def test_marcador_preco_provisorio_copiado(copia):
+    db,main=copia
+    db.get(m.Curso,1).precos_provisorios=True
+    origem=db.query(m.TempoAcessoCurso).filter_by(curso_id=1).one()
+    origem.valor_cents=1500
+    origem.valor_provisorio_original_cents=1000
+    db.commit()
+    resultado=executar(main,db)
+    novo_id=resultado['novo_curso_id']
+    assert db.get(m.Curso,novo_id).precos_provisorios is True
+    novo=db.query(m.TempoAcessoCurso).filter_by(curso_id=novo_id).one()
+    assert novo.valor_cents==1500
+    assert novo.valor_provisorio_original_cents==1000
+
+
+@pytest.mark.parametrize('modalidade', [False, True])
+def test_duplicacao_preserva_modalidade_demonstracao(copia, modalidade):
+    db,main=copia
+    origem=db.get(m.Curso,1)
+    origem.demonstracao_por_ordem=modalidade
+    origem.precos_provisorios=False
+    db.commit()
+    novo_id=executar(main,db)['novo_curso_id']
+    assert db.get(m.Curso,novo_id).demonstracao_por_ordem is modalidade
+    assert db.get(m.Curso,novo_id).precos_provisorios is False

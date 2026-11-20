@@ -133,3 +133,15 @@ def test_sem_senha_e_parametros_vazios(carregar_database):
     assert 'password' not in params
     assert params['sslmode'] == 'verify-full'
     assert params['application_name'] == ''
+
+
+def test_sem_database_url_falha_sem_tentar_conectar(monkeypatch):
+    monkeypatch.delenv('DATABASE_URL', raising=False)
+    criar = Mock()
+    monkeypatch.setattr(sqlalchemy, 'create_engine', criar)
+    spec = importlib.util.spec_from_file_location(
+        '_database_url_ausente', Path(__file__).parent / 'app/database.py')
+    modulo = importlib.util.module_from_spec(spec)
+    with pytest.raises(RuntimeError, match='DATABASE_URL'):
+        spec.loader.exec_module(modulo)
+    criar.assert_not_called()

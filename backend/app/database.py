@@ -1,5 +1,5 @@
 import os
-from urllib.parse import parse_qs, quote_plus, unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 from app.financeiro_transacional import configuracao_pool
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
@@ -8,8 +8,6 @@ from app.models import Base, TABELAS_JURIDICAS
 
 # 1. Busca a URL da nuvem injetada pelo GitHub
 ENV_DATABASE_URL = os.environ.get("DATABASE_URL")
-
-is_cloud = False
 
 def _url_psycopg(valor):
     # urlsplit não decodifica credenciais; URL.create recebe valores já decodificados.
@@ -31,29 +29,15 @@ def _url_psycopg(valor):
     )
 
 
-if ENV_DATABASE_URL:
-    is_cloud = True
-    DATABASE_URL = _url_psycopg(ENV_DATABASE_URL)
-else:
-    # Configuração para a sua MÁQUINA LOCAL (Em casa)
-    DB_USER = "postgres"
-    DB_PASSWORD = quote_plus("aROSE@23")
-    DB_HOST = "localhost"
-    DB_PORT = "5432"
-    DB_NAME = "plataforma"
-    
-    DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if not ENV_DATABASE_URL:
+    raise RuntimeError("DATABASE_URL deve ser configurada explicitamente")
+DATABASE_URL = _url_psycopg(ENV_DATABASE_URL)
 
-# 2. Criação do Engine do SQLAlchemy
-# Se estiver na nuvem usando PgBouncer, configuramos o driver para não usar prepared statements
-if is_cloud:
-    engine = create_engine(
-        DATABASE_URL,
-        **configuracao_pool(),
-        connect_args={"prepare_threshold": None, "connect_timeout": 5}
-    )
-else:
-    engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    **configuracao_pool(),
+    connect_args={"prepare_threshold": None, "connect_timeout": 5}
+)
 
 # 3. Configuração da Sessão
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

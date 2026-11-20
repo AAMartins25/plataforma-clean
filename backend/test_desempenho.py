@@ -74,11 +74,12 @@ def test_pontuacao_revisao(env,tipo,esperado):
     db,c=env
     for i in range(1,11):
         db.get(m.Questao,i).tipo=tipo
+        db.get(m.Questao,i).tipo_questao=tipo
         if tipo=='MULTIPLA':
             db.get(m.Questao,i).gabarito='A'
             for letra in 'ABCD':db.add(m.Alternativa(questao_id=i,letra=letra,texto=letra))
     db.commit()
-    respostas=[{'questao_id':i,'resposta_marcada':('C' if tipo=='CERTO_ERRADO' else 'A') if i<=4 else ('E' if tipo=='CERTO_ERRADO' else 'B')} for i in range(1,11)]
+    respostas=[{'questao_id':i,'resposta_marcada':('C' if tipo=='CERTO_ERRADO' else 'A') if i<=4 else ('E' if tipo=='CERTO_ERRADO' else 'B'), 'dificuldade': 'MEDIA' if tipo=='MULTIPLA' else None} for i in range(1,11)]
     assert c.post('/me/revisoes/1/baterias/1/respostas?demonstracao_id=1',json={'respostas':respostas}).status_code==200
     db.expire_all();assert db.query(m.TentativaBateria).one().percentual_acerto==esperado
 
@@ -89,13 +90,15 @@ def test_nao_sei_total_revisao(env):
     db.expire_all();assert db.query(m.TentativaBateria).one().percentual_acerto==0
 
 @pytest.mark.parametrize('tipo,esperado',[('CERTO_ERRADO',10),('MULTIPLA',40)])
-def test_pontuacao_normal_com_nao_sei(env,tipo,esperado):
+def test_pontuacao_normal_com_respostas_validas(env,tipo,esperado):
     from app import schemas
     db,_=env
     for i in range(1,11):
-        q=db.get(m.Questao,i);q.tipo=tipo;q.gabarito='C' if tipo=='CERTO_ERRADO' else 'A'
+        q=db.get(m.Questao,i);q.tipo=tipo;q.tipo_questao=tipo;q.gabarito='C' if tipo=='CERTO_ERRADO' else 'A'
+        if tipo=='MULTIPLA':
+            for letra in 'ABCD': db.add(m.Alternativa(questao_id=i,letra=letra,texto=letra))
     db.commit()
-    respostas=[{'questao_id':i,'resposta_marcada':(('C' if tipo=='CERTO_ERRADO' else 'A') if i<=4 else ('E' if tipo=='CERTO_ERRADO' else 'B') if i<=7 else 'NAO_SEI')} for i in range(1,11)]
+    respostas=[{'questao_id':i,'resposta_marcada':(('C' if tipo=='CERTO_ERRADO' else 'A') if i<=4 else ('E' if tipo=='CERTO_ERRADO' else 'B') if i<=7 else ('NAO_SEI' if tipo=='CERTO_ERRADO' else 'B')), 'dificuldade':'MEDIA' if tipo=='MULTIPLA' else None} for i in range(1,11)]
     with carregar_main_isolado(lambda:db,db.bind) as main:
         result=main.concluir_bateria_aluno(schemas.ConcluirBateriaCreate(bateria_id=1,demonstracao_id=1,respostas=respostas),db,SimpleNamespace(id=1))
         assert result['percentual_acerto']==esperado
@@ -106,3 +109,21 @@ def test_pontuacao_ce_revisao_com_nao_sei(env):
     respostas=[{'questao_id':i,'resposta_marcada':'C' if i<=4 else 'E' if i<=7 else 'NAO_SEI'} for i in range(1,11)]
     assert c.post('/me/revisoes/1/baterias/1/respostas?demonstracao_id=1',json={'respostas':respostas}).status_code==200
     db.expire_all();assert db.query(m.TentativaBateria).one().percentual_acerto==10
+
+
+def test_multipla_rejeita_nao_sei_sem_gravar_tentativa(env):
+    from app import schemas
+    db,_=env
+    for i in range(1,11):
+        q=db.get(m.Questao,i); q.tipo=q.tipo_questao='MULTIPLA'; q.gabarito='A'
+        for letra in 'ABCD': db.add(m.Alternativa(questao_id=i,letra=letra,texto=letra))
+    db.commit()
+    respostas=[{'questao_id':i, 'resposta_marcada':'NAO_SEI' if i == 10 else 'A',
+                'dificuldade':'MEDIA'} for i in range(1,11)]
+    with carregar_main_isolado(lambda:db,db.bind) as main:
+        with pytest.raises(main.HTTPException) as erro:
+            main.concluir_bateria_aluno(schemas.ConcluirBateriaCreate(
+                bateria_id=1,demonstracao_id=1,respostas=respostas),db,SimpleNamespace(id=1))
+    assert erro.value.status_code == 400
+    assert db.query(m.TentativaBateria).count() == 0
+    assert db.query(m.RespostaAlunoQuestao).count() == 0

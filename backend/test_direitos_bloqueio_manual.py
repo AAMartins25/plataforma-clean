@@ -443,10 +443,12 @@ def test_profile_remains_read_only_during_financial_pause(env):
 @pytest.mark.parametrize('flow',['reembolso','contestacao'])
 def test_another_admin_contract_does_not_reopen_blocked_context(env,flow):
     main,c,f,_,_=env
+    m.OperacaoAcessoAdmin.__table__.create(f.kw['bind'], checkfirst=True)
     pid,cid=setup_payment(env,'ADMIN')
     admin(main)
     r=c.post('/admin/acessos',json={'usuario_id':1,'curso_id':1,
-        'data_fim':(T0+timedelta(days=60)).isoformat()+'Z'})
+        'data_fim':(T0+timedelta(days=60)).isoformat()+'Z',
+        'chave_idempotencia':'teste-outro-admin-0001'})
     assert r.status_code==200,r.text
     other_cid=r.json()['contratacao_id']
     assert other_cid!=cid  # regra administrativa fora da janela permanece

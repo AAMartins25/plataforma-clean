@@ -126,3 +126,19 @@ test('sem autenticação redireciona ao login sem consultar cursos', async () =>
   const a = ambiente(); a.trocar(null); await a.s.pageCursos();
   assert.equal(a.s.window.location.href, 'login.html'); assert.deepEqual(a.chamadas, []);
 });
+
+
+test('resposta sem direito expirado mantém oculta a área mesmo após uso de demonstração', async () => {
+  const a = ambiente(); a.pagamento.resolve(); const fim = a.s.pageCursos();
+  a.ativos.resolve([]); a.historico.resolve([]); await fim;
+  assert.equal(a.elementos.card_cursos_expirados.style.display, 'none');
+  assert.equal(a.elementos.lista_expirados.innerHTML, '');
+});
+for (const origem of ['PAGAMENTO', 'ADMIN']) test(`histórico de ${origem} posterior à demonstração usa contratação`, async () => {
+  const a = ambiente(); a.pagamento.resolve(); const fim = a.s.pageCursos();
+  a.ativos.resolve([]); a.historico.resolve([{curso_id:3,nome_curso:'Curso',ativo:false,contratacao_id:30,origem}]);
+  await fim;
+  assert.equal(a.elementos.card_cursos_expirados.style.display, 'block');
+  assert.match(a.elementos.lista_expirados.innerHTML, /contratacao_id=30/);
+  assert.doesNotMatch(a.elementos.lista_expirados.innerHTML, /demonstracao_id=/);
+});

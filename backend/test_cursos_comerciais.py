@@ -121,12 +121,21 @@ def test_pendente_retoma_e_confirma_apos_retirar_venda(comercial):
 
 
 @pytest.mark.parametrize('origem',['ADMIN','PAGAMENTO'])
-def test_renovacao_valida_independe_publicacao(comercial,origem):
+@pytest.mark.parametrize('publicado',[False,True])
+@pytest.mark.parametrize('provisorio',[False,True])
+def test_renovacao_comercial_exige_venda_e_precos_definitivos(comercial,origem,publicado,provisorio):
     _,c,f,post,_=comercial
-    with f() as db:cid=contrato(db,origem,10);db.get(m.Curso,1).publicado=False;db.commit()
-    assert c.post('/checkout/mercadopago',json={'tempo_acesso_id':1,'tipo_compra':'RENOVACAO','contratacao_id':cid}).status_code==200
-    assert post.call_count==1
-    assert c.post('/checkout/mercadopago',json={'tempo_acesso_id':1,'tipo_compra':'RENOVACAO','contratacao_id':cid+100}).status_code==409
+    with f() as db:
+        cid=contrato(db,origem,10);curso=db.get(m.Curso,1)
+        curso.publicado=publicado;curso.precos_provisorios=provisorio;db.commit()
+    resposta=c.post('/checkout/mercadopago',json={'tempo_acesso_id':1,'tipo_compra':'RENOVACAO','contratacao_id':cid})
+    assert resposta.status_code == (200 if publicado and not provisorio else 409), resposta.text
+    assert post.call_count == (1 if publicado and not provisorio else 0)
+    with f() as db:
+        assert db.get(m.ContratacaoCurso,cid).curso_id==1
+        if not publicado or provisorio:
+            assert db.query(m.Pagamento).count()==0
+            assert db.query(m.OportunidadeCompra).count()==0
 
 
 @pytest.mark.parametrize('vinculo',['acesso','contrato_vigente','contrato_expirado','concessao','demo_expirada','pagamento_pendente','pagamento_cancelado','oportunidade','progresso','revisao','tentativa','resposta','anotacao','pratica','marcacao','rotatividade','legado'])
@@ -198,3 +207,81 @@ def test_autorizacao_e_curso_inexistente(comercial):
         r=c.request(method,path,**({'json':body} if body is not None else {}));assert r.status_code==403,r.text
     ator(a,ADMIN)
     assert c.put('/admin/cursos/999/retirar-venda',json={}).status_code==404
+
+
+@pytest.mark.parametrize('publicado',[False,True])
+@pytest.mark.parametrize('provisorio',[False,True])
+@pytest.mark.parametrize('renovacao',[False,True])
+def test_acesso_admin_independe_venda_mas_exige_precos_definitivos(comercial,publicado,provisorio,renovacao):
+    a=comercial;_,c,f,post,_=a;ator(a,ADMIN)
+    with f() as db:
+        m.OperacaoAcessoAdmin.__table__.create(db.get_bind(), checkfirst=True)
+        cid=contrato(db,'ADMIN',10) if renovacao else None
+        curso=db.get(m.Curso,1);curso.publicado=publicado;curso.precos_provisorios=provisorio
+        db.commit()
+        fim_original=db.get(m.ContratacaoCurso,cid).data_fim if cid else None
+    fim=datetime.utcnow()+timedelta(days=60)
+    resposta=c.post('/admin/acessos',json={'usuario_id':1,'curso_id':1,'data_fim':fim.isoformat()+'Z',
+        'chave_idempotencia':'teste-acesso-admin-0001', 'contratacao_id':cid})
+    assert resposta.status_code==(409 if provisorio else 200),resposta.text
+    with f() as db:
+        assert db.query(m.ConcessaoAcessoAdmin).count()==(0 if provisorio else 1)
+        assert db.query(m.AcessoCurso).count()==(0 if provisorio else 1)
+        assert db.query(m.ContratacaoCurso).count()==(1 if renovacao or not provisorio else 0)
+        if renovacao:
+            contrato_atual=db.get(m.ContratacaoCurso,cid)
+            assert contrato_atual.data_fim==(fim_original if provisorio else fim)
+        if not provisorio:
+            assert db.query(m.ContratacaoCurso).one().origem=='ADMIN'
+        assert db.query(m.Pagamento).count()==0
+    post.assert_not_called()
+
+
+@pytest.mark.parametrize('publicado',[False,True])
+@pytest.mark.parametrize('provisorio',[False,True])
+def test_compra_inicial_exige_venda_e_precos_definitivos(comercial,publicado,provisorio):
+    _,c,f,post,_=comercial
+    with f() as db:
+        curso=db.get(m.Curso,1);curso.publicado=publicado;curso.precos_provisorios=provisorio;db.commit()
+    resposta=c.post('/checkout/mercadopago',json={'tempo_acesso_id':1})
+    assert resposta.status_code==(200 if publicado and not provisorio else 409),resposta.text
+    assert post.call_count==(1 if publicado and not provisorio else 0)
+    with f() as db:
+        if not publicado or provisorio:
+            assert db.query(m.Pagamento).count()==0
+            assert db.query(m.OportunidadeCompra).count()==0
+            assert db.query(m.ContratacaoCurso).count()==0
+
+
+def test_renovacao_preexistente_confirma_apos_retirada_sem_novo_checkout(comercial):
+    a=comercial;main,c,f,post,get=a
+    with f() as db:
+        cid=contrato(db,'ADMIN',10)
+        fim_original=db.get(m.ContratacaoCurso,cid).data_fim
+    payload={'tempo_acesso_id':1,'tipo_compra':'RENOVACAO','contratacao_id':cid}
+    resposta=c.post('/checkout/mercadopago',json=payload)
+    assert resposta.status_code==200,resposta.text
+    pagamento_id=resposta.json()['pagamento_id']
+    ator(a,ADMIN);assert c.put('/admin/cursos/1/retirar-venda',json={}).status_code==200
+    ator(a,ALUNO)
+    assert c.post('/checkout/mercadopago',json={**payload,'tempo_acesso_id':2}).status_code==409
+    assert post.call_count==1
+    with f() as db: identidade=db.get(m.Pagamento,pagamento_id).checkout_identidade
+    get.return_value.json.return_value={'id':'802','status':'approved',
+        'date_approved':datetime.utcnow().isoformat()+'Z','transaction_amount':49.90,
+        'currency_id':'BRL','external_reference':'checkout:'+identidade,
+        'collector_id':123456,'live_mode':True}
+    from test_pausa_financeira import enviar
+    with patch.object(main,'validar_assinatura_mercadopago',return_value=True):
+        for _ in range(2):
+            resposta=enviar(a,802,'renovacao-venda-desativada')
+            assert resposta.status_code==200,resposta.text
+        resposta=c.post('/pagamentos/confirmar',json={'payment_id':'802','curso_id':1})
+        assert resposta.status_code==200,resposta.text
+    with f() as db:
+        assert db.get(m.Curso,1).publicado is False
+        assert db.query(m.ContratacaoCurso).count()==1
+        assert db.get(m.ContratacaoCurso,cid).data_fim>fim_original
+        assert db.query(m.PeriodoAcessoPagamento).count()==1
+        assert db.query(m.Pagamento).count()==1
+        assert db.query(m.AcessoCurso).one().ativo

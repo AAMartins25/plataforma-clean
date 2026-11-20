@@ -155,7 +155,7 @@
     <p>© <span id="ano_atual">2026</span> Quality</p>
   </footer>
 
-  <script src="js/app.js?v=venda1"></script>
+  <script src="js/app.js?v=importacao-20261120-1"></script>
   <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>
@@ -250,9 +250,9 @@
 
       const vendaDesativada = dadosCheckout.publicado === false;
       const botao = document.getElementById("btnAdquirirAgora");
-      if (botao) botao.textContent = checkoutRenovacao ? "Renovar acesso" : vendaDesativada ? "Retomar pagamento" : "Adquirir agora";
+      if (botao) botao.textContent = vendaDesativada ? "Retomar pagamento" : checkoutRenovacao ? "Renovar acesso" : "Adquirir agora";
       box.innerHTML = `
-        ${vendaDesativada ? '<p role="status">Venda desativada. Renovações válidas continuam disponíveis. Para retomar um pagamento já iniciado, selecione o mesmo período e cupom.</p>' : ""}
+        ${vendaDesativada ? '<p role="status">Venda desativada. Novas compras e renovações estão indisponíveis. Para retomar um pagamento já iniciado, selecione o mesmo período e cupom.</p>' : ""}
         ${checkoutRenovacao || demonstracaoIdCheckout || vendaDesativada ? "" : `
           <label class="assunto" style="display:block;cursor:pointer;">
             <input

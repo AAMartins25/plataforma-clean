@@ -27,7 +27,9 @@ def pg(monkeypatch):
     parsed=make_url(url)
     assert parsed.get_backend_name()=='postgresql'
     assert parsed.database=='compras_test_venda_20261108'
-    assert parsed.host is None and parsed.query.get('host')=='/tmp/resumao-venda-pgsocket-final'
+    assert parsed.host is None and parsed.query.get('host') in {
+        '/tmp/resumao-venda-pgsocket-final', '/tmp/resumao-recuperacao-031-pg',
+        '/tmp/resumao-recuperacao-031-validacao-pg'}
     base=create_engine(url)
     schema='vendas_'+uuid.uuid4().hex
     with base.begin() as c:c.execute(text(f'CREATE SCHEMA {schema}'))

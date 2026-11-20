@@ -283,6 +283,8 @@ class AcessoCursoCreate(BaseModel):
     curso_id: int
     ativo: bool = True
     data_fim: datetime
+    chave_idempotencia: str | None = Field(default=None, min_length=16, max_length=64, pattern=r'^[A-Za-z0-9_-]+$')
+    contratacao_id: int | None = Field(default=None, gt=0)
 
 class AcessoCursoResponse(BaseModel):
     id: int

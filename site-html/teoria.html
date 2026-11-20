@@ -284,6 +284,16 @@
         .replaceAll(">", "&gt;");
     }
 
+    function renderizarMaterialTeoria(material) {
+      const conteudo = typeof material.conteudo === "string"
+        ? material.conteudo
+        : typeof material.texto === "string" ? material.texto : "";
+      if (material.conteudo_formato === "html_v1") {
+        return `<div class="teoria-texto-conteudo teoria-conteudo-rico">${window.TeoriaImagens.paraLeitura(conteudo)}</div>`;
+      }
+      return `<pre style="white-space:pre-wrap">${esc(conteudo)}</pre>`;
+    }
+
     function getToken() {
       return localStorage.getItem("access_token");
     }
@@ -1063,9 +1073,9 @@
                   <div class="assunto">
                     <b>${esc(m.tipo || "Material")}</b><br/>
                     ${m.url ? `<a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>` : ""}
-                    ${m.texto ? `
+                    ${(m.conteudo || m.texto) ? `
                       <div style="margin-top:0.625rem;">
-                        <pre style="white-space:pre-wrap">${esc(m.texto)}</pre>
+                        ${renderizarMaterialTeoria(m)}
                       </div>` : ""
                     }
                     ${m.descricao ? `<div style="margin-top:0.5rem;opacity:.85">${esc(m.descricao)}</div>` : ""}
@@ -1124,6 +1134,13 @@
         `;
 
         box.innerHTML = html;
+
+        const conteudosRicos = box.querySelectorAll(".teoria-conteudo-rico");
+        conteudosRicos.forEach(conteudo => {
+          window.TeoriaTabelas.preparar(conteudo);
+          window.TeoriaMatematica.renderizar(conteudo);
+          void window.TeoriaImagens.renderizar(conteudo, {aulaId, query: contextoAcessoQuery()});
+        });
 
         vids
           .filter(v => String(v.provedor || "YOUTUBE").toUpperCase() === "CLOUDFLARE")

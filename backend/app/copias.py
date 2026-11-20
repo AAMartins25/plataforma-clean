@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import models as m
 from app.aulas import validar_conclusao
+from app.disponibilidade_demonstracao import sincronizar
 
 
 def filhos(db, modelo, **vinculo):
@@ -66,6 +67,7 @@ def copiar_assunto_conteudo(db, origem, disciplina_id, ordem=None):
 def copiar_disciplina_conteudo(db, origem, curso_id, ordem=None):
     disciplina = novo(db, origem, ('nome', 'ativo', 'ordem', 'disponivel_demonstracao'),
                       curso_id=curso_id, ordem=origem.ordem if ordem is None else ordem)
+    sincronizar(db, curso_id)
     for assunto in filhos(db, m.CursoAssuntoProprio, curso_disciplina_propria_id=origem.id):
         copiar_assunto_conteudo(db, assunto, disciplina.id)
     return disciplina

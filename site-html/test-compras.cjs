@@ -85,12 +85,13 @@ test('curso fora de venda remove demonstração e orienta retomada na URL direta
  assert.match(elementos.opcoes_acesso.innerHTML,/pagamento já iniciado/);
  assert.equal(elementos.btnAdquirirAgora.textContent,'Retomar pagamento');
 });
-test('checkout fora de venda preserva retomada e renovação sem oferecer nova demo',()=>{
+test('checkout fora de venda informa bloqueio de novas compras e renovações e permite retomar pagamento',()=>{
  for(const renovacao of [false,true]){
   const {s,elementos}=ambiente('?curso_id=1'+(renovacao?'&renovacao=1&contratacao_id=7':''));
   vm.runInContext('dadosCheckout.publicado=false',s);s.renderizarOpcoesAcesso();
   assert.doesNotMatch(elementos.opcoesAcesso.innerHTML,/value="demo"/);
-  assert.match(elementos.opcoesAcesso.innerHTML,/pagamentos?|pagamento já iniciado/);
-  assert.equal(elementos.btnAdquirirAgora.textContent,renovacao?'Renovar acesso':'Retomar pagamento');
+  assert.match(elementos.opcoesAcesso.innerHTML,/Novas compras e renovações estão indisponíveis/);
+  assert.match(elementos.opcoesAcesso.innerHTML,/pagamento já iniciado/);
+  assert.equal(elementos.btnAdquirirAgora.textContent,'Retomar pagamento');
  }
 });

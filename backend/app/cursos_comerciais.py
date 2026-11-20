@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy import or_, select
 from app import models as m
 
-VENDA_DESATIVADA = 'A venda deste curso está desativada. Somente renovações válidas e pagamentos já iniciados podem continuar.'
+VENDA_DESATIVADA = 'A venda deste curso está desativada. Pagamentos já iniciados podem continuar.'
 EXCLUSAO_BLOQUEADA = 'Este curso possui vínculos acadêmicos ou financeiros e não pode ser excluído. Utilize Desativar venda para preservar os direitos dos alunos e o histórico.'
 
 
@@ -14,6 +14,8 @@ def bloquear_curso(db, curso_id, exigir_ativo=False, aquisicao=False):
         read=aquisicao, key_share=aquisicao).first()
     if not curso or (exigir_ativo and not curso.ativo):
         raise HTTPException(404, 'Curso não encontrado')
+    if aquisicao and curso.precos_provisorios:
+        raise HTTPException(409, "Curso com preços provisórios: aquisição indisponível.")
     return curso
 
 

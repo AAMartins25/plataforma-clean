@@ -1669,6 +1669,22 @@ async function abrirAssuntoDireto(assuntoId, assuntoNomeEncoded, disciplinaNomeE
   }
 
 // 3) Assuntos da Disciplina
+async function carregarAssuntosDaDisciplina(disciplinaId, contratacaoId, demonstracaoId) {
+  const contexto = contratacaoId
+    ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
+    : demonstracaoId ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}` : "";
+  try {
+    return await apiGetAuth(
+      `/disciplinas-proprias/${disciplinaId}/assuntos-proprios${contexto}`
+    );
+  } catch (erro) {
+    // Só um 404 identifica uma disciplina legada. Erros de sessão, acesso ou
+    // servidor devem permanecer visíveis, sem trocar de estrutura silenciosamente.
+    if (erro.status !== 404) throw erro;
+    return apiGet(`/disciplinas/${disciplinaId}/assuntos`);
+  }
+}
+
 async function pageAssuntos() {
   const disciplinaId = qs("disciplina_id");
   const disciplinaNome = qs("disciplina_nome") || "";
@@ -1705,22 +1721,9 @@ async function pageAssuntos() {
   }
 
   try {
-    let assuntos;
-
-    try {
-      assuntos = await apiGetAuth(
-        `/disciplinas-proprias/${disciplinaId}/assuntos-proprios` +
-        (contratacaoId
-          ? `?contratacao_id=${encodeURIComponent(contratacaoId)}`
-          : demonstracaoId
-            ? `?demonstracao_id=${encodeURIComponent(demonstracaoId)}`
-            : "")
-      );
-    } catch (e1) {
-      assuntos = await apiGet(
-        `/disciplinas/${disciplinaId}/assunto`
-      );
-    }
+    const assuntos = await carregarAssuntosDaDisciplina(
+      disciplinaId, contratacaoId, demonstracaoId
+    );
 
     const lista =
       document.getElementById("lista");
@@ -2039,13 +2042,7 @@ async function pageInteratividadeAssuntos() {
   if (!disciplinaId || !lista) return;
 
   try {
-    let assuntos;
-
-    try {
-      assuntos = await apiGet(`/disciplinas/${disciplinaId}/assuntos`);
-    } catch {
-      assuntos = await apiGet(`/disciplinas/${disciplinaId}/assunto`);
-    }
+    const assuntos = await apiGet(`/disciplinas/${disciplinaId}/assuntos`);
 
     lista.innerHTML = "";
 

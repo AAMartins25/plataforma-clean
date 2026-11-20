@@ -93,6 +93,14 @@
     <div class="card">
       <h2 class="admin-titulo-secao">1) Criar / editar curso</h2>
 
+      <section class="assunto" aria-labelledby="tituloImportacao" style="margin:1rem 0; overflow-wrap:anywhere">
+        <h3 id="tituloImportacao">Importar curso completo</h3>
+        <p>Selecione um arquivo JSON versão 1. O curso será criado sem publicação e com preços provisórios.</p>
+        <label for="arquivoImportacao">Arquivo JSON (até 40 MiB)</label>
+        <input id="arquivoImportacao" type="file" accept=".json,application/json" style="max-width:100%">
+        <button class="btn" type="button" id="importarCurso">Importar curso</button>
+        <div id="statusImportacao" role="status" aria-live="polite" aria-atomic="true"></div>
+      </section>
       <form id="formCurso" class="list">
 
         <div class="assunto">
@@ -347,6 +355,8 @@
               style="width:100%; padding:0.75rem; border:0.0625rem solid #ddd; border-radius:0.375rem;" />
           </div>
 
+          <p id="avisoPrecosProvisorios" hidden>Preços provisórios: substitua os três valores e confirme-os para permitir a publicação e a aquisição.</p>
+          <label id="rotuloConfirmarPrecos" hidden><input id="confirmarPrecosDefinitivos" type="checkbox" disabled> Confirmo que os três valores informados são definitivos.</label>
           <div class="curso-config-acoes" style="
             margin-top:0.875rem;
             display:flex;
@@ -596,8 +606,8 @@
     </p>
   </footer>
 
-  <script src="../js/app.js?v=venda1"></script>
-  <script src="../js/admin.js?v=questoes1"></script>
+  <script src="../js/app.js?v=importacao-20261120-1"></script>
+  <script src="../js/admin.js?v=importacao-20261120-1"></script>
   <script src="../js/vendor/markdown-it-15.0.3.min.js"></script>
   <script src="../js/vendor/dompurify-3.4.17.min.js"></script>
   <script src="../js/vendor/katex/katex.min.js"></script>
@@ -613,7 +623,8 @@
   <script src="../js/questao-conteudo.js"></script>
   <script src="../js/editor-questoes.js"></script>
   <script src="../js/gestao-cursos.js?v=selecao-rolagem1"></script>
-  <script src="../js/admin-criar-curso-completo.js?v=selecao-rolagem1"></script>
+  <script src="../js/admin-criar-curso-completo.js?v=importacao-20261120-1"></script>
+  <script src="../js/admin-importar-curso.js?v=importacao-20261120-1"></script>
 
   <script>
     function confirmarSaidaAdmin() {

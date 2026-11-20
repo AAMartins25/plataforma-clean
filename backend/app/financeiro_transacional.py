@@ -14,7 +14,7 @@ ATUAL = ContextVar('operacao_financeira', default=None)
 PROTECOES = WeakKeyDictionary()
 TABELAS = {'bloqueios_acesso_reembolso', 'pagamentos', 'oportunidades_compra', 'contratacoes_curso',
            'acessos_curso', 'demonstracoes_curso', 'concessoes_acesso_admin',
-           'periodos_acesso_pagamento', 'reembolsos_financeiros', 'contestacoes_pagamento'}
+           'periodos_acesso_pagamento', 'reembolsos_financeiros', 'contestacoes_pagamento', 'operacoes_acesso_admin'}
 
 
 @dataclass

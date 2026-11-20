@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
 from sqlalchemy import text
 from app import models as m, schemas
+from app.disponibilidade_demonstracao import disponivel as disciplina_disponivel_demo
 
 
 def contexto(query, model, usuario_id, contratacao_id, demonstracao_id):
@@ -111,7 +112,7 @@ def registrar_rotas(app, get_db, get_usuario, validar):
         validar(db=db, usuario=usuario, curso_id=disciplina.curso_id, contratacao_id=cid, demonstracao_id=did)
         if not assunto.ativo or not disciplina.ativo:
             conjunto = []
-        elif did is not None and not disciplina.disponivel_demonstracao:
+        elif did is not None and not disciplina_disponivel_demo(db, disciplina):
             raise HTTPException(403, 'Disciplina indisponível na demonstração')
         else:
             conjunto = disponiveis(db, aula.id, escrita=escrita)

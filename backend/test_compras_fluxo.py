@@ -256,3 +256,48 @@ def test_limite_oito_titulos_preservado(ambiente_compra):
     assert c.post('/checkout/mercadopago',json={'tempo_acesso_id':2}).status_code==409
     assert post.call_count==1
     with factory() as db:assert db.query(m.Pagamento).count()==8
+
+
+def test_concessao_admin_apos_confirmacao_sem_ativar_venda(ambiente_compra):
+    main, client, factory, post, _ = ambiente_compra
+    with factory() as db:
+        curso = db.get(m.Curso, 1)
+        curso.publicado = False
+        curso.precos_provisorios = True
+        for tempo in db.query(m.TempoAcessoCurso).filter_by(curso_id=1):
+            tempo.valor_cents = tempo.meses
+            tempo.valor_provisorio_original_cents = tempo.meses
+        db.commit()
+    admin = SimpleNamespace(id=2, is_admin=True, tipo_admin='admin_geral')
+    aluno = SimpleNamespace(id=1, email='1@teste.local', is_admin=False)
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: admin
+    acesso = {'usuario_id': 1, 'curso_id': 1,
+              'data_fim': (datetime.utcnow() + timedelta(days=60)).isoformat() + 'Z'}
+    resposta = client.post('/admin/acessos', json=acesso)
+    assert resposta.status_code == 409
+    with factory() as db:
+        assert db.query(m.AcessoCurso).count() == 0
+        assert db.query(m.ConcessaoAcessoAdmin).count() == 0
+        assert db.query(m.ContratacaoCurso).count() == 0
+    resposta = client.put('/admin/cursos/1/config-publica', json={
+        'confirmar_precos_definitivos': True,
+        'tempos_acesso': [{'meses': meses, 'valor_cents': meses * 100}
+                          for meses in (4, 8, 12)]})
+    assert resposta.status_code == 200, resposta.text
+    with factory() as db:
+        curso = db.get(m.Curso, 1)
+        assert curso.precos_provisorios is False
+        assert curso.publicado is False
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: aluno
+    assert client.post('/checkout/mercadopago', json={'tempo_acesso_id': 1}).status_code == 409
+    post.assert_not_called()
+    main.app.dependency_overrides[main.get_usuario_atual] = lambda: admin
+    resposta = client.post('/admin/acessos', json=acesso)
+    assert resposta.status_code == 200, resposta.text
+    with factory() as db:
+        assert db.get(m.Curso, 1).publicado is False
+        assert db.query(m.AcessoCurso).filter_by(usuario_id=1, curso_id=1, ativo=True).count() == 1
+        assert db.query(m.ConcessaoAcessoAdmin).filter_by(usuario_id=1, curso_id=1).count() == 1
+        assert db.query(m.ContratacaoCurso).filter_by(usuario_id=1, curso_id=1, origem='ADMIN').count() == 1
+        assert db.query(m.Pagamento).count() == 0
+    post.assert_not_called()

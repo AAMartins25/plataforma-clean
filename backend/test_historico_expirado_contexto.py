@@ -72,3 +72,48 @@ def test_demonstracao_ativa_continua_autorizada(historico):
     _,c=historico
     assert c.get('/me/cursos/1/desempenho?demonstracao_id=1').status_code==200
     assert c.get('/me/cursos/1/desempenho?demonstracao_id=2').status_code==403
+
+
+@pytest.mark.parametrize('origem', ['PAGAMENTO', 'ADMIN'])
+def test_demo_com_atividades_so_aparece_apos_direito_posterior_expirar(historico, origem):
+    db,c=historico; agora=datetime.utcnow()
+    db.add(m.Curso(id=3,nome='Somente demonstração'))
+    db.add(m.CursoDisciplinaPropria(id=3,curso_id=3,nome='Disciplina'))
+    db.add(m.CursoAssuntoProprio(id=3,curso_disciplina_propria_id=3,nome='Assunto'))
+    db.add(m.Pasta(id=3,curso_assunto_proprio_id=3,tipo='TEORIA',nome='Teoria'))
+    db.add(m.Aula(id=3,pasta_id=3,titulo='Aula'))
+    db.add(m.Bateria(id=10,aula_id=3,titulo='Bateria',status='CONCLUIDA'))
+    db.add(m.Questao(id=20,bateria_id=10,enunciado='Questão',tipo='CERTO_ERRADO',gabarito='C'))
+    db.add(m.DemonstracaoCurso(id=10,usuario_id=1,curso_id=3,
+        data_inicio=agora-timedelta(days=10),data_fim=agora-timedelta(days=9),
+        liberado_novamente_em=agora))
+    db.add(m.TentativaBateria(id=20,usuario_id=1,bateria_id=10,demonstracao_id=10,
+        status='FEITA',percentual_acerto=100,concluida_em=agora-timedelta(days=9)))
+    db.add(m.RespostaAlunoQuestao(id=20,usuario_id=1,bateria_id=10,questao_id=20,
+        tentativa_id=20,demonstracao_id=10,resposta_marcada='C',acertou=True))
+    db.add(m.AnotacaoAlunoQuestao(id=120,usuario_id=1,bateria_id=10,questao_id=20,
+        tentativa_id=20,demonstracao_id=10,texto='Anotação da demonstração'))
+    db.add(m.ConversaQuestaoProfessor(id=120,usuario_id=1,bateria_id=10,questao_id=20,
+        tentativa_id=20,demonstracao_id=10,status='ABERTA'))
+    db.add(m.MensagemConversaQuestao(id=120,conversa_id=120,autor='ALUNO',texto='Mensagem preservada'))
+    db.commit()
+    tabelas=[m.DemonstracaoCurso,m.TentativaBateria,m.RespostaAlunoQuestao,
+             m.AnotacaoAlunoQuestao,m.ConversaQuestaoProfessor,m.MensagemConversaQuestao,m.Pagamento]
+    def snapshot():
+        return {t.__tablename__:db.execute(t.__table__.select().order_by(t.__table__.c.id)).all() for t in tabelas}
+    antes=snapshot()
+    def itens():
+        resposta=c.get('/me/desempenho/contextos-expirados')
+        assert resposta.status_code==200
+        return [x for x in resposta.json() if x['curso_id']==3]
+    assert itens()==[]
+    db.add(m.ContratacaoCurso(id=30,usuario_id=1,curso_id=3,origem=origem,
+        data_inicio=agora-timedelta(days=8),data_fim=agora+timedelta(days=1)))
+    db.commit()
+    assert itens()==[]
+    contrato=db.get(m.ContratacaoCurso,30);contrato.data_fim=agora-timedelta(days=1);db.commit()
+    linhas=itens()
+    assert len(linhas)==1 and linhas[0]['contratacao_id']==30
+    assert 'demonstracao_id' not in linhas[0]
+    assert snapshot()==antes
+    assert db.get(m.ContratacaoCurso,30).origem==origem

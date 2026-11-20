@@ -79,6 +79,8 @@
   const valor4Meses = document.getElementById("valor4Meses");
   const valor8Meses = document.getElementById("valor8Meses");
   const valor12Meses = document.getElementById("valor12Meses");
+  const confirmarPrecosDefinitivos = document.getElementById("confirmarPrecosDefinitivos");
+  let precosProvisoriosOriginais = new Map();
   const btnSalvarConfigPublicaCurso = document.getElementById("btnSalvarConfigPublicaCurso");
   const msgConfigPublicaCurso = document.getElementById("msgConfigPublicaCurso");
   const btnEditarConfigPublicaCurso = document.getElementById("btnEditarConfigPublicaCurso");
@@ -102,6 +104,11 @@
     contextoCurso++;
     GestaoCursos.encerrarEdicao();
     cursoAtual = curso;
+    precosProvisoriosOriginais = new Map();
+    if (confirmarPrecosDefinitivos) {
+      confirmarPrecosDefinitivos.checked = false;
+      confirmarPrecosDefinitivos.disabled = true;
+    }
     disciplinasDoCurso = [];
     bateriasDaAula = [];
     disciplinaNome.value = "";
@@ -1422,6 +1429,27 @@
         .replace(".", ",");
     }
 
+    function atualizarConfirmacaoPrecos() {
+      if (!confirmarPrecosDefinitivos) return;
+      if (!cursoAtual || cursoAtual.precos_provisorios !== true) {
+        confirmarPrecosDefinitivos.checked = false;
+        confirmarPrecosDefinitivos.disabled = true;
+        return;
+      }
+      const valores = [
+        [4, valorMonetarioParaCents(valor4Meses.value)],
+        [8, valorMonetarioParaCents(valor8Meses.value)],
+        [12, valorMonetarioParaCents(valor12Meses.value)]
+      ];
+      const substituidos = valores.every(([meses, valor]) => {
+        const original = precosProvisoriosOriginais.get(meses);
+        return Number.isInteger(valor) && valor > 0
+          && Number.isInteger(original) && valor !== original;
+      });
+      if (!substituidos) confirmarPrecosDefinitivos.checked = false;
+      confirmarPrecosDefinitivos.disabled = !substituidos;
+    }
+
     function atualizarBotoesPublicacaoCurso() {
       if (!btnPublicarCurso || !btnRetirarCursoVenda) {
         console.error("Botões de publicação não encontrados no HTML.");
@@ -1458,6 +1486,11 @@
         );
 
         cursoAtual.publicado = dados.publicado === true;
+        cursoAtual.precos_provisorios = dados.precos_provisorios === true;
+        document.getElementById("avisoPrecosProvisorios").hidden = !cursoAtual.precos_provisorios;
+        document.getElementById("rotuloConfirmarPrecos").hidden = !cursoAtual.precos_provisorios;
+        confirmarPrecosDefinitivos.checked = false;
+        confirmarPrecosDefinitivos.disabled = true;
 
         await DescricaoPublicaEditor.carregar(cursoDescricaoPublica, dados.descricao_publica || "");
 
@@ -1467,6 +1500,12 @@
         const t4 = tempos.find(t => t.meses === 4);
         const t8 = tempos.find(t => t.meses === 8);
         const t12 = tempos.find(t => t.meses === 12);
+        precosProvisoriosOriginais = new Map(tempos.map(t => [
+          Number(t.meses),
+          t.valor_provisorio_original_cents == null
+            ? null
+            : Number(t.valor_provisorio_original_cents)
+        ]));
 
         valor4Meses.value = t4
           ? centsParaValorMonetario(t4.valor_cents)
@@ -1479,6 +1518,7 @@
         valor12Meses.value = t12
           ? centsParaValorMonetario(t12.valor_cents)
           : "";
+        atualizarConfirmacaoPrecos();
 
         msgConfigPublicaCurso.textContent = "";
 
@@ -1526,6 +1566,7 @@
 
         await apiPutAuth(`/admin/cursos/${cursoAtual.id}/config-publica`, {
           ...DescricaoPublicaEditor.conteudo(cursoDescricaoPublica),
+          confirmar_precos_definitivos: document.getElementById("confirmarPrecosDefinitivos").checked,
           tempos_acesso: [
             { meses: 4, valor_cents: v4 },
             { meses: 8, valor_cents: v8 },
@@ -1533,8 +1574,8 @@
           ]
         });
 
-        msgConfigPublicaCurso.textContent =
-          "Descrição e valores salvos com sucesso.";
+        await carregarConfigPublicaCurso();
+        msgConfigPublicaCurso.textContent = "Descrição e valores salvos com sucesso.";
 
         msgConfigPublicaCurso.style.color = "#2f5e46";
 
@@ -1544,7 +1585,8 @@
       } catch (err) {
         if (err === respostaAntiga) return;
         console.error(err);
-        msgConfigPublicaCurso.textContent = "Erro ao salvar descrição e valores.";
+        msgConfigPublicaCurso.textContent = mensagemErroAula(err)
+          || "Erro ao salvar descrição e valores.";
         msgConfigPublicaCurso.style.color = "#8a1f1f";
       }
     });
@@ -3552,8 +3594,18 @@
 
       btnSalvarConfigPublicaCurso.disabled = false;
       btnSalvarConfigPublicaCurso.style.opacity = "1";
+      atualizarConfirmacaoPrecos();
     }
 
+    [valor4Meses, valor8Meses, valor12Meses].forEach(campo => {
+      campo.addEventListener("input", atualizarConfirmacaoPrecos);
+    });
+
+    window.addEventListener("curso-importado", async event => {
+      await carregarCursosExistentes(event.detail.curso_id);
+      cursoExistenteSelect.value = String(event.detail.curso_id);
+      btnUsarCursoExistente.click();
+    });
     carregarCursosExistentes().catch(console.error);
 
 })();

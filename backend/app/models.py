@@ -30,6 +30,8 @@ class Curso(Base):
     )
 
     descricao_publica = Column(Text, nullable=True)
+    precos_provisorios = Column(Boolean, nullable=False, default=False, server_default=text("false"))
+    demonstracao_por_ordem = Column(Boolean, nullable=False, default=False, server_default=text("false"))
     # Nulos preservam o acervo anterior à gestão de metadados.
     banca = Column(String(255), nullable=True)
     cargo = Column(String(255), nullable=True)
@@ -44,6 +46,15 @@ class Curso(Base):
         secondary=curso_disciplina,
         back_populates="cursos"
     )
+
+class ImportacaoCurso(Base):
+    __tablename__ = "importacoes_curso"
+    chave = Column(String(64), primary_key=True)
+    hash_requisicao = Column(String(64), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    curso_id = Column(Integer, ForeignKey("cursos.id"), nullable=False)
+    criado_em = Column(DateTime, nullable=False, default=datetime.utcnow)
+
 
 class Disciplina(Base):
     __tablename__ = "disciplinas"
@@ -442,6 +453,16 @@ class ConcessaoAcessoAdmin(Base):
 
     usuario = relationship("Usuario")
     curso = relationship("Curso")
+
+
+class OperacaoAcessoAdmin(Base):
+    __tablename__ = "operacoes_acesso_admin"
+    chave = Column(String(64), primary_key=True)
+    administrador_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    hash_requisicao = Column(String(64), nullable=False)
+    contratacao_id = Column(Integer, ForeignKey("contratacoes_curso.id"), nullable=False)
+    acesso_id = Column(Integer, ForeignKey("acessos_curso.id"), nullable=False)
+    criada_em = Column(DateTime, nullable=False, default=datetime.utcnow, server_default=text("CURRENT_TIMESTAMP"))
 
 class OportunidadeCompra(Base):
     __tablename__ = "oportunidades_compra"
@@ -1099,6 +1120,7 @@ class TempoAcessoCurso(Base):
 
     meses = Column(Integer, nullable=False)
     valor_cents = Column(Integer, nullable=False)
+    valor_provisorio_original_cents = Column(Integer, nullable=True)
 
     ativo = Column(Boolean, default=True)
 

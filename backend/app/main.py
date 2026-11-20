@@ -97,6 +97,7 @@ from app.models import (
 )
 from app.models import Atendimento
 from app.models import CursoDisciplinaPropria
+from app.disponibilidade_demonstracao import sincronizar as sincronizar_disponibilidade_demo
 from app.models import CursoAssuntoProprio
 from app.direitos_acesso import contrato_vigente, curso_vigente
 from app.models import ContratacaoCurso
@@ -442,6 +443,21 @@ def recalcular_acesso_apos_reembolso(
         "data_fim": nova_data_fim,
     }
 
+@app.get('/admin/alunos/{aluno_id}/contratacoes-admin', tags=['Admin Alunos'])
+def admin_consultar_contratacoes(aluno_id: int, curso_id: int,
+        db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    if not pode_administrar(usuario, 'geral'):
+        raise HTTPException(403, 'Apenas admin pode consultar contratações')
+    if not db.get(Usuario, aluno_id) or not db.get(Curso, curso_id):
+        raise HTTPException(404, 'Aluno ou curso não encontrado')
+    contratos = (db.query(ContratacaoCurso)
+                 .filter_by(usuario_id=aluno_id, curso_id=curso_id, origem='ADMIN')
+                 .order_by(ContratacaoCurso.data_inicio.desc(), ContratacaoCurso.id.desc()).all())
+    agora = datetime.utcnow()
+    return [{'id': c.id, 'data_inicio': c.data_inicio, 'data_fim': c.data_fim,
+             'vigente': contrato_vigente(db, c, agora)} for c in contratos]
+
+
 @app.post("/admin/acessos", tags=["Acessos"])
 @protegido
 def admin_criar_acesso(
@@ -454,6 +470,26 @@ def admin_criar_acesso(
             status_code=403,
             detail="Apenas admin pode liberar acesso"
         )
+
+    chave = payload.chave_idempotencia
+    hash_requisicao = None
+    if chave:
+        import json
+        fim_hash = payload.data_fim
+        if fim_hash.tzinfo is not None:
+            fim_hash = fim_hash.astimezone(timezone.utc).replace(tzinfo=None)
+        dados_hash = [payload.usuario_id, payload.curso_id, payload.ativo,
+                      fim_hash.isoformat(timespec='microseconds'), payload.contratacao_id]
+        hash_requisicao = hashlib.sha256(json.dumps(dados_hash, separators=(',', ':')).encode()).hexdigest()
+        if db.bind.dialect.name == 'postgresql':
+            db.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))'),
+                       {'chave': 'acesso-admin:' + chave})
+        anterior = db.get(models.OperacaoAcessoAdmin, chave)
+        if anterior:
+            if anterior.administrador_id != usuario.id or anterior.hash_requisicao != hash_requisicao:
+                raise HTTPException(409, 'Chave de idempotência já usada em outra operação.')
+            return {'ok': True, 'msg': 'Concessão administrativa registrada',
+                    'acesso_id': anterior.acesso_id, 'contratacao_id': anterior.contratacao_id}
 
     u = db.query(Usuario).filter(
         Usuario.id == payload.usuario_id
@@ -493,7 +529,7 @@ def admin_criar_acesso(
     # Se não houver contratação ADMIN vigente/renovável,
     # uma nova contratação será criada.
     # ---------------------------------------------------------
-    contratacao_admin = (
+    consulta_admin = (
         db.query(ContratacaoCurso)
         .filter(
             ContratacaoCurso.usuario_id == payload.usuario_id,
@@ -502,7 +538,11 @@ def admin_criar_acesso(
             ContratacaoCurso.data_inicio <= agora,
             ContratacaoCurso.data_fim > agora,
         )
-        .order_by(
+    )
+    if payload.contratacao_id is not None:
+        consulta_admin = consulta_admin.filter(ContratacaoCurso.id == payload.contratacao_id)
+    contratacao_admin = (
+        consulta_admin.order_by(
             ContratacaoCurso.data_fim.desc(),
             ContratacaoCurso.id.desc()
         )
@@ -510,7 +550,12 @@ def admin_criar_acesso(
         .first()
     )
 
+    if payload.contratacao_id is not None and not contratacao_admin:
+        raise HTTPException(409, 'Contratação administrativa vigente não encontrada.')
+
     if contratacao_admin:
+        if not chave:
+            raise HTTPException(428, 'Informe a chave de idempotência para renovar o acesso administrativo.')
         # Se estiver dentro da janela dos 15 dias,
         # preserva a mesma contratação.
         if renovacao_disponivel(
@@ -603,6 +648,10 @@ def admin_criar_acesso(
     db.add(concessao)
 
     try:
+        if chave:
+            db.flush()
+            db.add(models.OperacaoAcessoAdmin(chave=chave, administrador_id=usuario.id,
+                hash_requisicao=hash_requisicao, contratacao_id=contratacao.id, acesso_id=acesso.id))
         db.commit()
         db.refresh(acesso)
         db.refresh(contratacao)
@@ -879,6 +928,8 @@ def criar_curso(curso: CursoCreate, db: Session = Depends(get_db),
                   usuario: Usuario = Depends(exigir_admin_intermediario)):
     nome = curso.nome.strip()
 
+    if db.bind.dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:nome, 0))"), {"nome": "curso_nome:" + nome.lower()})
     existente = db.query(Curso).filter(
         Curso.nome.ilike(nome)
     ).first()
@@ -1080,6 +1131,8 @@ def criar_disciplina_propria(
     )
 
     db.add(disciplina)
+    db.flush()
+    sincronizar_disponibilidade_demo(db, curso_id)
     db.commit()
     db.refresh(disciplina)
 
@@ -1210,6 +1263,9 @@ def editar_disciplina_propria(
     if dados.ordem is not None:
         disciplina.ordem = dados.ordem
 
+    db.flush()
+    sincronizar_disponibilidade_demo(db, disciplina.curso_id)
+
     db.commit()
     db.refresh(disciplina)
 
@@ -1233,7 +1289,10 @@ def excluir_disciplina_propria(
     if not disciplina:
         raise HTTPException(status_code=404, detail="Disciplina não encontrada")
 
+    curso_id = disciplina.curso_id
     db.delete(disciplina)
+    db.flush()
+    sincronizar_disponibilidade_demo(db, curso_id)
     db.commit()
 
     return {"mensagem": "Disciplina removida com sucesso"}
@@ -3948,6 +4007,8 @@ def publicar_curso(
 
     curso = bloquear_curso(db, curso_id, exigir_ativo=True)
 
+    if curso.precos_provisorios:
+        raise HTTPException(409, "Confirme os preços definitivos antes de publicar.")
     curso.publicado = True
 
     db.commit()
@@ -4006,12 +4067,14 @@ def obter_config_publica_curso(
         "curso_id": curso.id,
         "nome": curso.nome,
         "descricao_publica": curso.descricao_publica or "",
+        "precos_provisorios": bool(curso.precos_provisorios),
         "publicado": bool(curso.publicado),
         "tempos_acesso": [
             {
                 "id": t.id,
                 "meses": t.meses,
                 "valor_cents": t.valor_cents,
+                "valor_provisorio_original_cents": t.valor_provisorio_original_cents,
                 "ativo": t.ativo
             }
             for t in tempos
@@ -4032,9 +4095,7 @@ def salvar_config_publica_curso(
             detail="Apenas administrador."
         )
 
-    curso = db.query(Curso).filter(
-        Curso.id == curso_id
-    ).first()
+    curso = bloquear_curso(db, curso_id)
 
     if not curso:
         raise HTTPException(
@@ -4046,6 +4107,21 @@ def salvar_config_publica_curso(
 
     tempos = payload.get("tempos_acesso") or []
     meses_validos = {4, 8, 12}
+    if payload.get("confirmar_precos_definitivos") is True and curso.precos_provisorios:
+        if (len(tempos) != 3 or {t.get("meses") for t in tempos} != meses_validos
+                or any(type(t.get("valor_cents")) is not int or t["valor_cents"] <= 0 for t in tempos)):
+            raise HTTPException(422, "Informe e confirme os três preços definitivos positivos.")
+        originais = {
+            t.meses: t.valor_provisorio_original_cents
+            for t in db.query(TempoAcessoCurso).filter_by(curso_id=curso_id)
+        }
+        if any(
+            originais.get(t["meses"]) is None
+            or originais[t["meses"]] == t["valor_cents"]
+            for t in tempos
+        ):
+            raise HTTPException(422, "Substitua cada valor provisório antes de confirmar.")
+        curso.precos_provisorios = False
 
     for item in tempos:
         meses = int(item["meses"])
@@ -4067,6 +4143,8 @@ def salvar_config_publica_curso(
         )
 
         if registro:
+            if curso.precos_provisorios and registro.valor_provisorio_original_cents is None:
+                registro.valor_provisorio_original_cents = meses
             registro.valor_cents = valor_cents
             registro.ativo = True
         else:
@@ -4075,6 +4153,7 @@ def salvar_config_publica_curso(
                     curso_id=curso_id,
                     meses=meses,
                     valor_cents=valor_cents,
+                    valor_provisorio_original_cents=meses if curso.precos_provisorios else None,
                     ativo=True
                 )
             )
@@ -4412,7 +4491,7 @@ def criar_checkout_mp(
             detail="Limite de oito títulos atingido para esta oportunidade."
         )
 
-    if tipo_compra == "NOVA" and not curso.publicado:
+    if not curso.publicado:
         raise HTTPException(409, VENDA_DESATIVADA)
 
     identidade_checkout = nova_identidade()
@@ -9411,7 +9490,7 @@ def duplicar_curso_inteiro(
     # Serializa o mesmo nome no PostgreSQL sem criar índices ou tabelas.
     if db.bind.dialect.name == "postgresql":
         db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:nome, 0))"),
-                   {"nome": "duplicar_curso:" + novo_nome.casefold()})
+                   {"nome": "curso_nome:" + novo_nome.lower()})
 
     curso_nome_existente = (
         db.query(models.Curso)
@@ -9447,6 +9526,8 @@ def duplicar_curso_inteiro(
             ativo=curso_origem.ativo,
             publicado=False,
             descricao_publica=curso_origem.descricao_publica,
+            precos_provisorios=curso_origem.precos_provisorios,
+            demonstracao_por_ordem=curso_origem.demonstracao_por_ordem,
             banca=curso_origem.banca,
             cargo=curso_origem.cargo,
             orgao=curso_origem.orgao,
@@ -9475,6 +9556,11 @@ def duplicar_curso_inteiro(
                 curso_id=novo_curso.id,
                 meses=tempo.meses,
                 valor_cents=tempo.valor_cents,
+                valor_provisorio_original_cents=(
+                    tempo.valor_provisorio_original_cents
+                    if tempo.valor_provisorio_original_cents is not None
+                    else (tempo.meses if curso_origem.precos_provisorios else None)
+                ),
                 ativo=tempo.ativo
             )
 
@@ -9577,6 +9663,9 @@ instalar_pausa_financeira(app, motor_financeiro, SessionLocal, get_db,
     get_usuario_atual, lambda request, pid: validar_assinatura_mercadopago(request, pid),
     processar_pagamento_mp, mp_headers, consulta=lambda pid: consultar_pagamento(pid, mp_headers()))
 
+from app.recuperacao_importacao import instalar as instalar_recuperacao_importacao
+instalar_recuperacao_importacao(app)
+
 
 # E-mails consomem somente o domínio já confirmado; desativados por padrão.
 from app.emails_pagamentos import EmailsPagamentos, Invalido as EmailInvalido
@@ -9653,3 +9742,54 @@ app.router.add_event_handler('shutdown', app.state.manutencao_imagens.encerrar)
 
 from app.reembolsos_acesso import registrar_rotas as registrar_bloqueios_reembolso
 registrar_bloqueios_reembolso(app, get_db, get_usuario_atual, bloquear_pagamento_reembolso)
+
+@app.post('/admin/importacoes/cursos')
+async def importar_curso_completo(request: Request, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    from app.importacao_cursos import importar, LIMITE_BYTES
+    from starlette.concurrency import run_in_threadpool
+    if not pode_administrar(usuario, 'producao'):
+        raise HTTPException(403, 'Apenas administrador.')
+    tamanho = request.headers.get('content-length')
+    if tamanho and (not tamanho.isdigit() or int(tamanho) > LIMITE_BYTES):
+        raise HTTPException(413, 'Arquivo excede 128 MiB.')
+    corpo = bytearray()
+    async for trecho in request.stream():
+        corpo.extend(trecho)
+        if len(corpo) > LIMITE_BYTES:
+            raise HTTPException(413, 'Arquivo excede 128 MiB.')
+    try:
+        import json
+        payload = json.loads(corpo)
+        if not isinstance(payload, dict) or set(payload) != {'chave', 'original', 'convertido'}:
+            raise HTTPException(422, 'Estrutura da solicitação inválida.')
+        return await run_in_threadpool(importar, db, usuario.id, payload['chave'], payload['original'], payload['convertido'])
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        db.rollback()
+        raise HTTPException(422, 'JSON inválido ou excessivamente aninhado.')
+    except Exception:
+        db.rollback()
+        raise
+
+@app.post('/admin/importacoes/cursos/validar')
+async def validar_importacao_curso(request: Request, usuario: Usuario = Depends(get_usuario_atual)):
+    from app.importacao_cursos import preparar, LIMITE_BYTES
+    from starlette.concurrency import run_in_threadpool
+    if not pode_administrar(usuario, 'producao'):
+        raise HTTPException(403, 'Apenas administrador.')
+    tamanho = request.headers.get('content-length')
+    if tamanho and (not tamanho.isdigit() or int(tamanho) > LIMITE_BYTES):
+        raise HTTPException(413, 'Solicitação excede 128 MiB.')
+    corpo = bytearray()
+    async for trecho in request.stream():
+        corpo.extend(trecho)
+        if len(corpo) > LIMITE_BYTES:
+            raise HTTPException(413, 'Solicitação excede 128 MiB.')
+    try:
+        import json
+        payload = json.loads(corpo)
+        if not isinstance(payload, dict) or set(payload) != {'original', 'convertido'}:
+            raise HTTPException(422, 'Estrutura da solicitação inválida.')
+        await run_in_threadpool(preparar, payload['original'], payload['convertido'])
+        return {'valido': True}
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        raise HTTPException(422, 'JSON inválido ou excessivamente aninhado.')
