@@ -17,3 +17,6 @@
 .teoria-imagens-controles [role="status"] { min-width: 0; overflow-wrap: anywhere; }
 .teoria-markdown-dialogo input[type="file"] { max-width: 100%; }
 .teoria-conteudo-rico .image-inline { display: inline-block; max-width: 100%; vertical-align: middle; }
+
+/* Na teoria, só exibe cada imagem depois que o navegador termina de carregá-la. */
+.teoria-imagens-aguardando img:not([data-ro-carregada]) { visibility: hidden; }

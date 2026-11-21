@@ -122,7 +122,9 @@
       let falhou = false;
       imagens.forEach((img, i) => {
         img.referrerPolicy = "no-referrer";
+        img.onload = () => { img.setAttribute("data-ro-carregada", ""); };
         img.onerror = () => {
+          img.removeAttribute("data-ro-carregada");
           if (falhou || !raiz.isConnected) return;
           falhou = true; aviso.textContent = "Uma imagem não pôde ser exibida. Reabra o texto para tentar novamente.";
           raiz.appendChild(aviso);
