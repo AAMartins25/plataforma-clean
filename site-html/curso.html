@@ -17,7 +17,8 @@
 
   <header class="curso-header">
     <div class="curso-header-titulo">
-      <h1 id="titulo_curso">Curso</h1>
+      <h1 id="titulo_curso">&#8203;</h1>
+      <script>document.getElementById("titulo_curso").textContent = new URLSearchParams(location.search).get("curso_nome") || "Curso";</script>
     </div>
 
     <div class="curso-header-acoes">

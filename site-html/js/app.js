@@ -2715,12 +2715,8 @@ async function pageCursoInfo() {
       "btnAplicarCupom"
     );
 
-  if (tituloCurso) {
-    tituloCurso.innerText =
-      cursoNome || "Curso";
-  }
-
   if (!cursoId) {
+    if (tituloCurso) tituloCurso.innerText = "Curso";
     document.body.style.visibility =
       "visible";
 
@@ -2745,9 +2741,7 @@ async function pageCursoInfo() {
 
     if (tituloCurso) {
       tituloCurso.innerText =
-        dadosCursoInfo.nome ||
-        cursoNome ||
-        "Curso";
+        dadosCursoInfo.nome || "Curso";
     }
 
     if (informacoes) {
@@ -2798,6 +2792,7 @@ async function pageCursoInfo() {
 
   } catch (err) {
     console.error(err);
+    if (tituloCurso && !dadosCursoInfo) tituloCurso.innerText = "Curso";
 
     document.body.style.visibility =
       "visible";
@@ -2839,7 +2834,6 @@ window.onload = async () => {
   }
   if (page === "interatividade-assuntos") pageInteratividadeAssuntos();
   if (page === "curso") pageCurso();
-  if (page === "curso-info") pageCursoInfo();
   if (page === "questoes-disciplinas") pageQuestoesDisciplinas();
   if (page === "questoes-assuntos") pageQuestoesAssuntos();
   if (page === "questoes-pratica") pageQuestoesPratica();
@@ -4616,6 +4610,7 @@ document.addEventListener(
   "DOMContentLoaded",
   () => {
     if (document.body.getAttribute("data-page") === "cursos") pageCursos();
+    if (document.body.getAttribute("data-page") === "curso-info") pageCursoInfo();
     exibirNomeUsuarioLogado();
   }
 );

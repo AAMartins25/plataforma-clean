@@ -1,9 +1,3 @@
-/* Transição nativa entre páginas da mesma origem, sem interceptar a navegação. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition { navigation: auto; }
-  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; }
-}
-
 /* Densidade da interface: reflow normal e respeito ao tamanho de fonte do navegador.
    Celular: 100%; tablet: 95%; desktop: 90%. Breakpoints continuam em pixels.
    Dimensões visuais próprias usam rem; conteúdo e bibliotecas não são reescritos. */

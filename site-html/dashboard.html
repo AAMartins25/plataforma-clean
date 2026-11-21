@@ -107,11 +107,6 @@
       return new URLSearchParams(window.location.search).get(name);
     }
 
-    // O menu já informa o curso selecionado; a consulta de desempenho confirma o nome depois.
-    if (Number(qs("curso_id")) > 0 && qs("curso_nome")) {
-      document.getElementById("titulo_curso_dashboard").textContent = qs("curso_nome");
-    }
-
     function logout() {
       Sessao.encerrar();
       window.location.href = "index.html";

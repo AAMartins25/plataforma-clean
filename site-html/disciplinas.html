@@ -18,7 +18,8 @@
 <body class="disciplinas-page" data-page="disciplinas">
   <header class="disciplinas-header">
     <div style="margin-top:0;">
-      <h1 id="titulo_pagina" style="margin-bottom:0.0625rem;">Disciplinas</h1>
+      <h1 id="titulo_pagina" style="margin-bottom:0.0625rem;">&#8203;</h1>
+      <script>document.getElementById("titulo_pagina").textContent = new URLSearchParams(location.search).get("curso_nome") || "Disciplinas";</script>
     </div>
 
     <div class="disciplinas-header-acoes">
