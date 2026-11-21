@@ -1,0 +1,190 @@
+/* As quatro páginas de estudo reservam a faixa antes de preencher os dados. */
+@media screen {
+  body:is(.curso-page, .disciplinas-page, .assuntos-page, .teoria-page):has(> header.ro-estudo-estavel) {
+    container-type: inline-size;
+    container-name: ro-estudo;
+  }
+
+  body > header.ro-header.ro-estudo-estavel {
+    box-sizing: border-box;
+    display: grid;
+    position: relative;
+    flex-shrink: 0;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: stretch;
+    height: auto !important;
+    min-height: 87.55px !important;
+    padding: 7px 1.5rem !important;
+    gap: 0 !important;
+  }
+
+  body > header.ro-header.ro-estudo-estavel .ro-header-titles {
+    grid-area: 1 / 1 !important;
+    position: relative;
+    inset: auto !important;
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    padding-block: clamp(0px, calc(2rem - 28px), 16px) !important;
+    pointer-events: none;
+    transform: translateY(-4px);
+  }
+
+  body > header.ro-header.ro-estudo-estavel .ro-header-titles > div {
+    max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem) + 14px) !important;
+    text-align: center;
+  }
+
+  body > header.ro-header.ro-estudo-estavel .ro-header-titles h1 {
+    position: static !important;
+    display: block;
+    margin: 0 !important;
+    overflow: visible;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  body > header.ro-header.ro-estudo-estavel .ro-header-navigation {
+    grid-area: auto !important;
+    position: absolute;
+    inset: auto 1.5rem 2px auto !important;
+    justify-content: flex-end;
+  }
+
+  body > header.ro-header.ro-estudo-estavel .ro-header-identity {
+    grid-area: auto !important;
+    position: absolute !important;
+    inset: 1px 1rem auto auto !important;
+    max-width: clamp(4rem, 18vw, 14rem) !important;
+    width: auto !important;
+  }
+
+  body.curso-page > header.ro-header.ro-estudo-estavel .ro-header-titles {
+    transform: translateY(-7px);
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .ro-header-titles {
+    transform: translateY(-4.5px);
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .ro-header-identity {
+    top: 0 !important;
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-header-identificacao {
+    display: block !important;
+    position: static !important;
+    visibility: visible !important;
+    width: 100% !important;
+    line-height: normal;
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-contexto-curso {
+    width: 100%;
+    min-height: calc(1lh + 0.03125px);
+    font-size: 1.444444rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-header-disciplina {
+    color: var(--azul);
+    font-size: 1.388889rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-header-assunto {
+    color: var(--azul);
+    font-size: calc(1.055556rem * 1.13);
+    font-weight: 400;
+    line-height: 1.35;
+  }
+
+  body.teoria-page > header.ro-header.ro-estudo-estavel #titulo_assunto_header {
+    margin: 0;
+    color: inherit;
+    font: inherit;
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  body > header.ro-header.ro-estudo-estavel { min-height: 96.13px !important; }
+  body > header.ro-header.ro-estudo-estavel .ro-header-navigation { right: 1rem !important; }
+  body.curso-page > header.ro-header.ro-estudo-estavel .ro-header-titles { transform: translateY(-1.5px); }
+}
+
+@media screen and (max-width: 480px) {
+  body > header.ro-header.ro-estudo-estavel { min-height: 98.97px !important; }
+  body.curso-page > header.ro-header.ro-estudo-estavel .ro-header-titles { transform: translateY(-19px); }
+  body:is(.disciplinas-page, .assuntos-page) > header.ro-header.ro-estudo-estavel .ro-header-titles { transform: translateY(-12.34px); }
+  body.teoria-page > header.ro-header.ro-estudo-estavel { min-height: 121.31px !important; }
+  body.teoria-page > header.ro-header.ro-estudo-estavel .ro-header-titles { transform: translateY(-25.5px); }
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-contexto-curso { font-size: 1.111111rem; line-height: 1.35; }
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-header-disciplina { font-size: 1.111111rem; }
+  body.teoria-page > header.ro-header.ro-estudo-estavel .teoria-header-assunto { font-size: calc(.972222rem * 1.13); }
+}
+
+@media screen and (max-width: 600px) {
+  @container ro-estudo (max-width: 21rem) {
+    body > header.ro-header.ro-estudo-estavel {
+      grid-template-rows: calc(2.75 * var(--ro-navegacao-rem)) auto auto !important;
+      min-height: 0 !important;
+      padding: .5rem 1rem !important;
+      gap: .25rem !important;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-titles {
+      grid-area: 2 / 1 !important;
+      transform: none !important;
+      padding: 0 !important;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-titles > div { max-width: 100% !important; }
+    body > header.ro-header.ro-estudo-estavel .ro-header-navigation {
+      position: static !important;
+      inset: auto !important;
+      grid-area: 3 / 1 !important;
+      justify-content: flex-end;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-identity {
+      position: static !important;
+      inset: auto !important;
+      grid-area: 1 / 1 !important;
+      justify-self: end;
+      max-width: 100% !important;
+    }
+  }
+}
+
+@media screen and (min-width: 601px) {
+  @container ro-estudo (max-width: 36rem) {
+    body > header.ro-header.ro-estudo-estavel {
+      grid-template-rows: calc(2.75 * var(--ro-navegacao-rem)) auto auto !important;
+      min-height: 0 !important;
+      padding: .5rem 1rem !important;
+      gap: .25rem !important;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-titles {
+      grid-area: 2 / 1 !important;
+      transform: none !important;
+      padding: 0 !important;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-titles > div { max-width: 100% !important; }
+    body > header.ro-header.ro-estudo-estavel .ro-header-navigation {
+      position: static !important;
+      inset: auto !important;
+      grid-area: 3 / 1 !important;
+      justify-content: flex-end;
+    }
+    body > header.ro-header.ro-estudo-estavel .ro-header-identity {
+      position: static !important;
+      inset: auto !important;
+      grid-area: 1 / 1 !important;
+      justify-self: end;
+      max-width: 100% !important;
+    }
+  }
+}

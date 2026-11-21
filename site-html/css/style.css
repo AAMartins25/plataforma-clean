@@ -1,3 +1,5 @@
+/* Reserva o espaço da barra para manter a largura da página durante o carregamento. */
+@media screen { html { scrollbar-gutter: stable; } }
 /* Densidade da interface: reflow normal e respeito ao tamanho de fonte do navegador.
    Celular: 100%; tablet: 95%; desktop: 90%. Breakpoints continuam em pixels.
    Dimensões visuais próprias usam rem; conteúdo e bibliotecas não são reescritos. */

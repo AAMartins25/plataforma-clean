@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Teoria e Questões</title>
-  <link rel="stylesheet" href="css/style.css?v=questoes1"/>
+  <link rel="stylesheet" href="css/style.css?v=estavel-20261121-1"/>
   <link rel="stylesheet" href="css/teoria-cabecalho.css?v=4">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/teoria-imagens.css?v=imagens3">
@@ -108,20 +108,22 @@
     }
 
   </style>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
-  <script src="js/cabecalhos-altura.js?v=altura6-1" defer></script>
-  <script src="js/teoria-cabecalho.js?v=4" defer></script>
+  <script src="js/cabecalho.js?v=estavel-20261121-1" defer></script>
   <link rel="stylesheet" href="css/questao-conteudo.css">
   <link rel="stylesheet" href="css/teoria-texto.css?v=secoes-fluxo1">
 
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
+  <link rel="stylesheet" href="css/estudo-estavel.css?v=estavel-20261121-1">
 </head>
 
 <body class="teoria-page">
-  <header class="teoria-header">
+  <header class="teoria-header ro-header ro-estudo-estavel" data-navegacao-padrao>
+    <div class="ro-header-titles">
 
     <div class="teoria-header-identificacao">
+      <h1 class="teoria-contexto-curso" id="titulo_curso_estavel"></h1>
+      <script>(() => {const p=new URLSearchParams(location.search);document.getElementById('titulo_curso_estavel').textContent=p.get('curso_nome')||'';})();</script>
 
       <div class="teoria-header-disciplina">
         <span id="titulo_disciplina"></span>
@@ -129,48 +131,51 @@
 
       <div class="teoria-header-assunto">
         <span id="titulo_assunto_header"></span>
+        <script>(()=>{const p=new URLSearchParams(location.search);document.getElementById("titulo_disciplina").textContent=p.get("disciplina_nome")||"";document.getElementById("titulo_assunto_header").textContent=p.get("assunto_nome")||"";})();</script>
       </div>
 
     </div>
 
+    </div>
     <div
       id="nome_aluno_logado"
       class="teoria-aluno"
     >
     </div>
 
-    <div class="teoria-header-acoes">
+    <div class="ro-header-navigation">    <div class="teoria-header-acoes">
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="voltarParaAssuntos()"
-        title="Voltar"
-      >
+        aria-label="Voltar" data-ro-simbolo="⇦" title="Voltar"
+      ><span class="ro-nav-label">
         ⇦
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="
           localStorage.setItem('pagina_antes_inicio', window.location.href);
           window.location.replace('index.html');
         "
-        title="Página inicial"
-      >
+        aria-label="Página inicial" data-ro-simbolo="⌂" title="Página inicial"
+      ><span class="ro-nav-label">
         ⌂
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="confirmarSair()"
-        title="Sair"
-      >
+        aria-label="Sair" data-ro-simbolo="⎋" title="Sair"
+      ><span class="ro-nav-label">
         ⎋
-      </a>
+      </span></a>
     </div>
 
+    </div>
   </header>
 
   <main class="container" id="conteudo">
@@ -353,6 +358,20 @@
       }
 
       return res.json();
+    }
+
+    // Links antigos podem não trazer o nome do curso na URL.
+    if (!qs("curso_nome") && (qs("curso_id") || qs("contratacao_id") || qs("demonstracao_id"))) {
+      const sessaoDoCabecalho = Sessao.snapshot();
+      apiGet("/me/cursos").then(acessos => {
+        if (!Sessao.mesma(sessaoDoCabecalho) || !Array.isArray(acessos)) return;
+        const dados = acessos.find(item =>
+          (!qs("curso_id") || String(item.curso_id) === qs("curso_id")) &&
+          (!qs("contratacao_id") || (item.contratacoes || []).some(c => String(c.id) === qs("contratacao_id"))) &&
+          (!qs("demonstracao_id") || (item.demonstracoes || []).some(d => String(d.id) === qs("demonstracao_id")))
+        );
+        if (dados?.nome_curso) document.getElementById("titulo_curso_estavel").textContent = dados.nome_curso;
+      }).catch(() => {});
     }
 
     async function carregarNomeAlunoLogado() {

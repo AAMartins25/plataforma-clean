@@ -5,25 +5,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Curso</title>
-  <link rel="stylesheet" href="css/style.css?v=desempenho-guia1"/>
+  <link rel="stylesheet" href="css/style.css?v=estavel-20261121-1"/>
   <link rel="stylesheet" href="css/curso-funcionalidades.css?v=8"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
+  <script src="js/cabecalho.js?v=estavel-20261121-1" defer></script>
   <script src="js/rodape.js" defer></script>
-  <script src="js/curso-titulo-referencia.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
+  <link rel="stylesheet" href="css/estudo-estavel.css?v=estavel-20261121-1">
 </head>
 
 <body class="curso-page" data-page="curso">
 
-  <header class="curso-header">
+  <header class="curso-header ro-header ro-estudo-estavel" data-navegacao-padrao>
+    <div class="ro-header-titles">
     <div class="curso-header-titulo">
       <h1 id="titulo_curso">&#8203;</h1>
       <script>document.getElementById("titulo_curso").textContent = new URLSearchParams(location.search).get("curso_nome") || "Curso";</script>
     </div>
 
-    <div class="curso-header-acoes">
+    </div>
+    <div class="ro-header-navigation">    <div class="curso-header-acoes">
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="
           localStorage.removeItem('voltar_para_curso');
@@ -31,31 +33,32 @@
           localStorage.removeItem('voltar_para_assuntos');
           window.location.replace('cursos.html');
         "
-        title="Voltar"
-      >
+        aria-label="Voltar" data-ro-simbolo="⇦" title="Voltar"
+      ><span class="ro-nav-label">
         ⇦
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="
           localStorage.setItem('pagina_antes_inicio', window.location.href);
           window.location.replace('index.html');
         "
-        title="Página inicial"
-      >
+        aria-label="Página inicial" data-ro-simbolo="⌂" title="Página inicial"
+      ><span class="ro-nav-label">
         ⌂
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="sairComConfirmacao()"
-        title="Sair"
-      >
+        aria-label="Sair" data-ro-simbolo="⎋" title="Sair"
+      ><span class="ro-nav-label">
         ⎋
-      </a>
+      </span></a>
+    </div>
     </div>
   </header>
 

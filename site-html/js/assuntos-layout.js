@@ -35,7 +35,6 @@
     let agendado = false;
     const ajustar = () => {
       agendado = false;
-      window.CabecalhosAltura.ajustar(header, header.querySelector('h1'));
       preservarAlturas();
     };
     const agendar = () => {
@@ -49,7 +48,6 @@
     if (lista) new MutationObserver(agendar).observe(lista, { childList: true });
     window.addEventListener('resize', agendar);
     document.fonts.ready.then(agendar);
-    window.CabecalhosAltura.pronto.then(agendar);
     ajustar();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar, { once: true });

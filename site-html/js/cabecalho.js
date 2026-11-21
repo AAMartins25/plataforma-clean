@@ -189,6 +189,10 @@
   function atualizar() {
     const cabecalho = document.querySelector("body > header");
     if (!cabecalho) return;
+    if (cabecalho.classList.contains("ro-estudo-estavel")) {
+      for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) identificar(cabecalho, origem);
+      return;
+    }
     comAlturaOriginal(cabecalho, () => {
       organizar(cabecalho);
       for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
