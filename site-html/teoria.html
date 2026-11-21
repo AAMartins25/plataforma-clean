@@ -1285,13 +1285,37 @@
       return paginas.length ? paginas : [{ formato: "texto_puro", conteudo: "" }];
     }
 
+    async function prepararImagensDaPagina(conteudo, card) {
+      const controller = new AbortController();
+      let limite;
+      try {
+        await Promise.race([
+          (async () => {
+            await window.TeoriaImagens.renderizar(conteudo, {aulaId: aulaAtualId, query: contextoAcessoQuery()});
+            await Promise.all([...conteudo.querySelectorAll("img")].map(img => {
+              if (!img.hasAttribute("src") || img.complete) return Promise.resolve();
+              return new Promise(resolve => {
+                img.addEventListener("load", resolve, {once: true, signal: controller.signal});
+                img.addEventListener("error", resolve, {once: true, signal: controller.signal});
+              });
+            }));
+          })(),
+          new Promise(resolve => { limite = setTimeout(resolve, 5000); })
+        ]);
+      } finally {
+        clearTimeout(limite);
+        controller.abort();
+        card.style.removeProperty("visibility");
+      }
+    }
+
     function renderizarPaginaTeoria() {
       const box = document.getElementById("detalhes_aula");
       const pagina = paginasTeoria[paginaTeoriaAtual] || { formato: "texto_puro", conteudo: "" };
 
       window.TeoriaImagens.cancelarLeitura(box.querySelector(".teoria-conteudo-rico"));
       box.innerHTML = `
-        <div class="card" style="padding:0.875rem 1.125rem 1.125rem; position:relative;">
+        <div class="card" style="padding:0.875rem 1.125rem 1.125rem; position:relative;${pagina.formato === "html_v1" ? " visibility:hidden;" : ""}">
           <div class="teoria-texto-conteudo${pagina.formato === "html_v1" ? " teoria-conteudo-rico teoria-imagens-aguardando" : ""}">
             ${pagina.formato === "html_v1" ? window.TeoriaImagens.paraLeitura(pagina.conteudo) : renderizarParagrafosTeoria(pagina.conteudo)}
           </div>
@@ -1317,7 +1341,7 @@
       if (pagina.formato === "html_v1") {
         window.TeoriaTabelas.preparar(box.querySelector(".teoria-conteudo-rico"));
         window.TeoriaMatematica.renderizar(box.querySelector(".teoria-conteudo-rico"));
-        void window.TeoriaImagens.renderizar(box.querySelector(".teoria-conteudo-rico"), {aulaId: aulaAtualId, query: contextoAcessoQuery()});
+        void prepararImagensDaPagina(box.querySelector(".teoria-conteudo-rico"), box.firstElementChild);
       }
 
       const paginacao = document.getElementById("paginacao_teoria");
