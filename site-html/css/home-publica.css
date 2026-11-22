@@ -328,3 +328,8 @@ body.home-page {
 /* O acesso ocupa a inicial de Online, dentro da linha da marca. */
 .home-page .home-brand-name { display: inline-flex; align-items: center; }
 .home-page .home-header.ro-header .home-brand-access { display: inline-flex; flex: 0 0 auto; left: auto; vertical-align: middle; }
+
+.home-page main > .home-cursos-disponiveis-card { margin-bottom: 0.6875rem; }
+@media (max-width: 600px) {
+  .home-page main > .home-cursos-disponiveis-card { margin-bottom: 0.5625rem; }
+}
