@@ -110,7 +110,7 @@ body.home-page {
   line-height: 1.15;
 }
 /* Compensa a margem transparente do SVG ao reduzir a distância visível até o nome. */
-.home-page .home-brand-symbol { transform: translateY(1.3px); width: var(--home-book-width); margin-right: calc(-0.140335 * var(--home-book-width)); height: 2.909375rem; flex: 0 0 auto; position: relative; top: max(0rem, calc((clamp(1.5625rem, calc(4.5vw * var(--home-ui-scale)), 2.75rem) * 1.15 + 1.496875rem - 4.15625rem) / 2)); }
+.home-page .home-brand-symbol { transform: translateY(1.7px); width: var(--home-book-width); margin-right: calc(-0.140335 * var(--home-book-width)); height: 2.909375rem; flex: 0 0 auto; position: relative; top: max(0rem, calc((clamp(1.5625rem, calc(4.5vw * var(--home-ui-scale)), 2.75rem) * 1.15 + 1.496875rem - 4.15625rem) / 2)); }
 .home-page .home-brand-wordmark { display: flex; flex-direction: column; align-items: center; align-self: flex-start; min-width: 0; position: relative; top: var(--home-wordmark-top); }
 .home-page .home-brand-name { font-size: clamp(1.5625rem, calc(4.5vw * var(--home-ui-scale)), 2.75rem); font-weight: 800; letter-spacing: -0.045em; white-space: nowrap; }
 .home-page .home-brand-name > span:first-child { color: #008a3d; background: none; padding: 0 0.045em; }
