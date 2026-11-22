@@ -41,7 +41,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await partial.locator('.home-course-meta').innerText(),'Órgão confirmado • 2027');
       const legacy=page.locator('.curso-publico-card').filter({hasText:'Curso antigo sem metadados'});
       assert.equal(await legacy.locator('.home-course-meta').count(),0);
-      assert.equal(await page.getByLabel('Localizar resumo',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave de um resumo');
+      assert.equal(await page.getByLabel('Localizar resumo',{exact:true}).getAttribute('placeholder'),'Localizar resumo: digito o nome ou palavra(s)-chave');
       const geometry=await page.evaluate(()=>{
         const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height}};
         const input=document.querySelector('#buscaCurso'),style=getComputedStyle(input),ph=getComputedStyle(input,'::placeholder');
