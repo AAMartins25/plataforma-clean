@@ -333,3 +333,9 @@ body.home-page {
 @media (max-width: 600px) {
   .home-page main > .home-cursos-disponiveis-card { margin-bottom: 0.5625rem; }
 }
+
+/* Reduz a altura externa do card, preservando os controles. */
+.home-page main > .home-localizar-card { padding-block: calc(1.065625rem - 0.165px); }
+@media (max-width: 600px) {
+  .home-page main > .home-localizar-card { padding-block: calc(0.774375rem - 0.165px); }
+}
