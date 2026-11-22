@@ -225,7 +225,7 @@
   function alinharNomeNaMarca(cabecalho) {
     if (!cabecalho.matches(".home-header.ro-header--identified")) return;
     const marca = cabecalho.querySelector(".home-brand-name");
-    const livro = cabecalho.querySelector(".home-brand-symbol");
+    const livro = cabecalho.querySelector(".home-brand-symbol") || { getBoundingClientRect: () => ({ left: 0, right: 0, top: 0, bottom: 0 }) };
     const origem = cabecalho.querySelector(".ro-header-identity");
     const nome = origem?.querySelector(".ro-identity");
     if (!marca || !livro || !nome) return;
