@@ -323,3 +323,7 @@ body.home-page {
   .home-page .home-header.ro-header .ro-header-navigation :is(.home-nav, .home-nav-actions) { width: auto; }
   .home-page .home-header.ro-header .ro-header-navigation .home-nav-actions { justify-content: center; }
 }
+
+/* O acesso ocupa a inicial de Online, dentro da linha da marca. */
+.home-page .home-brand-name { display: inline-flex; align-items: center; }
+.home-page .home-header.ro-header .home-brand-access { display: inline-flex; flex: 0 0 auto; left: auto; vertical-align: middle; }
