@@ -182,7 +182,7 @@ const server = http.createServer((req, res) => {
         geometry.catalog=catalog;
         geometry.colors=colors;geometry.buttonContrast=contrast;
         assert.equal(await noOverflow(page), true);
-        assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} Quality`);
+        assert.equal(await page.locator('footer').innerText(), `© ${new Date().getFullYear()} AAMartins`);
         geometry.carColors=await page.locator('.home-race-car').evaluate(e=>[...e.querySelectorAll('[fill],[stroke]')].flatMap(n=>['fill','stroke'].map(k=>n.getAttribute(k)).filter(Boolean)));
         for(const color of ['#789B45','#C0C0C0','#D9DDE1','#69737D'])assert.ok(geometry.carColors.includes(color));
         assert.ok(!geometry.carColors.some(c=>['#E32131','#FF7376','#B61726','#F23946','#B61827'].includes(c)));
@@ -337,7 +337,7 @@ const server = http.createServer((req, res) => {
     }
     const errorCtx=await context(320,null,[],true);const errorPage=await errorCtx.newPage();
     await errorPage.goto(origin+'/index.html');await errorPage.locator('#lista-cursos-publicos h2').filter({hasText:'Erro'}).waitFor();await errorCtx.close();
-    const footerFiles = fs.readdirSync(root,{recursive:true}).filter(f=>f.endsWith('.html') && /<footer[\s>][\s\S]*?Quality[\s\S]*?<\/footer>/.test(fs.readFileSync(path.join(root,f),'utf8')));
+    const footerFiles = fs.readdirSync(root,{recursive:true}).filter(f=>f.endsWith('.html') && /<footer[\s>][\s\S]*?AAMartins[\s\S]*?<\/footer>/.test(fs.readFileSync(path.join(root,f),'utf8')));
     const footerCtx=await browser.newContext(); const footerPage=await footerCtx.newPage();
     await footerPage.clock.install({time:new Date('2032-06-15T12:00:00Z')});
     for(const file of footerFiles) {
@@ -345,7 +345,7 @@ const server = http.createServer((req, res) => {
       const footer=html.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/)[0];
       await footerPage.setContent(footer);
       await footerPage.addScriptTag({path:path.join(root,'js/rodape.js')});
-      assert.equal((await footerPage.locator('footer').innerText()).replace(/\s+/g,' ').trim(),'© 2032 Quality',file);
+      assert.equal((await footerPage.locator('footer').innerText()).replace(/\s+/g,' ').trim(),'© 2032 AAMartins',file);
       assert.ok(html.includes('js/rodape.js'),file);
       assert.ok(!/(?:textContent|innerText)\s*=\s*2026\b/.test(html),file);
     }
