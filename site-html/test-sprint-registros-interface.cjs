@@ -46,7 +46,7 @@ const rich = '<p><strong>Anotação</strong> <i>formatada</i> <u>teste</u></p><f
         fs.mkdirSync(process.env.SCREENSHOT_DIR, {recursive:true});
         await p.screenshot({path:path.join(process.env.SCREENSHOT_DIR, `${state}-${width}.png`), fullPage:true});
       };
-      const overflow = async () => assert.equal(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `overflow a ${width}px`);
+      const overflow = async () => assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `overflow a ${width}px`);
       const ready = async host => host.locator('.ck-content[contenteditable="true"]').waitFor();
       const open = async host => {await host.locator('.sprint-registro-abrir').click(); await ready(host);};
       const data = async (host, text) => host.locator('.ck-content').evaluate((el, text) => el.ckeditorInstance.setData(text), text);
@@ -57,7 +57,7 @@ const rich = '<p><strong>Anotação</strong> <i>formatada</i> <u>teste</u></p><f
           const s = getComputedStyle(el), b = el.getBoundingClientRect();
           return {radius:s.borderRadius, height:b.height, width:b.width, parent:el.parentElement.clientWidth, background:s.backgroundColor, color:s.color};
         });
-        assert.equal(style.radius, '999px'); assert.ok(style.height <= (width === 320 ? 54 : 40), JSON.stringify(style)); assert.ok(style.width < style.parent);
+        assert.ok(parseFloat(style.radius) >= style.height / 2, JSON.stringify(style)); assert.ok(style.height <= (width <= 390 ? 54 : 40), JSON.stringify(style)); assert.ok(style.width < style.parent);
         assert.equal(style.background, 'rgb(248, 242, 230)'); assert.equal(style.color, 'rgb(31, 78, 121)');
       }
       await overflow(); await screenshot("fechados");

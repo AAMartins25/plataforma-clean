@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Questões</title>
     <link rel="stylesheet" href="css/style.css?v=questoes1"/>
-    <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <link rel="stylesheet" href="css/questao-conteudo.css">
 <link rel="stylesheet" href="css/teoria-matematica.css">
 <link rel="stylesheet" href="css/teoria-imagens.css">
@@ -67,7 +66,9 @@
 
       </div>
 
-    </header>
+    <script type="text/javascript">(() => {const p=new URLSearchParams(location.search);document.getElementById('titulo_bateria').textContent=p.get('assunto_nome')||'Questões';document.getElementById('subtitulo_bateria').textContent=p.get('titulo')||'Bateria de questões';})();</script>
+  </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122-2" data-antecipado="sessao"></script>
 
     <main class="container">
       <div id="area_questoes"></div>

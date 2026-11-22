@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Interatividade - Assuntos</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
@@ -23,7 +22,9 @@
       <a class="btn" href="javascript:history.back()">Voltar</a>
       <a href="#" class="btn" onclick="logout()">Sair</a>
     </div>
+  <script type="text/javascript">(() => {const p=new URLSearchParams(location.search),c=p.get('curso_nome')||'';document.getElementById('titulo_curso').textContent=c?'📘 '+c:'';document.getElementById('titulo_disciplina').textContent=p.get('disciplina_nome')||'';})();</script>
   </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122" data-antecipado="true"></script>
 
   <main class="container">
     <div class="card">

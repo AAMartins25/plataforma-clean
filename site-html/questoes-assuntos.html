@@ -16,7 +16,6 @@
     rel="stylesheet"
     href="css/style.css"
   >
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
@@ -68,7 +67,9 @@
 
     </nav>
 
+  <script type="text/javascript">document.getElementById('titulo_curso_nome').textContent=new URLSearchParams(location.search).get('curso_nome')||'Curso';</script>
   </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122" data-antecipado="true"></script>
 
   <main
     class="container"

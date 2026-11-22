@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informações do Curso</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/cabecalho.js?v=altura-curso-1" defer></script>
   <link rel="stylesheet" href="css/descricao-publica.css?v=fonte-15">
   <link rel="stylesheet" href="css/curso-info.css?v=cabecalho-2">
   <script src="js/rodape.js" defer></script>
@@ -15,7 +14,7 @@
 <body class="curso-info-page" data-page="curso-info">
 
   <header style="padding-top:1.625rem;padding-bottom:1.75rem; position:relative;">
-    <h1 id="titulo_curso" style="margin-bottom:0;">&#8203;</h1>
+    <h1 id="titulo_curso" style="margin-bottom:0;">&#8203;</h1><script type="text/javascript">document.getElementById('titulo_curso').textContent = new URLSearchParams(location.search).get('curso_nome') || 'Curso';</script>
 
     <div class="ro-header-icon-actions" style="position:absolute;right:1.5rem;top:2.3125rem;display:flex;gap:1.375rem;">
       <a class="btn" href="javascript:history.back()" title="Voltar">⇦</a>
@@ -23,6 +22,64 @@
       <a class="btn curso-info-auth-exit" href="#" onclick="confirmarSair(); return false;" title="Sair">⎋</a>
     </div>
   </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122-2" data-antecipado="sessao"></script>
+  <script type="text/javascript">
+  // Apenas apresentação: centraliza o título sem redimensionar o cabeçalho.
+  (() => {
+    const header = document.querySelector("header");
+    const titulo = document.getElementById("titulo_curso");
+    let translacaoTitulo = titulo.style.translate;
+    let atualizacaoAgendada = false;
+    const atualizarTitulo = () => {
+      titulo.style.setProperty("--curso-title-offset", "0px");
+      const faixa = header.getBoundingClientRect();
+      const caixa = titulo.getBoundingClientRect();
+      let deslocamento = faixa.top + faixa.height / 2 - caixa.top - caixa.height / 2 - 3;
+      const texto = document.createRange();
+      texto.selectNodeContents(titulo);
+      const linhas = Array.from(texto.getClientRects());
+      // Títulos extensos podem se aproximar dos ícones: preserva a separação visual.
+      for (const controle of header.querySelectorAll(".ro-header-navigation a, .ro-identity")) {
+        if (!controle.getClientRects().length) continue;
+        const conteudo = document.createRange();
+        conteudo.selectNodeContents(controle);
+        const navegacao = controle.matches(".ro-nav-control");
+        const caixaControle = controle.getBoundingClientRect();
+        // Preserva também a área clicável, além do símbolo visível.
+        const limites = navegacao ? [{
+          left: caixaControle.left,
+          right: caixaControle.right,
+          top: caixaControle.top
+        }] : conteudo.getClientRects();
+        for (const icone of limites) {
+          for (const linha of linhas) {
+            if (linha.left < icone.right && icone.left < linha.right && (navegacao || icone.top >= linha.bottom)) {
+              deslocamento = Math.min(deslocamento, icone.top - linha.bottom - 6);
+            }
+          }
+        }
+      }
+      titulo.style.setProperty("--curso-title-offset", `${deslocamento}px`);
+      translacaoTitulo = titulo.style.translate;
+    };
+    new ResizeObserver(atualizarTitulo).observe(header);
+    new MutationObserver(registros => {
+      // Recentraliza após os cálculos compartilhados, inclusive ao abrir os cards.
+      // Ignora a alteração do próprio offset para não criar um ciclo de medições.
+      const mudou = registros.some(registro => registro.type !== "attributes"
+        || registro.target !== titulo || titulo.style.translate !== translacaoTitulo);
+      if (!mudou || atualizacaoAgendada) return;
+      atualizacaoAgendada = true;
+      requestAnimationFrame(() => {
+        atualizacaoAgendada = false;
+        atualizarTitulo();
+      });
+    }).observe(header, { childList: true, subtree: true, characterData: true,
+      attributes: true, attributeFilter: ["style"] });
+    document.fonts.ready.then(atualizarTitulo);
+    atualizarTitulo();
+  })();
+  </script>
 
   <main class="container">
 
@@ -182,62 +239,7 @@
   <script src="js/juridico.js?v=aceite-3"></script>
 
   <script>
-  // Apenas apresentação: centraliza o título sem redimensionar o cabeçalho.
-  document.addEventListener("DOMContentLoaded", () => {
-    const header = document.querySelector("header");
-    const titulo = document.getElementById("titulo_curso");
-    let translacaoTitulo = titulo.style.translate;
-    let atualizacaoAgendada = false;
-    const atualizarTitulo = () => {
-      titulo.style.setProperty("--curso-title-offset", "0px");
-      const faixa = header.getBoundingClientRect();
-      const caixa = titulo.getBoundingClientRect();
-      let deslocamento = faixa.top + faixa.height / 2 - caixa.top - caixa.height / 2 - 3;
-      const texto = document.createRange();
-      texto.selectNodeContents(titulo);
-      const linhas = Array.from(texto.getClientRects());
-      // Títulos extensos podem se aproximar dos ícones: preserva a separação visual.
-      for (const controle of header.querySelectorAll(".ro-header-navigation a, .ro-identity")) {
-        if (!controle.getClientRects().length) continue;
-        const conteudo = document.createRange();
-        conteudo.selectNodeContents(controle);
-        const navegacao = controle.matches(".ro-nav-control");
-        const caixaControle = controle.getBoundingClientRect();
-        const tamanhoIcone = parseFloat(getComputedStyle(controle, "::before").fontSize);
-        // O símbolo visível está no pseudo-elemento; o texto do link é oculto.
-        const limites = navegacao ? [{
-          left: caixaControle.left + (caixaControle.width - tamanhoIcone) / 2,
-          right: caixaControle.left + (caixaControle.width + tamanhoIcone) / 2,
-          top: caixaControle.top + (caixaControle.height - tamanhoIcone) / 2
-        }] : conteudo.getClientRects();
-        for (const icone of limites) {
-          for (const linha of linhas) {
-            if (linha.left < icone.right && icone.left < linha.right && (navegacao || icone.top >= linha.bottom)) {
-              deslocamento = Math.min(deslocamento, icone.top - linha.bottom - 2);
-            }
-          }
-        }
-      }
-      titulo.style.setProperty("--curso-title-offset", `${deslocamento}px`);
-      translacaoTitulo = titulo.style.translate;
-    };
-    new ResizeObserver(atualizarTitulo).observe(header);
-    new MutationObserver(registros => {
-      // Recentraliza após os cálculos compartilhados, inclusive ao abrir os cards.
-      // Ignora a alteração do próprio offset para não criar um ciclo de medições.
-      const mudou = registros.some(registro => registro.type !== "attributes"
-        || registro.target !== titulo || titulo.style.translate !== translacaoTitulo);
-      if (!mudou || atualizacaoAgendada) return;
-      atualizacaoAgendada = true;
-      requestAnimationFrame(() => {
-        atualizacaoAgendada = false;
-        atualizarTitulo();
-      });
-    }).observe(header, { childList: true, subtree: true, characterData: true,
-      attributes: true, attributeFilter: ["style"] });
-    document.fonts.ready.then(atualizarTitulo);
-    atualizarTitulo();
-  }, { once: true });
+
 
   function confirmarSair() {
     const ok = confirm("Deseja realmente sair da plataforma?");

@@ -1,5 +1,8 @@
 /* Carregado somente pelos cinco destinos do menu que precisam de ajuste. */
 @media screen {
+  body:is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page, .questoes-criticas-page) {
+    container: ro-funcionalidade / inline-size;
+  }
   :is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page) > header.ro-header:not([data-medir-cabecalho]) h2 {
     font-size: 1.159rem; /* 0,95rem atuais × 1,22. */
     line-height: 1.2825rem;
@@ -43,4 +46,95 @@
     left: var(--funcionalidade-titulo-left);
     width: var(--funcionalidade-titulo-width);
   }
+}
+
+/* Ao ampliar o texto, separam-se título, identificação e ações. */
+@media screen and (max-width: 600px) {
+  @container ro-funcionalidade (max-width: 16rem) {
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel {
+      grid-template-rows: 2.75rem auto auto !important;
+      min-height: 0 !important;
+      padding: .5rem 1rem !important;
+      gap: .25rem !important;
+    }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles { grid-area: 2 / 1 !important; padding: 0 !important; transform: none !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles > div { max-width: 100% !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles h2 { white-space: normal !important; max-width: 100% !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-navigation { position: static !important; inset: auto !important; grid-area: 3 / 1 !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-identity { position: static !important; inset: auto !important; grid-area: 1 / 1 !important; justify-self: end; max-width: 100% !important; }
+  }
+}
+@media screen and (min-width: 601px) {
+  @container ro-funcionalidade (max-width: 36rem) {
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel {
+      grid-template-rows: 2.75rem auto auto !important;
+      min-height: 0 !important;
+      padding: .5rem 1rem !important;
+      gap: .25rem !important;
+    }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles { grid-area: 2 / 1 !important; padding: 0 !important; transform: none !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles > div { max-width: 100% !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-titles h2 { white-space: normal !important; max-width: 100% !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-navigation { position: static !important; inset: auto !important; grid-area: 3 / 1 !important; }
+    body > header.ro-header.ro-header.ro-header.ro-funcionalidade-estavel .ro-header-identity { position: static !important; inset: auto !important; grid-area: 1 / 1 !important; justify-self: end; max-width: 100% !important; }
+  }
+}
+
+/* Geometria definida antes do primeiro quadro, sem medição assíncrona. */
+@media screen {
+  body:is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page, .questoes-criticas-page) > header.ro-header.ro-funcionalidade-estavel {
+    position: relative;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 87.55px !important;
+    height: auto !important;
+    padding: 0 1.5rem !important;
+    gap: 0 !important;
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-titles {
+    grid-area: 1 / 1 !important;
+    grid-column: 1 / -1 !important;
+    width: 100%;
+    align-self: stretch;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0 !important;
+    transform: translateY(-4px);
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-titles > div {
+    position: static !important;
+    max-width: calc(100% - 2 * clamp(5rem, 20vw, 15rem));
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-navigation {
+    position: absolute;
+    inset: auto 0 0 auto;
+    justify-content: flex-end;
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-identity {
+    position: absolute !important;
+    inset: 0 0 auto auto !important;
+    width: auto !important;
+  }
+}
+@media screen and (max-width: 1023px) {
+  body:is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page, .questoes-criticas-page) > header.ro-header.ro-funcionalidade-estavel {
+    min-height: 96.13px !important;
+    padding-inline: 1rem !important;
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-titles { padding-block: 24.5px !important; }
+}
+@media screen and (max-width: 480px) {
+  body:is(.dashboard-aluno-page, .mensagens-prof-page, .minhas-anotacoes-page, .revisoes-programadas-page, .questoes-criticas-page) > header.ro-header.ro-funcionalidade-estavel { min-height: 101.8px !important; }
+  body.questoes-criticas-page.questoes-criticas-page > header.ro-header.ro-funcionalidade-estavel { min-height: 102.9px !important; }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-titles {
+    align-items: flex-start !important;
+    padding: 1px 0 max(51.3px, 3.20625rem) !important;
+    transform: none;
+  }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-titles > div { max-width: calc(100% - 7rem) !important; }
+  body > header.ro-header.ro-funcionalidade-estavel .ro-header-identity { max-width: 3.5rem !important; }
 }

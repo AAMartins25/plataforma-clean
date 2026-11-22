@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuizIA</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
@@ -16,7 +15,9 @@
     <a class="btn" href="javascript:history.back()">Voltar</a>
     <a href="#" class="btn" onclick="logout()">Sair</a>
     <div id="subtitulo" style="margin-top:0.625rem;"></div>
+  <script type="text/javascript">(() => {const p=new URLSearchParams(location.search),id=p.get('pasta_id'),el=document.getElementById('subtitulo');if(id){el.append('pasta_id=');const b=document.createElement('b');b.textContent=id;el.append(b,' • assunto_id=',p.get('assunto_id')||'-');}else el.textContent='Faltou pasta_id na URL';})();</script>
   </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122-2" data-antecipado="sessao"></script>
 
   <main class="container" id="conteudo">
     <div class="card">

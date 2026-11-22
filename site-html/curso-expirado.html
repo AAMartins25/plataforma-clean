@@ -6,16 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Curso com acesso expirado</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
 
 <body class="consulta-expirada-page">
   <header>
-    <div id="nome_aluno_logado"></div>
+    <div id="nome_aluno_logado" class="ro-header-identity"></div>
     <div class="historico-header-identificacao">
-      <h1 id="titulo_curso">📘 Curso</h1>
+      <h1 id="titulo_curso">📘 Curso</h1><script type="text/javascript">document.getElementById("titulo_curso").textContent="📘 "+(new URLSearchParams(location.search).get("curso_nome")||"Curso");</script>
     </div>
 
     <nav class="ro-header-icon-actions">
@@ -24,6 +23,7 @@
       <a class="btn" href="javascript:void(0)" onclick="logout()" title="Sair" aria-label="Sair">⎋</a>
     </nav>
   </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122" data-antecipado="true"></script>
 
   <main class="container">
 

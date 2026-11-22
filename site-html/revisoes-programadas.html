@@ -6,21 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Assuntos que precisa rever</title>
   <link rel="stylesheet" href="css/style.css?v=revisoes6"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
+  <script src="js/cabecalho.js?v=func-estavel-20261122" defer></script>
   <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=4">
-  <script src="js/funcionalidades-cabecalho.js?v=altura6-1" defer></script>
+
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
 
 <body class="revisoes-programadas-page">
-<header class="revisoes-programadas-header">
+<header class="revisoes-programadas-header ro-header ro-funcionalidade-estavel" data-navegacao-padrao>
+    <div class="ro-header-titles">
 
   <div id="nome_aluno_logado"></div>
 
   <div class="revisoes-programadas-header-identificacao">
 
-    <h1 id="titulo_curso"></h1>
+    <h1 id="titulo_curso"></h1><script type="text/javascript">(() => { const p = new URLSearchParams(location.search); if (Number(p.get('curso_id')) > 0) document.getElementById('titulo_curso').textContent = p.get('curso_nome') || 'Curso'; })();</script>
 
     <h2>
       Revisões
@@ -28,38 +29,39 @@
 
   </div>
 
-  <nav class="revisoes-programadas-header-acoes">
+  </div>
+    <div class="ro-header-navigation"><nav class="revisoes-programadas-header-acoes">
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="javascript:void(0)"
       onclick="voltarParaCurso()"
       title="Voltar"
       aria-label="Voltar"
-    >
+     data-ro-simbolo="⇦"><span class="ro-nav-label">
       ⇦
-    </a>
+    </span></a>
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="index.html"
       title="Início"
       aria-label="Início"
-    >
+     data-ro-simbolo="⌂"><span class="ro-nav-label">
       ⌂
-    </a>
+    </span></a>
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="javascript:void(0)"
       onclick="logout()"
       title="Sair"
       aria-label="Sair"
-    >
+     data-ro-simbolo="⎋"><span class="ro-nav-label">
       ⎋
-    </a>
+    </span></a>
 
-  </nav>
+  </nav></div>
 
 </header>
 

@@ -2,6 +2,12 @@
 (() => {
   "use strict";
 
+  const inicioAntecipado = document.currentScript?.dataset.antecipado;
+  let reservarIdentidade = inicioAntecipado === "true";
+  if (inicioAntecipado === "sessao") {
+    try { reservarIdentidade = !!localStorage.getItem("access_token"); } catch (_) { /* Visitante sem armazenamento. */ }
+  }
+
   function organizar(cabecalho) {
     if (cabecalho.classList.contains("ro-header")) return;
 
@@ -189,12 +195,25 @@
   function atualizar() {
     const cabecalho = document.querySelector("body > header");
     if (!cabecalho) return;
-    if (cabecalho.classList.contains("ro-estudo-estavel")) {
+    if (cabecalho.classList.contains("ro-estudo-estavel") || cabecalho.classList.contains("ro-funcionalidade-estavel")) {
       for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) identificar(cabecalho, origem);
       return;
     }
     comAlturaOriginal(cabecalho, () => {
       organizar(cabecalho);
+      if (reservarIdentidade && !cabecalho.querySelector(":scope > [data-ro-reserva-identidade]")) {
+        const reserva = document.createElement("div");
+        reserva.className = "ro-header-identity";
+        reserva.dataset.roReservaIdentidade = "";
+        reserva.setAttribute("aria-hidden", "true");
+        reserva.style.visibility = "hidden";
+        const espaco = document.createElement("span");
+        espaco.className = "ro-identity";
+        espaco.textContent = "Aluno";
+        reserva.append(espaco);
+        cabecalho.prepend(reserva);
+        cabecalho.classList.add("ro-header--identified");
+      }
       for (const origem of document.querySelectorAll("#nomeUsuarioLogadoGlobal, #nome_aluno_logado")) {
         identificar(cabecalho, origem);
       }
@@ -272,6 +291,7 @@
     document.fonts.ready.then(agendar);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });
+  if (inicioAntecipado) iniciar();
+  else if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });
   else iniciar();
 })();

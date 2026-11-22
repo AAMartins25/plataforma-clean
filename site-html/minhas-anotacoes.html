@@ -7,9 +7,9 @@
   <title>Minhas anotações</title>
 
   <link rel="stylesheet" href="css/style.css?v=questoes1">
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
-  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=2">
-  <script src="js/funcionalidades-cabecalho.js?v=altura6-1" defer></script>
+  <script src="js/cabecalho.js?v=func-estavel-20261122" defer></script>
+  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=estavel-20261122">
+
   <link rel="stylesheet" href="css/questao-conteudo.css">
   <link rel="stylesheet" href="css/teoria-matematica.css">
   <link rel="stylesheet" href="css/teoria-imagens.css">
@@ -25,11 +25,12 @@
   data-page="minhas-anotacoes"
 >
 
-<header class="minhas-anotacoes-header">
+<header class="minhas-anotacoes-header ro-header ro-funcionalidade-estavel" data-navegacao-padrao>
+    <div class="ro-header-titles">
 
   <div class="minhas-anotacoes-header-identificacao">
 
-    <h1 id="titulo_curso_minhas_anotacoes"></h1>
+    <h1 id="titulo_curso_minhas_anotacoes"></h1><script type="text/javascript">document.getElementById('titulo_curso_minhas_anotacoes').textContent = new URLSearchParams(location.search).get('curso_nome') || 'Curso';</script>
 
     <h2>
       Minhas anotações
@@ -37,37 +38,38 @@
 
   </div>
 
-  <nav class="minhas-anotacoes-header-acoes">
+  </div>
+    <div class="ro-header-navigation"><nav class="minhas-anotacoes-header-acoes">
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="javascript:history.back()"
       title="Voltar"
       aria-label="Voltar"
-    >
+     data-ro-simbolo="⇦"><span class="ro-nav-label">
       ⇦
-    </a>
+    </span></a>
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="index.html"
       title="Início"
       aria-label="Início"
-    >
+     data-ro-simbolo="⌂"><span class="ro-nav-label">
       ⌂
-    </a>
+    </span></a>
 
     <a
-      class="btn"
+      class="btn ro-nav-control"
       href="javascript:void(0)"
       onclick="logout()"
       title="Sair"
       aria-label="Sair"
-    >
+     data-ro-simbolo="⎋"><span class="ro-nav-label">
       ⎋
-    </a>
+    </span></a>
 
-  </nav>
+  </nav></div>
 
 </header>
 

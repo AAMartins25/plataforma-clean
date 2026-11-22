@@ -7,9 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Progresso do Aluno</title>
   <link rel="stylesheet" href="css/style.css?v=desempenho-notas1"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
-  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=2">
-  <script src="js/funcionalidades-cabecalho.js?v=altura6-1" defer></script>
+  <script src="js/cabecalho.js?v=func-estavel-20261122" defer></script>
+  <link rel="stylesheet" href="css/funcionalidades-cabecalho.css?v=estavel-20261122">
+
   <script src="js/rodape.js" defer></script>
   <link rel="stylesheet" href="css/hover-aluno.css?v=1">
 </head>
@@ -18,11 +18,12 @@
   class="dashboard-aluno-page"
   data-page="dashboard"
 >
-  <header class="dashboard-aluno-header">
+  <header class="dashboard-aluno-header ro-header ro-funcionalidade-estavel" data-navegacao-padrao>
+    <div class="ro-header-titles">
 
     <div class="dashboard-aluno-header-identificacao">
 
-      <h1 id="titulo_curso_dashboard"></h1>
+      <h1 id="titulo_curso_dashboard"></h1><script type="text/javascript">document.getElementById('titulo_curso_dashboard').textContent = new URLSearchParams(location.search).get('curso_nome') || '';</script>
 
       <h2>
         Meu desempenho-guia
@@ -30,38 +31,39 @@
 
     </div>
 
-    <nav class="dashboard-aluno-header-acoes">
+    </div>
+    <div class="ro-header-navigation"><nav class="dashboard-aluno-header-acoes">
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="voltarParaCurso()"
         title="Voltar"
         aria-label="Voltar"
-      >
+       data-ro-simbolo="⇦"><span class="ro-nav-label">
         ⇦
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="index.html"
         title="Início"
         aria-label="Início"
-      >
+       data-ro-simbolo="⌂"><span class="ro-nav-label">
         ⌂
-      </a>
+      </span></a>
 
       <a
-        class="btn"
+        class="btn ro-nav-control"
         href="javascript:void(0)"
         onclick="logout()"
         title="Sair"
         aria-label="Sair"
-      >
+       data-ro-simbolo="⎋"><span class="ro-nav-label">
         ⎋
-      </a>
+      </span></a>
 
-    </nav>
+    </nav></div>
 
   </header>
 
@@ -106,6 +108,8 @@
     function qs(name) {
       return new URLSearchParams(window.location.search).get(name);
     }
+
+    document.getElementById("titulo_curso_dashboard").textContent = qs("curso_nome") || "";
 
     function logout() {
       Sessao.encerrar();

@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mensagens ao professor</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <script src="js/cabecalho.js?v=altura6-1" defer></script>
   <link rel="stylesheet" href="css/registro-conteudo.css">
   <link rel="stylesheet" href="js/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/teoria-matematica.css">
@@ -17,9 +16,9 @@
 <body class="consulta-expirada-page">
 
 <header>
-    <div id="nome_aluno_logado"></div>
+    <div id="nome_aluno_logado" class="ro-header-identity"></div>
   <div class="historico-header-identificacao">
-      <h1 id="titulo_topo">📘 Curso</h1>
+      <h1 id="titulo_topo">📘 Curso</h1><script type="text/javascript">document.getElementById("titulo_topo").textContent="📘 "+(new URLSearchParams(location.search).get("curso_nome")||"Curso");</script>
       <h2>Mensagens que enviei ao prof</h2>
     </div>
 
@@ -29,6 +28,7 @@
       <a class="btn" href="javascript:void(0)" onclick="logout()" title="Sair" aria-label="Sair">⎋</a>
     </nav>
 </header>
+  <script src="js/cabecalho.js?v=antecipado-20261122" data-antecipado="true"></script>
 
 <main class="container">
 
