@@ -189,7 +189,7 @@ const server = http.createServer((req, res) => {
         assert.equal(await page.evaluate(()=>getSelection().toString()),'','Efeito azul permanente sem seleção de texto');
         assert.equal(await page.locator('.home-race-track').count(), 0);
         assert.equal(await page.locator('.home-course-arrow').count(), 0);
-        assert.equal(await page.getByLabel('Localizar curso',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave');
+        assert.equal(await page.getByLabel('Localizar resumo',{exact:true}).getAttribute('placeholder'),'Digite o nome completo ou palavra(s)-chave de um resumo');
         assert.equal(await page.locator('.home-brand-symbol').evaluate(img => img.complete && img.naturalWidth > 0), true);
         assert.equal(await page.locator('h1').innerText(), 'ResumãoOnline\nDIRETO AO PONTO');
         if (artifacts) {

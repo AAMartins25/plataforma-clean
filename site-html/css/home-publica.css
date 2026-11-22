@@ -192,7 +192,7 @@ body.home-page {
 .home-page .home-course-meta { font-size: 1rem; font-weight: 650; line-height: 1.5; color: var(--home-navy); }
 .home-page #mais-cursos-box:empty { display: none; }
 .home-page #mais-cursos-box .btn { margin: 0; min-height: 2.75rem; background: #eef5ff; color: var(--home-blue); font-family: inherit; font-weight: 650; cursor: pointer; }
-.home-page .home-localizar { display: flex; align-items: center; gap: 1.375rem; margin: 0; }
+.home-page .home-localizar { display: flex; align-items: center; gap: 0.75rem; margin: 0; }
 .home-page .home-localizar label { flex-shrink: 0; }
 .home-page #buscaCurso { width: 100%; min-width: 0; min-height: 2.875rem; padding: 0.6875rem 0.9375rem; border: 0.0625rem solid #d5dfed; border-radius: 0.5625rem !important; font-size: 1rem; font-style: normal; color: var(--home-navy); background: #fff; }
 .home-page #buscaCurso::placeholder { color: #64748b; opacity: 1; }
@@ -214,7 +214,7 @@ body.home-page {
   .home-page .home-course-icon img { width: 2rem; --home-course-book-shift: 0.660625rem; }
   .home-page .curso-publico-nome { font-size: 1.0625rem; }
   .home-page .home-course-meta { font-size: 0.875rem; }
-  .home-page .home-localizar { flex-direction: column; align-items: stretch; gap: 0.875rem; }
+  .home-page .home-localizar { flex-direction: row; align-items: center; gap: 0.625rem; }
 }
 @media (max-width: 370px) {
   body.home-page { --home-book-width: 1.4875rem; }
