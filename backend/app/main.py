@@ -9770,6 +9770,45 @@ async def importar_curso_completo(request: Request, db: Session = Depends(get_db
         db.rollback()
         raise
 
+
+@app.post('/admin/importacoes/cursos/pacote/preparar')
+async def preparar_pacote_curso(request: Request, usuario: Usuario = Depends(get_usuario_atual)):
+    from app.pacote_curso import ler_pacote, mapa_pacote, MAX_ZIP
+    from starlette.concurrency import run_in_threadpool
+    if not pode_administrar(usuario, 'producao'):
+        raise HTTPException(403, 'Apenas administrador.')
+    async with request.form() as form:
+        arquivo = form.get('arquivo')
+        if len(form.multi_items()) != 1 or set(form.keys()) != {'arquivo'} or not hasattr(arquivo, 'read'):
+            raise HTTPException(422, 'Envie um único arquivo ZIP.')
+        bruto = await arquivo.read(MAX_ZIP + 1)
+    pacote = await run_in_threadpool(ler_pacote, bruto)
+    return {'original': pacote.documento, 'imagens': mapa_pacote(pacote, bruto)}
+
+
+@app.post('/admin/importacoes/cursos/pacote/importar')
+async def importar_pacote_curso(request: Request, db: Session = Depends(get_db), usuario: Usuario = Depends(get_usuario_atual)):
+    import json
+    from app.pacote_curso import importar_pacote, MAX_ZIP
+    from app.imagens_storage import obter_storage_imagens
+    from starlette.concurrency import run_in_threadpool
+    if not pode_administrar(usuario, 'producao'):
+        raise HTTPException(403, 'Apenas administrador.')
+    async with request.form() as form:
+        arquivo, conversao, chave = form.get('arquivo'), form.get('convertido'), form.get('chave')
+        if (len(form.multi_items()) != 3 or set(form.keys()) != {'arquivo', 'convertido', 'chave'} or
+                not hasattr(arquivo, 'read') or not hasattr(conversao, 'read') or not isinstance(chave, str)):
+            raise HTTPException(422, 'Solicitação de pacote inválida.')
+        bruto = await arquivo.read(MAX_ZIP + 1)
+        convertido = await conversao.read(128 * 1024 * 1024 + 1)
+    if len(convertido) > 128 * 1024 * 1024:
+        raise HTTPException(413, 'Conteúdo convertido excede o limite.')
+    try:
+        convertido = json.loads(convertido)
+    except (ValueError, UnicodeError, RecursionError):
+        raise HTTPException(422, 'Conteúdo convertido inválido.') from None
+    return await run_in_threadpool(importar_pacote, db, usuario.id, chave, bruto, convertido, obter_storage_imagens())
+
 @app.post('/admin/importacoes/cursos/validar')
 async def validar_importacao_curso(request: Request, usuario: Usuario = Depends(get_usuario_atual)):
     from app.importacao_cursos import preparar, LIMITE_BYTES

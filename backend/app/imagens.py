@@ -277,11 +277,15 @@ class LimiteImagensMiddleware:
         if scope["type"] != "http" or scope.get("method") != "POST" or not (
             scope.get("path", "").startswith("/admin/imagens/")
             or scope.get("path", "").endswith("/imagens/assinaturas")
+            or scope.get("path", "").startswith("/admin/importacoes/cursos/pacote/")
         ):
             return await self.app(scope, receive, send)
         from starlette.responses import JSONResponse
         tamanho = 0
-        limite = MAX_LOTE + 1024 * 1024 if scope["path"].endswith(("/arquivos", "/zip")) else 131072
+        if scope["path"].startswith("/admin/importacoes/cursos/pacote/"):
+            limite = 194 * 1024 * 1024
+        else:
+            limite = MAX_LOTE + 1024 * 1024 if scope["path"].endswith(("/arquivos", "/zip")) else 131072
 
         async def receber():
             nonlocal tamanho

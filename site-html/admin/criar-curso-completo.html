@@ -95,9 +95,9 @@
 
       <section class="assunto" aria-labelledby="tituloImportacao" style="margin:1rem 0; overflow-wrap:anywhere">
         <h3 id="tituloImportacao">Importar curso completo</h3>
-        <p>Selecione um arquivo JSON versão 1. O curso será criado sem publicação e com preços provisórios.</p>
-        <label for="arquivoImportacao">Arquivo JSON (até 40 MiB)</label>
-        <input id="arquivoImportacao" type="file" accept=".json,application/json" style="max-width:100%">
+        <p>Selecione um JSON versão 1 ou um ZIP com o curso e suas imagens. O curso será criado sem publicação e com preços provisórios.</p>
+        <label for="arquivoImportacao">Arquivo JSON (até 40 MiB) ou ZIP (até 64 MiB)</label>
+        <input id="arquivoImportacao" type="file" accept=".json,.zip,application/json,application/zip" style="max-width:100%">
         <button class="btn" type="button" id="importarCurso">Importar curso</button>
         <div id="statusImportacao" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>
@@ -624,7 +624,7 @@
   <script src="../js/editor-questoes.js"></script>
   <script src="../js/gestao-cursos.js?v=selecao-rolagem1"></script>
   <script src="../js/admin-criar-curso-completo.js?v=importacao-20261120-1"></script>
-  <script src="../js/admin-importar-curso.js?v=importacao-20261120-1"></script>
+  <script src="../js/admin-importar-curso.js?v=importacao-zip-20261123-1"></script>
 
   <script>
     function confirmarSaidaAdmin() {

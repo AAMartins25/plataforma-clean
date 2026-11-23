@@ -17,26 +17,32 @@ LIMITE_BYTES = 128 * 1024 * 1024
 IMAGEM = re.compile(r'!\s*\[|<\s*img\b|&(?:lt|#0*60|#x0*3c);\s*img\b', re.I)
 
 
-def _validar_par(original, convertido, caminho=''):
+def _validar_par(original, convertido, caminho='', mapa=None, usadas=None):
     if isinstance(original, dict) and isinstance(convertido, dict):
         if original.keys() != convertido.keys():
             raise HTTPException(422, f'{caminho}: estrutura convertida divergente')
         for k in original:
-            _validar_par(original[k], convertido[k], f'{caminho}.{k}' if caminho else k)
+            _validar_par(original[k], convertido[k], f'{caminho}.{k}' if caminho else k, mapa, usadas)
     elif isinstance(original, list) and isinstance(convertido, list):
         if len(original) != len(convertido):
             raise HTTPException(422, f'{caminho}: estrutura convertida divergente')
         for i, (a,b) in enumerate(zip(original, convertido)):
-            _validar_par(a,b,f'{caminho}[{i}]')
+            _validar_par(a,b,f'{caminho}[{i}]', mapa, usadas)
     elif isinstance(original, str) and isinstance(convertido, str) and (caminho.endswith('_markdown') or '.alternativas.' in caminho):
-        if IMAGEM.search(original) or IMAGEM.search(convertido):
+        if mapa is not None and caminho != 'curso.descricao_publica_markdown':
+            from app.pacote_curso import validar_referencias_texto
+            usadas.update(validar_referencias_texto(original, convertido, mapa, caminho))
+        elif IMAGEM.search(original) or IMAGEM.search(convertido):
             raise HTTPException(422, f'{caminho}: imagens não são suportadas nesta versão')
     elif original != convertido or type(original) is not type(convertido):
         raise HTTPException(422, f'{caminho}: conteúdo convertido divergente')
 
 
-def preparar(original, convertido):
-    _validar_par(original, convertido)
+def preparar(original, convertido, mapa=None):
+    usadas = set()
+    _validar_par(original, convertido, mapa=mapa, usadas=usadas)
+    if mapa is not None and usadas != set(mapa):
+        raise HTTPException(422, 'O pacote contém imagens não referenciadas.')
     try:
         fonte = ImportacaoCursoV1.model_validate(original)
     except ValidationError as exc:
@@ -57,7 +63,11 @@ def preparar(original, convertido):
                     raise HTTPException(422, 'A descrição ficou vazia após sanitização.')
                 return resultado
             resultado = preparar_conteudo(valor, 'html_v1')
-            if not texto_visivel(resultado, 'html_v1').strip():
+            if mapa is not None:
+                from app.imagens import referencias
+                if referencias(valor) != referencias(resultado):
+                    raise HTTPException(422, 'Imagens foram alteradas pela sanitização.')
+            if not texto_visivel(resultado, 'html_v1').strip() and (mapa is None or '<img' not in resultado.lower()):
                 raise HTTPException(422, 'O conteúdo ficou vazio após sanitização.')
             return resultado
         except HTTPException as exc:
@@ -77,11 +87,14 @@ def preparar(original, convertido):
     return h
 
 
-def importar(db, usuario_id, chave, original, convertido):
+def importar(db, usuario_id, chave, original, convertido, *, mapa=None, digest_pacote=None, preparar_imagens=None, antes_commit=None):
     if not isinstance(chave, str) or not re.fullmatch(r'[A-Za-z0-9_-]{16,64}', chave):
         raise HTTPException(422, 'Chave de idempotência inválida.')
-    dados = preparar(original, convertido)
-    digest = hashlib.sha256(json.dumps([original, convertido], sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+    dados = preparar(original, convertido, mapa)
+    # O CKEditor pode gerar metadados não determinísticos na serialização.
+    # Para ZIP, a identidade é o pacote original, não o HTML intermediário.
+    material_digest = [original, convertido] if digest_pacote is None else ['zip-v1', digest_pacote]
+    digest = hashlib.sha256(json.dumps(material_digest, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
     if db.bind.dialect.name == 'postgresql':
         db.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:chave, 0))'), {'chave':'importacao:' + chave})
     anterior = db.get(m.ImportacaoCurso, chave)
@@ -95,6 +108,19 @@ def importar(db, usuario_id, chave, original, convertido):
         db.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:nome, 0))'), {'nome':'curso_nome:' + nome.lower()})
     if db.query(m.Curso.id).filter(func.lower(m.Curso.nome) == nome.lower()).first():
         raise HTTPException(409, 'Já existe um curso com esse nome.')
+    if preparar_imagens:
+        substituicoes = preparar_imagens(db)
+        def substituir(valor):
+            if isinstance(valor, dict):
+                return {k: substituir(v) for k, v in valor.items()}
+            if isinstance(valor, list):
+                return [substituir(v) for v in valor]
+            if isinstance(valor, str):
+                valor = re.sub(r'(?<=src=")/midias/imagens/([0-9a-f-]{36})(?=")',
+                    lambda match: '/midias/imagens/' + substituicoes.get(match.group(1), match.group(1)), valor)
+            return valor
+        dados = substituir(dados)
+        c = dados['curso']
     curso = m.Curso(nome=nome, banca=c['banca'], cargo=c['cargo'], orgao=c['orgao'], ano=c['ano'], uf=c['uf'], produtor_id=usuario_id, ativo=True, publicado=False, precos_provisorios=True, demonstracao_por_ordem=True, descricao_publica=c['descricao_publica_markdown'])
     db.add(curso); db.flush()
     for meses in (4,8,12):
@@ -112,7 +138,11 @@ def importar(db, usuario_id, chave, original, convertido):
             aula = m.Aula(pasta_id=pasta.id, titulo=assunto['aula_titulo'].strip(), ordem=1, ativo=True)
             db.add(aula); db.flush()
             for ri, resumo in enumerate(assunto['resumos'], 1):
-                db.add(m.Material(aula_id=aula.id, tipo='TEXTO', titulo=resumo['titulo'].strip(), conteudo=resumo['texto_markdown'], conteudo_formato='html_v1', ordem=ri, ativo=True))
+                material = m.Material(aula_id=aula.id, tipo='TEXTO', titulo=resumo['titulo'].strip(), conteudo=resumo['texto_markdown'], conteudo_formato='html_v1', ordem=ri, ativo=True)
+                db.add(material)
+                if mapa is not None:
+                    from app.imagens import sincronizar_referencias
+                    sincronizar_referencias(db, material, usuario_id)
             for bi, bateria in enumerate(assunto['baterias'], 1):
                 bat = m.Bateria(aula_id=aula.id, titulo=bateria['titulo'].strip(), ordem=bi, status='EM_ANDAMENTO', ativo=True)
                 db.add(bat); db.flush()
@@ -121,7 +151,13 @@ def importar(db, usuario_id, chave, original, convertido):
                     db.add(questao); db.flush()
                     for letra, valor in q['alternativas'].items():
                         db.add(m.Alternativa(questao_id=questao.id, letra=letra, texto=valor, texto_formato='html_v1'))
+                    if mapa is not None:
+                        db.flush(); db.expire(questao, ['alternativas'])
+                        from app.imagens import sincronizar_referencias_questao
+                        sincronizar_referencias_questao(db, questao, usuario_id)
                 db.flush(); validar_conclusao(db, bat); bat.status='CONCLUIDA'
     db.add(m.ImportacaoCurso(chave=chave, hash_requisicao=digest, usuario_id=usuario_id, curso_id=curso.id))
+    if antes_commit:
+        antes_commit()
     db.commit()
     return {'curso_id':curso.id, 'repetida':False}

@@ -11,6 +11,7 @@ def bloqueada(method, path):
     return (
         (method == 'POST' and path in {
             '/admin/importacoes/cursos', '/admin/importacoes/cursos/validar',
+            '/admin/importacoes/cursos/pacote/preparar', '/admin/importacoes/cursos/pacote/importar',
             '/checkout/mercadopago', '/admin/acessos',
         })
         or (method == 'PUT' and bool(re.fullmatch(

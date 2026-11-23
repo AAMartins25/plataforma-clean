@@ -1,0 +1,234 @@
+{
+  "versao": 1,
+  "curso": {
+    "nome": "Curso de exemplo com imagens",
+    "banca": "Banca Exemplo",
+    "cargo": "Assistente",
+    "orgao": "Prefeitura Exemplo",
+    "ano": 2026,
+    "uf": "SP",
+    "descricao_publica_markdown": "## Apresentação\n\nCurso de **revisão**."
+  },
+  "disciplinas": [
+    {
+      "nome": "Língua Portuguesa",
+      "assuntos": [
+        {
+          "nome": "Classes de palavras",
+          "aula_titulo": "Aula principal",
+          "resumos": [
+            {
+              "titulo": "Resumo essencial",
+              "texto_markdown": "## Conceitos\n\nO **substantivo** nomeia seres.\n\n![Quadro ilustrativo](imagens/quadro.png)"
+            }
+          ],
+          "baterias": [
+            {
+              "titulo": "Múltipla escolha",
+              "tipo": "MULTIPLA",
+              "questoes": [
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?\n\n![Quadro ilustrativo](imagens/quadro.png)",
+                  "alternativas": {
+                    "A": "Casa ![Quadro ilustrativo](imagens/quadro.png)",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar.\n\n![Quadro ilustrativo](imagens/quadro.png)"
+                },
+                {
+                  "tipo": "MULTIPLA_5",
+                  "enunciado_markdown": "Qual é verbo?",
+                  "alternativas": {
+                    "A": "Mesa",
+                    "B": "Correr",
+                    "C": "Azul",
+                    "D": "Longe",
+                    "E": "Casa"
+                  },
+                  "gabarito": "B",
+                  "comentario_markdown": "**Correr** indica uma ação."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                },
+                {
+                  "tipo": "MULTIPLA_4",
+                  "enunciado_markdown": "Qual é **substantivo**?",
+                  "alternativas": {
+                    "A": "Casa",
+                    "B": "Correr",
+                    "C": "Belo",
+                    "D": "Ontem"
+                  },
+                  "gabarito": "A",
+                  "comentario_markdown": "**Casa** nomeia um lugar."
+                }
+              ]
+            },
+            {
+              "titulo": "Certo ou errado",
+              "tipo": "CERTO_ERRADO",
+              "questoes": [
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                },
+                {
+                  "tipo": "CERTO_ERRADO",
+                  "enunciado_markdown": "Casa é substantivo.",
+                  "alternativas": {},
+                  "gabarito": "C",
+                  "comentario_markdown": "Casa nomeia um lugar."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

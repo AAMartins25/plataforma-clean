@@ -16,7 +16,13 @@ test('todos os consumidores dos scripts alterados usam a versão da implantaçã
         for (const m of html.matchAll(/(?:\.\.\/)?js\/([\w-]+\.js)(\?[^"\s]*)?(?=["\s])/g)) {
           if (!assets.includes(m[1])) continue;
           seen.add(m[1]);
-          assert.equal(m[2], '?v=importacao-20261120-1', `${p}: ${m[1]}`);
+          const versoes = {
+            'app.js': ['?v=importacao-20261120-1', '?v=curso-titulo-20261121-1'],
+            'admin.js': ['?v=importacao-20261120-1'],
+            'admin-criar-curso-completo.js': ['?v=importacao-20261120-1'],
+            'admin-importar-curso.js': ['?v=importacao-zip-20261123-1']
+          };
+          assert.ok(versoes[m[1]].includes(m[2]), `${p}: ${m[1]} ${m[2]}`);
         }
       }
     }

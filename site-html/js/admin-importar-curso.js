@@ -20,14 +20,21 @@
     let campoNormalizador = null, editorNormalizador = null, editorDescricao = null, campoDescricao = null;
     try {
       const f = arquivo.files[0];
-      if (!f) throw Error('Selecione um arquivo JSON.');
-      if (f.size > 40 * 1024 * 1024) throw Error('O arquivo excede 40 MiB.');
+      if (!f) throw Error('Selecione um arquivo JSON ou ZIP.');
+      const pacote = /\.zip$/i.test(f.name);
+      if (f.size > (pacote ? 64 : 40) * 1024 * 1024) throw Error('O arquivo excede o limite permitido.');
       status.textContent = 'Lendo e convertendo o arquivo…';
       await new Promise(r => setTimeout(r, 0));
       const bytes = await f.arrayBuffer();
-      const texto = new TextDecoder('utf-8', {fatal:true}).decode(bytes);
-      let original;
-      try { original = JSON.parse(texto); } catch (e) { throw Error('JSON inválido: ' + e.message); }
+      let original, imagens = {};
+      if (pacote) {
+        const form = new FormData(); form.append('arquivo', f);
+        const resposta = await TeoriaImagens.api('/admin/importacoes/cursos/pacote/preparar', form);
+        original = resposta.original; imagens = resposta.imagens;
+      } else {
+        const texto = new TextDecoder('utf-8', {fatal:true}).decode(bytes);
+        try { original = JSON.parse(texto); } catch (e) { throw Error('JSON inválido: ' + e.message); }
+      }
       const convertido = structuredClone(original);
       const avisos = new Set();
       let disciplinas = 0, assuntos = 0, resumos = 0, baterias = 0, questoes = 0, campos = 0;
@@ -37,7 +44,7 @@
       area.setAttribute('aria-hidden', 'true');
       area.style.cssText = 'position:fixed;left:-10000px;top:0;width:600px;visibility:hidden';
       area.appendChild(campoNormalizador); document.body.appendChild(area);
-      editorNormalizador = await TeoriaEditor.iniciar(campoNormalizador, '', {semImagens:true});
+      editorNormalizador = await TeoriaEditor.iniciar(campoNormalizador, '', {semImagens:!pacote});
       const C = window.CKEDITOR;
       campoDescricao = document.createElement('textarea'); area.appendChild(campoDescricao);
       editorDescricao = await C.ClassicEditor.create(campoDescricao, {
@@ -54,9 +61,11 @@
       function textoConvertido(obj, chave, caminho, descricao = false) {
         if (typeof obj?.[chave] !== 'string') throw Error(caminho + ': texto obrigatório.');
         try {
-          if (/!\s*\[|<\s*img\b|&(?:lt|#0*60|#x0*3c);\s*img\b/i.test(obj[chave])) throw Error('Imagens não são suportadas nesta versão.');
-          const resultado = TeoriaMarkdown.converter(obj[chave], {coletar:true, descricaoPublica:descricao});
-          if (resultado.referencias.length || /<\s*img\b/i.test(obj[chave])) throw Error('Imagens não são suportadas nesta versão.');
+          const analise = TeoriaMarkdown.converter(obj[chave], {coletar:true, descricaoPublica:descricao});
+          if ((!pacote || descricao) && (/!\s*\[|<\s*img\b|&(?:lt|#0*60|#x0*3c);\s*img\b/i.test(obj[chave]) || analise.referencias.length)) throw Error('Imagens não são suportadas neste campo.');
+          const resultado = pacote && !descricao ? TeoriaMarkdown.converter(obj[chave], {
+            resolver: src => imagens[src] ? {src:'/midias/imagens/' + imagens[src]} : null
+          }) : analise;
           if (descricao) {
             const modelo = document.createElement('template'); modelo.innerHTML = resultado.html;
             const permitidos = new Set(['P','BR','HR','H2','H3','H4','STRONG','B','EM','I','UL','OL','LI','FIGURE','TABLE','THEAD','TBODY','TFOOT','TR','TH','TD']);
@@ -66,6 +75,10 @@
           resultado.avisos.forEach(a => avisos.add(caminho + ': ' + a));
           const editor = descricao ? editorDescricao : editorNormalizador;
           obj[chave] = editor.data.stringify(editor.data.parse(resultado.html));
+          if (pacote && !descricao) {
+            const contar = html => {const t = document.createElement('template'); t.innerHTML = html; return t.content.querySelectorAll('img').length;};
+            if (contar(resultado.html) !== contar(obj[chave])) throw Error('O editor não preservou todas as imagens.');
+          }
           campos++;
         } catch (erro) { throw Error(caminho + ': ' + erro.message); }
       }
@@ -98,10 +111,19 @@
       const chaveStorage = 'importacao-curso-v1-' + hash;
       let chave = localStorage.getItem(chaveStorage);
       if (!chave) { chave = crypto.randomUUID(); localStorage.setItem(chaveStorage,chave); }
-      await window.apiPostAuth('/admin/importacoes/cursos/validar', {original, convertido});
-      fase = 'importação';
-      status.textContent = 'Validação aprovada. Gravando o curso…';
-      const resultado = await window.apiPostAuth('/admin/importacoes/cursos', {chave, original, convertido});
+      let resultado;
+      if (pacote) {
+        fase = 'importação';
+        status.textContent = 'Validando e gravando o pacote…';
+        const form = new FormData(); form.append('arquivo', f); form.append('chave', chave);
+        form.append('convertido', new Blob([JSON.stringify(convertido)], {type:'application/json'}), 'convertido.json');
+        resultado = await TeoriaImagens.api('/admin/importacoes/cursos/pacote/importar', form);
+      } else {
+        await window.apiPostAuth('/admin/importacoes/cursos/validar', {original, convertido});
+        fase = 'importação';
+        status.textContent = 'Validação aprovada. Gravando o curso…';
+        resultado = await window.apiPostAuth('/admin/importacoes/cursos', {chave, original, convertido});
+      }
       status.textContent = `Curso ${resultado.curso_id} ${resultado.repetida ? 'já havia sido importado' : 'importado com sucesso'}. Foi criado sem publicação e com preços provisórios.` + (avisos.size ? '\nAvisos: ' + [...avisos].join(' | ') : '');
       status.style.whiteSpace = 'pre-wrap';
       window.dispatchEvent(new CustomEvent('curso-importado', {detail:resultado}));
