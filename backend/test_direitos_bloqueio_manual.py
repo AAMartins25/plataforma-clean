@@ -26,6 +26,7 @@ def env(ambiente_compra, monkeypatch):
     monkeypatch.setenv('MP_COLLECTOR_ID', '123456')
     main = ambiente_compra[0]
     metadata_bloqueios.create_all(ambiente_compra[2].kw['bind'])
+    m.Base.metadata.create_all(ambiente_compra[2].kw['bind'], tables=[m.OperacaoAcessoAdmin.__table__])
     for module in (main, da, desempenho, cont, reembolsos_acesso):
         monkeypatch.setattr(module, 'datetime', Clock)
     return ambiente_compra
@@ -382,7 +383,7 @@ def test_admin_renewal_after_paid_period_remains_an_independent_right(env):
         end=db.get(m.ContratacaoCurso,cid).data_fim
     Clock.at=end-timedelta(days=5)
     admin(main)
-    r=c.post('/admin/acessos',json={'usuario_id':1,'curso_id':1,'data_fim':(end+timedelta(days=60)).isoformat()+'Z'})
+    r=c.post('/admin/acessos',json={'usuario_id':1,'curso_id':1,'data_fim':(end+timedelta(days=60)).isoformat()+'Z','chave_idempotencia':'renovacao-direito-admin-0001'})
     assert r.status_code==200,r.text
     assert r.json()['contratacao_id']==cid
     with f() as db: ident=caso(db,pid)
