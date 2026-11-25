@@ -13,6 +13,12 @@ Todos os campos listados abaixo são obrigatórios. Textos não podem conter ape
 
 A interface converte Markdown com o mesmo conversor e normaliza o HTML com o CKEditor antes de enviar o conteúdo convertido ao servidor; os sanitizadores existentes são aplicados novamente no servidor. A importação requer que o CKEditor e sua licença estejam disponíveis, como no cadastro manual. Na descrição pública, links, fórmulas e imagens são rejeitados conforme as regras do botão manual. Recursos não suportados pelo conversor podem gerar avisos. O curso é criado não publicado com valores provisórios positivos de R$ 0,04, R$ 0,08 e R$ 0,12. Para liberar publicação e aquisição, informe valores definitivos diferentes dos valores atuais nos três períodos e marque a confirmação explícita ao salvar.
 
+## Formatação dos resumos e questões
+
+Em `texto_markdown`, `enunciado_markdown`, textos de `alternativas` e `comentario_markdown`, tanto no JSON como no ZIP, use `**negrito**` ou `__negrito__`, `*itálico*` ou `_itálico_`, e `<u>sublinhado</u>`. Para combinar estilos, por exemplo: `**<u>negrito e sublinhado</u>**`, `*<u>itálico e sublinhado</u>*` e `***<u>os três estilos</u>***`. O sublinhado usa exatamente `<u>` e `</u>`, sem atributos; marcadores incompletos ou vazios permanecem literais. Não aninhe sublinhados entre si. Crases e escapes preservam o texto literal conforme as regras Markdown.
+
+Essa é uma extensão restrita: HTML arbitrário não é interpretado. A descrição pública mantém suas regras anteriores e não interpreta `<u>` como formatação. Revise o resultado no ADM antes da publicação.
+
 A chave de idempotência gerada pela interface fica armazenada no navegador por hash do arquivo: repetir a mesma solicitação recupera o curso criado, enquanto reutilizar a chave com conteúdo diferente produz conflito. O servidor cria a árvore e registra a chave na mesma transação. Uma pasta TEORIA e uma aula técnica são criadas por assunto.
 
 ## Pacote ZIP com imagens

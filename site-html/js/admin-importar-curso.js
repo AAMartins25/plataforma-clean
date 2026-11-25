@@ -61,10 +61,10 @@
       function textoConvertido(obj, chave, caminho, descricao = false) {
         if (typeof obj?.[chave] !== 'string') throw Error(caminho + ': texto obrigatório.');
         try {
-          const analise = TeoriaMarkdown.converter(obj[chave], {coletar:true, descricaoPublica:descricao});
+          const analise = TeoriaMarkdown.converter(obj[chave], {coletar:true, descricaoPublica:descricao, sublinhado:!descricao});
           if ((!pacote || descricao) && (/!\s*\[|<\s*img\b|&(?:lt|#0*60|#x0*3c);\s*img\b/i.test(obj[chave]) || analise.referencias.length)) throw Error('Imagens não são suportadas neste campo.');
           const resultado = pacote && !descricao ? TeoriaMarkdown.converter(obj[chave], {
-            resolver: src => imagens[src] ? {src:'/midias/imagens/' + imagens[src]} : null
+            sublinhado:true, resolver: src => imagens[src] ? {src:'/midias/imagens/' + imagens[src]} : null
           }) : analise;
           if (descricao) {
             const modelo = document.createElement('template'); modelo.innerHTML = resultado.html;

@@ -29,6 +29,44 @@
     const avisos = new Set();
     const referencias = [];
     const md = window.markdownit({ html: false, linkify: false, typographer: false, maxNesting: 50 });
+    // Extensão exclusiva da importação de cursos: somente <u> sem atributos.
+    // HTML continua desativado; o conteúdo interno passa pelo parser normal.
+    if (opcoes.sublinhado && !opcoes.descricaoPublica) {
+      md.inline.ruler.before("html_inline", "curso_sublinhado", (estado, silencioso) => {
+        const inicio = estado.pos;
+        if (!estado.src.startsWith("<u>", inicio)) return false;
+        let fim = inicio + 3;
+        while (fim < estado.posMax) {
+          if (estado.src[fim] === "\\") { fim += 2; continue; }
+          if (estado.src[fim] === "`") {
+            let n = fim + 1;
+            while (estado.src[n] === "`") n++;
+            const marca = estado.src.slice(fim, n);
+            let fechamento = estado.src.indexOf(marca, n);
+            while (fechamento >= 0 && (estado.src[fechamento - 1] === "`" || estado.src[fechamento + marca.length] === "`"))
+              fechamento = estado.src.indexOf(marca, fechamento + marca.length);
+            if (fechamento >= 0 && fechamento < estado.posMax) { fim = fechamento + marca.length; continue; }
+            fim = n; continue;
+          }
+          if (estado.src.startsWith("</u>", fim)) break;
+          // Sublinhados aninhados são ambíguos; deixá-los como texto literal.
+          if (estado.src.startsWith("<u>", fim)) return false;
+          fim++;
+        }
+        if (fim >= estado.posMax || fim === inicio + 3) return false;
+        if (!silencioso) {
+          estado.push("curso_u_open", "u", 1);
+          const limite = estado.posMax;
+          estado.pos = inicio + 3;
+          estado.posMax = fim;
+          estado.md.inline.tokenize(estado);
+          estado.posMax = limite;
+          estado.push("curso_u_close", "u", -1);
+        }
+        estado.pos = fim + 4;
+        return true;
+      });
+    }
     let formulas = 0;
     const M = window.TeoriaMatematica;
     const fechamentosPorEstado = new WeakMap();
@@ -210,7 +248,9 @@
     md.renderer.rules.blockquote_close = () => "";
     md.renderer.rules.table_open = () => '<figure class="table"><table>\n';
     md.renderer.rules.table_close = () => "</table></figure>\n";
-    if (/<\/?[a-z][^>]*>/i.test(texto)) avisos.add("HTML escrito no Markdown será exibido como texto; não será executado nem interpretado.");
+    const htmlParaAviso = opcoes.sublinhado && !opcoes.descricaoPublica
+      ? texto.replace(/<u>((?:(?!<\/?u>)[\s\S])+)<\/u>/g, "$1") : texto;
+    if (/<\/?[a-z][^>]*>/i.test(htmlParaAviso)) avisos.add("HTML escrito no Markdown será exibido como texto; não será executado nem interpretado.");
     if (/~~/.test(texto)) avisos.add("Marcadores de texto riscado serão mantidos literalmente.");
     const ambiente = {};
     const tokens = md.parse(texto, ambiente);

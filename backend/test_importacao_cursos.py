@@ -46,6 +46,26 @@ def test_arvore_e_idempotencia(contexto, documento):
     with pytest.raises(HTTPException) as e: importar(db,1,key,alterado,alterado)
     assert e.value.status_code==409
 
+def test_importacao_preserva_estilos_em_todos_os_campos(contexto, documento):
+    original = copy.deepcopy(documento)
+    convertido = copy.deepcopy(documento)
+    assunto = convertido['disciplinas'][0]['assuntos'][0]
+    html = '<p><strong><i><u>Três estilos</u></i></strong> <u>Simples</u></p>'
+    assunto['resumos'][0]['texto_markdown'] = html
+    for questao in assunto['baterias'][0]['questoes']:
+        questao['enunciado_markdown'] = html
+        questao['comentario_markdown'] = html
+        questao['alternativas'] = {k: html for k in questao['alternativas']}
+    importar(contexto, 1, 'estilos123456789', original, convertido)
+    contexto.expire_all()
+    material = contexto.query(m.Material).one()
+    questao = contexto.query(m.Questao).filter_by(tipo_questao='MULTIPLA_5').one()
+    for valor in [material.conteudo, questao.enunciado, questao.comentario, *(a.texto for a in questao.alternativas)]:
+        assert '<strong><i><u>Três estilos</u></i></strong>' in valor
+        assert '<u>Simples</u>' in valor
+    assert material.conteudo_formato == questao.enunciado_formato == questao.comentario_formato == 'html_v1'
+    assert all(a.texto_formato == 'html_v1' for a in questao.alternativas)
+
 def test_importacao_libera_somente_duas_primeiras(contexto, documento):
     d=copy.deepcopy(documento)
     segunda=copy.deepcopy(d['disciplinas'][0]);segunda['nome']='Segunda'

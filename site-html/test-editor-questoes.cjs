@@ -25,7 +25,7 @@ const evidencias=path.resolve(__dirname,'../evidencias/questoes-editor');fs.mkdi
   const plugins=await page.locator('#camposQuestaoCompleta .ck-content').first().evaluate(e=>{
    const ed=e.ckeditorInstance;return ['Bold','Italic','Underline','Table','TeoriaFormula'].map(n=>[n,ed.plugins.has(n)]);
   });assert.ok(plugins.slice(0,4).every(([,v])=>v));
-  await page.locator('#camposQuestaoCompleta .ck-content').evaluateAll((els,html)=>els.forEach((el,i)=>el.ckeditorInstance.setData(i===0?html:'<p><strong>Campo '+i+'</strong> com <i>formatação</i>.</p>')),formato);
+  await page.locator('#camposQuestaoCompleta .ck-content').evaluateAll((els,html)=>els.forEach((el,i)=>el.ckeditorInstance.setData(i===0?html+'<p><strong><i><u>Triplo</u></i></strong></p>':'<p><strong><i><u>Campo '+i+'</u></i></strong> com <i>formatação</i>.</p>')),formato);
   await page.selectOption('#questaoGabarito','B');
   await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
   const medida=await page.evaluate(()=>({pagina:document.documentElement.scrollWidth-innerWidth,editores:[...document.querySelectorAll('#camposQuestaoCompleta .ck-editor')].map(e=>e.getBoundingClientRect().width)}));
@@ -38,6 +38,9 @@ const evidencias=path.resolve(__dirname,'../evidencias/questoes-editor');fs.mkdi
   assert.equal(await page.locator('#questaoGabarito').inputValue(),'B');
   const dados=await page.evaluate(()=>QuestaoEditores.dados());
   assert.equal(dados.enunciado_formato,'html_v1');assert.match(dados.enunciado,/<strong>Negrito/);assert.match(dados.enunciado,/ro-math-inline/);assert.equal(dados.alternativas.length,5);
+  for (const valor of [dados.enunciado,dados.comentario,...dados.alternativas.map(a=>a.texto)]) {
+   assert.match(valor,/<strong>/); assert.match(valor,/<i>/); assert.match(valor,/<u>/);
+  }
   await page.getByRole('button',{name:'Descartar e fechar edição',exact:true}).click();
   // Certo/errado mantém opções fixas e somente dois editores.
   await page.locator('#cardQuestao_3').getByRole('button',{name:'Editar',exact:true}).click();
@@ -51,13 +54,16 @@ const evidencias=path.resolve(__dirname,'../evidencias/questoes-editor');fs.mkdi
   // Leitura, resultado e revisão programada usam a mesma formatação.
   await page.goto(origem+'/__preview/entrar?perfil=aluno');
   await page.locator('.sprint-questao-enunciado strong').first().waitFor();
+  assert.equal(await page.locator('#questao_1 .sprint-questao-enunciado i strong u').count(),1);
+  assert.ok(await page.locator('#questao_1 .alternativa-opcao i strong u').count() >= 5);
   assert.equal(await page.locator('#questao_1 .sprint-questao-enunciado .katex').count(),1);
   assert.equal(await page.locator('#questao_1 .sprint-questao-enunciado table').count(),1);
   assert.ok(await page.locator('.alternativa-opcao strong').count()>=5);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${width}: leitura transborda`);
   await page.locator('#area_questoes').screenshot({path:path.join(evidencias,`aluno-${width}.png`)});
-  await page.evaluate(()=>revisarAgora());
+  await page.evaluate(()=>{questoes.forEach(q => {respostasAluno[q.id] = q.gabarito; respostasConfirmadas.add(Number(q.id));}); revisarAgora();});
   await page.locator('.sprint-revisao-comentario-texto strong').first().waitFor();
+  assert.ok(await page.locator('.sprint-revisao-comentario-texto i strong u').count() >= 1);
   assert.ok(await page.locator('.sprint-revisao-alternativa strong').count()>=9);
   assert.ok((await page.locator('#area_questoes').textContent()).includes('Legado <b>literal</b>'));
   await page.screenshot({path:path.join(evidencias,`revisao-${width}.png`),fullPage:true});
