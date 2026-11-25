@@ -214,6 +214,34 @@
     if (/~~/.test(texto)) avisos.add("Marcadores de texto riscado serão mantidos literalmente.");
     const ambiente = {};
     const tokens = md.parse(texto, ambiente);
+    // Um marcador numérico sem corpo pode ser o conteúdo inteiro (ex.: "1920.").
+    // O parser o trata como item vazio e descartaria o número. Preservar o
+    // marcador literal; listas com conteúdo continuam sendo listas normais.
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      if (tokens[i].type !== "ordered_list_open") continue;
+      let fim = i + 1;
+      while (fim < tokens.length && !(tokens[fim].type === "ordered_list_close" && tokens[fim].level === tokens[i].level)) fim++;
+      const vazios = [];
+      for (let j = i + 1; j < fim; j++) {
+        if (tokens[j].type === "list_item_open" && tokens[j].level === tokens[i].level + 1 && tokens[j + 1]?.type === "list_item_close") vazios.push(j);
+      }
+      const somenteVazios = vazios.length && fim - i - 1 === vazios.length * 2;
+      for (const j of vazios.reverse()) {
+        const item = tokens[j], literal = item.info + item.markup;
+        const inline = new tokens[i].constructor("inline", "", 0);
+        const filho = new tokens[i].constructor("text", "", 0);
+        filho.content = literal; inline.content = literal; inline.children = [filho];
+        if (somenteVazios) {
+          tokens.splice(j, 2, new tokens[i].constructor("paragraph_open", "p", 1), inline, new tokens[i].constructor("paragraph_close", "p", -1));
+        } else {
+          tokens.splice(j + 1, 0, inline);
+        }
+      }
+      if (somenteVazios) {
+        tokens.splice(fim + vazios.length, 1);
+        tokens.splice(i, 1);
+      }
+    }
     let total = 0;
     function ajustar(lista) {
       for (const token of lista) {
