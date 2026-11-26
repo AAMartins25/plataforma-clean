@@ -16,12 +16,12 @@ from test_questoes_pratica_patch import carregar_main_isolado
 @pytest.fixture
 def ambiente():
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    tabelas = [m.Curso.__table__, m.CursoDisciplinaPropria.__table__,
-               m.CursoAssuntoProprio.__table__, m.Pasta.__table__, m.Aula.__table__,
-               m.Bateria.__table__, m.Questao.__table__, m.TentativaBateria.__table__,
-               m.ContratacaoCurso.__table__, m.DemonstracaoCurso.__table__,
-               m.AcessoCurso.__table__]
-    m.Base.metadata.create_all(engine, tables=tabelas)
+    # As verificações de acesso consultam também o histórico financeiro.
+    # BTRIM é usado em uma restrição PostgreSQL reproduzida no SQLite isolado.
+    with engine.connect() as conexao:
+        conexao.connection.driver_connection.create_function(
+            "BTRIM", 1, lambda valor: valor.strip() if valor is not None else None)
+    m.Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, autoflush=False)
     agora = datetime.utcnow()
     with factory() as db:
@@ -75,35 +75,17 @@ def ambiente():
     engine.dispose()
 
 
-def antigo_assunto(main, db, usuario, assunto_id, contexto):
-    pasta = main.obter_pasta_teoria_assunto_proprio(assunto_id, db, usuario)
-    aulas = main.listar_aulas_por_pasta(pasta["id"], db=db, usuario=usuario, **contexto)
-    total = feitas = 0
-    for aula in aulas:
-        baterias = main.listar_baterias_com_status_do_aluno(
-            aula["id"], db=db, usuario_atual=usuario, **contexto)
-        total += len(baterias)
-        feitas += sum(b["status_aluno"] == "FEITA" for b in baterias)
-    return (2 * feitas * 100 + total) // (2 * total) if total else 0, total, feitas
-
-
-@pytest.mark.parametrize("contexto", [{"contratacao_id": 1}, {"demonstracao_id": 1}])
-def test_paridade_com_fluxo_antigo(ambiente, contexto):
+@pytest.mark.parametrize("contexto,assuntos_esperados,disciplina_esperada", [
+    ({"contratacao_id": 1}, [100, 0], 67),
+    ({"demonstracao_id": 1}, [0, 100], 33),
+])
+def test_progresso_preserva_conclusoes_por_contexto(ambiente, contexto, assuntos_esperados, disciplina_esperada):
     main, _, factory, usuario = ambiente
     with factory() as db:
         assuntos = main.progresso_assuntos_agregado(1, db=db, usuario=usuario, **contexto)
-        valores = {x["assunto_id"]: x["percentual"] for x in assuntos["percentuais"]}
-        contagens = {}
-        for ident in (1, 2):
-            esperado, total, feitas = antigo_assunto(main, db, usuario, ident, contexto)
-            assert valores[ident] == esperado
-            contagens[ident] = total, feitas
-        total = sum(x[0] for x in contagens.values())
-        feitas = sum(x[1] for x in contagens.values())
+        assert [x["percentual"] for x in assuntos["percentuais"]] == assuntos_esperados
         curso = main.progresso_disciplinas_agregado(1, db=db, usuario=usuario, **contexto)
-        disciplinas = {x["disciplina_id"]: x["percentual"] for x in curso["percentuais"]}
-        assert disciplinas[1] == ((2 * feitas * 100 + total) // (2 * total))
-        assert disciplinas[2] == 0 and disciplinas[3] == 0
+        assert [x["percentual"] for x in curso["percentuais"]] == [disciplina_esperada, 0, 0]
 
 
 def test_contexto_permissoes_e_demo_bloqueada(ambiente):
@@ -195,7 +177,7 @@ def test_http_rotas_exigem_autenticacao_e_contexto(ambiente):
     try:
         resposta = client.get(caminho, params={"contratacao_id": 1})
         assert resposta.status_code == 200, resposta.text
-        assert resposta.json()["percentuais"][0]["percentual"] == 33
+        assert resposta.json()["percentuais"][0]["percentual"] == 67
         resposta = client.get("/me/disciplinas-proprias/1/progresso-assuntos",
                              params={"demonstracao_id": 1})
         assert resposta.status_code == 200, resposta.text

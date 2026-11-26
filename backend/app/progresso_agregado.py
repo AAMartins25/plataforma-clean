@@ -33,40 +33,28 @@ def contagens_por_assunto(db, assuntos, usuario_id, contratacao_id, demonstracao
         .cte("baterias_elegiveis")
     )
 
-    # Exatamente a última tentativa ativa, normal (não revisão), do mesmo
-    # aluno e contexto. Uma tentativa EM_ANDAMENTO mais recente anula uma
-    # FEITA anterior para o indicador, como no endpoint detalhado existente.
-    ordenadas = (
-        select(
-            TentativaBateria.bateria_id.label("bateria_id"),
-            TentativaBateria.status.label("status"),
-            func.row_number().over(
-                partition_by=TentativaBateria.bateria_id,
-                order_by=TentativaBateria.id.desc(),
-            ).label("posicao"),
-        )
-        .select_from(TentativaBateria)
+    # O histórico de conclusão pertence ao contexto de estudo, independente
+    # do estado da tentativa usada para retomar ou refazer a Sprint. Uma linha
+    # por bateria impede que várias conclusões sejam contadas mais de uma vez.
+    concluidas = (
+        select(TentativaBateria.bateria_id.label("bateria_id"))
         .join(elegiveis, elegiveis.c.bateria_id == TentativaBateria.bateria_id)
         .where(TentativaBateria.usuario_id == usuario_id,
-               TentativaBateria.ativo.is_(True),
+               TentativaBateria.status == "FEITA",
                TentativaBateria.revisao_id.is_(None),
                TentativaBateria.contratacao_id == contratacao_id,
                TentativaBateria.demonstracao_id == demonstracao_id)
-        .subquery()
-    )
-    ultimas = (
-        select(ordenadas.c.bateria_id, ordenadas.c.status)
-        .where(ordenadas.c.posicao == 1)
+        .distinct()
         .subquery()
     )
     totais = (
         select(
             elegiveis.c.assunto_id,
             func.count(elegiveis.c.bateria_id),
-            func.sum(case((ultimas.c.status == "FEITA", 1), else_=0)),
+            func.sum(case((concluidas.c.bateria_id.is_not(None), 1), else_=0)),
         )
         .select_from(elegiveis)
-        .outerjoin(ultimas, ultimas.c.bateria_id == elegiveis.c.bateria_id)
+        .outerjoin(concluidas, concluidas.c.bateria_id == elegiveis.c.bateria_id)
         .group_by(elegiveis.c.assunto_id)
     )
     for assunto_id, total, feitas in db.execute(totais):
