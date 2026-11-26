@@ -224,3 +224,32 @@ def test_rollback_em_pontos_tardios(contexto, documento, ponto):
     assert db.query(m.ImportacaoCurso).count()==0
     assert db.query(m.CursoDisciplinaPropria).count()==0
     assert db.query(m.Questao).count()==0
+
+@pytest.mark.parametrize('zip_com_imagens', [False, True])
+def test_alinhamento_importado_persiste_e_permanece_editavel(contexto, documento, zip_com_imagens):
+    from app.teoria_html import preparar_conteudo
+    original = copy.deepcopy(documento)
+    convertido = copy.deepcopy(documento)
+    assunto = convertido['disciplinas'][0]['assuntos'][0]
+    html = ('<p>Texto <strong>forte</strong> e <u>sublinhado</u></p>'
+            '<p style="text-align:center">Centralizado</p>'
+            '<ul><li>Item</li></ul><table><tbody><tr>'
+            '<td style="text-align:right"><p>Célula</p></td></tr></tbody></table>')
+    assunto['resumos'][0]['texto_markdown'] = html
+    q = assunto['baterias'][0]['questoes'][0]
+    q['enunciado_markdown'] = q['comentario_markdown'] = html
+    q['alternativas'] = {k: html for k in q['alternativas']}
+    importar(contexto, 1, 'alinhamento123456', original, convertido,
+             mapa={} if zip_com_imagens else None)
+    contexto.expire_all()
+    material = contexto.query(m.Material).one()
+    questao = contexto.query(m.Questao).filter_by(tipo_questao='MULTIPLA_5').one()
+    for valor in [material.conteudo, questao.enunciado, questao.comentario, *(a.texto for a in questao.alternativas)]:
+        assert '<p style="text-align:justify">Texto <strong>forte</strong> e <u>sublinhado</u></p>' in valor
+        assert '<p style="text-align:center">Centralizado</p>' in valor
+        assert '<li style="text-align:justify">Item</li>' in valor
+        assert '<td style="text-align:right"><p>Célula</p></td>' in valor
+        assert preparar_conteudo(valor, 'html_v1') == valor
+        editado = valor.replace('text-align:justify', 'text-align:left')
+        assert 'text-align:left' in preparar_conteudo(editado, 'html_v1')
+    assert 'text-align:justify' not in contexto.query(m.Curso).filter_by(nome='Importado').one().descricao_publica

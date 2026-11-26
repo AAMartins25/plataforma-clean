@@ -14,7 +14,7 @@
       if (estilo) {
         const m = estilo.match(/^\s*text-align\s*:\s*(left|right|center|justify)\s*;?\s*$/i);
         el.removeAttribute('style');
-        if (m && ['P','H2','H3','H4','TD','TH'].includes(el.tagName)) el.style.textAlign = m[1];
+        if (m && ['P','H2','H3','H4','LI','TD','TH'].includes(el.tagName)) el.style.textAlign = m[1];
       }
       if (el.hasAttribute('href')) {
         const href = el.getAttribute('href');

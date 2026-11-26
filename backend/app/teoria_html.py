@@ -49,7 +49,7 @@ def _atributo(tag: str, nome: str, valor: str) -> str | None:
         if nome in {"width", "height"}:
             return valor if valor.isascii() and valor.isdigit() and 1 <= int(valor) <= 8192 else None
         return None
-    if nome == "style" and tag in {"p", "h2", "h3", "h4", "th", "td"}:
+    if nome == "style" and tag in {"p", "h2", "h3", "h4", "li", "th", "td"}:
         # Reconstruir uma declaração conhecida, sem transportar CSS da origem.
         alinhamentos = [m.group(1).lower() for parte in valor.split(";")
                         if (m := re.fullmatch(r"\s*text-align\s*:\s*(left|right|center|justify)\s*",
@@ -213,7 +213,7 @@ def preparar_conteudo(conteudo: str | None, formato: str | None) -> str | None:
             conteudo, tags=set(TAGS),
             attributes={"a": {"href"}, "figure": {"class"}, "span": {"class"},
                         "img": {"src", "alt", "width", "height"},
-                        **{t: {"style"} for t in ("p", "h2", "h3", "h4")},
+                        **{t: {"style"} for t in ("p", "h2", "h3", "h4", "li")},
                         **{t: {"style", "colspan", "rowspan"} for t in ("td", "th")}},
             attribute_filter=_atributo, url_schemes={"https"}, link_rel=None,
             strip_comments=True,

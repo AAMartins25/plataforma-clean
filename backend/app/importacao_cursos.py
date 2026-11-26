@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import re
+from html.parser import HTMLParser
 from fastapi import HTTPException
 from sqlalchemy import func, text
 from pydantic import ValidationError
@@ -38,6 +39,49 @@ def _validar_par(original, convertido, caminho='', mapa=None, usadas=None):
         raise HTTPException(422, f'{caminho}: conteúdo convertido divergente')
 
 
+class _AlinhamentoImportado(HTMLParser):
+    """Acrescenta apenas o alinhamento ausente, respeitando o herdado."""
+    blocos = {"p", "h2", "h3", "h4", "li", "td", "th"}
+    vazias = {"br", "img"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.saida = []
+        self.pilha = []
+
+    def handle_starttag(self, tag, attrs):
+        inicio = self.get_starttag_text()
+        explicito = any(k == "style" for k, _ in attrs)
+        herdado = bool(self.pilha and self.pilha[-1][1])
+        if tag in self.blocos and not explicito and not herdado:
+            inicio = inicio[:-1] + ' style="text-align:justify">'
+        self.saida.append(inicio)
+        if tag not in self.vazias:
+            # Apenas alinhamentos preexistentes devem ser herdados como escolha.
+            self.pilha.append((tag, explicito or herdado))
+
+    def handle_endtag(self, tag):
+        self.saida.append(f"</{tag}>")
+        for i in range(len(self.pilha) - 1, -1, -1):
+            if self.pilha[i][0] == tag:
+                del self.pilha[i:]
+                break
+
+    def handle_data(self, data): self.saida.append(data)
+    def handle_entityref(self, name): self.saida.append(f"&{name};")
+    def handle_charref(self, name): self.saida.append(f"&#{name};")
+
+
+def _justificar_padrao(html):
+    parser = _AlinhamentoImportado()
+    parser.feed(html)
+    parser.close()
+    resultado = "".join(parser.saida)
+    if not re.search(r'<(?:p|h2|h3|h4|ul|ol|blockquote|figure|table)\b', resultado, re.I):
+        resultado = f'<p style="text-align:justify">{resultado}</p>'
+    return resultado
+
+
 def preparar(original, convertido, mapa=None):
     usadas = set()
     _validar_par(original, convertido, mapa=mapa, usadas=usadas)
@@ -69,7 +113,7 @@ def preparar(original, convertido, mapa=None):
                     raise HTTPException(422, 'Imagens foram alteradas pela sanitização.')
             if not texto_visivel(resultado, 'html_v1').strip() and (mapa is None or '<img' not in resultado.lower()):
                 raise HTTPException(422, 'O conteúdo ficou vazio após sanitização.')
-            return resultado
+            return preparar_conteudo(_justificar_padrao(resultado), 'html_v1')
         except HTTPException as exc:
             raise HTTPException(422, [{'local': caminho, 'mensagem': str(exc.detail)}]) from exc
     h['curso']['descricao_publica_markdown'] = limpar(h['curso']['descricao_publica_markdown'], 'curso.descricao_publica_markdown', True)

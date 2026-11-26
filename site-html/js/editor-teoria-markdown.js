@@ -328,7 +328,7 @@
       if (no.hasAttribute("class") && !((no.tagName === "FIGURE" && ["table", "ro-math-display", "image"].includes(no.className)) ||
           (no.tagName === "SPAN" && no.className === "ro-math-inline"))) no.removeAttribute("class");
       if (no.hasAttribute("style")) {
-        const permitido = ["P", "H2", "H3", "H4", "TH", "TD"].includes(no.tagName);
+        const permitido = ["P", "H2", "H3", "H4", "LI", "TH", "TD"].includes(no.tagName);
         const alinhamento = no.getAttribute("style").match(/^\s*text-align\s*:\s*(left|right|center|justify)\s*;?\s*$/i);
         if (permitido && alinhamento) no.setAttribute("style", "text-align:" + alinhamento[1].toLowerCase());
         else no.removeAttribute("style");
