@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator, StrictBool, model_validator
 from pydantic.types import UUID4
 
-UFS_CURSO = frozenset("AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split())
+UFS_CURSO = frozenset("NACIONAL AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split())
 
 class CursoMetadados(BaseModel):
     banca: str | None = Field(default=None, max_length=255)

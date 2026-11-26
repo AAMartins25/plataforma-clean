@@ -83,10 +83,11 @@ def test_origem_inexistente_e_estrutura_incompativel(copia):
     assert e.value.status_code==409 and db.query(m.Curso).count()==1
 
 
-def test_metadados_e_produtor_da_duplicacao(copia):
+@pytest.mark.parametrize("uf", ["RO", "NACIONAL"])
+def test_metadados_e_produtor_da_duplicacao(copia, uf):
     db,main=copia
     origem=db.get(m.Curso,1)
-    origem.banca='Banca';origem.cargo='Professor';origem.orgao='Prefeitura';origem.ano=2026;origem.uf='RO';origem.produtor_id=42
+    origem.banca='Banca';origem.cargo='Professor';origem.orgao='Prefeitura';origem.ano=2026;origem.uf=uf;origem.produtor_id=42
     db.commit()
     resultado=executar(main,db)
     novo=db.get(m.Curso,resultado['novo_curso_id'])

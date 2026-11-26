@@ -37,7 +37,7 @@ class Curso(Base):
     cargo = Column(String(255), nullable=True)
     orgao = Column(String(255), nullable=True)
     ano = Column(Integer, nullable=True)
-    uf = Column(String(2), nullable=True)
+    uf = Column(String(8), nullable=True)
     produtor_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
 
 

@@ -326,3 +326,22 @@ def test_carga_imagens_fotograficas(contexto):
     assert len(storage.objetos) == 30
     assert db.query(m.ImagemTeoriaMaterial).count() == 30
     print(f'ZIP {len(bruto)/1024/1024:.1f} MiB, 30 JPEG 800x600, validação e importação em memória: {duracao:.2f}s')
+
+
+def test_zip_com_uf_nacional_mantem_contrato_v1():
+    dados = curso()
+    dados['curso']['uf'] = 'NACIONAL'
+    pacote = ler_pacote(zipar([('curso.json', json.dumps(dados))]))
+    from app.importacao_cursos import preparar
+    assert preparar(pacote.documento, pacote.documento, mapa={})['curso']['uf'] == 'NACIONAL'
+
+
+def test_importacao_zip_nacional_com_imagem_persiste(contexto, documento):
+    dados = dict(documento, curso=dict(documento['curso'], uf='NACIONAL'))
+    criar_tabelas_imagens(contexto)
+    bruto, convertido = preparar_fluxo(dados)
+    resultado = importar_pacote(contexto, 1, 'nacionalzip123456', bruto, convertido, Storage())
+    contexto.expire_all()
+    assert contexto.get(m.Curso, resultado['curso_id']).uf == 'NACIONAL'
+    assert contexto.query(m.ImagemTeoriaMaterial).count() == 1
+    assert contexto.query(m.ImagemQuestao).count() == 1

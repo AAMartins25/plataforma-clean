@@ -253,3 +253,13 @@ def test_alinhamento_importado_persiste_e_permanece_editavel(contexto, documento
         editado = valor.replace('text-align:justify', 'text-align:left')
         assert 'text-align:left' in preparar_conteudo(editado, 'html_v1')
     assert 'text-align:justify' not in contexto.query(m.Curso).filter_by(nome='Importado').one().descricao_publica
+
+
+@pytest.mark.parametrize('zip_sem_imagens', [False, True])
+def test_importacao_uf_nacional_v1(contexto, documento, zip_sem_imagens):
+    dados = copy.deepcopy(documento)
+    dados['curso']['uf'] = 'NACIONAL'
+    resultado = importar(contexto, 1, 'ufnacional123456', dados, dados,
+                         mapa={} if zip_sem_imagens else None)
+    contexto.expire_all()
+    assert contexto.get(m.Curso, resultado['curso_id']).uf == 'NACIONAL'

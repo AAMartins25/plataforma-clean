@@ -122,3 +122,14 @@ def test_integracao_http_backend_frontend_chromium(catalogo_publico):
         server.should_exit = True
         thread.join(timeout=10)
         listener.close()
+
+
+def test_uf_nacional_no_catalogo_publico(catalogo_publico):
+    main, factory = catalogo_publico
+    with factory() as db:
+        db.get(m.Curso, 42).uf = 'NACIONAL'
+        db.commit()
+    with TestClient(main.app) as client:
+        resposta = client.get('/cursos-publicos')
+        assert resposta.status_code == 200
+        assert next(c for c in resposta.json() if c['id'] == 42)['uf'] == 'NACIONAL'

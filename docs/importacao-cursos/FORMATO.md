@@ -4,7 +4,7 @@ O arquivo é JSON UTF-8, sem comentários, com `versao` igual ao inteiro `1`, `c
 
 Todos os campos listados abaixo são obrigatórios. Textos não podem conter apenas espaços. Os títulos e nomes têm no máximo 255 caracteres; cada campo Markdown tem no máximo 250.000 caracteres. Cada assunto aceita até 20 resumos e 20 baterias. O conjunto aceita até 10.000 assuntos. Não há mínimo de disciplinas, assuntos, resumos ou baterias. A interface aceita arquivos de até 40 MiB; a solicitação ao servidor, contendo original e conteúdo convertido, tem limite de 128 MiB. O conversor existente também limita a complexidade de cada campo Markdown e pode emitir avisos.
 
-- `curso`: `nome`, `banca`, `cargo`, `orgao`, `ano`, `uf`, `descricao_publica_markdown`. O ano é inteiro entre 1000 e 9999 e a UF é uma das 27 siglas brasileiras em maiúsculas.
+- `curso`: `nome`, `banca`, `cargo`, `orgao`, `ano`, `uf`, `descricao_publica_markdown`. O ano é inteiro entre 1000 e 9999 e a UF é `NACIONAL` ou uma das 27 siglas brasileiras em maiúsculas. Por exemplo, use `"uf": "NACIONAL"` para um curso de abrangência nacional. O mesmo contrato versão 1 se aplica a JSON e ZIP.
 - Cada elemento de `disciplinas`: `nome` e array `assuntos`.
 - Cada assunto: `nome`, `aula_titulo`, arrays `resumos` e `baterias`.
 - Cada resumo: `titulo`, `texto_markdown`.

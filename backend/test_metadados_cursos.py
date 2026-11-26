@@ -71,3 +71,17 @@ def test_edicao_invalida_inexistente_e_falha_commit(ambiente,monkeypatch):
         mp.setattr(Session,'commit',falhar)
         with pytest.raises(RuntimeError): c.put('/cursos/1',json=DADOS,headers=headers(1))
     with f() as db: assert db.get(m.Curso,1).nome=='Base'
+
+
+def test_nacional_criar_editar_e_listar(ambiente):
+    _, cliente, factory = ambiente
+    dados = {**DADOS, 'uf': 'NACIONAL'}
+    criado = cliente.post('/cursos', json=dados, headers=headers(1))
+    assert criado.status_code == 200, criado.text
+    curso_id = criado.json()['id']
+    assert cliente.put(f'/cursos/{curso_id}', json={**dados, 'nome': 'Nacional editado'}, headers=headers(1)).status_code == 200
+    lista = cliente.get('/admin/cursos', headers=headers(1)).json()
+    assert next(c for c in lista if c['id'] == curso_id)['uf'] == 'NACIONAL'
+    with factory() as db:
+        assert db.get(m.Curso, curso_id).uf == 'NACIONAL'
+        assert db.get(m.Curso, 1).uf is None
