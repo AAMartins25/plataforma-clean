@@ -48,7 +48,8 @@ window.GestaoCursos = (() => {
         cursos.forEach(c => {
           if (c[chave] != null && c[chave] !== '') valores.set(String(c[chave]), chave === 'produtor_id' ? `${c.produtor_nome || 'Produtor(a)'} (ID ${c.produtor_id})` : String(c[chave]));
         });
-        opcoes(select, [...valores].sort((a,b) => chave === 'uf' && (a[0] === 'NACIONAL' || b[0] === 'NACIONAL') ? (a[0] === 'NACIONAL' ? -1 : 1) : comparar(a[1],b[1])), 'Todos');
+        const ordemUf = valor => valor === 'NACIONAL' ? 0 : valor === 'REGIONAL' ? 1 : 2;
+        opcoes(select, [...valores].sort((a,b) => (chave === 'uf' ? ordemUf(a[0]) - ordemUf(b[0]) : 0) || comparar(a[1],b[1])), 'Todos');
         if (valores.has(anterior)) select.value = anterior;
       });
       renderizar();
@@ -72,7 +73,7 @@ window.GestaoCursos = (() => {
       input.setCustomValidity('');
       if (prefixo === 'novo' && !valor) input.setCustomValidity('Preencha este campo.');
       if (valor && chave === 'ano' && !/^[1-9]\d{3}$/.test(valor)) input.setCustomValidity('Informe um ano de quatro dígitos (1000 a 9999).');
-      if (valor && chave === 'uf' && !'NACIONAL AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ').includes(valor)) input.setCustomValidity('Selecione uma UF válida.');
+      if (valor && chave === 'uf' && !'NACIONAL REGIONAL AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ').includes(valor)) input.setCustomValidity('Selecione uma UF válida.');
       if (!input.reportValidity()) return null;
       dados[chave] = valor ? (chave === 'ano' ? Number(valor) : valor) : null;
     }

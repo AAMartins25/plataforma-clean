@@ -5,8 +5,9 @@ const root = __dirname;
 const scripts = ['js/vendor/markdown-it-15.0.3.min.js','js/vendor/dompurify-3.4.17.min.js',
   'js/teoria-matematica.js','js/editor-teoria-matematica.js','js/teoria-imagens.js',
   'js/editor-teoria-imagens.js','js/editor-teoria-markdown.js','js/editor-teoria.js'];
+const ufTeste = process.env.UF_TEST || 'NACIONAL';
 const q = {tipo:'MULTIPLA_5',enunciado_markdown:'Texto ![figura](imagens/a.png)',alternativas:{A:'1920.', B:'1940.', C:'1970.', D:'2017.', E:'1936.'},gabarito:'A',comentario_markdown:'Comentário'};
-const doc = {versao:1,curso:{nome:'Curso',banca:'B',cargo:'C',orgao:'O',ano:2026,uf:'NACIONAL',descricao_publica_markdown:'Descrição'},disciplinas:[{nome:'D',assuntos:[{nome:'A',aula_titulo:'Aula',resumos:[{titulo:'Resumo',texto_markdown:'## Título\n\n![figura](imagens/a.png)'}],baterias:[{titulo:'B',tipo:'MULTIPLA',questoes:Array(10).fill(q)}]}]}]};
+const doc = {versao:1,curso:{nome:'Curso',banca:'B',cargo:'C',orgao:'O',ano:2026,uf:ufTeste,descricao_publica_markdown:'Descrição'},disciplinas:[{nome:'D',assuntos:[{nome:'A',aula_titulo:'Aula',resumos:[{titulo:'Resumo',texto_markdown:'## Título\n\n![figura](imagens/a.png)'}],baterias:[{titulo:'B',tipo:'MULTIPLA',questoes:Array(10).fill(q)}]}]}]};
 const estilos = 'Normal <u>sublinhado</u> **<u>duplo</u>** *<u>italico</u>* ***<u>triplo</u>***';
 doc.disciplinas[0].assuntos[0].resumos[0].texto_markdown += '\n\n' + estilos;
 q.enunciado_markdown += ' ' + estilos;
@@ -36,7 +37,7 @@ const server=http.createServer((req,res)=>{const p=new URL(req.url,'http://local
   await page.locator('#importarCurso').click();
   await page.waitForFunction(()=>document.querySelector('#statusImportacao').textContent.includes('importado com sucesso'),null,{timeout:30000}).catch(async e=>{throw Error((await page.locator('#statusImportacao').textContent())+'; '+e.message)});
   const result=await page.evaluate(()=>({documento:window.convertido,overflow:document.documentElement.scrollWidth>innerWidth}));
-  assert.equal(result.documento.curso.uf, 'NACIONAL');
+  assert.equal(result.documento.curso.uf, ufTeste);
   assert.match(result.documento.disciplinas[0].assuntos[0].resumos[0].texto_markdown,/midias\/imagens\/12345678/);
   assert.match(result.documento.disciplinas[0].assuntos[0].baterias[0].questoes[0].enunciado_markdown,/midias\/imagens\/12345678/);
   const verificar = html => { for (const palavra of ['sublinhado','duplo','italico','triplo']) assert.match(html,new RegExp('<u>[^<]*'+palavra+'</u>')); assert.match(html,/<strong>/); assert.match(html,/<i>/); };
@@ -50,7 +51,7 @@ const server=http.createServer((req,res)=>{const p=new URL(req.url,'http://local
   await page.locator('#importarCurso').click();
   await page.waitForFunction(()=>document.querySelector('#statusImportacao').textContent.includes('Curso 2 importado com sucesso'),null,{timeout:30000});
   assert.equal(await page.evaluate(()=>window.jsonEnviado.original.curso.nome),'Curso');
-  assert.equal(await page.evaluate(()=>window.jsonEnviado.convertido.curso.uf),'NACIONAL');
+  assert.equal(await page.evaluate(()=>window.jsonEnviado.convertido.curso.uf),ufTeste);
   const convertido = await page.evaluate(()=>window.jsonEnviado.convertido.disciplinas[0].assuntos[0]);
   for (const campo of [convertido.resumos[0].texto_markdown,convertido.baterias[0].questoes[0].enunciado_markdown,convertido.baterias[0].questoes[0].comentario_markdown,convertido.baterias[0].questoes[0].alternativas.A]) verificar(campo);
   const seguranca = await page.evaluate(() => {

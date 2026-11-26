@@ -73,15 +73,16 @@ def test_edicao_invalida_inexistente_e_falha_commit(ambiente,monkeypatch):
     with f() as db: assert db.get(m.Curso,1).nome=='Base'
 
 
-def test_nacional_criar_editar_e_listar(ambiente):
+@pytest.mark.parametrize("uf", ["NACIONAL", "REGIONAL"])
+def test_abrangencia_criar_editar_e_listar(ambiente, uf):
     _, cliente, factory = ambiente
-    dados = {**DADOS, 'uf': 'NACIONAL'}
+    dados = {**DADOS, 'uf': uf}
     criado = cliente.post('/cursos', json=dados, headers=headers(1))
     assert criado.status_code == 200, criado.text
     curso_id = criado.json()['id']
     assert cliente.put(f'/cursos/{curso_id}', json={**dados, 'nome': 'Nacional editado'}, headers=headers(1)).status_code == 200
     lista = cliente.get('/admin/cursos', headers=headers(1)).json()
-    assert next(c for c in lista if c['id'] == curso_id)['uf'] == 'NACIONAL'
+    assert next(c for c in lista if c['id'] == curso_id)['uf'] == uf
     with factory() as db:
-        assert db.get(m.Curso, curso_id).uf == 'NACIONAL'
+        assert db.get(m.Curso, curso_id).uf == uf
         assert db.get(m.Curso, 1).uf is None

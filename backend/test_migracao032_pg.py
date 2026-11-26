@@ -44,11 +44,11 @@ def test_migracao_preserva_dados_e_e_reaplicavel(banco):
     assert psql("SELECT string_agg(id||':'||coalesce(uf,'NULL'),',' ORDER BY id) FROM cursos", banco) == '1:RO,2:NULL'
     assert psql("SELECT character_maximum_length FROM information_schema.columns WHERE table_name='cursos' AND column_name='uf'", banco) == '8'
     assert psql("SELECT convalidated FROM pg_constraint WHERE conrelid='cursos'::regclass AND conname='ck_cursos_uf_metadado'", banco) == 'f'
-    psql("INSERT INTO cursos(id,nome,uf) VALUES(3,'Nacional','NACIONAL'),(4,'SP','SP')", banco)
-    for uf in ('XX', 'nacional', 'NACIONALL'):
+    psql("INSERT INTO cursos(id,nome,uf) VALUES(3,'Nacional','NACIONAL'),(4,'SP','SP'),(6,'Regional','REGIONAL')", banco)
+    for uf in ('XX', 'nacional', 'regional', 'NACIONALL', 'REGIONALL'):
         psql(f"INSERT INTO cursos(id,nome,uf) VALUES(5,'Inválido','{uf}')", banco, ok=False)
     psql(SQL_032, banco)
-    assert psql('SELECT count(*) FROM cursos', banco) == '4'
+    assert psql('SELECT count(*) FROM cursos', banco) == '5'
 
 
 def test_constraint_inesperada_cancela_migracao_sem_alterar_dados(banco):

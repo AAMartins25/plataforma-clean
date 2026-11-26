@@ -83,7 +83,7 @@ def test_origem_inexistente_e_estrutura_incompativel(copia):
     assert e.value.status_code==409 and db.query(m.Curso).count()==1
 
 
-@pytest.mark.parametrize("uf", ["RO", "NACIONAL"])
+@pytest.mark.parametrize("uf", ["RO", "NACIONAL", "REGIONAL"])
 def test_metadados_e_produtor_da_duplicacao(copia, uf):
     db,main=copia
     origem=db.get(m.Curso,1)

@@ -14,7 +14,7 @@ CREATE TEMP TABLE m032_uf_antiga (uf varchar(2),
 ) ON COMMIT DROP;
 CREATE TEMP TABLE m032_uf_nova (uf varchar(8),
   CONSTRAINT m032_nova CHECK (uf IS NULL OR uf IN
-    ('NACIONAL','AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'))
+    ('NACIONAL','REGIONAL','AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'))
 ) ON COMMIT DROP;
 
 DO $migracao$
@@ -56,7 +56,7 @@ BEGIN
   ALTER TABLE public.cursos DROP CONSTRAINT ck_cursos_uf_metadado;
   ALTER TABLE public.cursos ALTER COLUMN uf TYPE varchar(8);
   ALTER TABLE public.cursos ADD CONSTRAINT ck_cursos_uf_metadado CHECK
-    (uf IS NULL OR uf IN ('NACIONAL','AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO')) NOT VALID;
+    (uf IS NULL OR uf IN ('NACIONAL','REGIONAL','AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO')) NOT VALID;
   IF validada THEN
     ALTER TABLE public.cursos VALIDATE CONSTRAINT ck_cursos_uf_metadado;
   END IF;
